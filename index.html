@@ -1,0 +1,80 @@
+    document.getElementById('myForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+
+      // Helper: Convert File to Base64
+      const fileToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve({
+            fileName: file.name,
+            mimeType: file.type,
+            fileData: reader.result.split(',')[1]
+          });
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      };
+
+      // Helper: Convert multiple files
+      const filesToArray = async (fileList) => {
+        const arr = [];
+        for (let file of fileList) {
+          arr.push(await fileToBase64(file));
+        }
+        return arr;
+      };
+
+      // Show progress bar
+      const progressBar = document.getElementById("uploadProgress");
+      progressBar.style.display = "block";
+      progressBar.value = 0;
+
+      const payload = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        description: formData.get('description'),
+        vip: formData.get('vip'),
+        equipmentDesc: formData.get('equipmentDesc'),
+        armamentsDesc: formData.get('armamentsDesc'),
+        commandersDesc: formData.get('commandersDesc'),
+        pairingsText: formData.get('pairingsText'),
+        equipment: await filesToArray(formData.getAll('equipment')),
+        armaments: await filesToArray(formData.getAll('armaments')),
+        commanders: await filesToArray(formData.getAll('commanders')),
+        pairingsFiles: await filesToArray(formData.getAll('pairingsFiles'))
+      };
+
+      // Use XHR to get upload progress
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "https://script.google.com/macros/s/AKfycbzDfoco2QwOVYH8tuIyp0jrGIx1dRIFXvsgn5rVpRSM_bDvhZz6MPBO7qZQe3pOn5RA/exec");
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          progressBar.value = percent;
+        }
+      };
+
+      xhr.onload = () => {
+        try {
+          const result = JSON.parse(xhr.responseText);
+          if (result.status === 'success') {
+            alert('Uploaded! Data saved successfully.');
+            form.reset(); // Reset form after success
+            progressBar.style.display = "none";
+          } else {
+            alert('Error: ' + result.message);
+          }
+        } catch (err) {
+          alert("Upload complete, but response parsing failed.");
+        }
+      };
+
+      xhr.onerror = () => {
+        alert('Upload failed. Please try again.');
+      };
+
+      xhr.send(JSON.stringify(payload));
+    });
