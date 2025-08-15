@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Rise of Kingdoms Recruitment KD2247</title>
+<style>
+/* === Keep your site's variables and base theme === */
+:root {
+  --bg-color: #e5e5e5;
+  --text-color: #333;
+  --table-bg: white;
+  --table-border: #ccc;
+  --accent: #666;
+  --scrollbar-bg: rgba(0,0,0,0.3);
+}
+body.dark {
+  --bg-color: #1c1c1c;
+  --text-color: #eee;
+  --table-bg: #2f2f2f; /* Brighter than before for the form */
+  --table-border: #555;
+  --accent: #4a90e2; /* Nice blue for button contrast */
+  --scrollbar-bg: rgba(255,255,255,0.4);
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Navbar */
+.navbar {
+  background: #2a2a2a;
+  padding: 10px 20px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.navbar button {
+  background: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: bold;
+}
+.navbar button:hover {
+  background: #f0f0f0;
+}
+
+/* === Form Container === */
+#form-container {
+  max-width: 46vw;
+  margin: 30px auto;
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+#form-container h2 {
+  margin-top: 0;
+  text-align: center;
+  color: var(--text-color);
+}
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: var(--text-color);
+}
+.form-group input, 
+.form-group textarea {
+  margin: 0px auto;
+  width: 45vw;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  background: #ccc;
+  font-size: 14px;
+}
+ 
+.form-group select {
+  margin: 0px auto;
+  width: 20vw;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  background: #ccc;
+  font-size: 14px;
+
+}
+.form-group input[type="file"] {
+  margin: 0px auto;
+  background: none;
+  width: 12vw;
+}
+.center-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.center-section label {
+  text-align: center;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+button.submit-btn {
+  margin: 0px auto;
+  display: block;
+  width: 10vw;
+  padding: 10px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+button.submit-btn:hover {
+  background: #555;
+}
+</style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div><strong>Excel & Google Sheets Viewer</strong></div>
+    <div>
+      <button id="toggle-theme">Dark/Light</button>
+    </div>
+  </div>
+
+  <form id="myForm">
+    <div id="form-container">
+      <div class="form-group">
+        <label for="playerName">Player Name</label>
+        <input type="text" name="name" placeholder="Name" required><br>
+      </div>
+      <div class="form-group">
+        <label for="playerID">Player ID</label>
+        <input type="text" name="email" placeholder="Email" required><br>
+      </div>
+      <div class="form-group">
+        <label for="power">Current Power</label>
+        <input type="text" name="description" placeholder="Description" required><br>
+      </div>
+      <div class="form-group">
+        <label for="vip">What is your VIP level?</label>
+        <input type="number" name="vip" min="0" placeholder="VIP Level" required><br>
+      </div>
+
+      <!-- Equipment -->
+      <div class="form-group">
+        <label>Your Equipment (Description)</label>
+        <input type="text" name="equipmentDesc" placeholder="Describe your equipment">
+      </div>
+      <div class="form-group center-section">
+        <label>Your Equipment (Screenshots)</label>
+        <input type="file" name="equipment" accept="image/*" multiple>
+      </div>
+
+      <!-- Armaments -->
+      <div class="form-group">
+        <label>Your Armaments (Description)</label>
+        <input type="text" name="armamentsDesc" placeholder="Describe your armaments">
+      </div>
+      <div class="form-group center-section">
+        <label>Your Armaments (Screenshots)</label>
+        <input type="file" name="armaments" accept="image/*" multiple>
+      </div>
+
+      <!-- Commanders -->
+      <div class="form-group">
+        <label>Your Commanders (Description)</label>
+        <input type="text" name="commandersDesc" placeholder="Describe your commanders">
+      </div>
+      <div class="form-group center-section">
+        <label>Your Commanders (Screenshots)</label>
+        <input type="file" name="commanders" accept="image/*" multiple>
+      </div>
+
+      <!-- Pairings -->
+      <div class="form-group">
+        <label>Pairings (Description)</label>
+        <input type="text" name="pairingsText" placeholder="Describe your pairings">
+      </div>
+      <div class="form-group center-section">
+        <label>Pairings (Screenshots)</label>
+        <input type="file" name="pairingsFiles" accept="image/*" multiple>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="form-group">
+        <progress id="uploadProgress" value="0" max="100" style="width:100%; display:none;"></progress>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit</button>
+    </div>
+  </form>
+
+  <script>
+    document.getElementById('myForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+
+      // Helper: Convert File to Base64
+      const fileToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve({
+            fileName: file.name,
+            mimeType: file.type,
+            fileData: reader.result.split(',')[1]
+          });
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      };
+
+      // Helper: Convert multiple files
+      const filesToArray = async (fileList) => {
+        const arr = [];
+        for (let file of fileList) {
+          arr.push(await fileToBase64(file));
+        }
+        return arr;
+      };
+
+      // Show progress bar
+      const progressBar = document.getElementById("uploadProgress");
+      progressBar.style.display = "block";
+      progressBar.value = 0;
+
+      const payload = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        description: formData.get('description'),
+        vip: formData.get('vip'),
+        equipmentDesc: formData.get('equipmentDesc'),
+        armamentsDesc: formData.get('armamentsDesc'),
+        commandersDesc: formData.get('commandersDesc'),
+        pairingsText: formData.get('pairingsText'),
+        equipment: await filesToArray(formData.getAll('equipment')),
+        armaments: await filesToArray(formData.getAll('armaments')),
+        commanders: await filesToArray(formData.getAll('commanders')),
+        pairingsFiles: await filesToArray(formData.getAll('pairingsFiles'))
+      };
+
+      // Use XHR to get upload progress
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "https://script.google.com/macros/s/AKfycbzDfoco2QwOVYH8tuIyp0jrGIx1dRIFXvsgn5rVpRSM_bDvhZz6MPBO7qZQe3pOn5RA/exec");
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          progressBar.value = percent;
+        }
+      };
+
+      xhr.onload = () => {
+        try {
+          const result = JSON.parse(xhr.responseText);
+          if (result.status === 'success') {
+            alert('Uploaded! Data saved successfully.');
+            form.reset(); // Reset form after success
+            progressBar.style.display = "none";
+          } else {
+            alert('Error: ' + result.message);
+          }
+        } catch (err) {
+          alert("Upload complete, but response parsing failed.");
+        }
+      };
+
+      xhr.onerror = () => {
+        alert('Upload failed. Please try again.');
+      };
+
+      xhr.send(JSON.stringify(payload));
+    });
+
+    document.getElementById("toggle-theme").addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+    });
+  
+  </script>
+</body>
+</html>
