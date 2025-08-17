@@ -53,31 +53,24 @@ body {
 }
 
 /* Style the topnav links */
-.topnav a {
+.topnav a,
+.topnav button {
   float: left;
   display: block;
   color: #f2f2f2;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
+  background: none; /* remove white bg */
+  border: none;     /* remove default border */
+  cursor: pointer;
+  font: inherit;    /* match font with links */
 }
 
 /* Change color on hover */
-.topnav a:hover {
+.topnav a:hover,
+.topnav button:hover {
   background-color: #4e4d4d;
-}
-button {
-  background: white;
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  border-radius: 6px;
-  font-weight: bold;
-  margin-top: 5px;
-}
-button:hover {
-  background-color: #ddd;
-  color: #111;
 }
 
 /* Table Container */
@@ -236,7 +229,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 <body>
 
 <div class="topnav">
-  <a href="E:/a/recruitmentv5.html">Recruitment</a>
+  <a href="recruitmentv5.html">Recruitment</a>
   <button style="float:right" id="toggle-theme">Dark/Light</button>
 </div>
 
