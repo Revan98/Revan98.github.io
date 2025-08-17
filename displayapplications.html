@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Applications List</title>
+<style>
+:root {
+  --bg-color: #e5e5e5;
+  --text-color: #333;
+  --table-bg: white;
+  --table-border: #ccc;
+  --accent: #666;
+  --scrollbar-bg: rgba(0,0,0,0.3);
+}
+body.dark {
+  --bg-color: #1c1c1c;
+  --text-color: #eee;
+  --table-bg: #2f2f2f;
+  --table-border: #555;
+  --accent: #4a90e2;
+  --scrollbar-bg: rgba(255,255,255,0.4);
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Style the top navigation bar */
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+}
+
+/* Style the topnav links */
+.topnav a,
+.topnav button {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  background: none; /* remove white bg */
+  border: none;     /* remove default border */
+  cursor: pointer;
+  font: inherit;    /* match font with links */
+}
+
+/* Change color on hover */
+.topnav a:hover,
+.topnav button:hover {
+  background-color: #4e4d4d;
+}
+
+/* Centered content wrapper */
+.container {
+  max-width: 50vw;
+  margin: 20px auto;
+  padding: 0 10px;
+}
+
+/* Applications details styling */
+details {
+  background: var(--table-bg);
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+summary {
+  font-weight: bold;
+  cursor: pointer;
+}
+.application-content {
+  padding-top: 10px;
+}
+label {
+  font-weight: bold;
+}
+img {
+  max-width: 150px;
+  margin: 5px;
+  border-radius: 4px;
+}
+</style>
+
+</head>
+<body>
+
+  <div class="topnav">
+    <button style="float:right" id="toggle-theme">Dark/Light</button>
+  </div>
+
+  <!-- Centered Content -->
+  <div class="container">
+    <h1>Applications</h1>
+    <div id="appList">Loading...</div>
+  </div>
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWpupiG6gKTMU_nOqGUlxgkzgOHjS6xBs6T9Kb0OE7wFYffBbEeYsOCdacZcXJ__Oo/exec"; // same as form but will GET
+
+async function loadApplications() {
+  const res = await fetch(SCRIPT_URL);
+  const json = await res.json();
+  if (json.status !== 'success') {
+    document.getElementById('appList').innerText = "Error loading applications.";
+    return;
+  }
+
+  const container = document.getElementById('appList');
+  container.innerHTML = '';
+
+  json.applications.forEach((app, index) => {
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = `Application #${index + 1} - ${app.name}`;
+    details.appendChild(summary);
+
+    const content = document.createElement('div');
+    content.classList.add('application-content');
+
+    content.innerHTML = `
+      <p><label>Player ID:</label> ${app.email}</p>
+      <p><label>Power:</label> ${app.description}</p>
+      <p><label>VIP Level:</label> ${app.vip}</p>
+      <p><label>Equipment:</label> ${app.equipmentDesc}</p>
+      ${renderImages(app.equipmentLinks)}
+      <p><label>Armaments:</label> ${app.armamentsDesc}</p>
+      ${renderImages(app.armamentsLinks)}
+      <p><label>Commanders:</label> ${app.commandersDesc}</p>
+      ${renderImages(app.commandersLinks)}
+      <p><label>Pairings:</label> ${app.pairingsText}</p>
+      ${renderImages(app.pairingsLinks)}
+    `;
+
+    details.appendChild(content);
+    container.appendChild(details);
+  });
+}
+
+function headersMatching(name) {
+  // This matches column headers exactly as in sheet
+  return name;
+}
+
+function renderImages(linksCell) {
+  if (!linksCell) return '';
+  const links = linksCell.split("\n").filter(l => l.trim());
+  if (!links.length) return '';
+  return links.map(l => `<a href="${l}" target="_blank"><img src="${l}"></a>`).join('');
+}
+
+loadApplications();
+
+document.getElementById("toggle-theme").addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+});
+
+</script>
+
+</body>
+</html>
