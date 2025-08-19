@@ -367,7 +367,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const filteredHeaders = headers.filter((_, i) => selectedCols.includes(i));
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
-  // Add Index column header
+  // Index header
   const indexTh = document.createElement("th");
   indexTh.textContent = "#";
   headRow.appendChild(indexTh);
@@ -381,10 +381,12 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const tbody = document.createElement("tbody");
   rows.forEach(row => {
     const tr = document.createElement("tr");
-    // Add index cell
+  
+    // Add blank index cell (DataTables will fill this dynamically)
     const indexTd = document.createElement("td");
-    indexTd.textContent = rowIdx + 1; // 1-based index
+    indexTd.textContent = ""; 
     tr.appendChild(indexTd);
+  
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = row[colIndex] ?? "";
@@ -398,6 +400,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
       td.textContent = val;
       tr.appendChild(td);
     });
+  
     tbody.appendChild(tr);
   });
 
@@ -408,13 +411,25 @@ function renderTableFiltered(headers, rows, selectedCols) {
     paging: false,
     scrollY: '60vh',
     scrollCollapse: true,
-    order: [],
+    order: [], 
     searching: true,
     info: false,
     responsive: false,
     autoWidth: false,
+    columnDefs: [
+      { orderable: false, searchable: false, targets: 0 } // index column not sortable/searchable
+    ],
     language: { searchPlaceholder: "Search by name or ID", search: "" }
   });
+  
+  // Update index numbers on sort/search
+  dataTableInstance.on('order.dt search.dt', () => {
+    let i = 1;
+    dataTableInstance.rows({ search: 'applied', order: 'applied' }).every(function() {
+      this.cell(this.index(), 0).data(i++);
+    });
+  }).draw();
+
 
   // Click handler
   document.querySelector("#data-table tbody").addEventListener("click", function(e) {
@@ -422,7 +437,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     if (!row) return;
     const cells = row.querySelectorAll("td");
     if (cells.length < 2) return;
-    const playerId = cells[1].textContent.trim(); // second cell = ID
+    const playerId = cells[1].textContent.trim(); // column 1 = ID
     updateChartsForPlayer(playerId);
   });
 
@@ -564,6 +579,4 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
-
 
