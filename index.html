@@ -367,6 +367,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const filteredHeaders = headers.filter((_, i) => selectedCols.includes(i));
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
+  // Add Index column header
+  const indexTh = document.createElement("th");
+  indexTh.textContent = "#";
+  headRow.appendChild(indexTh);
   filteredHeaders.forEach(h => {
     const th = document.createElement("th");
     th.textContent = h ?? "";
@@ -377,6 +381,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const tbody = document.createElement("tbody");
   rows.forEach(row => {
     const tr = document.createElement("tr");
+    // Add index cell
+    const indexTd = document.createElement("td");
+    indexTd.textContent = rowIdx + 1; // 1-based index
+    tr.appendChild(indexTd);
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = row[colIndex] ?? "";
@@ -412,11 +420,12 @@ function renderTableFiltered(headers, rows, selectedCols) {
   document.querySelector("#data-table tbody").addEventListener("click", function(e) {
     const row = e.target.closest("tr");
     if (!row) return;
-    const idCell = row.querySelector("td");
-    if (!idCell) return;
-    const playerId = idCell.textContent.trim();
+    const cells = row.querySelectorAll("td");
+    if (cells.length < 2) return;
+    const playerId = cells[1].textContent.trim(); // second cell = ID
     updateChartsForPlayer(playerId);
   });
+
 
   // Totals
   const totalsContainer = document.getElementById("bottom-totals");
@@ -555,5 +564,6 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
 
 
