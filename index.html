@@ -379,13 +379,16 @@ function renderTableFiltered(headers, rows, selectedCols) {
   thead.appendChild(headRow);
 
   const tbody = document.createElement("tbody");
-  rows.forEach(row => {
+  rows.forEach((row, rowIdx) => {
     const tr = document.createElement("tr");
   
-    // Add blank index cell (DataTables will fill this dynamically)
+    // Index cell (will be updated dynamically)
     const indexTd = document.createElement("td");
-    indexTd.textContent = ""; 
+    indexTd.textContent = rowIdx + 1; // fallback
     tr.appendChild(indexTd);
+  
+    // Store original index for later
+    tr.dataset.originalIndex = rowIdx + 1;
   
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
@@ -404,6 +407,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     tbody.appendChild(tr);
   });
 
+
   table.appendChild(thead);
   table.appendChild(tbody);
 
@@ -411,7 +415,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     paging: false,
     scrollY: '60vh',
     scrollCollapse: true,
-    order: [], 
+    order: [],
     searching: true,
     info: false,
     responsive: false,
@@ -422,14 +426,25 @@ function renderTableFiltered(headers, rows, selectedCols) {
     language: { searchPlaceholder: "Search by name or ID", search: "" }
   });
   
-  // Update index numbers on sort/search
-  dataTableInstance.on('order.dt search.dt', () => {
-    let i = 1;
-    dataTableInstance.rows({ search: 'applied', order: 'applied' }).every(function() {
-      this.cell(this.index(), 0).data(i++);
-    });
-  }).draw();
-
+  // On redraw (after search/sort)
+  dataTableInstance.on('draw.dt', () => {
+    const searchVal = dataTableInstance.search();
+  
+    if (searchVal) {
+      // SEARCH MODE → show original dataset index
+      dataTableInstance.rows({ search: 'applied' }).every(function () {
+        const rowNode = this.node();
+        const origIndex = rowNode.dataset.originalIndex;
+        this.cell(this.index(), 0).data(origIndex);
+      });
+    } else {
+      // NORMAL MODE → dynamic numbering
+      let i = 1;
+      dataTableInstance.rows({ search: 'applied', order: 'applied' }).every(function () {
+        this.cell(this.index(), 0).data(i++);
+      });
+    }
+  });
 
   // Click handler
   document.querySelector("#data-table tbody").addEventListener("click", function(e) {
@@ -579,4 +594,5 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
 
