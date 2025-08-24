@@ -252,7 +252,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 <script>
 const CONFIG = {
   source: "google", // "google" or "excel"
-  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1SKk0dReUkUHTZDhmSvDBenP1rfxr_s34y01a_udrz1g/edit?usp=sharing",
+  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1wc9Qu-PDcNsKMkUcNmCIrKYpxXJH1GrjwiPRL2syxlc/edit?usp=sharing",
   excelFilePath: "data.xlsx"
 };
 
@@ -350,10 +350,11 @@ function getSheetDiffsForPlayers(playerId) {
   if (!secondRow || !lastRow) return null;
 
   return {
+    2: (parseFloat(lastRow[2]) || 0) - (parseFloat(secondRow[2]) || 0),
+    3: (parseFloat(lastRow[3]) || 0) - (parseFloat(secondRow[3]) || 0),
     4: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
     5: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[5]) || 0),
     6: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[6]) || 0),
-    7: (parseFloat(lastRow[7]) || 0) - (parseFloat(secondRow[7]) || 0),
   };
 }
 
@@ -447,7 +448,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
         }
       }
       // Shorten values for columns 3–8 (indexes 3..8)
-      if (colIndex >= 2 && colIndex <= 8 && val !== "") {
+      if (colIndex >= 2 && colIndex <= 7 && val !== "") {
         val = formatNumber(val);
       }
 
@@ -457,7 +458,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
       td.appendChild(baseSpan);
       
       // If this is one of the diff columns (T4, T5, Deads, KP)
-      if ([4,5,6,7].includes(colIndex)) {
+      if ([2,3,4,5,6].includes(colIndex)) {
         const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
         if (diffs) {
           const diff = diffs[colIndex] ?? 0;
