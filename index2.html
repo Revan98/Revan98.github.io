@@ -385,8 +385,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
   rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES");
 
   // Top 3 players
-  const dkpColIndex = selectedCols.indexOf(10);
-  if (dkpColIndex == 8) {
+  const dkpColIndex = selectedCols.indexOf(8);
+  if (dkpColIndex !== -1) {
     rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
     const top3 = rows.slice(0, 3);
     const topContainer = document.getElementById("top-players");
