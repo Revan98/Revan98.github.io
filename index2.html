@@ -360,11 +360,16 @@ function getSheetDiffsForPlayers(playerId) {
 function formatNumber(num) {
   if (num === null || num === undefined || isNaN(num)) return "";
   num = Number(num);
-  if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, "") + "B";
-  if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
-  if (num >= 1e3) return (num / 1e3).toFixed(2).replace(/\.00$/, "") + "K";
-  return num.toString();
+
+  const sign = num < 0 ? "-" : "";
+  const abs = Math.abs(num);
+
+  if (abs >= 1e9) return sign + (abs / 1e9).toFixed(2).replace(/\.00$/, "") + "B";
+  if (abs >= 1e6) return sign + (abs / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
+  if (abs >= 1e3) return sign + (abs / 1e3).toFixed(2).replace(/\.00$/, "") + "K";
+  return sign + abs.toString();
 }
+
 function renderTableFiltered(headers, rows, selectedCols) {
   resetCharts(); // clear old chart data
   rows = removeEmptyRows(rows);
