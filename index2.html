@@ -465,7 +465,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
       td.appendChild(baseSpan);
       
       // If this column should show diffs
-      if ([2,3,4,5,6,12,13,14,15].includes(colIndex)) {
+      if ([2,12,13,14,15].includes(colIndex)) {
         const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
         if (diffs) {
           const diff = diffs[colIndex] ?? 0;
