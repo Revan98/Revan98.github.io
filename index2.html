@@ -416,7 +416,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const table = document.getElementById("data-table");
   table.innerHTML = "";
 
-  const filteredHeaders = headers.filter((_, i) => selectedCols.includes(i));
+  const filteredHeaders = selectedCols.map(i => headers[i] ?? "");
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
   // Index header
