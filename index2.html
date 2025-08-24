@@ -447,8 +447,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
           val = num.toFixed(2) + "%";
         }
       }
-      // Shorten values for columns 3–8 (indexes 3..8)
-      if (colIndex >= 2 && colIndex <= 7 && val !== "") {
+      // Shorten values for columns 3–6 (indexes 3..6)
+      if (colIndex >= 2 && colIndex <= 6 && val !== "") {
         val = formatNumber(val);
       }
 
