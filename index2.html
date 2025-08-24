@@ -451,28 +451,35 @@ function renderTableFiltered(headers, rows, selectedCols) {
         val = formatNumber(val);
       }
 
-    // Create a span for the base value
-    const baseSpan = document.createElement("span");
-    baseSpan.textContent = val;
-    td.appendChild(baseSpan);
-    
-    // If this is one of the diff columns (T4, T5, Deads, KP)
-    if ([4,5,6,7].includes(colIndex)) {
-      const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
-      if (diffs) {
-        const diff = diffs[colIndex] ?? 0;
-        if (diff !== 0) {
+      // Create a span for the base value
+      const baseSpan = document.createElement("span");
+      baseSpan.textContent = val;
+      td.appendChild(baseSpan);
+      
+      // If this is one of the diff columns (T4, T5, Deads, KP)
+      if ([4,5,6,7].includes(colIndex)) {
+        const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
+        if (diffs) {
+          const diff = diffs[colIndex] ?? 0;
           const diffSpan = document.createElement("span");
+      
+          // Always show, even if 0
           diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
-          diffSpan.style.color = diff > 0 ? "green" : "red";
-          diffSpan.style.marginLeft = "4px"; // ensure spacing
-          diffSpan.style.display = "inline"; // force inline
+      
+          if (diff > 0) {
+            diffSpan.style.color = "green";
+          } else if (diff < 0) {
+            diffSpan.style.color = "red";
+          } else {
+            diffSpan.style.color = "#888"; // gray for zero
+          }
+      
+          diffSpan.style.marginLeft = "4px";
+          diffSpan.style.display = "inline";
           td.appendChild(diffSpan);
         }
       }
-    }
-    
-              
+        
       tr.appendChild(td);
     });
   
