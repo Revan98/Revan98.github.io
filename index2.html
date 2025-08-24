@@ -454,11 +454,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
           val = num.toFixed(2) + "%";
         }
       }
-      // Shorten values for columns 3–6 (indexes 3..6)
-      if (colIndex >= 2 && colIndex <= 6 && val !== "") {
+      // Shorten values for relevant numeric columns
+      if ([2, 12, 13, 14, 15].includes(colIndex) && val !== "") {
         val = formatNumber(val);
       }
-
       // Create a span for the base value
       const baseSpan = document.createElement("span");
       baseSpan.textContent = val;
