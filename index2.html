@@ -446,27 +446,20 @@ function renderTableFiltered(headers, rows, selectedCols) {
         val = formatNumber(val);
       }
 
-    // Base value always a span so we can append next to it
-    const baseSpan = document.createElement("span");
-    baseSpan.textContent = val;
-    td.appendChild(baseSpan);
-    
-    // Add diff if this column is 4,5,6,7
-    if ([4,5,6,7].includes(colIndex)) {
-      const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
-      if (diffs) {
-        const diff = diffs[colIndex] ?? 0;
-        if (diff !== 0) {
-          const diffSpan = document.createElement("span");
-          diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
-          diffSpan.style.color = diff > 0 ? "green" : "red";
-          diffSpan.style.marginLeft = "4px"; // small spacing
-          td.appendChild(diffSpan);
-        }
-      }
-    }
-
+      td.textContent = val;
       
+      // Add diff if this column is 4,5,6,7
+      if ([4,5,6,7].includes(colIndex)) {
+        const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
+        if (diffs) {
+          const diff = diffs[colIndex] ?? 0;
+          if (diff !== 0) {
+            const diffSpan = document.createElement("span");
+            diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
+            diffSpan.style.color = diff > 0 ? "green" : "red";
+            td.appendChild(diffSpan);
+          }
+          
       tr.appendChild(td);
     });
   
