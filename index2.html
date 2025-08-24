@@ -118,9 +118,10 @@ table.dataTable tbody tr:hover {
   margin-right: 10px;
 }*/
 div.dt-search {
-  display: block !important;
+  display: flex !important;
   justify-content: center !important; /* center horizontally */
-
+  margin: 0 auto; /* optional, keeps it centered inside parent */
+  width: 100%;   /* ensures it spans full row */
 }
 div.dt-search label {
   position: relative !important;
@@ -128,6 +129,8 @@ div.dt-search label {
   width: 100% !important;
 }
 div.dt-search input {
+  width: 40vw !important;
+  margin: 0 auto;
   width: 100px; !important;  /* 40% of viewport width */
   max-width: 100%; 
   padding: 14px 12px !important; /* equal left/right padding */
