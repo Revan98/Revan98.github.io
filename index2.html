@@ -326,19 +326,29 @@ function resetCharts() {
   });
 }
 function getSheetDiffsForPlayers(playerId) {
-  if (!googleSheetNames.length) return null;
+  let secondRows, lastRows;
 
-  const secondSheet = googleSheetNames[1];
-  const lastSheet = googleSheetNames[googleSheetNames.length - 1];
+  if (currentSource === "google") {
+    const secondSheet = googleSheetNames[1];
+    const lastSheet = googleSheetNames[googleSheetNames.length - 1];
+    secondRows = (googleSheetsData[secondSheet] || []).slice(1);
+    lastRows = (googleSheetsData[lastSheet] || []).slice(1);
+  }
 
-  const secondRow = (googleSheetsData[secondSheet] || []).slice(1)
-    .find(r => String(r[0]).trim() === String(playerId).trim());
-  const lastRow = (googleSheetsData[lastSheet] || []).slice(1)
-    .find(r => String(r[0]).trim() === String(playerId).trim());
+  if (currentSource === "excel" && workbook) {
+    const sheetNames = workbook.SheetNames;
+    const secondSheet = sheetNames[1];
+    const lastSheet = sheetNames[sheetNames.length - 1];
+    secondRows = XLSX.utils.sheet_to_json(workbook.Sheets[secondSheet], { header: 1 }).slice(1);
+    lastRows = XLSX.utils.sheet_to_json(workbook.Sheets[lastSheet], { header: 1 }).slice(1);
+  }
 
+  if (!secondRows || !lastRows) return null;
+
+  const secondRow = secondRows.find(r => String(r[0]).trim() === String(playerId).trim());
+  const lastRow = lastRows.find(r => String(r[0]).trim() === String(playerId).trim());
   if (!secondRow || !lastRow) return null;
 
-  // columns 4,5,6,7 are indexes for T4, T5, Deads, KP
   return {
     4: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
     5: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[5]) || 0),
@@ -347,6 +357,14 @@ function getSheetDiffsForPlayers(playerId) {
   };
 }
 
+function formatNumber(num) {
+  if (num === null || num === undefined || isNaN(num)) return "";
+  num = Number(num);
+  if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, "") + "B";
+  if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
+  if (num >= 1e3) return (num / 1e3).toFixed(2).replace(/\.00$/, "") + "K";
+  return num.toString();
+}
 function renderTableFiltered(headers, rows, selectedCols) {
   resetCharts(); // clear old chart data
   rows = removeEmptyRows(rows);
@@ -414,7 +432,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = row[colIndex] ?? "";
-
+      
       // Format DKP %
       if (colIndex === 10 && val !== "") {
         let num = Number(val);
@@ -423,24 +441,23 @@ function renderTableFiltered(headers, rows, selectedCols) {
           val = num.toFixed(2) + "%";
         }
       }
-
-      // Normal text
+      
       td.textContent = val;
-
+      
       // Add diff if this column is 4,5,6,7
       if ([4,5,6,7].includes(colIndex)) {
         const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
         if (diffs) {
           const diff = diffs[colIndex] ?? 0;
           if (diff !== 0) {
-            const diffSpan = document.createElement("div");
-            diffSpan.textContent = `(${diff > 0 ? "+" : ""}${diff.toLocaleString()})`;
+            const diffSpan = document.createElement("span");
+            diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
             diffSpan.style.color = diff > 0 ? "green" : "red";
             td.appendChild(diffSpan);
           }
         }
       }
-
+      
       tr.appendChild(td);
     });
   
