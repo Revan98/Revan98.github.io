@@ -441,7 +441,11 @@ function renderTableFiltered(headers, rows, selectedCols) {
           val = num.toFixed(2) + "%";
         }
       }
-      
+      // Shorten values for columns 3–8 (indexes 3..8)
+      if (colIndex >= 3 && colIndex <= 8 && val !== "") {
+        val = formatNumber(val);
+      }
+
       td.textContent = val;
       
       // Add diff if this column is 4,5,6,7
