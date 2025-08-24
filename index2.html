@@ -563,7 +563,7 @@ function parseExcelData(arrayBuffer) {
   workbook = XLSX.read(arrayBuffer, { type: 'array' });
   currentSource = "excel";
   const sheetNames = workbook.SheetNames;
-  loadExcelSheet(sheetNames[0]);
+  loadExcelSheet(sheetNames[sheetNames.length - 1]);
 }
 
 function loadExcelSheet(sheetName) {
@@ -647,7 +647,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         googleSheetsData[name] = data.values || [];
       })
     );
-    const firstSheet = googleSheetNames[-1];
+    const firstSheet = googleSheetNames[googleSheetNames.length - 1];
     renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
   }
 });
