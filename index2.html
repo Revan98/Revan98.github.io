@@ -257,7 +257,7 @@ const CONFIG = {
 };
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
-const selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10];
+const selectedColumns = [0, 1, 2, 3, 4, 5, 6, 8, 9];
 
 let dataTableInstance = null;
 let workbook = null;
@@ -541,10 +541,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const totalsContainer = document.getElementById("bottom-totals");
   totalsContainer.innerHTML = "";
   const totalCols = [
-    { label: "Total KP", col: 7 },
-    { label: "Total Deads", col: 6 },
-    { label: "Total T4 kills", col: 4 },
-    { label: "Total T5 kills", col: 5 }
+    { label: "Total KP", col: 6 },
+    { label: "Total Deads", col: 5 },
+    { label: "Total T4 kills", col: 3 },
+    { label: "Total T5 kills", col: 4 }
   ];
   totalCols.forEach(item => {
     const colIndexInSelected = selectedCols.indexOf(item.col);
@@ -594,10 +594,10 @@ function updateChartsForPlayer(playerId) {
       const ws = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
       const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
-      chartData.chart4.push(playerRow?.[4] || 0);
-      chartData.chart5.push(playerRow?.[5] || 0);
-      chartData.chart6.push(playerRow?.[6] || 0);
-      chartData.chart7.push(playerRow?.[7] || 0);
+      chartData.chart4.push(playerRow?.[3] || 0);
+      chartData.chart5.push(playerRow?.[4] || 0);
+      chartData.chart6.push(playerRow?.[5] || 0);
+      chartData.chart7.push(playerRow?.[6] || 0);
     });
     Object.keys(chartData).forEach(chartId => {
       charts[chartId].data.labels = sheetNames;
@@ -611,10 +611,10 @@ function updateChartsForPlayer(playerId) {
     sheetNames.forEach(sheetName => {
       const rows = googleSheetsData[sheetName] || [];
       const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
-      chartData.chart4.push(playerRow?.[4] || 0);
-      chartData.chart5.push(playerRow?.[5] || 0);
-      chartData.chart6.push(playerRow?.[6] || 0);
-      chartData.chart7.push(playerRow?.[7] || 0);
+      chartData.chart4.push(playerRow?.[3] || 0);
+      chartData.chart5.push(playerRow?.[4] || 0);
+      chartData.chart6.push(playerRow?.[5] || 0);
+      chartData.chart7.push(playerRow?.[6] || 0);
     });
     Object.keys(chartData).forEach(chartId => {
       charts[chartId].data.labels = sheetNames;
