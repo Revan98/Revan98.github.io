@@ -252,12 +252,12 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 <script>
 const CONFIG = {
   source: "google", // "google" or "excel"
-  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1SKk0dReUkUHTZDhmSvDBenP1rfxr_s34y01a_udrz1g/edit?usp=sharing",
+  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1wc9Qu-PDcNsKMkUcNmCIrKYpxXJH1GrjwiPRL2syxlc/edit?usp=sharing",
   excelFilePath: "data.xlsx"
 };
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
-const selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10];
+const selectedColumns = [0, 1, 2, 3, 4, 5, 6, 8, 9];
 
 let dataTableInstance = null;
 let workbook = null;
@@ -350,21 +350,27 @@ function getSheetDiffsForPlayers(playerId) {
   if (!secondRow || !lastRow) return null;
 
   return {
+    2: (parseFloat(lastRow[2]) || 0) - (parseFloat(secondRow[2]) || 0),
+    3: (parseFloat(lastRow[3]) || 0) - (parseFloat(secondRow[3]) || 0),
     4: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
     5: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[5]) || 0),
     6: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[6]) || 0),
-    7: (parseFloat(lastRow[7]) || 0) - (parseFloat(secondRow[7]) || 0),
   };
 }
 
 function formatNumber(num) {
   if (num === null || num === undefined || isNaN(num)) return "";
   num = Number(num);
-  if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, "") + "B";
-  if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
-  if (num >= 1e3) return (num / 1e3).toFixed(2).replace(/\.00$/, "") + "K";
-  return num.toString();
+
+  const sign = num < 0 ? "-" : "";
+  const abs = Math.abs(num);
+
+  if (abs >= 1e9) return sign + (abs / 1e9).toFixed(2).replace(/\.00$/, "") + "B";
+  if (abs >= 1e6) return sign + (abs / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
+  if (abs >= 1e3) return sign + (abs / 1e3).toFixed(2).replace(/\.00$/, "") + "K";
+  return sign + abs.toString();
 }
+
 function renderTableFiltered(headers, rows, selectedCols) {
   resetCharts(); // clear old chart data
   rows = removeEmptyRows(rows);
@@ -441,33 +447,40 @@ function renderTableFiltered(headers, rows, selectedCols) {
           val = num.toFixed(2) + "%";
         }
       }
-      // Shorten values for columns 3–8 (indexes 3..8)
-      if (colIndex >= 3 && colIndex <= 8 && val !== "") {
+      // Shorten values for columns 3–6 (indexes 3..6)
+      if (colIndex >= 2 && colIndex <= 6 && val !== "") {
         val = formatNumber(val);
       }
 
-    // Create a span for the base value
-    const baseSpan = document.createElement("span");
-    baseSpan.textContent = val;
-    td.appendChild(baseSpan);
-    
-    // If this is one of the diff columns (T4, T5, Deads, KP)
-    if ([4,5,6,7].includes(colIndex)) {
-      const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
-      if (diffs) {
-        const diff = diffs[colIndex] ?? 0;
-        if (diff !== 0) {
+      // Create a span for the base value
+      const baseSpan = document.createElement("span");
+      baseSpan.textContent = val;
+      td.appendChild(baseSpan);
+      
+      // If this is one of the diff columns (T4, T5, Deads, KP)
+      if ([2,3,4,5,6].includes(colIndex)) {
+        const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
+        if (diffs) {
+          const diff = diffs[colIndex] ?? 0;
           const diffSpan = document.createElement("span");
+      
+          // Always show, even if 0
           diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
-          diffSpan.style.color = diff > 0 ? "green" : "red";
-          diffSpan.style.marginLeft = "4px"; // ensure spacing
-          diffSpan.style.display = "inline"; // force inline
+      
+          if (diff > 0) {
+            diffSpan.style.color = "green";
+          } else if (diff < 0) {
+            diffSpan.style.color = "red";
+          } else {
+            diffSpan.style.color = "#888"; // gray for zero
+          }
+      
+          diffSpan.style.marginLeft = "4px";
+          diffSpan.style.display = "inline";
           td.appendChild(diffSpan);
         }
       }
-    }
-    
-              
+        
       tr.appendChild(td);
     });
   
@@ -528,10 +541,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const totalsContainer = document.getElementById("bottom-totals");
   totalsContainer.innerHTML = "";
   const totalCols = [
-    { label: "Total KP", col: 7 },
-    { label: "Total Deads", col: 6 },
-    { label: "Total T4 kills", col: 4 },
-    { label: "Total T5 kills", col: 5 }
+    { label: "Total KP", col: 6 },
+    { label: "Total Deads", col: 5 },
+    { label: "Total T4 kills", col: 3 },
+    { label: "Total T5 kills", col: 4 }
   ];
   totalCols.forEach(item => {
     const colIndexInSelected = selectedCols.indexOf(item.col);
@@ -550,7 +563,7 @@ function parseExcelData(arrayBuffer) {
   workbook = XLSX.read(arrayBuffer, { type: 'array' });
   currentSource = "excel";
   const sheetNames = workbook.SheetNames;
-  loadExcelSheet(sheetNames[0]);
+  loadExcelSheet(sheetNames[sheetNames.length - 1]);
 }
 
 function loadExcelSheet(sheetName) {
@@ -576,15 +589,15 @@ function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
 
   if (currentSource === "excel" && workbook) {
-    const sheetNames = workbook.SheetNames.slice(2);
+    const sheetNames = workbook.SheetNames.slice(1);
     sheetNames.forEach(sheetName => {
       const ws = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
       const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
-      chartData.chart4.push(playerRow?.[4] || 0);
-      chartData.chart5.push(playerRow?.[5] || 0);
-      chartData.chart6.push(playerRow?.[6] || 0);
-      chartData.chart7.push(playerRow?.[7] || 0);
+      chartData.chart4.push(playerRow?.[3] || 0);
+      chartData.chart5.push(playerRow?.[4] || 0);
+      chartData.chart6.push(playerRow?.[5] || 0);
+      chartData.chart7.push(playerRow?.[6] || 0);
     });
     Object.keys(chartData).forEach(chartId => {
       charts[chartId].data.labels = sheetNames;
@@ -594,14 +607,14 @@ function updateChartsForPlayer(playerId) {
   }
 
   if (currentSource === "google" && Object.keys(googleSheetsData).length) {
-    const sheetNames = googleSheetNames;
+    const sheetNames = googleSheetNames.slice(1); // skip the first sheet
     sheetNames.forEach(sheetName => {
       const rows = googleSheetsData[sheetName] || [];
       const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
-      chartData.chart4.push(playerRow?.[4] || 0);
-      chartData.chart5.push(playerRow?.[5] || 0);
-      chartData.chart6.push(playerRow?.[6] || 0);
-      chartData.chart7.push(playerRow?.[7] || 0);
+      chartData.chart4.push(playerRow?.[3] || 0);
+      chartData.chart5.push(playerRow?.[4] || 0);
+      chartData.chart6.push(playerRow?.[5] || 0);
+      chartData.chart7.push(playerRow?.[6] || 0);
     });
     Object.keys(chartData).forEach(chartId => {
       charts[chartId].data.labels = sheetNames;
@@ -634,7 +647,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         googleSheetsData[name] = data.values || [];
       })
     );
-    const firstSheet = googleSheetNames[4];
+    const firstSheet = googleSheetNames[googleSheetNames.length - 1];
     renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
   }
 });
@@ -661,4 +674,3 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
