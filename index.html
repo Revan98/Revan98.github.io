@@ -112,10 +112,16 @@ table.dataTable tbody tr:hover {
 }
 
 /* Custom Search Bar */
-div.dt-search {
+/*div.dt-search {
   display: flex !important;
   justify-content: flex-start !important;
   margin-right: 10px;
+}*/
+div.dt-search {
+  display: flex !important;
+  justify-content: center !important; /* center horizontally */
+  margin: 0 auto; /* optional, keeps it centered inside parent */
+  width: 100%;   /* ensures it spans full row */
 }
 div.dt-search label {
   position: relative !important;
@@ -123,7 +129,9 @@ div.dt-search label {
   width: 100% !important;
 }
 div.dt-search input {
-  width: 60vw !important;  /* 40% of viewport width */
+  width: 53vw !important;
+  margin: 0 auto;
+  width: 100px; !important;  /* 40% of viewport width */
   max-width: 100%; 
   padding: 14px 12px !important; /* equal left/right padding */
   border-radius: 13px !important;
@@ -259,6 +267,7 @@ const CONFIG = {
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9];
 
+
 let dataTableInstance = null;
 let workbook = null;
 let googleSheetId = null;
@@ -355,6 +364,12 @@ function getSheetDiffsForPlayers(playerId) {
     4: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
     5: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[5]) || 0),
     6: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[6]) || 0),
+
+    // NEW → map [12–15] to diffs of [3–6]
+    12: (parseFloat(lastRow[3]) || 0) - (parseFloat(secondRow[3]) || 0),
+    13: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
+    14: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[5]) || 0),
+    15: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[6]) || 0),
   };
 }
 
@@ -378,15 +393,15 @@ function renderTableFiltered(headers, rows, selectedCols) {
   rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES");
 
   // Top 3 players
-  const dkpColIndex = selectedCols.indexOf(9);
+  const dkpColIndex = selectedCols.indexOf(8);
   if (dkpColIndex !== -1) {
     rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
     const top3 = rows.slice(0, 3);
     const topContainer = document.getElementById("top-players");
     topContainer.innerHTML = "";
     top3.forEach((player, idx) => {
-      const id = player[selectedCols.indexOf(0)] ?? "";
-      const name = player[selectedCols.indexOf(1)] ?? "";
+      const id = player[0] ?? "";   // column 0 = ID
+      const name = player[1] ?? ""; // column 1 = Name
       const box = document.createElement("div");
       box.className = "player-box";
       box.innerHTML = `<div class="player-rank">TOP${idx + 1}</div><h3>${name}</h3><p>ID: ${id}</p>`;
@@ -409,7 +424,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const table = document.getElementById("data-table");
   table.innerHTML = "";
 
-  const filteredHeaders = headers.filter((_, i) => selectedCols.includes(i));
+  const filteredHeaders = selectedCols.map(i => headers[i] ?? "");
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
   // Index header
@@ -447,24 +462,22 @@ function renderTableFiltered(headers, rows, selectedCols) {
           val = num.toFixed(2) + "%";
         }
       }
-      // Shorten values for columns 3–6 (indexes 3..6)
-      if (colIndex >= 2 && colIndex <= 6 && val !== "") {
+      // Shorten values for relevant numeric columns
+      if ([2, 12, 13, 14, 15].includes(colIndex) && val !== "") {
         val = formatNumber(val);
       }
-
       // Create a span for the base value
       const baseSpan = document.createElement("span");
       baseSpan.textContent = val;
       td.appendChild(baseSpan);
       
-      // If this is one of the diff columns (T4, T5, Deads, KP)
-      if ([2,3,4,5,6].includes(colIndex)) {
+      // If this column should show diffs
+      if ([2,12,13,14,15].includes(colIndex)) {
         const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
         if (diffs) {
           const diff = diffs[colIndex] ?? 0;
           const diffSpan = document.createElement("span");
       
-          // Always show, even if 0
           diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
       
           if (diff > 0) {
@@ -480,6 +493,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
           td.appendChild(diffSpan);
         }
       }
+
         
       tr.appendChild(td);
     });
@@ -538,26 +552,30 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
 
   // Totals
-  const totalsContainer = document.getElementById("bottom-totals");
-  totalsContainer.innerHTML = "";
-  const totalCols = [
-    { label: "Total KP", col: 6 },
-    { label: "Total Deads", col: 5 },
-    { label: "Total T4 kills", col: 3 },
-    { label: "Total T5 kills", col: 4 }
-  ];
-  totalCols.forEach(item => {
-    const colIndexInSelected = selectedCols.indexOf(item.col);
-    let sum = 0;
-    if (colIndexInSelected !== -1) {
-      sum = rows.reduce((acc, row) => acc + (parseFloat(row[selectedCols[colIndexInSelected]]) || 0), 0);
-    }
-    const box = document.createElement("div");
-    box.className = "stat-box";
-    box.innerHTML = `<h3>${item.label}</h3><p>${sum.toLocaleString()}</p>`;
-    totalsContainer.appendChild(box);
+const totalsContainer = document.getElementById("bottom-totals");
+totalsContainer.innerHTML = "";
+
+const totalDefs = [
+  { label: "Total T4 kills gained", col: 3 },
+  { label: "Total T5 kills gained", col: 4 },
+  { label: "Total Deads gained", col: 5 },
+  { label: "Total KP gained", col: 6 }
+];
+
+totalDefs.forEach(item => {
+  let sum = 0;
+  rows.forEach(row => {
+    const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
+    if (diffs) sum += diffs[item.col] || 0;
   });
+
+  const box = document.createElement("div");
+  box.className = "stat-box";
+  box.innerHTML = `<h3>${item.label}</h3><p>${formatNumber(sum)}</p>`;
+  totalsContainer.appendChild(box);
+});
 }
+
 
 function parseExcelData(arrayBuffer) {
   workbook = XLSX.read(arrayBuffer, { type: 'array' });
@@ -674,5 +692,3 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
-
