@@ -78,7 +78,7 @@ body {
 #table-container {
   padding-top: 30px;
   justify-content: center;
-  max-width: 60vw;
+  max-width: 80vw;
   overflow-x: auto;
   margin: 0 auto;
 }
@@ -123,10 +123,10 @@ div.dt-search label {
   width: 100% !important;
 }
 div.dt-search input {
-  width: 40vw !important;  /* 40% of viewport width */
+  width: 60vw !important;  /* 40% of viewport width */
   max-width: 100%; 
   padding: 14px 12px !important; /* equal left/right padding */
-  border-radius: 18px !important;
+  border-radius: 13px !important;
   border: 1px solid #ccc !important;
   background-color: #ccc !important;
   color: #333 !important;
@@ -252,7 +252,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 <script>
 const CONFIG = {
   source: "google", // "google" or "excel"
-  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1SKk0dReUkUHTZDhmSvDBenP1rfxr_s34y01a_udrz1g/edit",
+  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1SKk0dReUkUHTZDhmSvDBenP1rfxr_s34y01a_udrz1g/edit?usp=sharing",
   excelFilePath: "data.xlsx"
 };
 
@@ -325,7 +325,46 @@ function resetCharts() {
     chart.update();
   });
 }
+function getSheetDiffsForPlayers(playerId) {
+  let secondRows, lastRows;
 
+  if (currentSource === "google") {
+    const secondSheet = googleSheetNames[1];
+    const lastSheet = googleSheetNames[googleSheetNames.length - 1];
+    secondRows = (googleSheetsData[secondSheet] || []).slice(1);
+    lastRows = (googleSheetsData[lastSheet] || []).slice(1);
+  }
+
+  if (currentSource === "excel" && workbook) {
+    const sheetNames = workbook.SheetNames;
+    const secondSheet = sheetNames[1];
+    const lastSheet = sheetNames[sheetNames.length - 1];
+    secondRows = XLSX.utils.sheet_to_json(workbook.Sheets[secondSheet], { header: 1 }).slice(1);
+    lastRows = XLSX.utils.sheet_to_json(workbook.Sheets[lastSheet], { header: 1 }).slice(1);
+  }
+
+  if (!secondRows || !lastRows) return null;
+
+  const secondRow = secondRows.find(r => String(r[0]).trim() === String(playerId).trim());
+  const lastRow = lastRows.find(r => String(r[0]).trim() === String(playerId).trim());
+  if (!secondRow || !lastRow) return null;
+
+  return {
+    4: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
+    5: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[5]) || 0),
+    6: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[6]) || 0),
+    7: (parseFloat(lastRow[7]) || 0) - (parseFloat(secondRow[7]) || 0),
+  };
+}
+
+function formatNumber(num) {
+  if (num === null || num === undefined || isNaN(num)) return "";
+  num = Number(num);
+  if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, "") + "B";
+  if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
+  if (num >= 1e3) return (num / 1e3).toFixed(2).replace(/\.00$/, "") + "K";
+  return num.toString();
+}
 function renderTableFiltered(headers, rows, selectedCols) {
   resetCharts(); // clear old chart data
   rows = removeEmptyRows(rows);
@@ -393,6 +432,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = row[colIndex] ?? "";
+      
+      // Format DKP %
       if (colIndex === 10 && val !== "") {
         let num = Number(val);
         if (!isNaN(num)) {
@@ -400,7 +441,33 @@ function renderTableFiltered(headers, rows, selectedCols) {
           val = num.toFixed(2) + "%";
         }
       }
-      td.textContent = val;
+      // Shorten values for columns 3–8 (indexes 3..8)
+      if (colIndex >= 3 && colIndex <= 8 && val !== "") {
+        val = formatNumber(val);
+      }
+
+    // Create a span for the base value
+    const baseSpan = document.createElement("span");
+    baseSpan.textContent = val;
+    td.appendChild(baseSpan);
+    
+    // If this is one of the diff columns (T4, T5, Deads, KP)
+    if ([4,5,6,7].includes(colIndex)) {
+      const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
+      if (diffs) {
+        const diff = diffs[colIndex] ?? 0;
+        if (diff !== 0) {
+          const diffSpan = document.createElement("span");
+          diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
+          diffSpan.style.color = diff > 0 ? "green" : "red";
+          diffSpan.style.marginLeft = "4px"; // ensure spacing
+          diffSpan.style.display = "inline"; // force inline
+          td.appendChild(diffSpan);
+        }
+      }
+    }
+    
+              
       tr.appendChild(td);
     });
   
@@ -594,5 +661,4 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
 
