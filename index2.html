@@ -238,7 +238,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 <body>
 
 <div class="topnav">
-  <a href="recruitment.html">Recruitment</a>
+  
   <button style="float:right" id="toggle-theme">Dark/Light</button>
 </div>
 
@@ -260,12 +260,12 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 <script>
 const CONFIG = {
   source: "google", // "google" or "excel"
-  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1wc9Qu-PDcNsKMkUcNmCIrKYpxXJH1GrjwiPRL2syxlc/edit?usp=sharing",
+  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
   excelFilePath: "data.xlsx"
 };
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
-const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9];
+const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9, 7];
 
 
 let dataTableInstance = null;
@@ -476,21 +476,16 @@ function renderTableFiltered(headers, rows, selectedCols) {
         const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
         if (diffs) {
           const diff = diffs[colIndex] ?? 0;
-          const diffSpan = document.createElement("span");
       
-          diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
+          if (diff !== 0) {   // <-- only render if not zero
+            const diffSpan = document.createElement("span");
+            diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
       
-          if (diff > 0) {
-            diffSpan.style.color = "green";
-          } else if (diff < 0) {
-            diffSpan.style.color = "red";
-          } else {
-            diffSpan.style.color = "#888"; // gray for zero
+            diffSpan.style.color = diff > 0 ? "green" : "red";
+            diffSpan.style.marginLeft = "4px";
+            diffSpan.style.display = "inline";
+            td.appendChild(diffSpan);
           }
-      
-          diffSpan.style.marginLeft = "4px";
-          diffSpan.style.display = "inline";
-          td.appendChild(diffSpan);
         }
       }
 
@@ -692,4 +687,7 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
+
+
 
