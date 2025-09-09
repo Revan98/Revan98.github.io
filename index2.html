@@ -666,23 +666,21 @@ function renderTableFiltered(headers, rows, selectedCols) {
   searchContainer.appendChild(exportDropdown);
 
   // Populate column toggles
-   filteredHeaders.forEach((colName, i) => {
-     const colIndex = i + 1; // +1 because table has extra "#" column
-     const actualCol = selectedCols[i]; // map back to real column index
-     const label = document.createElement("label");
-     const isVisible = [0, 1, 2, 12, 13, 14, 15, 8].includes(actualCol);
-   
-     label.innerHTML = `
-       <input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}">
-       <span>${colName}</span>
-     `;
-     colToggleContainer.appendChild(label);
-   
-     if (!isVisible) {
-       dataTableInstance.column(colIndex).visible(false);
-     }
-   });
-
+  const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
+  filteredHeaders.forEach((colName, i) => {
+    const colIndex = i + 1;
+    const label = document.createElement("label");
+    const isVisible = [0, 1, 2, 11, 12, 13, 14, 7].includes(i);
+    label.innerHTML = `
+      <input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}">
+      <span>${colName}</span>
+    `;
+    colToggleContainer.appendChild(label);
+  
+    if (!isVisible) {
+      dataTableInstance.column(colIndex).visible(false);
+    }
+  });
 
   colToggleContainer.addEventListener("change", (e) => {
     const col = e.target.dataset.col;
