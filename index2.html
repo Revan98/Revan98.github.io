@@ -119,9 +119,11 @@ table.dataTable tbody tr:hover {
 }*/
 div.dt-search {
   display: flex !important;
-  justify-content: center !important; /* center horizontally */
-  margin: 0 auto; /* optional, keeps it centered inside parent */
-  width: 100%;   /* ensures it spans full row */
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin: 0 auto;
+  width: 100%;
+  gap: 10px;
 }
 div.dt-search label {
   position: relative !important;
@@ -230,6 +232,60 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
     grid-template-columns: 1fr; /* 1 column */
     max-width: 90vw; /* use more screen width on mobile */
   }
+}
+.export-dropdown, .column-toggle-dropdown {
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+}
+
+.export-dropdown button,
+.column-toggle-dropdown button {
+  background-color: #ccc;
+  color: #333;
+  padding: 10px 14px;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.export-dropdown-content,
+.column-toggle-content {
+  display: none;
+  position: absolute;
+  background-color: var(--table-bg);
+  min-width: 160px;
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+  margin-top: 5px;
+  padding: 10px;
+}
+
+.export-dropdown-content a,
+.column-toggle-content label {
+  color: var(--text-color);
+  padding: 6px 10px;
+  display: block;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.column-toggle-content label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.export-dropdown-content a:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.export-dropdown:hover .export-dropdown-content,
+.column-toggle-dropdown:hover .column-toggle-content {
+  display: block;
 }
 
 </style>
@@ -511,7 +567,73 @@ function renderTableFiltered(headers, rows, selectedCols) {
     ],
     language: { searchPlaceholder: "Search by name or ID", search: "" }
   });
+  // Inject export + column selector dropdowns
+  const searchContainer = document.querySelector('div.dt-search');
   
+  // Left: Column toggle
+  const colDropdown = document.createElement('div');
+  colDropdown.className = 'column-toggle-dropdown';
+  colDropdown.innerHTML = `
+    <button>Columns</button>
+    <div class="column-toggle-content"></div>
+  `;
+  searchContainer.prepend(colDropdown);
+  
+  // Right: Export
+  const exportDropdown = document.createElement('div');
+  exportDropdown.className = 'export-dropdown';
+  exportDropdown.innerHTML = `
+    <button>Export</button>
+    <div class="export-dropdown-content">
+      <a href="#" id="export-xlsx">Export as .xlsx</a>
+      <a href="#" id="export-csv">Export as CSV</a>
+    </div>
+  `;
+  searchContainer.appendChild(exportDropdown);
+  
+  // Populate column checkboxes
+  const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
+  filteredHeaders.forEach((colName, i) => {
+    const colIndex = i + 1; // +1 because of index column
+    const label = document.createElement("label");
+    label.innerHTML = `<input type="checkbox" checked data-col="${colIndex}"> ${colName}`;
+    colToggleContainer.appendChild(label);
+  });
+  
+  // Toggle column visibility
+  colToggleContainer.addEventListener("change", (e) => {
+    const col = e.target.dataset.col;
+    const checked = e.target.checked;
+    if (col !== undefined) {
+      dataTableInstance.column(col).visible(checked);
+    }
+  });
+  
+  // Export handlers
+  document.getElementById("export-xlsx").addEventListener("click", function (e) {
+    e.preventDefault();
+    const wb = XLSX.utils.book_new();
+    const table = document.getElementById("data-table");
+    const ws = XLSX.utils.table_to_sheet(table);
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, "table_export.xlsx");
+  });
+  
+  document.getElementById("export-csv").addEventListener("click", function (e) {
+    e.preventDefault();
+    const table = document.getElementById("data-table");
+    const ws = XLSX.utils.table_to_sheet(table);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "table_export.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+
   // On redraw (after search/sort)
   dataTableInstance.on('draw.dt', () => {
     const searchVal = dataTableInstance.search();
