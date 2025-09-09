@@ -520,10 +520,10 @@ function getSheetDiffsForPlayers(playerId) {
     6: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[6]) || 0),
 
     // NEW → map [12–15] to diffs of [3–6]
-    12: (parseFloat(lastRow[3]) || 0) - (parseFloat(secondRow[3]) || 0),
-    13: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
-    14: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[5]) || 0),
-    15: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[6]) || 0),
+    12: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
+    13: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[5]) || 0),
+    14: (parseFloat(lastRow[3]) || 0) - (parseFloat(secondRow[3]) || 0),
+    15: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[6]) || 0),
   };
 }
 
