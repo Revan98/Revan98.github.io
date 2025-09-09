@@ -262,13 +262,11 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   background-color: var(--accent);
 }
 
-/* Dropdown menu */
-.export-dropdown-content,
-.column-toggle-content {
+.export-dropdown-content{
   display: none;
   position: absolute;
   background-color: var(--table-bg);
-  min-width: 180px;
+  min-width: 220px;
   border: 1px solid var(--table-border);
   border-radius: 6px;
   box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
@@ -276,25 +274,28 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   margin-top: 6px;
   padding: 10px;
 }
+.column-toggle-content {
+  display: none;
+  position: absolute;
+  background-color: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 10;
+  margin-top: 6px;
+  padding: 10px;
 
-.export-dropdown-content a,
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 6px 12px;
+}
 .column-toggle-content label {
-  color: var(--text-color);
-  padding: 6px 10px;
-  display: block;
   font-size: 13px;
   cursor: pointer;
-  border-radius: 4px;
+  white-space: nowrap;
 }
-
-.export-dropdown-content a:hover,
-.column-toggle-content label:hover {
-  background-color: rgba(0, 123, 255, 0.1);
-}
-
-/* Show dropdowns on hover */
-.export-dropdown:hover .export-dropdown-content,
-.column-toggle-dropdown:hover .column-toggle-content {
+.export-dropdown-content.show,
+.column-toggle-content.show {
   display: block;
 }
 
@@ -802,7 +803,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
   }
 });
+// Toggle dropdowns on button click
+document.addEventListener("click", (e) => {
+  const exportBtn = e.target.closest(".export-dropdown button");
+  const colBtn = e.target.closest(".column-toggle-dropdown button");
 
+  // Toggle export dropdown
+  if (exportBtn) {
+    const menu = exportBtn.nextElementSibling;
+    menu.classList.toggle("show");
+  } else {
+    document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
+  }
+
+  // Toggle column dropdown
+  if (colBtn) {
+    const menu = colBtn.nextElementSibling;
+    menu.classList.toggle("show");
+  } else {
+    document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
+  }
+});
 document.getElementById("toggle-theme").addEventListener("click", () => {
   document.body.classList.toggle("dark");
 
