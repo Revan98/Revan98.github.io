@@ -734,6 +734,15 @@ function renderTableFiltered(headers, rows, selectedCols) {
       document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
     }
   });
+  // Click handler
+  document.querySelector("#data-table tbody").addEventListener("click", function(e) {
+    const row = e.target.closest("tr");
+    if (!row) return;
+    const cells = row.querySelectorAll("td");
+    if (cells.length < 2) return;
+    const playerId = cells[1].textContent.trim(); // column 1 = ID
+    updateChartsForPlayer(playerId);
+  });
 
   // Totals (unchanged)
   const totalsContainer = document.getElementById("bottom-totals");
