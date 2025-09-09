@@ -17,10 +17,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 
 <style>
+/* =========================================================
+   1. THEME VARIABLES
+   ========================================================= */
 :root {
   --bg-color: #e5e5e5;
   --text-color: #333;
-  --table-bg: white;
+  --table-bg: #fff;
   --table-border: #ccc;
   --accent: #666;
   --scrollbar-bg: rgba(0,0,0,0.3);
@@ -28,6 +31,7 @@
   --chart-grid: rgba(0, 0, 0, 0.1);
   --chart-line: #007bff;
 }
+
 body.dark {
   --bg-color: #1c1c1c;
   --text-color: #eee;
@@ -36,10 +40,13 @@ body.dark {
   --accent: #2a2a2a;
   --scrollbar-bg: rgba(255,255,255,0.4);
   --chart-text: #eee;
-  --chart-grid: rgba(255, 255, 255, 0.2);
+  --chart-grid: rgba(255,255,255,0.2);
   --chart-line: #ff9800;
 }
 
+/* =========================================================
+   2. GLOBAL
+   ========================================================= */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -47,17 +54,14 @@ body {
   color: var(--text-color);
 }
 
-/* Style the top navigation bar */
+/* =========================================================
+   3. NAVIGATION BAR
+   ========================================================= */
 .topnav {
   overflow: hidden;
   background-color: #333;
 }
-body.dark div.dt-search input {
-  background-color: #444 !important;
-  color: #eee !important;
-  border: 1px solid #666 !important;
-}
-/* Style the topnav links */
+
 .topnav a,
 .topnav button {
   float: left;
@@ -66,19 +70,20 @@ body.dark div.dt-search input {
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
-  background: none; /* remove white bg */
-  border: none;     /* remove default border */
+  background: none;
+  border: none;
   cursor: pointer;
-  font: inherit;    /* match font with links */
+  font: inherit;
 }
 
-/* Change color on hover */
 .topnav a:hover,
 .topnav button:hover {
   background-color: #4e4d4d;
 }
 
-/* Table Container */
+/* =========================================================
+   4. TABLE STYLES
+   ========================================================= */
 #table-container {
   padding-top: 30px;
   justify-content: center;
@@ -87,7 +92,6 @@ body.dark div.dt-search input {
   margin: 0 auto;
 }
 
-/* DataTable Style */
 table.dataTable {
   width: 100% !important;
   background: var(--table-bg);
@@ -97,33 +101,41 @@ table.dataTable {
   overflow: hidden;
   font-size: 13px;
 }
+
 table.dataTable th {
   font-size: 14px;
   text-align: left !important;
 }
-table.dataTable th, table.dataTable td {
+
+table.dataTable th,
+table.dataTable td {
   padding: 12px 15px !important;
   border: 1px solid var(--table-border) !important;
 }
+
 table.dataTable tbody td {
   text-align: left !important;
 }
+
 table.dataTable tbody tr:nth-child(odd) {
   background-color: rgba(0,0,0,0.02);
 }
+
 table.dataTable tbody tr:hover {
   background-color: rgba(0,123,255,0.1);
 }
 
+/* =========================================================
+   5. SEARCH / FILTER BAR
+   ========================================================= */
 div.dt-search {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  margin: 20px 40px !important; /* move from edge */
+  margin: 20px 40px !important;
   gap: 20px;
 }
 
-/* Wider search box */
 div.dt-search input {
   width: 200px !important;
   max-width: 100%;
@@ -134,43 +146,51 @@ div.dt-search input {
   color: #333 !important;
   font-size: 14px !important;
 }
-div.dt-search label {
-  position: relative !important;
-  display: inline-block !important;
-  width: 100% !important;
-}
 
 div.dt-search input::placeholder {
   color: #333 !important;
   opacity: 0.8 !important;
 }
-/* Remove default clear (×) button in search inputs */
-div.dt-search input[type="search"]::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  appearance: none;
-  display: none;
-}
-div.dt-search input[type="search"]::-ms-clear {
-  display: none; /* for old Edge */
+
+/* Dark mode search */
+body.dark div.dt-search input {
+  background-color: #444 !important;
+  color: #eee !important;
+  border: 1px solid #666 !important;
 }
 
-/* Custom Scrollbar Styling for Table */
+/* Hide clear (×) button */
+div.dt-search input[type="search"]::-webkit-search-cancel-button,
+div.dt-search input[type="search"]::-ms-clear {
+  display: none;
+}
+
+/* =========================================================
+   6. SCROLLBARS
+   ========================================================= */
 div.dt-scroll-body {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-bg) transparent;
 }
+
 div.dt-scroll-body::-webkit-scrollbar {
   width: 6px;
 }
+
 div.dt-scroll-body:hover::-webkit-scrollbar {
   width: 10px;
 }
+
 div.dt-scroll-body::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-bg);
   border-radius: 10px;
 }
 
-.player-box, .stat-box {
+/* =========================================================
+   7. PLAYER & STATS BOXES
+   ========================================================= */
+.player-box,
+.stat-box {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
   border-radius: 10px;
@@ -179,23 +199,31 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   width: 180px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
+
 .player-rank {
   font-weight: bold;
   font-size: 14px;
   color: var(--text-color);
   margin-bottom: 5px;
 }
-.player-box h3, .stat-box h3 {
+
+.player-box h3,
+.stat-box h3 {
   margin: 0;
   font-size: 16px;
   color: var(--text-color);
 }
-.player-box p, .stat-box p {
+
+.player-box p,
+.stat-box p {
   margin: 5px 0 0;
   font-size: 14px;
   color: var(--text-color);
 }
 
+/* =========================================================
+   8. CHARTS
+   ========================================================= */
 #charts-container {
   display: grid;
   grid-template-columns: repeat(2, auto);
@@ -205,40 +233,25 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   margin: 30px auto;
   max-width: 40vw;
 }
+
 #charts-container canvas {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
   border-radius: 8px;
   padding: 5px;
 }
-/* Responsive layout for mobile */
-@media (max-width: 768px) {
-  /* Player and totals boxes stacked */
-  #top-players,
-  #bottom-totals {
-    flex-direction: column;
-    align-items: center;
-  }
-  #top-players .player-box,
-  #bottom-totals .stat-box {
-    width: 100%;
-    max-width: 280px; /* prevent being too wide */
-  }
 
-  /* Charts stacked one under another */
-  #charts-container {
-    grid-template-columns: 1fr; /* 1 column */
-    max-width: 90vw; /* use more screen width on mobile */
-  }
-}
-/* Dropdown containers */
-.export-dropdown, .column-toggle-dropdown {
+/* =========================================================
+   9. DROPDOWNS (EXPORT & COLUMN)
+   ========================================================= */
+.export-dropdown,
+.column-toggle-dropdown {
   position: relative;
   display: inline-block;
   font-size: 14px;
 }
 
-/* Buttons */
+/* Dropdown trigger buttons */
 .export-dropdown button,
 .column-toggle-dropdown button {
   background-color: var(--table-bg);
@@ -250,30 +263,48 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   font-size: 14px;
   transition: background 0.2s;
 }
+
 .export-dropdown button:hover,
 .column-toggle-dropdown button:hover {
   background-color: var(--accent);
 }
 
-/* Dropdown menu base */
-.export-dropdown-content{
+/* Dropdown menu container */
+.export-dropdown-content,
+.column-toggle-content {
   display: none;
   position: absolute;
   background-color: var(--table-bg);
-  min-width: 200px;
   border: 1px solid var(--table-border);
   border-radius: 6px;
   box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
   z-index: 10;
   margin-top: 6px;
+}
+
+/* Export dropdown opens to the LEFT */
+.export-dropdown-content {
+  right: 0;
+  min-width: 200px;
   padding: 10px;
 }
+
+/* Column dropdown menu */
+.column-toggle-content {
+  left: 0;
+  min-width: 160px;
+  padding: 12px;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Show dropdown when toggled */
 .export-dropdown-content.show,
 .column-toggle-content.show {
   display: block;
 }
 
-/* Export dropdown → vertical buttons */
+/* Export dropdown items */
 .export-dropdown-content button {
   width: 100%;
   display: block;
@@ -286,26 +317,12 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   color: var(--text-color);
   border-radius: 4px;
 }
+
 .export-dropdown-content button:hover {
-  background-color: rgba(0,123,255,0.1);
-}
-/* Column dropdown style */
-.column-toggle-content {
-  display: none; /* hidden by default */
-  position: absolute;
-  background-color: var(--table-bg);
-  border: 1px solid var(--table-border);
-  border-radius: 8px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-  z-index: 10;
-  margin-top: 6px;
-  padding: 12px;
-  min-width: 160px;   /* ⬅️ narrower */
-  flex-direction: column;
-  gap: 16px;          /* ⬅️ bigger spacing */
+  background-color: rgba(0,123,255,0.1); /* same as table row hover */
 }
 
-/* Labels look like list items */
+/* Column dropdown items */
 .column-toggle-content label {
   display: flex;
   align-items: center;
@@ -313,15 +330,15 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   font-size: 14px;
   color: var(--text-color);
   position: relative;
-  padding: 6px 8px 6px 18px; /* ⬅️ more padding */
-  border-radius: 6px;        /* rounded hover effect */
+  padding: 6px 8px 6px 24px;
+  border-radius: 6px;
   transition: background 0.2s;
+  width: 100%;              /* fix hover overflow */
+  box-sizing: border-box;   /* stay inside width */
 }
 
-/* Hover effect like Export dropdown */
 .column-toggle-content label:hover {
-  background-color: rgba(0,123,255,0.1);
-
+  background-color: rgba(0,123,255,0.1); /* same as table row hover */
 }
 
 /* Hide native checkbox */
@@ -329,7 +346,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   display: none;
 }
 
-/* Placeholder space for checkmark */
+/* Space for checkmark */
 .column-toggle-content span::before {
   content: "";
   position: absolute;
@@ -338,7 +355,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   height: 16px;
 }
 
-/* Checked → show only ✔ (no border/box) */
+/* Checked → show ✔ only */
 .column-toggle-content input[type="checkbox"]:checked + span::before {
   content: "✔";
   color: var(--accent);
@@ -346,6 +363,27 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   font-weight: bold;
 }
 
+/* =========================================================
+   10. RESPONSIVE
+   ========================================================= */
+@media (max-width: 768px) {
+  #top-players,
+  #bottom-totals {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #top-players .player-box,
+  #bottom-totals .stat-box {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  #charts-container {
+    grid-template-columns: 1fr;
+    max-width: 90vw;
+  }
+}
 
 </style>
 </head>
