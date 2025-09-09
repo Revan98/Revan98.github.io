@@ -643,9 +643,12 @@ function renderTableFiltered(headers, rows, selectedCols) {
     const colIndex = i + 1;
     const label = document.createElement("label");
     const isVisible = [0, 1, 2, 8, 9].includes(i);
-    label.innerHTML = `<input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}"> ${colName}`;
+    label.innerHTML = `
+      <input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}">
+      <span>${colName}</span>
+    `;
     colToggleContainer.appendChild(label);
-
+  
     if (!isVisible) {
       dataTableInstance.column(colIndex).visible(false);
     }
@@ -683,16 +686,19 @@ function renderTableFiltered(headers, rows, selectedCols) {
   document.addEventListener("click", (e) => {
     const exportBtn = e.target.closest(".export-dropdown button");
     const colBtn = e.target.closest(".column-toggle-dropdown button");
-
+    const isInsideColMenu = e.target.closest(".column-toggle-content");
+  
+    // Export dropdown toggle
     if (exportBtn) {
       exportBtn.nextElementSibling.classList.toggle("show");
     } else {
       document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
     }
-
+  
+    // Column dropdown toggle
     if (colBtn) {
       colBtn.nextElementSibling.classList.toggle("show");
-    } else {
+    } else if (!isInsideColMenu) {
       document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
     }
   });
