@@ -30,6 +30,7 @@
   --chart-text: #333;
   --chart-grid: rgba(0, 0, 0, 0.1);
   --chart-line: #007bff;
+  --checkmark-color: #666;
 }
 
 body.dark {
@@ -42,6 +43,7 @@ body.dark {
   --chart-text: #eee;
   --chart-grid: rgba(255,255,255,0.2);
   --chart-line: #ff9800;
+  --checkmark-color: white;
 }
 
 /* =========================================================
@@ -358,7 +360,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 /* Checked → show ✔ only */
 .column-toggle-content input[type="checkbox"]:checked + span::before {
   content: "✔";
-  color: var(--accent);
+  color: var(--checkmark-color);
   font-size: 15px;
   font-weight: bold;
 }
