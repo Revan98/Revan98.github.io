@@ -306,9 +306,9 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   z-index: 10;
   margin-top: 6px;
   padding: 12px;
-  min-width: 200px;
+  min-width: 160px;   /* ⬅️ narrower */
   flex-direction: column;
-  gap: 12px; /* ⬅️ more space between rows */
+  gap: 16px;          /* ⬅️ bigger spacing */
 }
 
 /* Labels look like list items */
@@ -319,7 +319,15 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   font-size: 14px;
   color: var(--text-color);
   position: relative;
-  padding-left: 24px;
+  padding: 6px 8px 6px 24px; /* ⬅️ more padding */
+  border-radius: 6px;        /* rounded hover effect */
+  transition: background 0.2s;
+}
+
+/* Hover effect like Export dropdown */
+.column-toggle-content label:hover {
+  background-color: var(--accent);
+  color: #fff; /* makes text readable */
 }
 
 /* Hide native checkbox */
@@ -327,11 +335,11 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   display: none;
 }
 
-/* Default "box" removed → invisible space before text */
+/* Placeholder space for checkmark */
 .column-toggle-content span::before {
   content: "";
   position: absolute;
-  left: 0;
+  left: 6px;
   width: 16px;
   height: 16px;
 }
@@ -342,8 +350,8 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   color: var(--accent);
   font-size: 15px;
   font-weight: bold;
-  left: 2px; /* adjust so tick aligns nicely */
 }
+
 
 </style>
 </head>
