@@ -489,43 +489,39 @@ function resetCharts() {
   });
 }
 function getSheetDiffsForPlayers(playerId) {
-  let secondRows, lastRows;
+  let lastRows;
 
   if (currentSource === "google") {
-    const secondSheet = googleSheetNames[1];
     const lastSheet = googleSheetNames[googleSheetNames.length - 1];
-    secondRows = (googleSheetsData[secondSheet] || []).slice(1);
     lastRows = (googleSheetsData[lastSheet] || []).slice(1);
   }
 
   if (currentSource === "excel" && workbook) {
     const sheetNames = workbook.SheetNames;
-    const secondSheet = sheetNames[1];
     const lastSheet = sheetNames[sheetNames.length - 1];
-    secondRows = XLSX.utils.sheet_to_json(workbook.Sheets[secondSheet], { header: 1 }).slice(1);
     lastRows = XLSX.utils.sheet_to_json(workbook.Sheets[lastSheet], { header: 1 }).slice(1);
   }
 
-  if (!secondRows || !lastRows) return null;
+  if (!lastRows) return null;
 
-  const secondRow = secondRows.find(r => String(r[0]).trim() === String(playerId).trim());
   const lastRow = lastRows.find(r => String(r[0]).trim() === String(playerId).trim());
-  if (!secondRow || !lastRow) return null;
+  if (!lastRow) return null;
 
   return {
-    2: (parseFloat(lastRow[2]) || 0) - (parseFloat(secondRow[2]) || 0),
-    3: (parseFloat(lastRow[3]) || 0) - (parseFloat(secondRow[3]) || 0),
-    4: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
-    5: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[5]) || 0),
-    6: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[6]) || 0),
+    3: parseFloat(lastRow[3]) || 0,
+    4: parseFloat(lastRow[4]) || 0,
+    5: parseFloat(lastRow[5]) || 0,
+    6: parseFloat(lastRow[6]) || 0,
 
-    // NEW → map [12–15] to diffs of [3–6]
-    12: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
-    13: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[5]) || 0),
-    14: (parseFloat(lastRow[3]) || 0) - (parseFloat(secondRow[3]) || 0),
-    15: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[6]) || 0),
+    // still mapping extra columns directly from last sheet
+    2: parseFloat(lastRow[16]) || 0,
+    12: parseFloat(lastRow[4]) || 0,
+    13: parseFloat(lastRow[5]) || 0,
+    14: parseFloat(lastRow[3]) || 0,
+    15: parseFloat(lastRow[6]) || 0,
   };
 }
+
 
 function formatNumber(num) {
   if (num === null || num === undefined || isNaN(num)) return "";
