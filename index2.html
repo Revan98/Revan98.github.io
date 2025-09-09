@@ -295,7 +295,6 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 .export-dropdown-content button:hover {
   background-color: rgba(0, 123, 255, 0.1);
 }
-
 /* Column dropdown style */
 .column-toggle-content {
   display: none; /* hidden by default */
@@ -309,7 +308,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   padding: 12px;
   min-width: 200px;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px; /* ⬅️ more space between rows */
 }
 
 /* Labels look like list items */
@@ -328,29 +327,22 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   display: none;
 }
 
-/* Empty box before label */
+/* Default "box" removed → invisible space before text */
 .column-toggle-content span::before {
   content: "";
   position: absolute;
   left: 0;
   width: 16px;
   height: 16px;
-  border: 2px solid var(--table-border);
-  border-radius: 4px;
-  background: transparent;
-  transition: background 0.2s, border-color 0.2s;
 }
 
-/* Checked → tick mark */
+/* Checked → show only ✔ (no border/box) */
 .column-toggle-content input[type="checkbox"]:checked + span::before {
   content: "✔";
   color: var(--accent);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-color: var(--accent);
+  left: 2px; /* adjust so tick aligns nicely */
 }
 
 </style>
