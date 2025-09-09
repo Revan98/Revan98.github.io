@@ -670,7 +670,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   filteredHeaders.forEach((colName, i) => {
     const colIndex = i + 1;
     const label = document.createElement("label");
-    const isVisible = [0, 1, 2, 8, 12, 13, 14, 15].includes(i);
+    const isVisible = [0, 1, 2, 12, 13, 14, 15, 8].includes(i);
     label.innerHTML = `
       <input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}">
       <span>${colName}</span>
