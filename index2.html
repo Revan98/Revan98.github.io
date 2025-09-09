@@ -129,12 +129,11 @@ div.dt-search label {
   width: 100% !important;
 }
 div.dt-search input {
-  width: 53vw !important;
   margin: 0 auto;
   width: 100px; !important;  /* 40% of viewport width */
   max-width: 100%; 
   padding: 14px 12px !important; /* equal left/right padding */
-  border-radius: 13px !important;
+  border-radius: 8px !important;
   border: 1px solid #ccc !important;
   background-color: #ccc !important;
   color: #333 !important;
@@ -259,9 +258,9 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 
 <script>
 const CONFIG = {
-  source: "excel", // "google" or "excel"
+  source: "google", // "google" or "excel"
   googleSheetUrl: "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
-  excelFilePath: "a.xlsx"
+  excelFilePath: "data.xlsx"
 };
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
@@ -487,9 +486,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
             td.appendChild(diffSpan);
           }
         }
-      }
-
-        
+      }        
       tr.appendChild(td);
     });
   
@@ -687,6 +684,7 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
 
 
 
