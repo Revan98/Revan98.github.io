@@ -262,8 +262,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 }
 
 /* Dropdown menu base */
-.export-dropdown-content,
-.column-toggle-content {
+.export-dropdown-content{
   display: none;
   position: absolute;
   background-color: var(--table-bg);
@@ -278,18 +277,6 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 .export-dropdown-content.show,
 .column-toggle-content.show {
   display: block;
-}
-
-/* Column dropdown → 2-column grid */
-.column-toggle-content {
-  display: none;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px 12px;
-}
-.column-toggle-content label {
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
 }
 
 /* Export dropdown → vertical buttons */
@@ -309,7 +296,63 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   background-color: rgba(0, 123, 255, 0.1);
 }
 
+/* Column dropdown style */
+.column-toggle-content {
+  display: none;
+  position: absolute;
+  background-color: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  z-index: 10;
+  margin-top: 6px;
+  padding: 12px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
+/* Labels look like list items */
+.column-toggle-content label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-color);
+  position: relative;
+  padding-left: 24px;
+}
+
+/* Hide the actual checkbox */
+.column-toggle-content input[type="checkbox"] {
+  display: none;
+}
+
+/* Custom checkmark */
+.column-toggle-content label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--table-border);
+  border-radius: 4px;
+  background: transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* When checked → show a tick */
+.column-toggle-content input[type="checkbox"]:checked + span::before {
+  content: "✔";
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-color: var(--accent);
+}
 </style>
 </head>
 <body>
