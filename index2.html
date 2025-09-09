@@ -580,7 +580,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   // Inject export + column selector dropdowns
   const searchContainer = document.querySelector('div.dt-search');
   
-  // Left: Column toggle
+  // Left: Column toggle dropdown
   const colDropdown = document.createElement('div');
   colDropdown.className = 'column-toggle-dropdown';
   colDropdown.innerHTML = `
@@ -589,7 +589,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   `;
   searchContainer.prepend(colDropdown);
   
-  // Right: Export
+  // Right: Export dropdown
   const exportDropdown = document.createElement('div');
   exportDropdown.className = 'export-dropdown';
   exportDropdown.innerHTML = `
@@ -601,16 +601,24 @@ function renderTableFiltered(headers, rows, selectedCols) {
   `;
   searchContainer.appendChild(exportDropdown);
   
-  // Populate column checkboxes
+  // Populate column toggle checkboxes
   const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
   filteredHeaders.forEach((colName, i) => {
-    const colIndex = i + 1; // +1 because of index column
+    const colIndex = i + 1; // +1 to account for index column
     const label = document.createElement("label");
-    label.innerHTML = `<input type="checkbox" checked data-col="${colIndex}"> ${colName}`;
+  
+    const isVisible = [0, 1, 2, 8, 9].includes(i); // <-- show only these by default
+  
+    label.innerHTML = `<input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}"> ${colName}`;
     colToggleContainer.appendChild(label);
+  
+    // Hide columns not in the visible list
+    if (!isVisible) {
+      dataTableInstance.column(colIndex).visible(false);
+    }
   });
   
-  // Toggle column visibility
+  // Toggle visibility on checkbox change
   colToggleContainer.addEventListener("change", (e) => {
     const col = e.target.dataset.col;
     const checked = e.target.checked;
@@ -643,6 +651,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     a.click();
     document.body.removeChild(a);
   });
+
 
   // On redraw (after search/sort)
   dataTableInstance.on('draw.dt', () => {
