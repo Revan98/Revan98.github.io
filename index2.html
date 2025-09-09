@@ -237,7 +237,6 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
     max-width: 90vw; /* use more screen width on mobile */
   }
 }
-
 /* Dropdown containers */
 .export-dropdown, .column-toggle-dropdown {
   position: relative;
@@ -262,11 +261,13 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   background-color: var(--accent);
 }
 
-.export-dropdown-content{
+/* Dropdown menu base */
+.export-dropdown-content,
+.column-toggle-content {
   display: none;
   position: absolute;
   background-color: var(--table-bg);
-  min-width: 220px;
+  min-width: 200px;
   border: 1px solid var(--table-border);
   border-radius: 6px;
   box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
@@ -274,30 +275,40 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   margin-top: 6px;
   padding: 10px;
 }
+.export-dropdown-content.show,
+.column-toggle-content.show {
+  display: block;
+}
+
+/* Column dropdown → 2-column grid */
 .column-toggle-content {
   display: none;
-  position: absolute;
-  background-color: var(--table-bg);
-  border: 1px solid var(--table-border);
-  border-radius: 6px;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-  z-index: 10;
-  margin-top: 6px;
-  padding: 10px;
-
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns */
-  gap: 6px 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 12px;
 }
 .column-toggle-content label {
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
 }
-.export-dropdown-content.show,
-.column-toggle-content.show {
+
+/* Export dropdown → vertical buttons */
+.export-dropdown-content button {
+  width: 100%;
   display: block;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-color);
+  border-radius: 4px;
 }
+.export-dropdown-content button:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
 
 </style>
 </head>
@@ -455,10 +466,9 @@ function formatNumber(num) {
 function renderTableFiltered(headers, rows, selectedCols) {
   resetCharts(); // clear old chart data
   rows = removeEmptyRows(rows);
-  // filter out governors
-  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES");
+  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
 
-  // Top 3 players
+  // Top players logic...
   const dkpColIndex = selectedCols.indexOf(8);
   if (dkpColIndex !== -1) {
     rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
@@ -466,8 +476,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
     const topContainer = document.getElementById("top-players");
     topContainer.innerHTML = "";
     top3.forEach((player, idx) => {
-      const id = player[0] ?? "";   // column 0 = ID
-      const name = player[1] ?? ""; // column 1 = Name
+      const id = player[0] ?? "";
+      const name = player[1] ?? "";
       const box = document.createElement("div");
       box.className = "player-box";
       box.innerHTML = `<div class="player-rank">TOP${idx + 1}</div><h3>${name}</h3><p>ID: ${id}</p>`;
@@ -480,20 +490,13 @@ function renderTableFiltered(headers, rows, selectedCols) {
     dataTableInstance = null;
   }
 
-    // Remove old click handler
-  if (tableClickHandler) {
-    document.querySelector("#data-table tbody")
-      .removeEventListener("click", tableClickHandler);
-    tableClickHandler = null;
-  }
-
   const table = document.getElementById("data-table");
   table.innerHTML = "";
 
+  // Headers
   const filteredHeaders = selectedCols.map(i => headers[i] ?? "");
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
-  // Index header
   const indexTh = document.createElement("th");
   indexTh.textContent = "#";
   headRow.appendChild(indexTh);
@@ -504,23 +507,20 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
   thead.appendChild(headRow);
 
+  // Body
   const tbody = document.createElement("tbody");
   rows.forEach((row, rowIdx) => {
     const tr = document.createElement("tr");
-  
-    // Index cell (will be updated dynamically)
+
     const indexTd = document.createElement("td");
-    indexTd.textContent = rowIdx + 1; // fallback
+    indexTd.textContent = rowIdx + 1;
     tr.appendChild(indexTd);
-  
-    // Store original index for later
     tr.dataset.originalIndex = rowIdx + 1;
-  
+
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = row[colIndex] ?? "";
-      
-      // Format DKP %
+
       if (colIndex === 10 && val !== "") {
         let num = Number(val);
         if (!isNaN(num)) {
@@ -528,38 +528,31 @@ function renderTableFiltered(headers, rows, selectedCols) {
           val = num.toFixed(2) + "%";
         }
       }
-      // Shorten values for relevant numeric columns
       if ([2, 12, 13, 14, 15].includes(colIndex) && val !== "") {
         val = formatNumber(val);
       }
-      // Create a span for the base value
+
       const baseSpan = document.createElement("span");
       baseSpan.textContent = val;
       td.appendChild(baseSpan);
-      
-      // If this column should show diffs
-      if ([2,12,13,14,15].includes(colIndex)) {
-        const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
+
+      if ([2, 12, 13, 14, 15].includes(colIndex)) {
+        const diffs = getSheetDiffsForPlayers(row[0]);
         if (diffs) {
           const diff = diffs[colIndex] ?? 0;
-      
-          if (diff !== 0) {   // <-- only render if not zero
+          if (diff !== 0) {
             const diffSpan = document.createElement("span");
             diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
-      
             diffSpan.style.color = diff > 0 ? "green" : "red";
             diffSpan.style.marginLeft = "4px";
-            diffSpan.style.display = "inline";
             td.appendChild(diffSpan);
           }
         }
-      }        
+      }
       tr.appendChild(td);
     });
-  
     tbody.appendChild(tr);
   });
-
 
   table.appendChild(thead);
   table.appendChild(tbody);
@@ -573,15 +566,14 @@ function renderTableFiltered(headers, rows, selectedCols) {
     info: false,
     responsive: false,
     autoWidth: false,
-    columnDefs: [
-      { orderable: false, searchable: false, targets: 0 } // index column not sortable/searchable
-    ],
+    columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
     language: { searchPlaceholder: "Search by name or ID", search: "" }
   });
-  // Inject export + column selector dropdowns
+
+  // Search container
   const searchContainer = document.querySelector('div.dt-search');
-  
-  // Left: Column toggle dropdown
+
+  // Column toggle dropdown
   const colDropdown = document.createElement('div');
   colDropdown.className = 'column-toggle-dropdown';
   colDropdown.innerHTML = `
@@ -589,59 +581,50 @@ function renderTableFiltered(headers, rows, selectedCols) {
     <div class="column-toggle-content"></div>
   `;
   searchContainer.prepend(colDropdown);
-  
-  // Right: Export dropdown
+
+  // Export dropdown
   const exportDropdown = document.createElement('div');
   exportDropdown.className = 'export-dropdown';
   exportDropdown.innerHTML = `
     <button>Export</button>
     <div class="export-dropdown-content">
-      <a href="#" id="export-xlsx">Export as .xlsx</a>
-      <a href="#" id="export-csv">Export as CSV</a>
+      <button id="export-xlsx">Export as Excel (.xlsx)</button>
+      <button id="export-csv">Export as CSV</button>
     </div>
   `;
   searchContainer.appendChild(exportDropdown);
-  
-  // Populate column toggle checkboxes
+
+  // Populate column toggles
   const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
   filteredHeaders.forEach((colName, i) => {
-    const colIndex = i + 1; // +1 to account for index column
+    const colIndex = i + 1;
     const label = document.createElement("label");
-  
-    const isVisible = [0, 1, 2, 8, 9].includes(i); // <-- show only these by default
-  
+    const isVisible = [0, 1, 2, 8, 9].includes(i);
     label.innerHTML = `<input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}"> ${colName}`;
     colToggleContainer.appendChild(label);
-  
-    // Hide columns not in the visible list
+
     if (!isVisible) {
       dataTableInstance.column(colIndex).visible(false);
     }
   });
-  
-  // Toggle visibility on checkbox change
+
   colToggleContainer.addEventListener("change", (e) => {
     const col = e.target.dataset.col;
-    const checked = e.target.checked;
     if (col !== undefined) {
-      dataTableInstance.column(col).visible(checked);
+      dataTableInstance.column(col).visible(e.target.checked);
     }
   });
-  
+
   // Export handlers
-  document.getElementById("export-xlsx").addEventListener("click", function (e) {
-    e.preventDefault();
+  document.getElementById("export-xlsx").addEventListener("click", function () {
     const wb = XLSX.utils.book_new();
-    const table = document.getElementById("data-table");
-    const ws = XLSX.utils.table_to_sheet(table);
+    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
     XLSX.writeFile(wb, "table_export.xlsx");
   });
-  
-  document.getElementById("export-csv").addEventListener("click", function (e) {
-    e.preventDefault();
-    const table = document.getElementById("data-table");
-    const ws = XLSX.utils.table_to_sheet(table);
+
+  document.getElementById("export-csv").addEventListener("click", function () {
+    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
     const csv = XLSX.utils.sheet_to_csv(ws);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -653,62 +636,46 @@ function renderTableFiltered(headers, rows, selectedCols) {
     document.body.removeChild(a);
   });
 
+  // Dropdown open/close
+  document.addEventListener("click", (e) => {
+    const exportBtn = e.target.closest(".export-dropdown button");
+    const colBtn = e.target.closest(".column-toggle-dropdown button");
 
-  // On redraw (after search/sort)
-  dataTableInstance.on('draw.dt', () => {
-    const searchVal = dataTableInstance.search();
-  
-    if (searchVal) {
-      // SEARCH MODE → show original dataset index
-      dataTableInstance.rows({ search: 'applied' }).every(function () {
-        const rowNode = this.node();
-        const origIndex = rowNode.dataset.originalIndex;
-        this.cell(this.index(), 0).data(origIndex);
-      });
+    if (exportBtn) {
+      exportBtn.nextElementSibling.classList.toggle("show");
     } else {
-      // NORMAL MODE → dynamic numbering
-      let i = 1;
-      dataTableInstance.rows({ search: 'applied', order: 'applied' }).every(function () {
-        this.cell(this.index(), 0).data(i++);
-      });
+      document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
+    }
+
+    if (colBtn) {
+      colBtn.nextElementSibling.classList.toggle("show");
+    } else {
+      document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
     }
   });
 
-  // Click handler
-  document.querySelector("#data-table tbody").addEventListener("click", function(e) {
-    const row = e.target.closest("tr");
-    if (!row) return;
-    const cells = row.querySelectorAll("td");
-    if (cells.length < 2) return;
-    const playerId = cells[1].textContent.trim(); // column 1 = ID
-    updateChartsForPlayer(playerId);
+  // Totals (unchanged)
+  const totalsContainer = document.getElementById("bottom-totals");
+  totalsContainer.innerHTML = "";
+  const totalDefs = [
+    { label: "Total T4 kills gained", col: 3 },
+    { label: "Total T5 kills gained", col: 4 },
+    { label: "Total Deads gained", col: 5 },
+    { label: "Total KP gained", col: 6 }
+  ];
+  totalDefs.forEach(item => {
+    let sum = 0;
+    rows.forEach(row => {
+      const diffs = getSheetDiffsForPlayers(row[0]);
+      if (diffs) sum += diffs[item.col] || 0;
+    });
+    const box = document.createElement("div");
+    box.className = "stat-box";
+    box.innerHTML = `<h3>${item.label}</h3><p>${formatNumber(sum)}</p>`;
+    totalsContainer.appendChild(box);
   });
-
-
-  // Totals
-const totalsContainer = document.getElementById("bottom-totals");
-totalsContainer.innerHTML = "";
-
-const totalDefs = [
-  { label: "Total T4 kills gained", col: 3 },
-  { label: "Total T5 kills gained", col: 4 },
-  { label: "Total Deads gained", col: 5 },
-  { label: "Total KP gained", col: 6 }
-];
-
-totalDefs.forEach(item => {
-  let sum = 0;
-  rows.forEach(row => {
-    const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
-    if (diffs) sum += diffs[item.col] || 0;
-  });
-
-  const box = document.createElement("div");
-  box.className = "stat-box";
-  box.innerHTML = `<h3>${item.label}</h3><p>${formatNumber(sum)}</p>`;
-  totalsContainer.appendChild(box);
-});
 }
+
 
 
 function parseExcelData(arrayBuffer) {
@@ -803,27 +770,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
   }
 });
-// Toggle dropdowns on button click
-document.addEventListener("click", (e) => {
-  const exportBtn = e.target.closest(".export-dropdown button");
-  const colBtn = e.target.closest(".column-toggle-dropdown button");
 
-  // Toggle export dropdown
-  if (exportBtn) {
-    const menu = exportBtn.nextElementSibling;
-    menu.classList.toggle("show");
-  } else {
-    document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
-  }
-
-  // Toggle column dropdown
-  if (colBtn) {
-    const menu = colBtn.nextElementSibling;
-    menu.classList.toggle("show");
-  } else {
-    document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
-  }
-});
 document.getElementById("toggle-theme").addEventListener("click", () => {
   document.body.classList.toggle("dark");
 
