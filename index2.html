@@ -794,7 +794,7 @@ function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
 
   if (currentSource === "excel" && workbook) {
-    const sheetNames = workbook.SheetNames.slice(1);
+    const sheetNames = workbook.SheetNames;
     sheetNames.forEach(sheetName => {
       const ws = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
@@ -812,7 +812,7 @@ function updateChartsForPlayer(playerId) {
   }
 
   if (currentSource === "google" && Object.keys(googleSheetsData).length) {
-    const sheetNames = googleSheetNames.slice(1); // skip the first sheet
+    const sheetNames = googleSheetNames;
     sheetNames.forEach(sheetName => {
       const rows = googleSheetsData[sheetName] || [];
       const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
