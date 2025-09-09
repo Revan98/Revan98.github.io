@@ -298,7 +298,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 
 /* Column dropdown style */
 .column-toggle-content {
-  display: none;
+  display: none; /* hidden by default */
   position: absolute;
   background-color: var(--table-bg);
   border: 1px solid var(--table-border);
@@ -308,7 +308,6 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   margin-top: 6px;
   padding: 12px;
   min-width: 200px;
-  display: flex;
   flex-direction: column;
   gap: 6px;
 }
@@ -324,13 +323,13 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   padding-left: 24px;
 }
 
-/* Hide the actual checkbox */
+/* Hide native checkbox */
 .column-toggle-content input[type="checkbox"] {
   display: none;
 }
 
-/* Custom checkmark */
-.column-toggle-content label::before {
+/* Empty box before label */
+.column-toggle-content span::before {
   content: "";
   position: absolute;
   left: 0;
@@ -342,7 +341,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   transition: background 0.2s, border-color 0.2s;
 }
 
-/* When checked → show a tick */
+/* Checked → tick mark */
 .column-toggle-content input[type="checkbox"]:checked + span::before {
   content: "✔";
   color: var(--accent);
@@ -353,6 +352,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   justify-content: center;
   border-color: var(--accent);
 }
+
 </style>
 </head>
 <body>
