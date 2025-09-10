@@ -17,17 +17,22 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 
 <style>
+/* =========================================================
+   1. THEME VARIABLES
+   ========================================================= */
 :root {
   --bg-color: #e5e5e5;
   --text-color: #333;
-  --table-bg: white;
+  --table-bg: #fff;
   --table-border: #ccc;
   --accent: #666;
   --scrollbar-bg: rgba(0,0,0,0.3);
   --chart-text: #333;
   --chart-grid: rgba(0, 0, 0, 0.1);
   --chart-line: #007bff;
+  --checkmark-color: #666;
 }
+
 body.dark {
   --bg-color: #1c1c1c;
   --text-color: #eee;
@@ -36,10 +41,14 @@ body.dark {
   --accent: #2a2a2a;
   --scrollbar-bg: rgba(255,255,255,0.4);
   --chart-text: #eee;
-  --chart-grid: rgba(255, 255, 255, 0.2);
+  --chart-grid: rgba(255,255,255,0.2);
   --chart-line: #ff9800;
+  --checkmark-color: white;
 }
 
+/* =========================================================
+   2. GLOBAL
+   ========================================================= */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -47,13 +56,14 @@ body {
   color: var(--text-color);
 }
 
-/* Style the top navigation bar */
+/* =========================================================
+   3. NAVIGATION BAR
+   ========================================================= */
 .topnav {
   overflow: hidden;
   background-color: #333;
 }
 
-/* Style the topnav links */
 .topnav a,
 .topnav button {
   float: left;
@@ -62,19 +72,20 @@ body {
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
-  background: none; /* remove white bg */
-  border: none;     /* remove default border */
+  background: none;
+  border: none;
   cursor: pointer;
-  font: inherit;    /* match font with links */
+  font: inherit;
 }
 
-/* Change color on hover */
 .topnav a:hover,
 .topnav button:hover {
   background-color: #4e4d4d;
 }
 
-/* Table Container */
+/* =========================================================
+   4. TABLE STYLES
+   ========================================================= */
 #table-container {
   padding-top: 30px;
   justify-content: center;
@@ -83,7 +94,6 @@ body {
   margin: 0 auto;
 }
 
-/* DataTable Style */
 table.dataTable {
   width: 100% !important;
   background: var(--table-bg);
@@ -93,48 +103,46 @@ table.dataTable {
   overflow: hidden;
   font-size: 13px;
 }
+
 table.dataTable th {
   font-size: 14px;
   text-align: left !important;
 }
-table.dataTable th, table.dataTable td {
+
+table.dataTable th,
+table.dataTable td {
   padding: 12px 15px !important;
   border: 1px solid var(--table-border) !important;
 }
+
 table.dataTable tbody td {
   text-align: left !important;
 }
+
 table.dataTable tbody tr:nth-child(odd) {
   background-color: rgba(0,0,0,0.02);
 }
+
 table.dataTable tbody tr:hover {
   background-color: rgba(0,123,255,0.1);
 }
 
-/* Custom Search Bar */
-/*div.dt-search {
-  display: flex !important;
-  justify-content: flex-start !important;
-  margin-right: 10px;
-}*/
+/* =========================================================
+   5. SEARCH / FILTER BAR
+   ========================================================= */
 div.dt-search {
   display: flex !important;
-  justify-content: center !important; /* center horizontally */
-  margin: 0 auto; /* optional, keeps it centered inside parent */
-  width: 100%;   /* ensures it spans full row */
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin: 20px 40px !important;
+  gap: 20px;
 }
-div.dt-search label {
-  position: relative !important;
-  display: inline-block !important;
-  width: 100% !important;
-}
+
 div.dt-search input {
-  width: 53vw !important;
-  margin: 0 auto;
-  width: 100px; !important;  /* 40% of viewport width */
-  max-width: 100%; 
-  padding: 14px 12px !important; /* equal left/right padding */
-  border-radius: 13px !important;
+  width: 200px !important;
+  max-width: 100%;
+  padding: 14px 12px !important;
+  border-radius: 8px !important;
   border: 1px solid #ccc !important;
   background-color: #ccc !important;
   color: #333 !important;
@@ -142,36 +150,49 @@ div.dt-search input {
 }
 
 div.dt-search input::placeholder {
-  color: #333 !important;
+  color: var(--text-color) !important;
   opacity: 0.8 !important;
 }
-/* Remove default clear (×) button in search inputs */
-div.dt-search input[type="search"]::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  appearance: none;
-  display: none;
-}
-div.dt-search input[type="search"]::-ms-clear {
-  display: none; /* for old Edge */
+
+/* Dark mode search */
+body.dark div.dt-search input {
+  background-color: #444 !important;
+  color: #eee !important;
+  border: 1px solid #666 !important;
 }
 
-/* Custom Scrollbar Styling for Table */
+/* Hide clear (×) button */
+div.dt-search input[type="search"]::-webkit-search-cancel-button,
+div.dt-search input[type="search"]::-ms-clear {
+  display: none;
+}
+
+/* =========================================================
+   6. SCROLLBARS
+   ========================================================= */
 div.dt-scroll-body {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-bg) transparent;
 }
+
 div.dt-scroll-body::-webkit-scrollbar {
   width: 6px;
 }
+
 div.dt-scroll-body:hover::-webkit-scrollbar {
   width: 10px;
 }
+
 div.dt-scroll-body::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-bg);
   border-radius: 10px;
 }
 
-.player-box, .stat-box {
+/* =========================================================
+   7. PLAYER & STATS BOXES
+   ========================================================= */
+.player-box,
+.stat-box {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
   border-radius: 10px;
@@ -180,23 +201,31 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   width: 180px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
+
 .player-rank {
   font-weight: bold;
   font-size: 14px;
   color: var(--text-color);
   margin-bottom: 5px;
 }
-.player-box h3, .stat-box h3 {
+
+.player-box h3,
+.stat-box h3 {
   margin: 0;
   font-size: 16px;
   color: var(--text-color);
 }
-.player-box p, .stat-box p {
+
+.player-box p,
+.stat-box p {
   margin: 5px 0 0;
   font-size: 14px;
   color: var(--text-color);
 }
 
+/* =========================================================
+   8. CHARTS
+   ========================================================= */
 #charts-container {
   display: grid;
   grid-template-columns: repeat(2, auto);
@@ -206,30 +235,155 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   margin: 30px auto;
   max-width: 40vw;
 }
+
 #charts-container canvas {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
   border-radius: 8px;
   padding: 5px;
 }
-/* Responsive layout for mobile */
+
+/* =========================================================
+   9. DROPDOWNS (EXPORT & COLUMN)
+   ========================================================= */
+.export-dropdown,
+.column-toggle-dropdown {
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+}
+
+/* Dropdown trigger buttons */
+.export-dropdown button,
+.column-toggle-dropdown button {
+  background-color: var(--table-bg);
+  color: var(--text-color);
+  padding: 10px 14px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.export-dropdown button:hover,
+.column-toggle-dropdown button:hover {
+  background-color: var(--accent);
+}
+
+/* Dropdown menu container */
+.export-dropdown-content,
+.column-toggle-content {
+  display: none;
+  position: absolute;
+  background-color: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 10;
+  margin-top: 6px;
+}
+
+/* Export dropdown opens to the LEFT */
+.export-dropdown-content {
+  right: 0;
+  min-width: 200px;
+  padding: 10px;
+}
+
+/* Column dropdown menu */
+.column-toggle-content {
+  left: 0;
+  min-width: 160px;
+  padding: 12px;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Show dropdown when toggled */
+.export-dropdown-content.show,
+.column-toggle-content.show {
+  display: block;
+}
+
+/* Export dropdown items */
+.export-dropdown-content button {
+  width: 100%;
+  display: block;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-color);
+  border-radius: 4px;
+}
+
+.export-dropdown-content button:hover {
+  background-color: rgba(0,123,255,0.1); /* same as table row hover */
+}
+
+/* Column dropdown items */
+.column-toggle-content label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-color);
+  position: relative;
+  padding: 6px 8px 6px 24px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  width: 100%;              /* fix hover overflow */
+  box-sizing: border-box;   /* stay inside width */
+}
+
+.column-toggle-content label:hover {
+  background-color: rgba(0,123,255,0.1); /* same as table row hover */
+}
+
+/* Hide native checkbox */
+.column-toggle-content input[type="checkbox"] {
+  display: none;
+}
+
+/* Space for checkmark */
+.column-toggle-content span::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Checked → show ✔ only */
+.column-toggle-content input[type="checkbox"]:checked + span::before {
+  content: "✔";
+  color: var(--checkmark-color);
+  font-size: 15px;
+  font-weight: bold;
+}
+
+/* =========================================================
+   10. RESPONSIVE
+   ========================================================= */
 @media (max-width: 768px) {
-  /* Player and totals boxes stacked */
   #top-players,
   #bottom-totals {
     flex-direction: column;
     align-items: center;
   }
+
   #top-players .player-box,
   #bottom-totals .stat-box {
     width: 100%;
-    max-width: 280px; /* prevent being too wide */
+    max-width: 280px;
   }
 
-  /* Charts stacked one under another */
   #charts-container {
-    grid-template-columns: 1fr; /* 1 column */
-    max-width: 90vw; /* use more screen width on mobile */
+    grid-template-columns: 1fr;
+    max-width: 90vw;
   }
 }
 
@@ -266,7 +420,6 @@ const CONFIG = {
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9, 7];
-
 
 let dataTableInstance = null;
 let workbook = null;
@@ -335,41 +488,36 @@ function resetCharts() {
   });
 }
 function getSheetDiffsForPlayers(playerId) {
-  let secondRows, lastRows;
+  let lastRows;
 
   if (currentSource === "google") {
-    const secondSheet = googleSheetNames[1];
     const lastSheet = googleSheetNames[googleSheetNames.length - 1];
-    secondRows = (googleSheetsData[secondSheet] || []).slice(1);
     lastRows = (googleSheetsData[lastSheet] || []).slice(1);
   }
 
   if (currentSource === "excel" && workbook) {
     const sheetNames = workbook.SheetNames;
-    const secondSheet = sheetNames[1];
     const lastSheet = sheetNames[sheetNames.length - 1];
-    secondRows = XLSX.utils.sheet_to_json(workbook.Sheets[secondSheet], { header: 1 }).slice(1);
     lastRows = XLSX.utils.sheet_to_json(workbook.Sheets[lastSheet], { header: 1 }).slice(1);
   }
 
-  if (!secondRows || !lastRows) return null;
+  if (!lastRows) return null;
 
-  const secondRow = secondRows.find(r => String(r[0]).trim() === String(playerId).trim());
   const lastRow = lastRows.find(r => String(r[0]).trim() === String(playerId).trim());
-  if (!secondRow || !lastRow) return null;
+  if (!lastRow) return null;
 
   return {
-    2: (parseFloat(lastRow[2]) || 0) - (parseFloat(secondRow[2]) || 0),
-    3: (parseFloat(lastRow[3]) || 0) - (parseFloat(secondRow[3]) || 0),
-    4: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
-    5: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[5]) || 0),
-    6: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[6]) || 0),
+    3: parseFloat(lastRow[3]) || 0,
+    4: parseFloat(lastRow[4]) || 0,
+    5: parseFloat(lastRow[5]) || 0,
+    6: parseFloat(lastRow[6]) || 0,
 
-    // NEW → map [12–15] to diffs of [3–6]
-    12: (parseFloat(lastRow[3]) || 0) - (parseFloat(secondRow[3]) || 0),
-    13: (parseFloat(lastRow[4]) || 0) - (parseFloat(secondRow[4]) || 0),
-    14: (parseFloat(lastRow[6]) || 0) - (parseFloat(secondRow[5]) || 0),
-    15: (parseFloat(lastRow[5]) || 0) - (parseFloat(secondRow[6]) || 0),
+    // still mapping extra columns directly from last sheet
+    2: parseFloat(lastRow[16]) || 0,
+    12: parseFloat(lastRow[4]) || 0,
+    13: parseFloat(lastRow[5]) || 0,
+    14: parseFloat(lastRow[3]) || 0,
+    15: parseFloat(lastRow[6]) || 0,
   };
 }
 
@@ -389,10 +537,9 @@ function formatNumber(num) {
 function renderTableFiltered(headers, rows, selectedCols) {
   resetCharts(); // clear old chart data
   rows = removeEmptyRows(rows);
-  // filter out governors
-  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES");
+  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
 
-  // Top 3 players
+  // Top players logic...
   const dkpColIndex = selectedCols.indexOf(8);
   if (dkpColIndex !== -1) {
     rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
@@ -400,8 +547,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
     const topContainer = document.getElementById("top-players");
     topContainer.innerHTML = "";
     top3.forEach((player, idx) => {
-      const id = player[0] ?? "";   // column 0 = ID
-      const name = player[1] ?? ""; // column 1 = Name
+      const id = player[0] ?? "";
+      const name = player[1] ?? "";
       const box = document.createElement("div");
       box.className = "player-box";
       box.innerHTML = `<div class="player-rank">TOP${idx + 1}</div><h3>${name}</h3><p>ID: ${id}</p>`;
@@ -414,20 +561,13 @@ function renderTableFiltered(headers, rows, selectedCols) {
     dataTableInstance = null;
   }
 
-    // Remove old click handler
-  if (tableClickHandler) {
-    document.querySelector("#data-table tbody")
-      .removeEventListener("click", tableClickHandler);
-    tableClickHandler = null;
-  }
-
   const table = document.getElementById("data-table");
   table.innerHTML = "";
 
+  // Headers
   const filteredHeaders = selectedCols.map(i => headers[i] ?? "");
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
-  // Index header
   const indexTh = document.createElement("th");
   indexTh.textContent = "#";
   headRow.appendChild(indexTh);
@@ -438,23 +578,20 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
   thead.appendChild(headRow);
 
+  // Body
   const tbody = document.createElement("tbody");
   rows.forEach((row, rowIdx) => {
     const tr = document.createElement("tr");
-  
-    // Index cell (will be updated dynamically)
+
     const indexTd = document.createElement("td");
-    indexTd.textContent = rowIdx + 1; // fallback
+    indexTd.textContent = rowIdx + 1;
     tr.appendChild(indexTd);
-  
-    // Store original index for later
     tr.dataset.originalIndex = rowIdx + 1;
-  
+
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = row[colIndex] ?? "";
-      
-      // Format DKP %
+
       if (colIndex === 10 && val !== "") {
         let num = Number(val);
         if (!isNaN(num)) {
@@ -462,38 +599,31 @@ function renderTableFiltered(headers, rows, selectedCols) {
           val = num.toFixed(2) + "%";
         }
       }
-      // Shorten values for relevant numeric columns
       if ([2, 12, 13, 14, 15].includes(colIndex) && val !== "") {
         val = formatNumber(val);
       }
-      // Create a span for the base value
+
       const baseSpan = document.createElement("span");
       baseSpan.textContent = val;
       td.appendChild(baseSpan);
-      
-      // If this column should show diffs
-      if ([2,12,13,14,15].includes(colIndex)) {
-        const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
+
+      if ([2, 12, 13, 14, 15].includes(colIndex)) {
+        const diffs = getSheetDiffsForPlayers(row[0]);
         if (diffs) {
           const diff = diffs[colIndex] ?? 0;
-      
-          if (diff !== 0) {   // <-- only render if not zero
+          if (diff !== 0) {
             const diffSpan = document.createElement("span");
             diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
-      
             diffSpan.style.color = diff > 0 ? "green" : "red";
             diffSpan.style.marginLeft = "4px";
-            diffSpan.style.display = "inline";
             td.appendChild(diffSpan);
           }
         }
-      }        
+      }
       tr.appendChild(td);
     });
-  
     tbody.appendChild(tr);
   });
-
 
   table.appendChild(thead);
   table.appendChild(tbody);
@@ -507,32 +637,99 @@ function renderTableFiltered(headers, rows, selectedCols) {
     info: false,
     responsive: false,
     autoWidth: false,
-    columnDefs: [
-      { orderable: false, searchable: false, targets: 0 } // index column not sortable/searchable
-    ],
+    columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
     language: { searchPlaceholder: "Search by name or ID", search: "" }
   });
+
+  // Search container
+  const searchContainer = document.querySelector('div.dt-search');
+
+  // Column toggle dropdown
+  const colDropdown = document.createElement('div');
+  colDropdown.className = 'column-toggle-dropdown';
+  colDropdown.innerHTML = `
+    <button>Columns</button>
+    <div class="column-toggle-content"></div>
+  `;
+  searchContainer.prepend(colDropdown);
+
+  // Export dropdown
+  const exportDropdown = document.createElement('div');
+  exportDropdown.className = 'export-dropdown';
+  exportDropdown.innerHTML = `
+    <button>Export</button>
+    <div class="export-dropdown-content">
+      <button id="export-xlsx">Export as Excel (.xlsx)</button>
+      <button id="export-csv">Export as CSV</button>
+    </div>
+  `;
+  searchContainer.appendChild(exportDropdown);
+
+  // Populate column toggles
+  const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
+  filteredHeaders.forEach((colName, i) => {
+    const colIndex = i + 1;
+    const label = document.createElement("label");
+    const isVisible = [0, 1, 2, 3, 4, 5, 6, 7].includes(i);
+    label.innerHTML = `
+      <input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}">
+      <span>${colName}</span>
+    `;
+    colToggleContainer.appendChild(label);
   
-  // On redraw (after search/sort)
-  dataTableInstance.on('draw.dt', () => {
-    const searchVal = dataTableInstance.search();
-  
-    if (searchVal) {
-      // SEARCH MODE → show original dataset index
-      dataTableInstance.rows({ search: 'applied' }).every(function () {
-        const rowNode = this.node();
-        const origIndex = rowNode.dataset.originalIndex;
-        this.cell(this.index(), 0).data(origIndex);
-      });
-    } else {
-      // NORMAL MODE → dynamic numbering
-      let i = 1;
-      dataTableInstance.rows({ search: 'applied', order: 'applied' }).every(function () {
-        this.cell(this.index(), 0).data(i++);
-      });
+    if (!isVisible) {
+      dataTableInstance.column(colIndex).visible(false);
     }
   });
 
+  colToggleContainer.addEventListener("change", (e) => {
+    const col = e.target.dataset.col;
+    if (col !== undefined) {
+      dataTableInstance.column(col).visible(e.target.checked);
+    }
+  });
+
+  // Export handlers
+  document.getElementById("export-xlsx").addEventListener("click", function () {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, "table_export.xlsx");
+  });
+
+  document.getElementById("export-csv").addEventListener("click", function () {
+    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "table_export.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+
+  // Dropdown open/close
+  document.addEventListener("click", (e) => {
+    const exportBtn = e.target.closest(".export-dropdown button");
+    const colBtn = e.target.closest(".column-toggle-dropdown button");
+    const isInsideColMenu = e.target.closest(".column-toggle-content");
+  
+    // Export dropdown toggle
+    if (exportBtn) {
+      exportBtn.nextElementSibling.classList.toggle("show");
+    } else {
+      document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
+    }
+  
+    // Column dropdown toggle
+    if (colBtn) {
+      colBtn.nextElementSibling.classList.toggle("show");
+    } else if (!isInsideColMenu) {
+      document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
+    }
+  });
   // Click handler
   document.querySelector("#data-table tbody").addEventListener("click", function(e) {
     const row = e.target.closest("tr");
@@ -543,31 +740,28 @@ function renderTableFiltered(headers, rows, selectedCols) {
     updateChartsForPlayer(playerId);
   });
 
-
-  // Totals
-const totalsContainer = document.getElementById("bottom-totals");
-totalsContainer.innerHTML = "";
-
-const totalDefs = [
-  { label: "Total T4 kills gained", col: 3 },
-  { label: "Total T5 kills gained", col: 4 },
-  { label: "Total Deads gained", col: 5 },
-  { label: "Total KP gained", col: 6 }
-];
-
-totalDefs.forEach(item => {
-  let sum = 0;
-  rows.forEach(row => {
-    const diffs = getSheetDiffsForPlayers(row[0]); // playerId = col 0
-    if (diffs) sum += diffs[item.col] || 0;
+  // Totals (unchanged)
+  const totalsContainer = document.getElementById("bottom-totals");
+  totalsContainer.innerHTML = "";
+  const totalDefs = [
+    { label: "Total T4 kills gained", col: 3 },
+    { label: "Total T5 kills gained", col: 4 },
+    { label: "Total Deads gained", col: 5 },
+    { label: "Total KP gained", col: 6 }
+  ];
+  totalDefs.forEach(item => {
+    let sum = 0;
+    rows.forEach(row => {
+      const diffs = getSheetDiffsForPlayers(row[0]);
+      if (diffs) sum += diffs[item.col] || 0;
+    });
+    const box = document.createElement("div");
+    box.className = "stat-box";
+    box.innerHTML = `<h3>${item.label}</h3><p>${formatNumber(sum)}</p>`;
+    totalsContainer.appendChild(box);
   });
-
-  const box = document.createElement("div");
-  box.className = "stat-box";
-  box.innerHTML = `<h3>${item.label}</h3><p>${formatNumber(sum)}</p>`;
-  totalsContainer.appendChild(box);
-});
 }
+
 
 
 function parseExcelData(arrayBuffer) {
@@ -600,7 +794,7 @@ function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
 
   if (currentSource === "excel" && workbook) {
-    const sheetNames = workbook.SheetNames.slice(1);
+    const sheetNames = workbook.SheetNames;
     sheetNames.forEach(sheetName => {
       const ws = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
@@ -618,7 +812,7 @@ function updateChartsForPlayer(playerId) {
   }
 
   if (currentSource === "google" && Object.keys(googleSheetsData).length) {
-    const sheetNames = googleSheetNames.slice(1); // skip the first sheet
+    const sheetNames = googleSheetNames;
     sheetNames.forEach(sheetName => {
       const rows = googleSheetsData[sheetName] || [];
       const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
@@ -685,9 +879,3 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
-
-
-
-
-
