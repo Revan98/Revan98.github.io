@@ -816,10 +816,10 @@ function updateChartsForPlayer(playerId) {
     sheetNames.forEach(sheetName => {
       const rows = googleSheetsData[sheetName] || [];
       const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
-      chartData.chart4.push(playerRow?.[3] || 0);
-      chartData.chart5.push(playerRow?.[4] || 0);
-      chartData.chart6.push(playerRow?.[5] || 0);
-      chartData.chart7.push(playerRow?.[6] || 0);
+      chartData.chart4.push(playerRow?.[4] || 0);
+      chartData.chart5.push(playerRow?.[5] || 0);
+      chartData.chart6.push(playerRow?.[6] || 0);
+      chartData.chart7.push(playerRow?.[7] || 0);
     });
     Object.keys(chartData).forEach(chartId => {
       charts[chartId].data.labels = sheetNames;
@@ -879,3 +879,4 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
