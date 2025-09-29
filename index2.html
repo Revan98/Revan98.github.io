@@ -507,14 +507,16 @@ function getSheetDiffsForPlayers(playerId) {
   if (!lastRow) return null;
 
   return {
-
-
-    // still mapping extra columns directly from last sheet
+     // Power
     2: parseFloat(lastRow[2]) || 0,
-    13: parseFloat(lastRow[4]) || 0,
+     // T4
+    12: parseFloat(lastRow[4]) || 0,
+     // T5
+    13: parseFloat(lastRow[5]) || 0,
+     // Kill points
     14: parseFloat(lastRow[3]) || 0,
-    15: parseFloat(lastRow[8]) || 0,
-    16: parseFloat(lastRow[6]) || 0,
+     // Deads
+    15: parseFloat(lastRow[6]) || 0,
   };
 }
 
