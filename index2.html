@@ -506,22 +506,13 @@ function getSheetDiffsForPlayers(playerId) {
   const lastRow = lastRows.find(r => String(r[0]).trim() === String(playerId).trim());
   if (!lastRow) return null;
 
-  return {
-    3: parseFloat(lastRow[3]) || 0,
-    4: parseFloat(lastRow[4]) || 0,
-    5: parseFloat(lastRow[5]) || 0,
-    6: parseFloat(lastRow[6]) || 0,
-     // Power
-    2: parseFloat(lastRow[2]) || 0,
-     // T4
-    12: parseFloat(lastRow[4]) || 0,
-     // T5
-    13: parseFloat(lastRow[5]) || 0,
-     // Kill points
-    14: parseFloat(lastRow[3]) || 0,
-     // Deads
-    15: parseFloat(lastRow[6]) || 0,
-  };
+   return {
+     2: parseFloat(lastRow[2]) || 0,   // Power
+     12: parseFloat(lastRow[4]) || 0,  // T4
+     13: parseFloat(lastRow[5]) || 0,  // T5
+     14: parseFloat(lastRow[6]) || 0,  // Deads
+     15: parseFloat(lastRow[3]) || 0,  // Kill Points
+   };
 }
 
 function formatNumber(num) {
@@ -747,10 +738,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const totalsContainer = document.getElementById("bottom-totals");
   totalsContainer.innerHTML = "";
   const totalDefs = [
-    { label: "Total T4 kills gained", col: 3 },
-    { label: "Total T5 kills gained", col: 4 },
-    { label: "Total Deads gained", col: 5 },
-    { label: "Total KP gained", col: 6 }
+     { label: "Total T4 kills gained", col: 12 },
+     { label: "Total T5 kills gained", col: 13 },
+     { label: "Total Deads gained", col: 14 },
+     { label: "Total KP gained", col: 15 }
   ];
   totalDefs.forEach(item => {
     let sum = 0;
@@ -802,10 +793,10 @@ function updateChartsForPlayer(playerId) {
       const ws = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
       const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
-      chartData.chart4.push(playerRow?.[3] || 0);
-      chartData.chart5.push(playerRow?.[4] || 0);
-      chartData.chart6.push(playerRow?.[5] || 0);
-      chartData.chart7.push(playerRow?.[6] || 0);
+      chartData.chart4.push(playerRow?.[4] || 0); // T4
+      chartData.chart5.push(playerRow?.[5] || 0); // T5
+      chartData.chart6.push(playerRow?.[6] || 0); // Deads
+      chartData.chart7.push(playerRow?.[3] || 0); // KP
     });
     Object.keys(chartData).forEach(chartId => {
       charts[chartId].data.labels = sheetNames;
