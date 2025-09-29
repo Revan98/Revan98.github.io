@@ -507,6 +507,10 @@ function getSheetDiffsForPlayers(playerId) {
   if (!lastRow) return null;
 
   return {
+    3: parseFloat(lastRow[3]) || 0,
+    4: parseFloat(lastRow[4]) || 0,
+    5: parseFloat(lastRow[5]) || 0,
+    6: parseFloat(lastRow[6]) || 0,
      // Power
     2: parseFloat(lastRow[2]) || 0,
      // T4
