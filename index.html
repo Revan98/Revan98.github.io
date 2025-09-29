@@ -593,9 +593,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = row[colIndex] ?? "";
-
-      if (colIndex === 9 && val !== "") {   // not 10!
-        let num = Number(val);
+      
+      if (colIndex === 9 && val !== "") {
+        // replace comma with dot before parsing
+        let num = parseFloat(val.toString().replace(",", "."));
         if (!isNaN(num)) {
           num = num * 100;
           val = num.toFixed(0) + "%";
@@ -880,6 +881,7 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
 
 
 
