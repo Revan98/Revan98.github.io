@@ -107,23 +107,17 @@ table.dataTable {
 table.dataTable th {
   font-size: 14px;
   text-align: left !important;
-  height: 20px !important;      /* pick what looks good (35–50px is common) */
-  vertical-align: middle !important;
 }
 
 table.dataTable th,
 table.dataTable td {
   padding: 12px 15px !important;
   border: 1px solid var(--table-border) !important;
-  height: 40px !important;      /* pick what looks good (35–50px is common) */
-  vertical-align: middle !important;
+}
+table.dataTable tbody th, table.dataTable tbody td {
+    padding: 4px 10px; /* e.g. change 8x to 4px here */
 }
 
-table.dataTable tbody td {
-  text-align: left !important;
-  height: 40px !important;      /* pick what looks good (35–50px is common) */
-  vertical-align: middle !important;
-}
 
 table.dataTable tbody tr:nth-child(odd) {
   background-color: rgba(0,0,0,0.02);
@@ -883,6 +877,7 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
 
 
 
