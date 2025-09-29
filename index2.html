@@ -415,20 +415,17 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 
 <script>
 const CONFIG = {
-  source: "google", // "google" or "excel"
   googleSheetUrl: "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
-  excelFilePath: "data.xlsx"
 };
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9, 7];
 
 let dataTableInstance = null;
-let workbook = null;
 let googleSheetId = null;
 let googleSheetNames = [];
 let googleSheetsData = {};
-let currentSource = null;
+let currentSource = "google";
 let charts = {};
 let tableClickHandler = null;
 
@@ -495,12 +492,6 @@ function getSheetDiffsForPlayers(playerId) {
   if (currentSource === "google") {
     const lastSheet = googleSheetNames[googleSheetNames.length - 1];
     lastRows = (googleSheetsData[lastSheet] || []).slice(1);
-  }
-
-  if (currentSource === "excel" && workbook) {
-    const sheetNames = workbook.SheetNames;
-    const lastSheet = sheetNames[sheetNames.length - 1];
-    lastRows = XLSX.utils.sheet_to_json(workbook.Sheets[lastSheet], { header: 1 }).slice(1);
   }
 
   if (!lastRows) return null;
@@ -766,19 +757,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
 }
 
-function parseExcelData(arrayBuffer) {
-  workbook = XLSX.read(arrayBuffer, { type: 'array' });
-  currentSource = "excel";
-  const sheetNames = workbook.SheetNames;
-  loadExcelSheet(sheetNames[sheetNames.length - 1]);
-}
-
-function loadExcelSheet(sheetName) {
-  resetCharts();
-  const ws = workbook.Sheets[sheetName];
-  const json = XLSX.utils.sheet_to_json(ws, { header: 1 });
-  if (json.length) renderTableFiltered(json[0], json.slice(1), selectedColumns);
-}
 function populateSheetSelector(names, source) {
   const selector = document.getElementById("sheet-selector");
   selector.innerHTML = "";
@@ -791,27 +769,9 @@ function populateSheetSelector(names, source) {
   selector.dataset.source = source;
   selector.style.display = names.length > 1 ? "inline" : "none";
 }
-
+   
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
-
-  if (currentSource === "excel" && workbook) {
-    const sheetNames = workbook.SheetNames;
-    sheetNames.forEach(sheetName => {
-      const ws = workbook.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
-      chartData.chart4.push(playerRow?.[4] || 0);
-      chartData.chart5.push(playerRow?.[5] || 0);
-      chartData.chart6.push(playerRow?.[6] || 0);
-      chartData.chart7.push(playerRow?.[7] || 0);
-    });
-    Object.keys(chartData).forEach(chartId => {
-      charts[chartId].data.labels = sheetNames;
-      charts[chartId].data.datasets[0].data = chartData[chartId];
-      charts[chartId].update();
-    });
-  }
 
   if (currentSource === "google" && Object.keys(googleSheetsData).length) {
     const sheetNames = googleSheetNames;
@@ -833,30 +793,23 @@ function updateChartsForPlayer(playerId) {
 
 document.addEventListener("DOMContentLoaded", async () => {
   initCharts();
-  if (CONFIG.source === "excel") {
-    const res = await fetch(CONFIG.excelFilePath);
-    const buf = await res.arrayBuffer();
-    parseExcelData(buf);
-  } else if (CONFIG.source === "google") {
-    resetCharts();
-    const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (!match) return alert("Invalid Google Sheets URL");
-    googleSheetId = match[1];
-    const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
-    const meta = await metaRes.json();
-    googleSheetNames = meta.sheets.map(s => s.properties.title);
-    currentSource = "google";
-    googleSheetsData = {};
-    await Promise.all(
-      googleSheetNames.map(async name => {
-        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
-        const data = await res.json();
-        googleSheetsData[name] = data.values || [];
-      })
-    );
-    const firstSheet = googleSheetNames[googleSheetNames.length - 1];
-    renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
-  }
+  resetCharts();
+  const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!match) return alert("Invalid Google Sheets URL");
+  googleSheetId = match[1];
+  const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
+  const meta = await metaRes.json();
+  googleSheetNames = meta.sheets.map(s => s.properties.title);
+  googleSheetsData = {};
+  await Promise.all(
+    googleSheetNames.map(async name => {
+      const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
+      const data = await res.json();
+      googleSheetsData[name] = data.values || [];
+    })
+  );
+  const firstSheet = googleSheetNames[googleSheetNames.length - 1];
+  renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
 });
 
 document.getElementById("toggle-theme").addEventListener("click", () => {
