@@ -757,12 +757,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
     });
     const box = document.createElement("div");
     box.className = "stat-box";
-    box.innerHTML = `<h3>${item.label}</h3><p>${formatNumber(sum)}</p>`;
+    box.innerHTML = `<h3>${item.label}</h3><p>${sum.toLocaleString()}</p>`;
     totalsContainer.appendChild(box);
   });
 }
-
-
 
 function parseExcelData(arrayBuffer) {
   workbook = XLSX.read(arrayBuffer, { type: 'array' });
@@ -879,5 +877,6 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
 
 
