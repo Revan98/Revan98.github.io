@@ -507,13 +507,10 @@ function getSheetDiffsForPlayers(playerId) {
   if (!lastRow) return null;
 
   return {
-    3: parseFloat(lastRow[3]) || 0,
-    4: parseFloat(lastRow[4]) || 0,
-    5: parseFloat(lastRow[5]) || 0,
-    6: parseFloat(lastRow[6]) || 0,
+
 
     // still mapping extra columns directly from last sheet
-    2: parseFloat(lastRow[16]) || 0,
+    2: parseFloat(lastRow[2]) || 0,
     12: parseFloat(lastRow[4]) || 0,
     13: parseFloat(lastRow[5]) || 0,
     14: parseFloat(lastRow[3]) || 0,
@@ -879,8 +876,3 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
-
-
-
-
