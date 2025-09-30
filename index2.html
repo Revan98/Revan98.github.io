@@ -65,6 +65,7 @@ body {
    3. NAVIGATION BAR
    ========================================================= */
 .topnav {
+  position: sticky;
   overflow: hidden;
   background-color: #333;
 }
@@ -345,6 +346,13 @@ div.dt-button-collection button.active::before {
 <div id="main-layout">
   <div id="left-sidebar"></div>
   <div id="table-container">
+    <div id="loading-overlay" style="
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.5); color:white; display:flex;
+      align-items:center; justify-content:center; font-size:20px;
+      z-index:2000; display:none;">
+      Loading data...
+    </div>
     <div id="top-players"></div>
     <table id="data-table" class="dataTable"></table>
     <div id="bottom-totals"></div>
@@ -598,6 +606,19 @@ function renderTableFiltered(headers, rows, selectedCols) {
      const playerId = cells[1].textContent.trim(); // column 1 = ID
      updateChartsForPlayer(playerId);
    });
+   
+   // restore column visibility from localStorage
+   const savedVisibility = JSON.parse(localStorage.getItem("colVisibility") || "{}");
+   Object.keys(savedVisibility).forEach(idx => {
+     dataTableInstance.column(idx).visible(savedVisibility[idx]);
+   });
+   
+   // listen for visibility changes
+   dataTableInstance.on('column-visibility.dt', function(e, settings, column, state) {
+     const vis = JSON.parse(localStorage.getItem("colVisibility") || "{}");
+     vis[column] = state;
+     localStorage.setItem("colVisibility", JSON.stringify(vis));
+   });
 
   // Totals (unchanged)
   const totalsContainer = document.getElementById("bottom-totals");
@@ -656,32 +677,48 @@ function updateChartsForPlayer(playerId) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
+  }
   initCharts();
   if (CONFIG.source === "google") {
     resetCharts();
-    const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (!match) return alert("Invalid Google Sheets URL");
-    googleSheetId = match[1];
-    const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
-    const meta = await metaRes.json();
-    googleSheetNames = meta.sheets.map(s => s.properties.title);
-    currentSource = "google";
-    googleSheetsData = {};
-    await Promise.all(
-      googleSheetNames.map(async name => {
-        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
-        const data = await res.json();
-        googleSheetsData[name] = data.values || [];
-      })
-    );
-    const firstSheet = googleSheetNames[googleSheetNames.length - 1];
-    renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+   document.getElementById("loading-overlay").style.display = "flex";
+   try {
+     const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
+     if (!metaRes.ok) throw new Error("Google Sheets API error");
+     const meta = await metaRes.json();
+     if (!meta.sheets) throw new Error("No sheets found or access denied.");
+   
+     googleSheetNames = meta.sheets.map(s => s.properties.title);
+     currentSource = "google";
+     googleSheetsData = {};
+     await Promise.all(
+       googleSheetNames.map(async name => {
+         const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
+         if (!res.ok) throw new Error("Error fetching sheet: " + name);
+         const data = await res.json();
+         googleSheetsData[name] = data.values || [];
+       })
+     );
+   
+     const firstSheet = googleSheetNames[googleSheetNames.length - 1];
+     renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+   } catch (err) {
+     alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
+   }
+ finally {
+  document.getElementById("loading-overlay").style.display = "none";
+}
   }
 });
 
 document.getElementById("toggle-theme").addEventListener("click", () => {
   document.body.classList.toggle("dark");
 
+  // save theme
+  localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+   
   const chartTextColor = getComputedStyle(document.body).getPropertyValue("--chart-text").trim();
   const chartGridColor = getComputedStyle(document.body).getPropertyValue("--chart-grid").trim();
   const chartLineColor = getComputedStyle(document.body).getPropertyValue("--chart-line").trim();
