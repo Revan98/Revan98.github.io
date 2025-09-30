@@ -65,9 +65,11 @@ body {
    3. NAVIGATION BAR
    ========================================================= */
 .topnav {
-  position: sticky;
   overflow: hidden;
   background-color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .topnav a,
@@ -270,23 +272,19 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
    10. RESPONSIVE
    ========================================================= */
 @media (max-width: 768px) {
-  #top-players,
-  #bottom-totals {
-    flex-direction: column;
-    align-items: center;
-  }
-
   #top-players .player-box,
   #bottom-totals .stat-box {
-    width: 100%;
-    max-width: 280px;
+    cursor: pointer;
   }
 
-  #charts-container {
-    grid-template-columns: 1fr;
-    max-width: 90vw;
+  .collapsible-content {
+    display: none;
+  }
+  .collapsible.open .collapsible-content {
+    display: block;
   }
 }
+
 /* =========================================================
    DATATABLES BUTTONS STYLING
    ========================================================= */
@@ -498,8 +496,12 @@ function renderTableFiltered(headers, rows, selectedCols) {
       const id = player[0] ?? "";
       const name = player[1] ?? "";
       const box = document.createElement("div");
-      box.className = "player-box";
-      box.innerHTML = `<div class="player-rank">TOP${idx + 1}</div><h3>${name}</h3><p>ID: ${id}</p>`;
+      box.className = "player-box collapsible";
+      box.innerHTML = `
+        <div class="collapsible-header">${name} (TOP${idx+1})</div>
+        <div class="collapsible-content"><p>ID: ${id}</p></div>
+      `;
+
       topContainer.appendChild(box);
     });
   }
@@ -636,8 +638,12 @@ function renderTableFiltered(headers, rows, selectedCols) {
       if (diffs) sum += diffs[item.col] || 0;
     });
     const box = document.createElement("div");
-    box.className = "stat-box";
-    box.innerHTML = `<h3>${item.label}</h3><p>${sum.toLocaleString()}</p>`;
+    box.className = "stat-box collapsible";
+    box.innerHTML = `
+      <div class="collapsible-header">${item.label}</div>
+      <div class="collapsible-content"><p>${sum.toLocaleString()}</p></div>
+    `;
+
     totalsContainer.appendChild(box);
   });
 }
@@ -688,20 +694,29 @@ document.addEventListener("DOMContentLoaded", async () => {
        const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
        if (!match) return alert("Invalid Google Sheets URL");
        googleSheetId = match[1];
-       const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
-       const meta = await metaRes.json();
-       googleSheetNames = meta.sheets.map(s => s.properties.title);
-       currentSource = "google";
-       googleSheetsData = {};
-       await Promise.all(
-         googleSheetNames.map(async name => {
-           const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
-           const data = await res.json();
-           googleSheetsData[name] = data.values || [];
-         })
-       );
-       const firstSheet = googleSheetNames[googleSheetNames.length - 1];
-       renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+       try {
+         const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
+         if (!metaRes.ok) throw new Error("Google Sheets API error");
+         const meta = await metaRes.json();
+         if (!meta.sheets) throw new Error("No sheets found or access denied.");
+      
+         googleSheetNames = meta.sheets.map(s => s.properties.title);
+         currentSource = "google";
+         googleSheetsData = {};
+         await Promise.all(
+           googleSheetNames.map(async name => {
+             const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
+             if (!res.ok) throw new Error("Error fetching sheet: " + name);
+             const data = await res.json();
+             googleSheetsData[name] = data.values || [];
+           })
+         );
+      
+         const firstSheet = googleSheetNames[googleSheetNames.length - 1];
+         renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+       } catch (err) {
+         alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
+       }
      }
    } finally {
      document.getElementById("loading-overlay").style.display = "none";
