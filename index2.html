@@ -665,8 +665,12 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
 
   // Export dropdown
-  const searchContainer = document.querySelector('div.dt-search');
-  if (searchContainer) {
+// Get the container where search input lives
+const searchContainer = document.querySelector('div.dt-search');
+if (searchContainer) {
+
+  // Export dropdown (create only once)
+  if (!document.querySelector('.export-dropdown')) {
     const exportDropdown = document.createElement('div');
     exportDropdown.className = 'export-dropdown';
     exportDropdown.innerHTML = `
@@ -687,29 +691,34 @@ function renderTableFiltered(headers, rows, selectedCols) {
     });
   }
 
-  // Column toggle dropdown
-  const colDropdown = document.createElement('div');
-  colDropdown.className = 'column-toggle-dropdown';
-  colDropdown.innerHTML = `
-    <button>Columns</button>
-    <div class="column-toggle-content"></div>
-  `;
-  searchContainer.prepend(colDropdown);
+  // Column toggle dropdown (create only once)
+  if (!document.querySelector('.column-toggle-dropdown')) {
+    const colDropdown = document.createElement('div');
+    colDropdown.className = 'column-toggle-dropdown';
+    colDropdown.innerHTML = `
+      <button>Columns</button>
+      <div class="column-toggle-content"></div>
+    `;
+    searchContainer.prepend(colDropdown);
 
-  const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
-  filteredHeaders.forEach((colName, i) => {
-    const colIndex = i + 1;
-    const label = document.createElement("label");
-    const isVisible = [0, 1, 2, 3, 4, 5, 6, 7].includes(i);
-    label.innerHTML = `<input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}"><span>${colName}</span>`;
-    colToggleContainer.appendChild(label);
-    if (!isVisible) dataTableInstance.column(colIndex).visible(false);
-  });
+    const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
+    // Populate checkboxes based on current headers
+    filteredHeaders.forEach((colName, i) => {
+      const colIndex = i + 1;
+      const label = document.createElement("label");
+      const isVisible = [0, 1, 2, 3, 4, 5, 6, 7].includes(i);
+      label.innerHTML = `<input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}"><span>${colName}</span>`;
+      colToggleContainer.appendChild(label);
+      if (!isVisible) dataTableInstance.column(colIndex).visible(false);
+    });
 
-  colToggleContainer.addEventListener("change", (e) => {
-    const col = e.target.dataset.col;
-    if (col !== undefined) dataTableInstance.column(col).visible(e.target.checked);
-  });
+    colToggleContainer.addEventListener("change", (e) => {
+      const col = e.target.dataset.col;
+      if (col !== undefined) dataTableInstance.column(col).visible(e.target.checked);
+    });
+  }
+}
+
 
   // Dropdown open/close
   document.addEventListener("click", (e) => {
