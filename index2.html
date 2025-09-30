@@ -17,6 +17,7 @@
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.dataTables.js"></script>
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.colVis.min.js"></script>
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 
@@ -147,7 +148,7 @@ div.dt-search {
 div.dt-search input {
   width: 200px !important;
   max-width: 100%;
-  padding: 14px 12px !important;
+  padding: 9px 12px !important;
   border-radius: 8px !important;
   border: 1px solid #ccc !important;
   background-color: #ccc !important;
@@ -269,6 +270,55 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
     grid-template-columns: 1fr;
     max-width: 90vw;
   }
+}
+/* =========================================================
+   DATATABLES BUTTONS STYLING
+   ========================================================= */
+div.dt-buttons button {
+  background-color: #444 !important;
+  /*background: var(--accent) !important;*/
+  color: var(--text-color) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin: 0 4px !important;
+}
+
+div.dt-buttons button:hover {
+  background: rgba(0,123,255,0.2) !important;
+}
+
+/* Column visibility dropdown menu */
+div.dt-button-collection {
+  background: var(--table-bg) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+div.dt-button-collection button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin: 2px 0 !important;
+  background: transparent !important;
+  color: var(--text-color) !important;
+  border: none !important;
+  padding: 6px 10px !important;
+}
+
+div.dt-button-collection button:hover {
+  background: rgba(0,123,255,0.1) !important;
+}
+
+/* Tick/checkmark color */
+div.dt-button-collection button.active::before {
+  content: "✔ ";
+  color: var(--checkmark-color);
 }
 
 </style>
@@ -513,14 +563,21 @@ function renderTableFiltered(headers, rows, selectedCols) {
     order: [],
     searching: true,
     info: false,
-    responsive: false,
+    responsive: true,
     autoWidth: false,
-    columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
+    columnDefs: [{ orderable: false, searchable: false, targets: 0 },
+                { targets: [9, 10], visible: false }],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
         topStart: {
-            buttons: ['csv', 'excel','colvis']
+            buttons: ['colvis']},
+        topCenter: {
+            search: {} 
+        },
+        topEnd: {
+           buttons: ['csv', 'excel']
         }
+        
     }
   });
 
