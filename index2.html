@@ -272,13 +272,13 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   transition: background 0.2s;
 }
 
-.export-dropdown button:hover,
+
 .column-toggle-dropdown button:hover {
   background-color: var(--accent);
 }
 
 /* Dropdown menu container */
-.export-dropdown-content,
+
 .column-toggle-content {
   display: none;
   position: absolute;
@@ -291,11 +291,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 }
 
 /* Export dropdown opens to the LEFT */
-.export-dropdown-content {
-  right: 0;
-  min-width: 200px;
-  padding: 10px;
-}
+
 
 /* Column dropdown menu */
 .column-toggle-content {
@@ -307,28 +303,15 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 }
 
 /* Show dropdown when toggled */
-.export-dropdown-content.show,
+
 .column-toggle-content.show {
   display: block;
 }
 
 /* Export dropdown items */
-.export-dropdown-content button {
-  width: 100%;
-  display: block;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 8px 10px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text-color);
-  border-radius: 4px;
-}
 
-.export-dropdown-content button:hover {
-  background-color: rgba(0,123,255,0.1); /* same as table row hover */
-}
+
+
 
 /* Column dropdown items */
 .column-toggle-content label {
@@ -666,17 +649,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
   `;
   searchContainer.prepend(colDropdown);
 
-  // Export dropdown
-  const exportDropdown = document.createElement('div');
-  exportDropdown.className = 'export-dropdown';
-  exportDropdown.innerHTML = `
-    <button>Export</button>
-    <div class="export-dropdown-content">
-      <button id="export-xlsx">Export as Excel (.xlsx)</button>
-      <button id="export-csv">Export as CSV</button>
-    </div>
-  `;
-  searchContainer.appendChild(exportDropdown);
 
   // Populate column toggles
   const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
@@ -702,39 +674,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
     }
   });
 
-  // Export handlers
-  document.getElementById("export-xlsx").addEventListener("click", function () {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, "table_export.xlsx");
-  });
-
-  document.getElementById("export-csv").addEventListener("click", function () {
-    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
-    const csv = XLSX.utils.sheet_to_csv(ws);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "table_export.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  });
-
   // Dropdown open/close
   document.addEventListener("click", (e) => {
-    const exportBtn = e.target.closest(".export-dropdown button");
     const colBtn = e.target.closest(".column-toggle-dropdown button");
     const isInsideColMenu = e.target.closest(".column-toggle-content");
-  
-    // Export dropdown toggle
-    if (exportBtn) {
-      exportBtn.nextElementSibling.classList.toggle("show");
-    } else {
-      document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
-    }
   
     // Column dropdown toggle
     if (colBtn) {
