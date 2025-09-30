@@ -9,10 +9,15 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 <!-- DataTables v2 -->
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
-
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.dataTables.css">
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/dataTables.buttons.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.dataTables.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.colVis.min.js"></script>
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 
@@ -25,7 +30,7 @@
   --text-color: #333;
   --table-bg: #fff;
   --table-border: #ccc;
-  --accent: #666;
+  --accent: #fff;
   --scrollbar-bg: rgba(0,0,0,0.3);
   --chart-text: #333;
   --chart-grid: rgba(0, 0, 0, 0.1);
@@ -136,14 +141,13 @@ div.dt-search {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  margin: 20px 40px !important;
-  gap: 20px;
+  margin: 5px 5px !important;
 }
 
 div.dt-search input {
   width: 200px !important;
   max-width: 100%;
-  padding: 14px 12px !important;
+  padding: 9px 12px !important;
   border-radius: 8px !important;
   border: 1px solid #ccc !important;
   background-color: #ccc !important;
@@ -246,128 +250,6 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 }
 
 /* =========================================================
-   9. DROPDOWNS (EXPORT & COLUMN)
-   ========================================================= */
-.export-dropdown,
-.column-toggle-dropdown {
-  position: relative;
-  display: inline-block;
-  font-size: 14px;
-}
-
-/* Dropdown trigger buttons */
-.export-dropdown button,
-.column-toggle-dropdown button {
-  background-color: var(--table-bg);
-  color: var(--text-color);
-  padding: 10px 14px;
-  border: 1px solid var(--table-border);
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s;
-}
-
-.export-dropdown button:hover,
-.column-toggle-dropdown button:hover {
-  background-color: var(--accent);
-}
-
-/* Dropdown menu container */
-.export-dropdown-content,
-.column-toggle-content {
-  display: none;
-  position: absolute;
-  background-color: var(--table-bg);
-  border: 1px solid var(--table-border);
-  border-radius: 6px;
-  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-  z-index: 10;
-  margin-top: 6px;
-}
-
-/* Export dropdown opens to the LEFT */
-.export-dropdown-content {
-  right: 0;
-  min-width: 200px;
-  padding: 10px;
-}
-
-/* Column dropdown menu */
-.column-toggle-content {
-  left: 0;
-  min-width: 160px;
-  padding: 12px;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Show dropdown when toggled */
-.export-dropdown-content.show,
-.column-toggle-content.show {
-  display: block;
-}
-
-/* Export dropdown items */
-.export-dropdown-content button {
-  width: 100%;
-  display: block;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 8px 10px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text-color);
-  border-radius: 4px;
-}
-
-.export-dropdown-content button:hover {
-  background-color: rgba(0,123,255,0.1); /* same as table row hover */
-}
-
-/* Column dropdown items */
-.column-toggle-content label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--text-color);
-  position: relative;
-  padding: 6px 8px 6px 24px;
-  border-radius: 6px;
-  transition: background 0.2s;
-  width: 100%;              /* fix hover overflow */
-  box-sizing: border-box;   /* stay inside width */
-}
-
-.column-toggle-content label:hover {
-  background-color: rgba(0,123,255,0.1); /* same as table row hover */
-}
-
-/* Hide native checkbox */
-.column-toggle-content input[type="checkbox"] {
-  display: none;
-}
-
-/* Space for checkmark */
-.column-toggle-content span::before {
-  content: "";
-  position: absolute;
-  left: 6px;
-  width: 16px;
-  height: 16px;
-}
-
-/* Checked → show ✔ only */
-.column-toggle-content input[type="checkbox"]:checked + span::before {
-  content: "✔";
-  color: var(--checkmark-color);
-  font-size: 15px;
-  font-weight: bold;
-}
-
-/* =========================================================
    10. RESPONSIVE
    ========================================================= */
 @media (max-width: 768px) {
@@ -387,6 +269,54 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
     grid-template-columns: 1fr;
     max-width: 90vw;
   }
+}
+/* =========================================================
+   DATATABLES BUTTONS STYLING
+   ========================================================= */
+div.dt-buttons button {
+  background: var(--accent) !important;
+  font-color: var(--text-color) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin: 0 4px !important;
+}
+
+div.dt-buttons button:hover {
+  background: rgba(0,123,255,0.2) !important;
+}
+
+/* Column visibility dropdown menu */
+div.dt-button-collection {
+  background: var(--table-bg) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+div.dt-button-collection button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin: 2px 0 !important;
+  background: transparent !important;
+  font-color: var(--text-color) !important;
+  border: none !important;
+  padding: 6px 10px !important;
+}
+
+div.dt-button-collection button:hover {
+  background: rgba(0,123,255,0.1) !important;
+}
+
+/* Tick/checkmark color */
+div.dt-button-collection button.active::before {
+  content: "✔ ";
+  color: var(--checkmark-color);
 }
 
 </style>
@@ -415,16 +345,14 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 
 <script>
 const CONFIG = {
-  source: "google", // "google" or "excel"
+  source: "google",
   googleSheetUrl: "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
-  excelFilePath: "data.xlsx"
 };
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9, 7];
 
 let dataTableInstance = null;
-let workbook = null;
 let googleSheetId = null;
 let googleSheetNames = [];
 let googleSheetsData = {};
@@ -495,12 +423,6 @@ function getSheetDiffsForPlayers(playerId) {
   if (currentSource === "google") {
     const lastSheet = googleSheetNames[googleSheetNames.length - 1];
     lastRows = (googleSheetsData[lastSheet] || []).slice(1);
-  }
-
-  if (currentSource === "excel" && workbook) {
-    const sheetNames = workbook.SheetNames;
-    const lastSheet = sheetNames[sheetNames.length - 1];
-    lastRows = XLSX.utils.sheet_to_json(workbook.Sheets[lastSheet], { header: 1 }).slice(1);
   }
 
   if (!lastRows) return null;
@@ -639,101 +561,21 @@ function renderTableFiltered(headers, rows, selectedCols) {
     order: [],
     searching: true,
     info: false,
-    responsive: false,
+    responsive: true,
     autoWidth: false,
-    columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
-    language: { searchPlaceholder: "Search by name or ID", search: "" }
+    columnDefs: [{ orderable: false, searchable: false, targets: 0 },
+                { targets: [9, 10], visible: false }],
+    language: { searchPlaceholder: "Search by name or ID", search: "" },
+    layout: {
+        topStart: {
+            buttons: ['csv', 'excel','colvis']
+        }
+    }
   });
 
   // Search container
   const searchContainer = document.querySelector('div.dt-search');
 
-  // Column toggle dropdown
-  const colDropdown = document.createElement('div');
-  colDropdown.className = 'column-toggle-dropdown';
-  colDropdown.innerHTML = `
-    <button>Columns</button>
-    <div class="column-toggle-content"></div>
-  `;
-  searchContainer.prepend(colDropdown);
-
-  // Export dropdown
-  const exportDropdown = document.createElement('div');
-  exportDropdown.className = 'export-dropdown';
-  exportDropdown.innerHTML = `
-    <button>Export</button>
-    <div class="export-dropdown-content">
-      <button id="export-xlsx">Export as Excel (.xlsx)</button>
-      <button id="export-csv">Export as CSV</button>
-    </div>
-  `;
-  searchContainer.appendChild(exportDropdown);
-
-  // Populate column toggles
-  const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
-  filteredHeaders.forEach((colName, i) => {
-    const colIndex = i + 1;
-    const label = document.createElement("label");
-    const isVisible = [0, 1, 2, 3, 4, 5, 6, 7].includes(i);
-    label.innerHTML = `
-      <input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}">
-      <span>${colName}</span>
-    `;
-    colToggleContainer.appendChild(label);
-  
-    if (!isVisible) {
-      dataTableInstance.column(colIndex).visible(false);
-    }
-  });
-
-  colToggleContainer.addEventListener("change", (e) => {
-    const col = e.target.dataset.col;
-    if (col !== undefined) {
-      dataTableInstance.column(col).visible(e.target.checked);
-    }
-  });
-
-  // Export handlers
-  document.getElementById("export-xlsx").addEventListener("click", function () {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, "table_export.xlsx");
-  });
-
-  document.getElementById("export-csv").addEventListener("click", function () {
-    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
-    const csv = XLSX.utils.sheet_to_csv(ws);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "table_export.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  });
-
-  // Dropdown open/close
-  document.addEventListener("click", (e) => {
-    const exportBtn = e.target.closest(".export-dropdown button");
-    const colBtn = e.target.closest(".column-toggle-dropdown button");
-    const isInsideColMenu = e.target.closest(".column-toggle-content");
-  
-    // Export dropdown toggle
-    if (exportBtn) {
-      exportBtn.nextElementSibling.classList.toggle("show");
-    } else {
-      document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
-    }
-  
-    // Column dropdown toggle
-    if (colBtn) {
-      colBtn.nextElementSibling.classList.toggle("show");
-    } else if (!isInsideColMenu) {
-      document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
-    }
-  });
   // Click handler
   document.querySelector("#data-table tbody").addEventListener("click", function(e) {
     const row = e.target.closest("tr");
@@ -766,19 +608,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
 }
 
-function parseExcelData(arrayBuffer) {
-  workbook = XLSX.read(arrayBuffer, { type: 'array' });
-  currentSource = "excel";
-  const sheetNames = workbook.SheetNames;
-  loadExcelSheet(sheetNames[sheetNames.length - 1]);
-}
-
-function loadExcelSheet(sheetName) {
-  resetCharts();
-  const ws = workbook.Sheets[sheetName];
-  const json = XLSX.utils.sheet_to_json(ws, { header: 1 });
-  if (json.length) renderTableFiltered(json[0], json.slice(1), selectedColumns);
-}
 function populateSheetSelector(names, source) {
   const selector = document.getElementById("sheet-selector");
   selector.innerHTML = "";
@@ -794,24 +623,6 @@ function populateSheetSelector(names, source) {
 
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
-
-  if (currentSource === "excel" && workbook) {
-    const sheetNames = workbook.SheetNames;
-    sheetNames.forEach(sheetName => {
-      const ws = workbook.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
-      chartData.chart4.push(playerRow?.[4] || 0);
-      chartData.chart5.push(playerRow?.[5] || 0);
-      chartData.chart6.push(playerRow?.[6] || 0);
-      chartData.chart7.push(playerRow?.[7] || 0);
-    });
-    Object.keys(chartData).forEach(chartId => {
-      charts[chartId].data.labels = sheetNames;
-      charts[chartId].data.datasets[0].data = chartData[chartId];
-      charts[chartId].update();
-    });
-  }
 
   if (currentSource === "google" && Object.keys(googleSheetsData).length) {
     const sheetNames = googleSheetNames;
@@ -833,11 +644,7 @@ function updateChartsForPlayer(playerId) {
 
 document.addEventListener("DOMContentLoaded", async () => {
   initCharts();
-  if (CONFIG.source === "excel") {
-    const res = await fetch(CONFIG.excelFilePath);
-    const buf = await res.arrayBuffer();
-    parseExcelData(buf);
-  } else if (CONFIG.source === "google") {
+  if (CONFIG.source === "google") {
     resetCharts();
     const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
     if (!match) return alert("Invalid Google Sheets URL");
@@ -881,18 +688,3 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
