@@ -523,7 +523,20 @@ function renderTableFiltered(headers, rows, selectedCols) {
         }
     }
   });
-
+   $(document).ready(function() {
+       $('#data-table').DataTable( {
+           dom: 'Bfrtip',
+           columnDefs: [
+             {
+               targets: [ 9 ],
+               visible: false 
+             }
+           ],
+           buttons: [
+               'colvis'
+           ]
+       } );
+   } );
   // Search container
   const searchContainer = document.querySelector('div.dt-search');
 
