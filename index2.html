@@ -532,7 +532,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   rows = removeEmptyRows(rows);
   rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
 
-  // Top players logic...
+  // Top players logic
   const dkpColIndex = selectedCols.indexOf(8);
   if (dkpColIndex !== -1) {
     rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
@@ -575,7 +575,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const tbody = document.createElement("tbody");
   rows.forEach((row, rowIdx) => {
     const tr = document.createElement("tr");
-
     const indexTd = document.createElement("td");
     indexTd.textContent = rowIdx + 1;
     tr.appendChild(indexTd);
@@ -584,9 +583,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = row[colIndex] ?? "";
-      
+
       if (colIndex === 9 && val !== "") {
-        // replace comma with dot before parsing
         let num = parseFloat(val.toString().replace(",", "."));
         if (!isNaN(num)) {
           num = num * 100;
@@ -623,53 +621,71 @@ function renderTableFiltered(headers, rows, selectedCols) {
   table.appendChild(thead);
   table.appendChild(tbody);
 
-     // Export handlers
-   dataTableInstance = new DataTable("#data-table", {
-       paging: false,
-       scrollY: '60vh',
-       scrollCollapse: true,
-       order: [],
-       searching: true,
-       info: false,
-       responsive: false,
-       autoWidth: false,
-       columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
-       language: { searchPlaceholder: "Search by name or ID", search: "" },
-       dom: 'Bfrtip',   // this is required for buttons
-       buttons: [
-         {
-           extend: 'excelHtml5',
-           text: 'Export Excel',
-           exportOptions: {
-             columns: ':visible',
-             format: {
-               body: function (data, row, column, node) {
-                 const match = String(data).match(/\(([^)]+)\)/);
-                 if (!match) return '';
-                 return match[1].replace(/^\+/, '').trim(); // remove + but keep -
-               }
-             }
-           }
-         },
-         {
-           extend: 'csvHtml5',
-           text: 'Export CSV',
-           exportOptions: {
-             columns: ':visible',
-             format: {
-               body: function (data, row, column, node) {
-                 const match = String(data).match(/\(([^)]+)\)/);
-                 if (!match) return '';
-                 return match[1].replace(/^\+/, '').trim();
-               }
-             }
-           }
-         }
-       ]
-   });
+  // Initialize DataTable
+  dataTableInstance = new DataTable("#data-table", {
+    paging: false,
+    scrollY: '60vh',
+    scrollCollapse: true,
+    order: [],
+    searching: true,
+    info: false,
+    responsive: false,
+    autoWidth: false,
+    columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
+    language: { searchPlaceholder: "Search by name or ID", search: "" },
+    dom: 'Bfrtip',
+    buttons: [
+      {
+        extend: 'excelHtml5',
+        text: 'Export Excel',
+        exportOptions: {
+          columns: ':visible',
+          format: {
+            body: function(data) {
+              const match = String(data).match(/\(([^)]+)\)/);
+              return match ? match[1].replace(/^\+/, '').trim() : data;
+            }
+          }
+        }
+      },
+      {
+        extend: 'csvHtml5',
+        text: 'Export CSV',
+        exportOptions: {
+          columns: ':visible',
+          format: {
+            body: function(data) {
+              const match = String(data).match(/\(([^)]+)\)/);
+              return match ? match[1].replace(/^\+/, '').trim() : data;
+            }
+          }
+        }
+      }
+    ]
+  });
 
-  // Search container
+  // Export dropdown
   const searchContainer = document.querySelector('div.dt-search');
+  if (searchContainer) {
+    const exportDropdown = document.createElement('div');
+    exportDropdown.className = 'export-dropdown';
+    exportDropdown.innerHTML = `
+      <button>Export</button>
+      <div class="export-dropdown-content">
+        <button id="export-xlsx">Export as Excel (.xlsx)</button>
+        <button id="export-csv">Export as CSV</button>
+      </div>
+    `;
+    searchContainer.appendChild(exportDropdown);
+
+    // Link buttons to DataTable exports
+    exportDropdown.querySelector("#export-xlsx").addEventListener("click", () => {
+      dataTableInstance.button(".buttons-excel").trigger();
+    });
+    exportDropdown.querySelector("#export-csv").addEventListener("click", () => {
+      dataTableInstance.button(".buttons-csv").trigger();
+    });
+  }
 
   // Column toggle dropdown
   const colDropdown = document.createElement('div');
@@ -680,106 +696,35 @@ function renderTableFiltered(headers, rows, selectedCols) {
   `;
   searchContainer.prepend(colDropdown);
 
-  // Export dropdown
- // const exportDropdown = document.createElement('div');
- // exportDropdown.className = 'export-dropdown';
- // exportDropdown.innerHTML = `
- //   <button>Export</button>
- //   <div class="export-dropdown-content">
- //     <button id="export-xlsx">Export as Excel (.xlsx)</button>
- //     <button id="export-csv">Export as CSV</button>
- //   </div>
-//  `;
- // searchContainer.appendChild(exportDropdown);
-// 1. Create export dropdown
-   const searchContainer = document.querySelector('div.dt-search');
-   
-   const exportDropdown = document.createElement('div');
-   exportDropdown.className = 'export-dropdown';
-   exportDropdown.innerHTML = `
-     <button>Export</button>
-     <div class="export-dropdown-content">
-       <button data-export="excel">Export as Excel (.xlsx)</button>
-       <button data-export="csv">Export as CSV</button>
-     </div>
-   `;
-   searchContainer.appendChild(exportDropdown);
-   
-   // 2. Dropdown open/close logic
-   document.addEventListener("click", (e) => {
-       const exportBtn = e.target.closest(".export-dropdown button");
-       const isInsideMenu = e.target.closest(".export-dropdown-content");
-   
-       if (exportBtn && !isInsideMenu) {
-           exportBtn.nextElementSibling.classList.toggle("show");
-       } else if (!isInsideMenu) {
-           document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
-       }
-   });
-   
-   // 3. Trigger DataTables export buttons dynamically
-   exportDropdown.querySelectorAll(".export-dropdown-content button").forEach(btn => {
-       btn.addEventListener("click", () => {
-           const type = btn.dataset.export; // "excel" or "csv"
-           if (!dataTableInstance) return;
-   
-           if (type === "excel") {
-               dataTableInstance.button('.buttons-excel').trigger();
-           } else if (type === "csv") {
-               dataTableInstance.button('.buttons-csv').trigger();
-           }
-   
-           // Close the dropdown after clicking
-           btn.closest(".export-dropdown-content").classList.remove("show");
-       });
-   });
-  // Populate column toggles
   const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
   filteredHeaders.forEach((colName, i) => {
     const colIndex = i + 1;
     const label = document.createElement("label");
     const isVisible = [0, 1, 2, 3, 4, 5, 6, 7].includes(i);
-    label.innerHTML = `
-      <input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}">
-      <span>${colName}</span>
-    `;
+    label.innerHTML = `<input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}"><span>${colName}</span>`;
     colToggleContainer.appendChild(label);
-  
-    if (!isVisible) {
-      dataTableInstance.column(colIndex).visible(false);
-    }
+    if (!isVisible) dataTableInstance.column(colIndex).visible(false);
   });
 
   colToggleContainer.addEventListener("change", (e) => {
     const col = e.target.dataset.col;
-    if (col !== undefined) {
-      dataTableInstance.column(col).visible(e.target.checked);
-    }
+    if (col !== undefined) dataTableInstance.column(col).visible(e.target.checked);
   });
-
-
 
   // Dropdown open/close
   document.addEventListener("click", (e) => {
     const exportBtn = e.target.closest(".export-dropdown button");
     const colBtn = e.target.closest(".column-toggle-dropdown button");
     const isInsideColMenu = e.target.closest(".column-toggle-content");
-  
-    // Export dropdown toggle
-    if (exportBtn) {
-      exportBtn.nextElementSibling.classList.toggle("show");
-    } else {
-      document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
-    }
-  
-    // Column dropdown toggle
-    if (colBtn) {
-      colBtn.nextElementSibling.classList.toggle("show");
-    } else if (!isInsideColMenu) {
-      document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
-    }
+
+    if (exportBtn) exportBtn.nextElementSibling.classList.toggle("show");
+    else document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
+
+    if (colBtn) colBtn.nextElementSibling.classList.toggle("show");
+    else if (!isInsideColMenu) document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
   });
-  // Click handler
+
+  // Click handler for charts
   document.querySelector("#data-table tbody").addEventListener("click", function(e) {
     const row = e.target.closest("tr");
     if (!row) return;
@@ -789,7 +734,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     updateChartsForPlayer(playerId);
   });
 
-  // Totals (unchanged)
+  // Totals
   const totalsContainer = document.getElementById("bottom-totals");
   totalsContainer.innerHTML = "";
   const totalDefs = [
@@ -810,6 +755,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     totalsContainer.appendChild(box);
   });
 }
+
 
 function populateSheetSelector(names, source) {
   const selector = document.getElementById("sheet-selector");
