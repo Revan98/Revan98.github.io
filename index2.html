@@ -623,18 +623,50 @@ function renderTableFiltered(headers, rows, selectedCols) {
   table.appendChild(thead);
   table.appendChild(tbody);
 
-  dataTableInstance = new DataTable("#data-table", {
-    paging: false,
-    scrollY: '60vh',
-    scrollCollapse: true,
-    order: [],
-    searching: true,
-    info: false,
-    responsive: false,
-    autoWidth: false,
-    columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
-    language: { searchPlaceholder: "Search by name or ID", search: "" }
-  });
+     // Export handlers
+   dataTableInstance = new DataTable("#data-table", {
+       paging: false,
+       scrollY: '60vh',
+       scrollCollapse: true,
+       order: [],
+       searching: true,
+       info: false,
+       responsive: false,
+       autoWidth: false,
+       columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
+       language: { searchPlaceholder: "Search by name or ID", search: "" },
+       dom: 'Bfrtip',   // this is required for buttons
+       buttons: [
+         {
+           extend: 'excelHtml5',
+           text: 'Export Excel',
+           exportOptions: {
+             columns: ':visible',
+             format: {
+               body: function (data, row, column, node) {
+                 const match = String(data).match(/\(([^)]+)\)/);
+                 if (!match) return '';
+                 return match[1].replace(/^\+/, '').trim(); // remove + but keep -
+               }
+             }
+           }
+         },
+         {
+           extend: 'csvHtml5',
+           text: 'Export CSV',
+           exportOptions: {
+             columns: ':visible',
+             format: {
+               body: function (data, row, column, node) {
+                 const match = String(data).match(/\(([^)]+)\)/);
+                 if (!match) return '';
+                 return match[1].replace(/^\+/, '').trim();
+               }
+             }
+           }
+         }
+       ]
+   });
 
   // Search container
   const searchContainer = document.querySelector('div.dt-search');
@@ -684,50 +716,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
     }
   });
 
-     // Export handlers
-   dataTableInstance = new DataTable("#data-table", {
-       paging: false,
-       scrollY: '60vh',
-       scrollCollapse: true,
-       order: [],
-       searching: true,
-       info: false,
-       responsive: false,
-       autoWidth: false,
-       columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
-       language: { searchPlaceholder: "Search by name or ID", search: "" },
-       dom: 'Bfrtip',   // this is required for buttons
-       buttons: [
-         {
-           extend: 'excelHtml5',
-           text: 'Export Excel',
-           exportOptions: {
-             columns: ':visible',
-             format: {
-               body: function (data, row, column, node) {
-                 const match = String(data).match(/\(([^)]+)\)/);
-                 if (!match) return '';
-                 return match[1].replace(/^\+/, '').trim(); // remove + but keep -
-               }
-             }
-           }
-         },
-         {
-           extend: 'csvHtml5',
-           text: 'Export CSV',
-           exportOptions: {
-             columns: ':visible',
-             format: {
-               body: function (data, row, column, node) {
-                 const match = String(data).match(/\(([^)]+)\)/);
-                 if (!match) return '';
-                 return match[1].replace(/^\+/, '').trim();
-               }
-             }
-           }
-         }
-       ]
-   });
 
 
   // Dropdown open/close
