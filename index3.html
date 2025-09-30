@@ -631,16 +631,9 @@ function renderTableFiltered(headers, rows, selectedCols) {
     columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
-      topStart: {
-        buttons: [
-          {
-            extend: 'colvis',
-            text: 'Columns'
-          },
-          'csv',
-          'excel'
-        ]
-      }
+        topStart: {
+            buttons: ['csv', 'excel','colvis']
+        }
     }
   });
 
