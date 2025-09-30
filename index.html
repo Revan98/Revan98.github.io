@@ -88,12 +88,22 @@ body {
 /* =========================================================
    4. TABLE STYLES
    ========================================================= */
+#main-layout {
+  display: flex;
+  width: 100vw;
+  min-height: 100vh; /* makes it full height */
+}
+
+#left-sidebar,
+#right-sidebar {
+  width: 10vw;
+}
+
 #table-container {
   padding-top: 30px;
   justify-content: center;
-  max-width: 80vw;
+  width: 80vw;
   overflow-x: auto;
-  margin: 0 auto;
 }
 
 table.dataTable {
@@ -225,7 +235,10 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   font-size: 14px;
   color: var(--text-color);
 }
-
+#top-players{
+   display: flex; justify-content: center; gap: 20px; margin-top: 20px;}
+#bottom-totals{
+   display: flex; justify-content: center; gap: 20px; margin-top: 20px;}
 /* =========================================================
    8. CHARTS
    ========================================================= */
@@ -236,7 +249,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
   justify-content: center;
   align-items: start;
   margin: 30px auto;
-  max-width: 40vw;
+  max-width: 39vw;
 }
 
 #charts-container canvas {
@@ -321,24 +334,24 @@ div.dt-button-collection button.active::before {
 <body>
 
 <div class="topnav">
-  
   <button style="float:right" id="toggle-theme">Dark/Light</button>
 </div>
-
+<div id="main-layout">
+  <div id="left-sidebar"></div>
+  <div id="table-container">
+    <div id="top-players"></div>
+    <table id="data-table" class="dataTable"></table>
+    <div id="bottom-totals"></div>
+    <div id="charts-container">
+      <canvas id="chart4" height="150"></canvas>
+      <canvas id="chart5" height="150"></canvas>
+      <canvas id="chart6" height="150"></canvas>
+      <canvas id="chart7" height="150"></canvas>
+    </div>
+  </div>
+  <div id="right-sidebar"></div>
+</div>
 <!-- Table -->
-<div id="table-container">
-  <div id="top-players" style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;"></div>
-  <table id="data-table" class="dataTable"></table>
-  <div id="bottom-totals" style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;"></div>
-</div>
-
-<!-- Charts Grid -->
-<div id="charts-container">
-  <canvas id="chart4" height="150"></canvas>
-  <canvas id="chart5" height="150"></canvas>
-  <canvas id="chart6" height="150"></canvas>
-  <canvas id="chart7" height="150"></canvas>
-</div>
 
 <script>
 const CONFIG = {
@@ -685,4 +698,3 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
