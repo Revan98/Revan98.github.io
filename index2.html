@@ -681,6 +681,13 @@ function updateChartsForPlayer(playerId) {
     });
   }
 }
+   //new
+document.addEventListener("click", e => {
+  if (e.target.closest(".collapsible-header")) {
+    const parent = e.target.closest(".collapsible");
+    parent.classList.toggle("open");
+  }
+});
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (localStorage.getItem("theme") === "dark") {
