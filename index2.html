@@ -681,17 +681,58 @@ function renderTableFiltered(headers, rows, selectedCols) {
   searchContainer.prepend(colDropdown);
 
   // Export dropdown
-  const exportDropdown = document.createElement('div');
-  exportDropdown.className = 'export-dropdown';
-  exportDropdown.innerHTML = `
-    <button>Export</button>
-    <div class="export-dropdown-content">
-      <button id="export-xlsx">Export as Excel (.xlsx)</button>
-      <button id="export-csv">Export as CSV</button>
-    </div>
-  `;
-  searchContainer.appendChild(exportDropdown);
-
+ // const exportDropdown = document.createElement('div');
+ // exportDropdown.className = 'export-dropdown';
+ // exportDropdown.innerHTML = `
+ //   <button>Export</button>
+ //   <div class="export-dropdown-content">
+ //     <button id="export-xlsx">Export as Excel (.xlsx)</button>
+ //     <button id="export-csv">Export as CSV</button>
+ //   </div>
+//  `;
+ // searchContainer.appendChild(exportDropdown);
+// 1. Create export dropdown
+   const searchContainer = document.querySelector('div.dt-search');
+   
+   const exportDropdown = document.createElement('div');
+   exportDropdown.className = 'export-dropdown';
+   exportDropdown.innerHTML = `
+     <button>Export</button>
+     <div class="export-dropdown-content">
+       <button data-export="excel">Export as Excel (.xlsx)</button>
+       <button data-export="csv">Export as CSV</button>
+     </div>
+   `;
+   searchContainer.appendChild(exportDropdown);
+   
+   // 2. Dropdown open/close logic
+   document.addEventListener("click", (e) => {
+       const exportBtn = e.target.closest(".export-dropdown button");
+       const isInsideMenu = e.target.closest(".export-dropdown-content");
+   
+       if (exportBtn && !isInsideMenu) {
+           exportBtn.nextElementSibling.classList.toggle("show");
+       } else if (!isInsideMenu) {
+           document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
+       }
+   });
+   
+   // 3. Trigger DataTables export buttons dynamically
+   exportDropdown.querySelectorAll(".export-dropdown-content button").forEach(btn => {
+       btn.addEventListener("click", () => {
+           const type = btn.dataset.export; // "excel" or "csv"
+           if (!dataTableInstance) return;
+   
+           if (type === "excel") {
+               dataTableInstance.button('.buttons-excel').trigger();
+           } else if (type === "csv") {
+               dataTableInstance.button('.buttons-csv').trigger();
+           }
+   
+           // Close the dropdown after clicking
+           btn.closest(".export-dropdown-content").classList.remove("show");
+       });
+   });
   // Populate column toggles
   const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
   filteredHeaders.forEach((colName, i) => {
