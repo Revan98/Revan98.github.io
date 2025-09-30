@@ -419,18 +419,22 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
 
 <script>
 const CONFIG = {
+  source: "google", // "google" or "excel"
   googleSheetUrl: "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
+  excelFilePath: "data.xlsx"
 };
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9, 7];
 
 let dataTableInstance = null;
+let workbook = null;
 let googleSheetId = null;
 let googleSheetNames = [];
 let googleSheetsData = {};
-let currentSource = "google";
+let currentSource = null;
 let charts = {};
+let tableClickHandler = null;
 
 function initCharts() {
   const chartConfigs = [
@@ -460,10 +464,18 @@ function initCharts() {
       },
       options: {
         responsive: true,
-        plugins: { legend: { labels: { color: chartTextColor } } },
+        plugins: {
+          legend: {
+            labels: { color: chartTextColor }
+          }
+        },
         scales: {
-          x: { ticks: { color: chartTextColor }, grid: { color: chartGridColor } },
-          y: { ticks: { color: chartTextColor }, grid: { color: chartGridColor } }
+          x: { ticks: { color: chartTextColor },
+               grid: { color: chartGridColor } 
+             },
+          y: { ticks: { color: chartTextColor },
+               grid: { color: chartGridColor } 
+             }
         }
       }
     });
@@ -481,14 +493,22 @@ function resetCharts() {
     chart.update();
   });
 }
-
 function getSheetDiffsForPlayers(playerId) {
   let lastRows;
+
   if (currentSource === "google") {
     const lastSheet = googleSheetNames[googleSheetNames.length - 1];
     lastRows = (googleSheetsData[lastSheet] || []).slice(1);
   }
+
+  if (currentSource === "excel" && workbook) {
+    const sheetNames = workbook.SheetNames;
+    const lastSheet = sheetNames[sheetNames.length - 1];
+    lastRows = XLSX.utils.sheet_to_json(workbook.Sheets[lastSheet], { header: 1 }).slice(1);
+  }
+
   if (!lastRows) return null;
+
   const lastRow = lastRows.find(r => String(r[0]).trim() === String(playerId).trim());
   if (!lastRow) return null;
 
@@ -497,6 +517,8 @@ function getSheetDiffsForPlayers(playerId) {
     4: parseFloat(lastRow[4]) || 0,
     5: parseFloat(lastRow[5]) || 0,
     6: parseFloat(lastRow[6]) || 0,
+
+    // still mapping extra columns directly from last sheet
     2: parseFloat(lastRow[16]) || 0,
     12: parseFloat(lastRow[4]) || 0,
     13: parseFloat(lastRow[5]) || 0,
@@ -508,8 +530,10 @@ function getSheetDiffsForPlayers(playerId) {
 function formatNumber(num) {
   if (num === null || num === undefined || isNaN(num)) return "";
   num = Number(num);
+
   const sign = num < 0 ? "-" : "";
   const abs = Math.abs(num);
+
   if (abs >= 1e9) return sign + (abs / 1e9).toFixed(2).replace(/\.00$/, "") + "B";
   if (abs >= 1e6) return sign + (abs / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
   if (abs >= 1e3) return sign + (abs / 1e3).toFixed(2).replace(/\.00$/, "") + "K";
@@ -517,11 +541,11 @@ function formatNumber(num) {
 }
 
 function renderTableFiltered(headers, rows, selectedCols) {
-  resetCharts();
+  resetCharts(); // clear old chart data
   rows = removeEmptyRows(rows);
-  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES");
+  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
 
-  // Top players
+  // Top players logic...
   const dkpColIndex = selectedCols.indexOf(8);
   if (dkpColIndex !== -1) {
     rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
@@ -564,6 +588,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const tbody = document.createElement("tbody");
   rows.forEach((row, rowIdx) => {
     const tr = document.createElement("tr");
+
     const indexTd = document.createElement("td");
     indexTd.textContent = rowIdx + 1;
     tr.appendChild(indexTd);
@@ -572,16 +597,20 @@ function renderTableFiltered(headers, rows, selectedCols) {
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = row[colIndex] ?? "";
+      
       if (colIndex === 9 && val !== "") {
+        // replace comma with dot before parsing
         let num = parseFloat(val.toString().replace(",", "."));
         if (!isNaN(num)) {
           num = num * 100;
           val = num.toFixed(0) + "%";
         }
       }
+
       if ([2, 12, 13, 14, 15].includes(colIndex) && val !== "") {
         val = formatNumber(val);
       }
+
       const baseSpan = document.createElement("span");
       baseSpan.textContent = val;
       td.appendChild(baseSpan);
@@ -607,7 +636,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
   table.appendChild(thead);
   table.appendChild(tbody);
 
-  // Initialize DataTable with built-in buttons
   dataTableInstance = new DataTable("#data-table", {
     paging: false,
     scrollY: '60vh',
@@ -618,39 +646,114 @@ function renderTableFiltered(headers, rows, selectedCols) {
     responsive: false,
     autoWidth: false,
     columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
-    language: { searchPlaceholder: "Search by name or ID", search: "" },
-    dom: 'Bfrtip',
-    buttons: [
-      'copy',
-      {
-        extend: 'csv',
-        title: 'DKP Stats',
-        exportOptions: { columns: ':visible' }
-      },
-      {
-        extend: 'excel',
-        title: 'DKP Stats',
-        exportOptions: { columns: ':visible' }
-      },
-      'print',
-      {
-        extend: 'colvis',
-        text: 'Columns'
-      }
-    ]
+    language: { searchPlaceholder: "Search by name or ID", search: "" }
+    layout: {
+        topStart: {
+            buttons: ['csv', 'excel']
+        }
+    }
   });
 
-  // Row click handler → update charts
+  // Search container
+  const searchContainer = document.querySelector('div.dt-search');
+
+  // Column toggle dropdown
+  const colDropdown = document.createElement('div');
+  colDropdown.className = 'column-toggle-dropdown';
+  colDropdown.innerHTML = `
+    <button>Columns</button>
+    <div class="column-toggle-content"></div>
+  `;
+  searchContainer.prepend(colDropdown);
+
+  // Export dropdown
+  const exportDropdown = document.createElement('div');
+  exportDropdown.className = 'export-dropdown';
+  exportDropdown.innerHTML = `
+    <button>Export</button>
+    <div class="export-dropdown-content">
+      <button id="export-xlsx">Export as Excel (.xlsx)</button>
+      <button id="export-csv">Export as CSV</button>
+    </div>
+  `;
+  searchContainer.appendChild(exportDropdown);
+
+  // Populate column toggles
+  const colToggleContainer = colDropdown.querySelector(".column-toggle-content");
+  filteredHeaders.forEach((colName, i) => {
+    const colIndex = i + 1;
+    const label = document.createElement("label");
+    const isVisible = [0, 1, 2, 3, 4, 5, 6, 7].includes(i);
+    label.innerHTML = `
+      <input type="checkbox" ${isVisible ? "checked" : ""} data-col="${colIndex}">
+      <span>${colName}</span>
+    `;
+    colToggleContainer.appendChild(label);
+  
+    if (!isVisible) {
+      dataTableInstance.column(colIndex).visible(false);
+    }
+  });
+
+  colToggleContainer.addEventListener("change", (e) => {
+    const col = e.target.dataset.col;
+    if (col !== undefined) {
+      dataTableInstance.column(col).visible(e.target.checked);
+    }
+  });
+
+  // Export handlers
+  document.getElementById("export-xlsx").addEventListener("click", function () {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, "table_export.xlsx");
+  });
+
+  document.getElementById("export-csv").addEventListener("click", function () {
+    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "table_export.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+
+  // Dropdown open/close
+  document.addEventListener("click", (e) => {
+    const exportBtn = e.target.closest(".export-dropdown button");
+    const colBtn = e.target.closest(".column-toggle-dropdown button");
+    const isInsideColMenu = e.target.closest(".column-toggle-content");
+  
+    // Export dropdown toggle
+    if (exportBtn) {
+      exportBtn.nextElementSibling.classList.toggle("show");
+    } else {
+      document.querySelectorAll(".export-dropdown-content").forEach(m => m.classList.remove("show"));
+    }
+  
+    // Column dropdown toggle
+    if (colBtn) {
+      colBtn.nextElementSibling.classList.toggle("show");
+    } else if (!isInsideColMenu) {
+      document.querySelectorAll(".column-toggle-content").forEach(m => m.classList.remove("show"));
+    }
+  });
+  // Click handler
   document.querySelector("#data-table tbody").addEventListener("click", function(e) {
     const row = e.target.closest("tr");
     if (!row) return;
     const cells = row.querySelectorAll("td");
     if (cells.length < 2) return;
-    const playerId = cells[1].textContent.trim();
+    const playerId = cells[1].textContent.trim(); // column 1 = ID
     updateChartsForPlayer(playerId);
   });
 
-  // Totals
+  // Totals (unchanged)
   const totalsContainer = document.getElementById("bottom-totals");
   totalsContainer.innerHTML = "";
   const totalDefs = [
@@ -672,8 +775,53 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
 }
 
+function parseExcelData(arrayBuffer) {
+  workbook = XLSX.read(arrayBuffer, { type: 'array' });
+  currentSource = "excel";
+  const sheetNames = workbook.SheetNames;
+  loadExcelSheet(sheetNames[sheetNames.length - 1]);
+}
+
+function loadExcelSheet(sheetName) {
+  resetCharts();
+  const ws = workbook.Sheets[sheetName];
+  const json = XLSX.utils.sheet_to_json(ws, { header: 1 });
+  if (json.length) renderTableFiltered(json[0], json.slice(1), selectedColumns);
+}
+function populateSheetSelector(names, source) {
+  const selector = document.getElementById("sheet-selector");
+  selector.innerHTML = "";
+  names.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    selector.appendChild(opt);
+  });
+  selector.dataset.source = source;
+  selector.style.display = names.length > 1 ? "inline" : "none";
+}
+
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
+
+  if (currentSource === "excel" && workbook) {
+    const sheetNames = workbook.SheetNames;
+    sheetNames.forEach(sheetName => {
+      const ws = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
+      chartData.chart4.push(playerRow?.[4] || 0);
+      chartData.chart5.push(playerRow?.[5] || 0);
+      chartData.chart6.push(playerRow?.[6] || 0);
+      chartData.chart7.push(playerRow?.[7] || 0);
+    });
+    Object.keys(chartData).forEach(chartId => {
+      charts[chartId].data.labels = sheetNames;
+      charts[chartId].data.datasets[0].data = chartData[chartId];
+      charts[chartId].update();
+    });
+  }
+
   if (currentSource === "google" && Object.keys(googleSheetsData).length) {
     const sheetNames = googleSheetNames;
     sheetNames.forEach(sheetName => {
@@ -694,23 +842,30 @@ function updateChartsForPlayer(playerId) {
 
 document.addEventListener("DOMContentLoaded", async () => {
   initCharts();
-  resetCharts();
-  const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  if (!match) return alert("Invalid Google Sheets URL");
-  googleSheetId = match[1];
-  const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
-  const meta = await metaRes.json();
-  googleSheetNames = meta.sheets.map(s => s.properties.title);
-  googleSheetsData = {};
-  await Promise.all(
-    googleSheetNames.map(async name => {
-      const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
-      const data = await res.json();
-      googleSheetsData[name] = data.values || [];
-    })
-  );
-  const firstSheet = googleSheetNames[googleSheetNames.length - 1];
-  renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+  if (CONFIG.source === "excel") {
+    const res = await fetch(CONFIG.excelFilePath);
+    const buf = await res.arrayBuffer();
+    parseExcelData(buf);
+  } else if (CONFIG.source === "google") {
+    resetCharts();
+    const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) return alert("Invalid Google Sheets URL");
+    googleSheetId = match[1];
+    const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
+    const meta = await metaRes.json();
+    googleSheetNames = meta.sheets.map(s => s.properties.title);
+    currentSource = "google";
+    googleSheetsData = {};
+    await Promise.all(
+      googleSheetNames.map(async name => {
+        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
+        const data = await res.json();
+        googleSheetsData[name] = data.values || [];
+      })
+    );
+    const firstSheet = googleSheetNames[googleSheetNames.length - 1];
+    renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+  }
 });
 
 document.getElementById("toggle-theme").addEventListener("click", () => {
