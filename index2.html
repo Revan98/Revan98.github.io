@@ -684,26 +684,51 @@ function renderTableFiltered(headers, rows, selectedCols) {
     }
   });
 
-  // Export handlers
-  document.getElementById("export-xlsx").addEventListener("click", function () {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    XLSX.writeFile(wb, "table_export.xlsx");
-  });
+     // Export handlers
+   dataTableInstance = new DataTable("#data-table", {
+       paging: false,
+       scrollY: '60vh',
+       scrollCollapse: true,
+       order: [],
+       searching: true,
+       info: false,
+       responsive: false,
+       autoWidth: false,
+       columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
+       language: { searchPlaceholder: "Search by name or ID", search: "" },
+       dom: 'Bfrtip',   // this is required for buttons
+       buttons: [
+         {
+           extend: 'excelHtml5',
+           text: 'Export Excel',
+           exportOptions: {
+             columns: ':visible',
+             format: {
+               body: function (data, row, column, node) {
+                 const match = String(data).match(/\(([^)]+)\)/);
+                 if (!match) return '';
+                 return match[1].replace(/^\+/, '').trim(); // remove + but keep -
+               }
+             }
+           }
+         },
+         {
+           extend: 'csvHtml5',
+           text: 'Export CSV',
+           exportOptions: {
+             columns: ':visible',
+             format: {
+               body: function (data, row, column, node) {
+                 const match = String(data).match(/\(([^)]+)\)/);
+                 if (!match) return '';
+                 return match[1].replace(/^\+/, '').trim();
+               }
+             }
+           }
+         }
+       ]
+   });
 
-  document.getElementById("export-csv").addEventListener("click", function () {
-    const ws = XLSX.utils.table_to_sheet(document.getElementById("data-table"));
-    const csv = XLSX.utils.sheet_to_csv(ws);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "table_export.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  });
 
   // Dropdown open/close
   document.addEventListener("click", (e) => {
