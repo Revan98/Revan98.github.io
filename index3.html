@@ -17,6 +17,7 @@
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.dataTables.js"></script>
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.colVis.min.js"></script>
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 
@@ -515,7 +516,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
     info: false,
     responsive: true,
     autoWidth: false,
-    columnDefs: [{ orderable: false, searchable: false, targets: 0 }],
+    columnDefs: [{ orderable: false, searchable: false, targets: 0 },
+                { targets: [7, 8], visible: false }],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
         topStart: {
