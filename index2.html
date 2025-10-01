@@ -652,8 +652,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
   dataTableInstance = new DataTable("#data-table", {
     paging: true,
-
-    pageLength: 10,
     //scrollY: '50vh',
     scrollX: '100%',
     scrollCollapse: true,
@@ -664,12 +662,17 @@ function renderTableFiltered(headers, rows, selectedCols) {
     columnDefs: [{ orderable: false, searchable: false, targets: 0 },
                 { targets: [9, 10], visible: false }],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
-    layout: {
-        topStart: {
-            buttons: ['csv', 'excel','colvis']
-        }
-    },
-    lengthMenu: [10, 25, 50, 75, 100]
+   layout: {
+     topStart: {
+       buttons: ['csv', 'excel', 'colvis']
+     },
+     topEnd: {
+       pageLength: {
+         menu: [10, 25, 50, 75, 100]
+       }
+     }
+   }
+
   });
 
   // Search container
