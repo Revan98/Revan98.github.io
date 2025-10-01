@@ -34,6 +34,8 @@
   --chart-grid: rgba(0, 0, 0, 0.1);
   --chart-line: #007bff;
   --checkmark-color: #666;
+  --row-selected-bg: #cce5ff;
+  --row-selected-text: #000;
 }
 
 body.dark {
@@ -47,6 +49,8 @@ body.dark {
   --chart-grid: rgba(255,255,255,0.2);
   --chart-line: #ff9800;
   --checkmark-color: white;
+  --row-selected-bg: #004085;
+  --row-selected-text: #fff;
 }
 
 /* =========================================================
@@ -145,16 +149,9 @@ table.dataTable tbody tr:hover {
   background-color: rgba(0,123,255,0.1);
 }
 /* highlight clicked row */
-/* Selected row – brighter in light mode */
 #data-table tbody tr.selected {
-  background-color: #cce5ff !important; /* light blue */
-  color: #000 !important;
-}
-
-/* Selected row – darker solid in dark mode */
-body.dark #data-table tbody tr.selected {
-  background-color: #004085 !important; /* dark blue */
-  color: #fff !important;
+  background-color: var(--row-selected-bg) !important;
+  color: var(--row-selected-text) !important;
 }
 /* =========================================================
    5. SEARCH / FILTER BAR
