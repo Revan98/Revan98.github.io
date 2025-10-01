@@ -664,15 +664,12 @@ function renderTableFiltered(headers, rows, selectedCols) {
     language: { searchPlaceholder: "Search by name or ID", search: "" },
    layout: {
      topStart: {
-       buttons: ['csv', 'excel', 'colvis']
-     },
-     topEnd: {
+       buttons: ['csv', 'excel', 'colvis'],
        pageLength: {
          menu: [10, 25, 50, 75, 100]
-       }
+     }
      }
    }
-
   });
 
   // Search container
