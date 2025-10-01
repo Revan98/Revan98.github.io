@@ -15,8 +15,6 @@
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.colVis.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/4.0.3/css/fixedHeader.dataTables.min.css">
-<script src="https://cdn.datatables.net/fixedheader/4.0.3/js/dataTables.fixedHeader.min.js"></script>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
@@ -338,7 +336,6 @@ div.dt-button-collection button.active::before {
   color: var(--checkmark-color);
 }
 /*-----------------*/
-/* Loading data*/
 /* Loading spinner container */
 #loading-overlay {
   display: none;
@@ -368,7 +365,6 @@ div.dt-button-collection button.active::before {
 }
 
 /*------------*/
-/*theme toggle button*/
 /* Toggle switch styling */
 .theme-toggle {
   display: flex;
@@ -567,7 +563,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   rows = removeEmptyRows(rows);
   rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
 
-  // Top players logic...
+  // Top players
   const dkpColIndex = selectedCols.indexOf(8);
   if (dkpColIndex !== -1) {
     rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
@@ -651,14 +647,13 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
   dataTableInstance = new DataTable("#data-table", {
     paging: false,
-    scrollY: '60vh',
+    scrollY: '50vh',
+    scrollX: '100%',
     scrollCollapse: true,
     order: [],
     searching: true,
     info: false,
-    responsive: true,
-    autoWidth: false,
-    fixedHeader: true,
+    autoWidth: true,
     columnDefs: [{ orderable: false, searchable: false, targets: 0 },
                 { targets: [9, 10], visible: false }],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
@@ -700,7 +695,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
      localStorage.setItem("colVisibility", JSON.stringify(vis));
    });
 
-  // Totals (unchanged)
+  // Totals
   const totalsContainer = document.getElementById("bottom-totals");
   totalsContainer.innerHTML = "";
   const totalDefs = [
