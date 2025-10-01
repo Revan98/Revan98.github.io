@@ -339,13 +339,95 @@ div.dt-button-collection button.active::before {
 }
 /*-----------------*/
 /* Loading data*/
+/* Loading spinner container */
+#loading-overlay {
+  display: none;
+  height: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  font-size: 18px;
+}
+
+/* Spinner circle */
+.spinner {
+  border: 6px solid var(--table-border);
+  border-top: 6px solid var(--chart-line);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/*------------*/
+/*theme toggle button*/
+/* Toggle switch styling */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #f2f2f2;
+  font-size: 16px;
+}
+
+.theme-toggle input {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background-color: #777;
+  border-radius: 12px;
+  transition: background-color 0.3s;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.theme-toggle input:checked + .toggle-slider {
+  background-color: #ff9800;
+}
+
+.theme-toggle input:checked + .toggle-slider::before {
+  transform: translateX(26px);
+}
+   
 </style>
 </head>
 <body>
 
 <div class="topnav">
-  <button style="float:right" id="toggle-theme">Dark/Light</button>
+  <label class="theme-toggle" style="float:right">
+    🌞
+    <input type="checkbox" id="toggle-theme">
+    <span class="toggle-slider"></span>
+    🌙
+  </label>
 </div>
+
 <div id="main-layout">
   <div id="left-sidebar"></div>
   <div id="table-container">
@@ -702,12 +784,19 @@ document.addEventListener("DOMContentLoaded", async () => {
    }
 });
 
-document.getElementById("toggle-theme").addEventListener("click", () => {
-  document.body.classList.toggle("dark");
+const themeToggle = document.getElementById("toggle-theme");
 
-  // save theme
+// Load saved theme
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark");
+  themeToggle.checked = true;
+}
+
+themeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark", themeToggle.checked);
   localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
-   
+
+  // Update chart colors
   const chartTextColor = getComputedStyle(document.body).getPropertyValue("--chart-text").trim();
   const chartGridColor = getComputedStyle(document.body).getPropertyValue("--chart-grid").trim();
   const chartLineColor = getComputedStyle(document.body).getPropertyValue("--chart-line").trim();
@@ -718,11 +807,13 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
     chart.options.scales.y.ticks.color = chartTextColor;
     chart.options.scales.x.grid.color = chartGridColor;
     chart.options.scales.y.grid.color = chartGridColor;
-      chart.data.datasets[0].borderColor = chartLineColor;
-  chart.data.datasets[0].backgroundColor = chartLineColor + "33";
+    chart.data.datasets[0].borderColor = chartLineColor;
+    chart.data.datasets[0].backgroundColor = chartLineColor + "33";
     chart.update();
   });
 });
+
+
 
 </script>
 </body>
