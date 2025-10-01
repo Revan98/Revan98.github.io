@@ -651,14 +651,14 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
   dataTableInstance = new DataTable("#data-table", {
     paging: false,
-    scrollY: '60vh',
+    scrollY: '60%',
     scrollCollapse: true,
     order: [],
     searching: true,
     info: false,
     responsive: true,
-    autoWidth: false,
-    fixedHeader: true,
+    autoWidth: true,
+    fixedHeader: false,
     columnDefs: [{ orderable: false, searchable: false, targets: 0 },
                 { targets: [9, 10], visible: false }],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
