@@ -34,6 +34,8 @@
   --chart-grid: rgba(0, 0, 0, 0.1);
   --chart-line: #007bff;
   --checkmark-color: #666;
+  --row-selected-bg: #B0E0E6;
+  --row-selected-text: #000;
 }
 
 body.dark {
@@ -47,6 +49,8 @@ body.dark {
   --chart-grid: rgba(255,255,255,0.2);
   --chart-line: #ff9800;
   --checkmark-color: white;
+  --row-selected-bg: #B0E0E6;
+  --row-selected-text: #fff;
 }
 
 /* =========================================================
@@ -146,7 +150,8 @@ table.dataTable tbody tr:hover {
 }
 /* highlight clicked row */
 #data-table tbody tr.selected {
-  background-color: rgba(0,123,255,0.1) !important;
+  background-color: var(--row-selected-bg) !important;
+  color: var(--row-selected-text) !important;
 }
 /* =========================================================
    5. SEARCH / FILTER BAR
@@ -646,7 +651,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   table.appendChild(tbody);
 
   dataTableInstance = new DataTable("#data-table", {
-    paging: false,
+    paging: true,
     scrollY: '50vh',
     scrollX: '100%',
     scrollCollapse: true,
@@ -657,11 +662,15 @@ function renderTableFiltered(headers, rows, selectedCols) {
     columnDefs: [{ orderable: false, searchable: false, targets: 0 },
                 { targets: [9, 10], visible: false }],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
-    layout: {
-        topStart: {
-            buttons: ['csv', 'excel','colvis']
-        }
-    }
+   layout: {
+     topStart: {
+       buttons: ['csv', 'excel', 'colvis'],
+     },
+      bottomStart: {
+       pageLength: {
+         menu: [10, 25, 50, 75, 100]}
+     }
+   }
   });
 
   // Search container
