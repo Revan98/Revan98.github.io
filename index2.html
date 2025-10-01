@@ -145,8 +145,16 @@ table.dataTable tbody tr:hover {
   background-color: rgba(0,123,255,0.1);
 }
 /* highlight clicked row */
+/* Selected row – brighter in light mode */
 #data-table tbody tr.selected {
-  background-color: rgba(0,123,255,0.1) !important;
+  background-color: #cce5ff !important; /* light blue */
+  color: #000 !important;
+}
+
+/* Selected row – darker solid in dark mode */
+body.dark #data-table tbody tr.selected {
+  background-color: #004085 !important; /* dark blue */
+  color: #fff !important;
 }
 /* =========================================================
    5. SEARCH / FILTER BAR
