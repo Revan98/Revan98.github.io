@@ -272,19 +272,23 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
    10. RESPONSIVE
    ========================================================= */
 @media (max-width: 768px) {
+  #top-players,
+  #bottom-totals {
+    flex-direction: column;
+    align-items: center;
+  }
+
   #top-players .player-box,
   #bottom-totals .stat-box {
-    cursor: pointer;
+    width: 100%;
+    max-width: 280px;
   }
 
-  .collapsible-content {
-    display: none;
-  }
-  .collapsible.open .collapsible-content {
-    display: block;
+  #charts-container {
+    grid-template-columns: 1fr;
+    max-width: 90vw;
   }
 }
-
 /* =========================================================
    DATATABLES BUTTONS STYLING
    ========================================================= */
@@ -494,12 +498,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
       const id = player[0] ?? "";
       const name = player[1] ?? "";
       const box = document.createElement("div");
-      box.className = "player-box collapsible";
-      box.innerHTML = `
-        <div class="collapsible-header">${name} (TOP${idx+1})</div>
-        <div class="collapsible-content"><p>ID: ${id}</p></div>
-      `;
-
+      box.className = "player-box";
+      box.innerHTML = `<div class="player-rank">TOP${idx + 1}</div><h3>${name}</h3><p>ID: ${id}</p>`;
       topContainer.appendChild(box);
     });
   }
@@ -636,12 +636,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
       if (diffs) sum += diffs[item.col] || 0;
     });
     const box = document.createElement("div");
-    box.className = "stat-box collapsible";
-    box.innerHTML = `
-      <div class="collapsible-header">${item.label}</div>
-      <div class="collapsible-content"><p>${sum.toLocaleString()}</p></div>
-    `;
-
+    box.className = "stat-box";
+    box.innerHTML = `<h3>${item.label}</h3><p>${sum.toLocaleString()}</p>`;
     totalsContainer.appendChild(box);
   });
 }
