@@ -348,6 +348,9 @@ div.dt-button-collection button.active::before {
 <div id="main-layout">
   <div id="left-sidebar"></div>
   <div id="table-container">
+    <div id="loading-overlay">
+
+    </div>
     <div id="top-players"></div>
     <table id="data-table" class="dataTable"></table>
     <div id="bottom-totals"></div>
@@ -668,19 +671,13 @@ function updateChartsForPlayer(playerId) {
     });
   }
 }
-   //new
-document.addEventListener("click", e => {
-  if (e.target.closest(".collapsible-header")) {
-    const parent = e.target.closest(".collapsible");
-    parent.classList.toggle("open");
-  }
-});
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark");
   }
   initCharts();
+  document.getElementById("loading-overlay").style.display = "flex";
   try {
      if (CONFIG.source === "google") {
        resetCharts();
@@ -711,6 +708,8 @@ document.addEventListener("DOMContentLoaded", async () => {
          alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
        }
      }
+   } finally {
+     document.getElementById("loading-overlay").style.display = "none";
    }
 });
 
