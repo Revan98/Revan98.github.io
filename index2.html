@@ -651,8 +651,10 @@ function renderTableFiltered(headers, rows, selectedCols) {
   table.appendChild(tbody);
 
   dataTableInstance = new DataTable("#data-table", {
-    paging: false,
-    scrollY: '50vh',
+    paging: true,
+    lengthMenu: [10, 25, 50, 75, 100],
+    pageLength: 25,
+    //scrollY: '50vh',
     scrollX: '100%',
     scrollCollapse: true,
     order: [],
