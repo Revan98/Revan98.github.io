@@ -338,7 +338,6 @@ div.dt-button-collection button.active::before {
   color: var(--checkmark-color);
 }
 /*-----------------*/
-/* Loading data*/
 /* Loading spinner container */
 #loading-overlay {
   display: none;
@@ -368,7 +367,6 @@ div.dt-button-collection button.active::before {
 }
 
 /*------------*/
-/*theme toggle button*/
 /* Toggle switch styling */
 .theme-toggle {
   display: flex;
@@ -567,7 +565,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
   rows = removeEmptyRows(rows);
   rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
 
-  // Top players logic...
+  // Top players
   const dkpColIndex = selectedCols.indexOf(8);
   if (dkpColIndex !== -1) {
     rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
@@ -650,8 +648,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
   table.appendChild(tbody);
 
   dataTableInstance = new DataTable("#data-table", {
-    paging: true,
-
+    paging: false,
+    scrollY: '50vh',
     scrollCollapse: true,
     order: [],
     searching: true,
@@ -699,7 +697,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
      localStorage.setItem("colVisibility", JSON.stringify(vis));
    });
 
-  // Totals (unchanged)
+  // Totals
   const totalsContainer = document.getElementById("bottom-totals");
   totalsContainer.innerHTML = "";
   const totalDefs = [
