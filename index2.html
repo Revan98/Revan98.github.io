@@ -6,7 +6,8 @@
 <title>DKP stats</title>
 
 <!-- DataTables v2 -->
-
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.dataTables.css">
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/dataTables.buttons.js"></script>
@@ -148,9 +149,8 @@ table.dataTable tbody tr:hover {
   background-color: rgba(0,123,255,0.1);
 }
 /* highlight clicked row */
-table.dataTable#data-table tbody tr.selected,
-#data-table.dataTable tbody tr.selected {
-  background-color: var(--row-selected-bg) !important;
+table.dataTable tbody > tr.selected > * {
+  box-shadow: inset 0 0 0 9999px var(--row-selected-bg) !important;
   color: var(--row-selected-text) !important;
 }
 /* =========================================================
