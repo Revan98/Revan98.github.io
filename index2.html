@@ -67,6 +67,9 @@ body {
 .topnav {
   overflow: hidden;
   background-color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .topnav a,
@@ -341,13 +344,6 @@ div.dt-button-collection button.active::before {
 <div id="main-layout">
   <div id="left-sidebar"></div>
   <div id="table-container">
-    <div id="loading-overlay" style="
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background: rgba(0,0,0,0.5); color:white; display:flex;
-      align-items:center; justify-content:center; font-size:20px;
-      z-index:2000; display:none;">
-      Loading data...
-    </div>
     <div id="top-players"></div>
     <table id="data-table" class="dataTable"></table>
     <div id="bottom-totals"></div>
@@ -360,8 +356,13 @@ div.dt-button-collection button.active::before {
   </div>
   <div id="right-sidebar"></div>
 </div>
-<!-- Table -->
-
+<div id="loading-overlay" style="
+   position: fixed; top:0; left:0; width:100%; height:100%;
+   background: rgba(0,0,0,0.5); color:white; display:flex;
+   align-items:center; justify-content:center; font-size:20px;
+   z-index:2000; display:none;">
+   Loading data...
+</div>
 <script>
 const CONFIG = {
   source: "google",
