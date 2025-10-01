@@ -96,19 +96,19 @@ body {
    ========================================================= */
 #main-layout {
   display: flex;
-  width: 100vw;
-  min-height: 100vh; /* makes it full height */
+  width: 100%;
+  min-height: 100%;
 }
 
 #left-sidebar,
 #right-sidebar {
-  width: 10vw;
+  width: 10%;
 }
 
 #table-container {
   padding-top: 30px;
   justify-content: center;
-  width: 80vw;
+  width: 80%;
   overflow-x: auto;
 }
 
@@ -148,7 +148,7 @@ table.dataTable tbody tr:hover {
 }
 /* highlight clicked row */
 #data-table tbody tr.selected {
-  background-color: rgba(0, 123, 255, 0.3) !important;
+  background-color: rgba(0,123,255,0.1) !important;
 }
 /* =========================================================
    5. SEARCH / FILTER BAR
@@ -367,8 +367,6 @@ div.dt-button-collection button.active::before {
   </div>
   <div id="right-sidebar"></div>
 </div>
-<!-- Table -->
-
 <script>
 const CONFIG = {
   source: "google",
