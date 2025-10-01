@@ -15,6 +15,9 @@
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.colVis.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/4.0.3/css/fixedHeader.dataTables.min.css">
+<script src="https://cdn.datatables.net/fixedheader/4.0.3/js/dataTables.fixedHeader.min.js"></script>
+
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 
@@ -64,6 +67,9 @@ body {
 .topnav {
   overflow: hidden;
   background-color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .topnav a,
@@ -90,19 +96,19 @@ body {
    ========================================================= */
 #main-layout {
   display: flex;
-  width: 100vw;
-  min-height: 100vh; /* makes it full height */
+  width: 100%;
+  min-height: 100%;
 }
 
 #left-sidebar,
 #right-sidebar {
-  width: 10vw;
+  width: 10%;
 }
 
 #table-container {
   padding-top: 30px;
   justify-content: center;
-  width: 80vw;
+  width: 80%;
   overflow-x: auto;
 }
 
@@ -140,7 +146,10 @@ table.dataTable tbody tr:nth-child(odd) {
 table.dataTable tbody tr:hover {
   background-color: rgba(0,123,255,0.1);
 }
-
+/* highlight clicked row */
+#data-table tbody tr.selected {
+  background-color: rgba(0,123,255,0.1) !important;
+}
 /* =========================================================
    5. SEARCH / FILTER BAR
    ========================================================= */
@@ -328,17 +337,104 @@ div.dt-button-collection button.active::before {
   content: "✔ ";
   color: var(--checkmark-color);
 }
+/*-----------------*/
+/* Loading data*/
+/* Loading spinner container */
+#loading-overlay {
+  display: none;
+  height: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  font-size: 18px;
+}
 
+/* Spinner circle */
+.spinner {
+  border: 6px solid var(--table-border);
+  border-top: 6px solid var(--chart-line);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/*------------*/
+/*theme toggle button*/
+/* Toggle switch styling */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #f2f2f2;
+  font-size: 16px;
+}
+
+.theme-toggle input {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background-color: #777;
+  border-radius: 12px;
+  transition: background-color 0.3s;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.theme-toggle input:checked + .toggle-slider {
+  background-color: #ff9800;
+}
+
+.theme-toggle input:checked + .toggle-slider::before {
+  transform: translateX(26px);
+}
+   
 </style>
 </head>
 <body>
 
 <div class="topnav">
-  <button style="float:right" id="toggle-theme">Dark/Light</button>
+  <label class="theme-toggle" style="float:right">
+    🌞
+    <input type="checkbox" id="toggle-theme">
+    <span class="toggle-slider"></span>
+    🌙
+  </label>
 </div>
+
 <div id="main-layout">
   <div id="left-sidebar"></div>
   <div id="table-container">
+    <div id="loading-overlay">
+      <div class="spinner"></div>
+      Loading data...
+    </div>
     <div id="top-players"></div>
     <table id="data-table" class="dataTable"></table>
     <div id="bottom-totals"></div>
@@ -351,8 +447,6 @@ div.dt-button-collection button.active::before {
   </div>
   <div id="right-sidebar"></div>
 </div>
-<!-- Table -->
-
 <script>
 const CONFIG = {
   source: "google",
@@ -564,6 +658,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     info: false,
     responsive: true,
     autoWidth: false,
+    fixedHeader: true,
     columnDefs: [{ orderable: false, searchable: false, targets: 0 },
                 { targets: [9, 10], visible: false }],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
@@ -578,14 +673,32 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const searchContainer = document.querySelector('div.dt-search');
 
   // Click handler
-  document.querySelector("#data-table tbody").addEventListener("click", function(e) {
-    const row = e.target.closest("tr");
-    if (!row) return;
-    const cells = row.querySelectorAll("td");
-    if (cells.length < 2) return;
-    const playerId = cells[1].textContent.trim(); // column 1 = ID
-    updateChartsForPlayer(playerId);
-  });
+   document.querySelector("#data-table tbody").addEventListener("click", function(e) {
+     const row = e.target.closest("tr");
+     if (!row) return;
+   
+     // remove highlight from others
+     document.querySelectorAll("#data-table tbody tr").forEach(r => r.classList.remove("selected"));
+     row.classList.add("selected");
+   
+     const cells = row.querySelectorAll("td");
+     if (cells.length < 2) return;
+     const playerId = cells[1].textContent.trim(); // column 1 = ID
+     updateChartsForPlayer(playerId);
+   });
+   
+   // restore column visibility from localStorage
+   const savedVisibility = JSON.parse(localStorage.getItem("colVisibility") || "{}");
+   Object.keys(savedVisibility).forEach(idx => {
+     dataTableInstance.column(idx).visible(savedVisibility[idx]);
+   });
+   
+   // listen for visibility changes
+   dataTableInstance.on('column-visibility.dt', function(e, settings, column, state) {
+     const vis = JSON.parse(localStorage.getItem("colVisibility") || "{}");
+     vis[column] = state;
+     localStorage.setItem("colVisibility", JSON.stringify(vis));
+   });
 
   // Totals (unchanged)
   const totalsContainer = document.getElementById("bottom-totals");
@@ -607,19 +720,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
     box.innerHTML = `<h3>${item.label}</h3><p>${sum.toLocaleString()}</p>`;
     totalsContainer.appendChild(box);
   });
-}
-
-function populateSheetSelector(names, source) {
-  const selector = document.getElementById("sheet-selector");
-  selector.innerHTML = "";
-  names.forEach(name => {
-    const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
-    selector.appendChild(opt);
-  });
-  selector.dataset.source = source;
-  selector.style.display = names.length > 1 ? "inline" : "none";
 }
 
 function updateChartsForPlayer(playerId) {
@@ -644,32 +744,59 @@ function updateChartsForPlayer(playerId) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  initCharts();
-  if (CONFIG.source === "google") {
-    resetCharts();
-    const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (!match) return alert("Invalid Google Sheets URL");
-    googleSheetId = match[1];
-    const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
-    const meta = await metaRes.json();
-    googleSheetNames = meta.sheets.map(s => s.properties.title);
-    currentSource = "google";
-    googleSheetsData = {};
-    await Promise.all(
-      googleSheetNames.map(async name => {
-        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
-        const data = await res.json();
-        googleSheetsData[name] = data.values || [];
-      })
-    );
-    const firstSheet = googleSheetNames[googleSheetNames.length - 1];
-    renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
   }
+  initCharts();
+  document.getElementById("loading-overlay").style.display = "flex";
+  try {
+     if (CONFIG.source === "google") {
+       resetCharts();
+       const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+       if (!match) return alert("Invalid Google Sheets URL");
+       googleSheetId = match[1];
+       try {
+         const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
+         if (!metaRes.ok) throw new Error("Google Sheets API error");
+         const meta = await metaRes.json();
+         if (!meta.sheets) throw new Error("No sheets found or access denied.");
+      
+         googleSheetNames = meta.sheets.map(s => s.properties.title);
+         currentSource = "google";
+         googleSheetsData = {};
+         await Promise.all(
+           googleSheetNames.map(async name => {
+             const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
+             if (!res.ok) throw new Error("Error fetching sheet: " + name);
+             const data = await res.json();
+             googleSheetsData[name] = data.values || [];
+           })
+         );
+      
+         const firstSheet = googleSheetNames[googleSheetNames.length - 1];
+         renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+       } catch (err) {
+         alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
+       }
+     }
+   } finally {
+     document.getElementById("loading-overlay").style.display = "none";
+   }
 });
 
-document.getElementById("toggle-theme").addEventListener("click", () => {
-  document.body.classList.toggle("dark");
+const themeToggle = document.getElementById("toggle-theme");
 
+// Load saved theme
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark");
+  themeToggle.checked = true;
+}
+
+themeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark", themeToggle.checked);
+  localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+
+  // Update chart colors
   const chartTextColor = getComputedStyle(document.body).getPropertyValue("--chart-text").trim();
   const chartGridColor = getComputedStyle(document.body).getPropertyValue("--chart-grid").trim();
   const chartLineColor = getComputedStyle(document.body).getPropertyValue("--chart-line").trim();
@@ -680,8 +807,8 @@ document.getElementById("toggle-theme").addEventListener("click", () => {
     chart.options.scales.y.ticks.color = chartTextColor;
     chart.options.scales.x.grid.color = chartGridColor;
     chart.options.scales.y.grid.color = chartGridColor;
-      chart.data.datasets[0].borderColor = chartLineColor;
-  chart.data.datasets[0].backgroundColor = chartLineColor + "33";
+    chart.data.datasets[0].borderColor = chartLineColor;
+    chart.data.datasets[0].backgroundColor = chartLineColor + "33";
     chart.update();
   });
 });
