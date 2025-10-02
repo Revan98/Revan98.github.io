@@ -422,61 +422,61 @@ div.dt-button-collection button.active::before {
 
 /* Pagination buttons */
 .dataTables_wrapper .dataTables_paginate .paginate_button {
-  background: var(--accent);
+  background: var(--accent) !important;
   color: var(--text-color) !important;
-  border: 1px solid var(--table-border);
-  border-radius: 6px;
-  padding: 6px 12px;
-  margin: 0 3px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: background 0.2s ease;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  margin: 0 3px !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+  transition: background 0.2s ease !important;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-  background: rgba(0,123,255,0.2);
+  background: rgba(0,123,255,0.2) !important;
   color: var(--text-color) !important;
 }
 
 /* Active (current) page */
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
   background: rgba(0,123,255,0.4) !important;
-  font-weight: bold;
+  font-weight: bold !important;
   color: var(--row-selected-text) !important;
-  border: 1px solid var(--table-border);
+  border: 1px solid var(--table-border) !important;
 }
 
 /* Disabled state */
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-  opacity: 0.4;
-  cursor: default;
-  background: var(--accent);
+  opacity: 0.4 !important;
+  cursor: default !important;
+  background: var(--accent) !important;
 }
 
 /* Page length dropdown */
 .dataTables_wrapper .dataTables_length select {
-  background: var(--table-bg);
-  color: var(--text-color);
-  border: 1px solid var(--table-border);
-  border-radius: 6px;
-  padding: 5px 8px;
-  font-size: 13px;
-  outline: none;
-  cursor: pointer;
+  background: var(--table-bg) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 6px !important;
+  padding: 5px 8px !important;
+  font-size: 13px !important;
+  outline: none !important;
+  cursor: pointer !important;
 }
 
 /* Dropdown hover/focus */
 .dataTables_wrapper .dataTables_length select:hover,
 .dataTables_wrapper .dataTables_length select:focus {
-  border-color: rgba(0,123,255,0.6);
-  box-shadow: 0 0 4px rgba(0,123,255,0.3);
+  border-color: rgba(0,123,255,0.6) !important;
+  box-shadow: 0 0 4px rgba(0,123,255,0.3) !important;
 }
 
 /* Dark mode tweak for dropdown */
 body.dark .dataTables_wrapper .dataTables_length select {
-  background: #444;
-  color: #eee;
-  border: 1px solid #666;
+  background: #444 !important;
+  color: #eee !important;
+  border: 1px solid #666 !important;
 }
 
 </style>
