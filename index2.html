@@ -415,7 +415,70 @@ div.dt-button-collection button.active::before {
 .theme-toggle input:checked + .toggle-slider::before {
   transform: translateX(26px);
 }
-   
+
+/* =========================================================
+   DATATABLES PAGINATION + PAGE LENGTH
+   ========================================================= */
+
+/* Pagination buttons */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  background: var(--accent);
+  color: var(--text-color) !important;
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin: 0 3px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s ease;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: rgba(0,123,255,0.2);
+  color: var(--text-color) !important;
+}
+
+/* Active (current) page */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background: rgba(0,123,255,0.4) !important;
+  font-weight: bold;
+  color: var(--row-selected-text) !important;
+  border: 1px solid var(--table-border);
+}
+
+/* Disabled state */
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: var(--accent);
+}
+
+/* Page length dropdown */
+.dataTables_wrapper .dataTables_length select {
+  background: var(--table-bg);
+  color: var(--text-color);
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Dropdown hover/focus */
+.dataTables_wrapper .dataTables_length select:hover,
+.dataTables_wrapper .dataTables_length select:focus {
+  border-color: rgba(0,123,255,0.6);
+  box-shadow: 0 0 4px rgba(0,123,255,0.3);
+}
+
+/* Dark mode tweak for dropdown */
+body.dark .dataTables_wrapper .dataTables_length select {
+  background: #444;
+  color: #eee;
+  border: 1px solid #666;
+}
+
 </style>
 </head>
 <body>
