@@ -630,7 +630,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
       let rawVal = row[colIndex];
       let val = isNaN(parseFloat(rawVal)) ? rawVal : parseFloat(rawVal);
       
-      const shortenableCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      const shortenableCols = [2, 12, 13, 14, 15, 8]; // Power, T4, T5, KP, Deads
       let displayVal;
       
       if (colIndex === 0) {
