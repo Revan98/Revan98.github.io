@@ -751,54 +751,44 @@ function renderTableFiltered(headers, rows, selectedCols) {
               extend: "excelHtml5",
               text: "Export Excel",
               customizeData: function (data) {
-                // Define which columns have diffs and their corresponding indices
-                // These indices match the visible table columns (0-based)
-                const diffColumns = {
-                  "Power": 3,
-                  "T4 Kills": 4,
-                  "T5 Kills": 5,
-                  "Killpoints": 6,
-                  "Deads": 7
-                };
+                // Which headers to split for diffs
+                const diffHeaders = ["Power", "T4 Kills", "T5 Kills", "Killpoints", "Deads"];
             
-                // Clone original headers first (before modification)
                 const originalHeaders = [...data.header];
                 const newHeaders = [];
             
-                // Add an extra "Δ" header after each matching column
+                // Add Δ header after each of the above
                 originalHeaders.forEach(h => {
                   newHeaders.push(h);
-                  if (h in diffColumns) {
+                  if (diffHeaders.includes(h)) {
                     newHeaders.push(h + " Δ");
                   }
                 });
             
                 data.header = newHeaders;
             
-                // Rebuild rows to insert diff columns properly
+                // Build new rows
                 const newBody = data.body.map(row => {
-                  const playerId = row[1]; // Assuming ID is in the 2nd column
-                  const diffs = getSheetDiffsForPlayers(playerId);
                   const newRow = [];
-            
                   originalHeaders.forEach((h, i) => {
-                    newRow.push(row[i]); // Original value
+                    const val = row[i] ?? "";
+                    newRow.push(val);
             
-                    // If this header has a diff, append diff value
-                    if (h in diffColumns && diffs) {
-                      const diffVal = diffs[diffColumns[h]] || 0;
-                      // plain number, no +, no commas
-                      const diffDisplay = diffVal === 0 ? "" : String(diffVal);
-                      newRow.push(diffDisplay);
+                    if (diffHeaders.includes(h)) {
+                      // Extract diff value if present, e.g. "78.49M (-5.33M)" → "-5.33M"
+                      const match = val.match(/\(([-+0-9.,A-Za-z]+)\)/);
+                      const diff = match ? match[1] : "";
+                      // Remove any "+" and parentheses — keep plain number text
+                      newRow.push(diff.replace(/[()+]/g, "").trim());
                     }
                   });
-            
                   return newRow;
                 });
             
                 data.body = newBody;
               }
             },
+
            "csv",
            "colvis"
          ]
