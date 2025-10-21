@@ -746,10 +746,61 @@ function renderTableFiltered(headers, rows, selectedCols) {
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
       topStart: {
-        buttons: ["csv", "excel", "colvis"]
+         buttons: [
+            {
+              extend: "excelHtml5",
+              text: "Export Excel",
+              customizeData: function (data) {
+                // Define which columns should have diffs appended
+                const diffColumns = {
+                  "Power": 2,
+                  "T4 kills": 12,
+                  "T5 kills": 13,
+                  "KP": 14,
+                  "Deads": 15
+                };
+            
+                // Insert new headers after each relevant column
+                const newHeaders = [];
+                data.header.forEach(h => {
+                  newHeaders.push(h);
+                  if (h in diffColumns) {
+                    newHeaders.push(h + " Δ"); // e.g., “T4 kills Δ”
+                  }
+                });
+                data.header = newHeaders;
+            
+                // Insert diff values next to relevant columns for each row
+                const newBody = data.body.map(row => {
+                  const playerId = row[1]; // assuming ID is the 2nd column
+                  const diffs = getSheetDiffsForPlayers(playerId);
+                  const newRow = [];
+            
+                  row.forEach((val, i) => {
+                    newRow.push(val);
+                    const header = data.header[i];
+                    const match = Object.entries(diffColumns).find(([key]) => key === header);
+                    if (match && diffs) {
+                      const diffVal = diffs[match[1]] || 0;
+                      // plain number, no +, no commas
+                      const diffDisplay = diffVal === 0 ? "" : String(diffVal);
+                      newRow.push(diffDisplay);
+                    }
+                  });
+            
+                  return newRow;
+                });
+            
+                data.body = newBody;
+              }
+            },
+           "csv",
+           "colvis"
+         ]
+
       },
       bottomStart: {
-        pageLength: { menu: [20, 40, 60, 80, 100, "All"] }
+        pageLength: { menu: [20, 40, 60, 80, 100] }
       }
     }
   });
