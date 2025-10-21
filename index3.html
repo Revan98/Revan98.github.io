@@ -635,7 +635,17 @@ function renderTableFiltered(headers, rows, selectedCols) {
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
       let val = parseFloat(row[colIndex]) || 0;
-      const displayVal = formatNumber(val);
+       //////////////////////////////
+      let displayVal;
+      
+      // Only shorten numbers for specific columns
+      const shortenableCols = [8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      if (shortenableCols.includes(colIndex)) {
+        displayVal = formatNumber(val);
+      } else {
+        // Keep full number for IDs, DKP%, DKP, etc.
+        displayVal = val.toLocaleString();
+      }
 
       // container for number + progress bar
       const wrapper = document.createElement("div");
