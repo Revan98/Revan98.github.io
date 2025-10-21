@@ -714,6 +714,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     searching: true,
     info: false,
     autoWidth: true,
+    pageLength: 20,
     columnDefs: [
       { orderable: false, searchable: false, targets: 0 },
       { targets: [9, 10], visible: false }
@@ -727,11 +728,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
         pageLength: { menu: [20, 40, 60, 80, 100, "All"] }
       }
     }
-  });
-
-  // Default page length
-  $(document).ready(function () {
-    $("#data-table").dataTable({ pageLength: 20 });
   });
 
   // Click to update charts
