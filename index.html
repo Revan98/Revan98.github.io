@@ -552,15 +552,7 @@ function getSheetDiffsForPlayers(playerId) {
 
 function formatNumber(num) {
   if (num === null || num === undefined || isNaN(num)) return "";
-  num = Number(num);
-
-  const sign = num < 0 ? "-" : "";
-  const abs = Math.abs(num);
-
-  if (abs >= 1e9) return sign + (abs / 1e9).toFixed(2).replace(/\.00$/, "") + "B";
-  if (abs >= 1e6) return sign + (abs / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
-  if (abs >= 1e3) return sign + (abs / 1e3).toFixed(2).replace(/\.00$/, "") + "K";
-  return sign + abs.toString();
+  return Number(num).toLocaleString("en-US");
 }
 
 function renderTableFiltered(headers, rows, selectedCols) {
@@ -568,7 +560,9 @@ function renderTableFiltered(headers, rows, selectedCols) {
   rows = removeEmptyRows(rows);
   rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
 
-  // Top players
+  // ----------------------------
+  // 1️⃣ Top players section
+  // ----------------------------
   const dkpColIndex = selectedCols.indexOf(8);
   if (dkpColIndex !== -1) {
     rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
@@ -585,6 +579,9 @@ function renderTableFiltered(headers, rows, selectedCols) {
     });
   }
 
+  // ----------------------------
+  // 2️⃣ Rebuild DataTable
+  // ----------------------------
   if (dataTableInstance) {
     dataTableInstance.destroy();
     dataTableInstance = null;
@@ -607,8 +604,18 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
   thead.appendChild(headRow);
 
-  // Body
+  // ----------------------------
+  // 3️⃣ Table Body with Bars
+  // ----------------------------
   const tbody = document.createElement("tbody");
+  const columnMaxValues = {};
+
+  // Precompute max for each column (for bar scaling)
+  selectedCols.forEach(col => {
+    const values = rows.map(r => parseFloat(r[col]) || 0);
+    columnMaxValues[col] = Math.max(...values);
+  });
+
   rows.forEach((row, rowIdx) => {
     const tr = document.createElement("tr");
 
@@ -619,16 +626,73 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
-      let val = row[colIndex] ?? "";
-
-      if ([2, 12, 13, 14, 15].includes(colIndex) && val !== "") {
-        val = formatNumber(val);
+      // ---------------- Value formatting ----------------
+      let rawVal = row[colIndex];
+      let val = isNaN(parseFloat(rawVal)) ? rawVal : parseFloat(rawVal);
+      
+      const shortenableCols = [2, 12, 13, 14, 15, 8]; // Power, T4, T5, KP, Deads
+      let displayVal;
+      
+      if (colIndex === 0) {
+        // ID column: show as-is, no separators
+        displayVal = String(rawVal);
+      } else if (shortenableCols.includes(colIndex)) {
+        displayVal = formatNumber(val);
+      } else if (headers[colIndex] === "DKP%") {
+        displayVal = isNaN(val) ? val : val.toFixed(2) + "%";
+      } else if (typeof rawVal === "string") {
+        displayVal = rawVal;
+      } else {
+        displayVal = val.toLocaleString("en-US").replace(/\s/g, "");
       }
 
-      const baseSpan = document.createElement("span");
-      baseSpan.textContent = val;
-      td.appendChild(baseSpan);
+      // container for number + progress bar
+      const wrapper = document.createElement("div");
+      wrapper.style.display = "flex";
+      wrapper.style.flexDirection = "column";
+      wrapper.style.alignItems = "center";
+      wrapper.style.gap = "4px";
 
+      // text value
+      const text = document.createElement("div");
+      text.textContent = displayVal;
+      text.style.fontWeight = "500";
+      text.style.fontSize = "13px";
+      wrapper.appendChild(text);
+
+      // Show progress only for selected columns
+      const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      
+      if (progressCols.includes(colIndex)) {
+        const barContainer = document.createElement("div");
+        barContainer.style.width = "80%";
+        barContainer.style.height = "6px";
+        barContainer.style.background = "rgba(255,255,255,0.1)";
+        barContainer.style.borderRadius = "4px";
+      
+        const bar = document.createElement("div");
+        bar.style.height = "100%";
+        bar.style.borderRadius = "4px";
+      
+        const colors = {
+          12: "#00bcd4", // T4 kills (cyan)
+          13: "#ffc107", // T5 kills (yellow)
+          14: "#e91e63", // KP (pink)
+          15: "#f44336", // Dead (red)
+          8: "#4caf50"   // Power (green)
+        };
+        bar.style.background = colors[colIndex] || "#2196f3";
+      
+        const maxVal = columnMaxValues[colIndex];
+        bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
+      
+        barContainer.appendChild(bar);
+        wrapper.appendChild(barContainer);
+      }
+
+      td.appendChild(wrapper);
+
+      // diff display
       if ([2, 12, 13, 14, 15].includes(colIndex)) {
         const diffs = getSheetDiffsForPlayers(row[0]);
         if (diffs) {
@@ -642,6 +706,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
           }
         }
       }
+
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
@@ -650,6 +715,9 @@ function renderTableFiltered(headers, rows, selectedCols) {
   table.appendChild(thead);
   table.appendChild(tbody);
 
+  // ----------------------------
+  // 4️⃣ Initialize DataTable
+  // ----------------------------
   dataTableInstance = new DataTable("#data-table", {
     paging: true,
     scrollY: "50vh",
@@ -675,38 +743,35 @@ function renderTableFiltered(headers, rows, selectedCols) {
     }
   });
 
-  // Search container
-  const searchContainer = document.querySelector('div.dt-search');
+  // Click to update charts
+  document.querySelector("#data-table tbody").addEventListener("click", function (e) {
+    const row = e.target.closest("tr");
+    if (!row) return;
 
-  // Click handler
-   document.querySelector("#data-table tbody").addEventListener("click", function(e) {
-     const row = e.target.closest("tr");
-     if (!row) return;
-   
-     // remove highlight from others
-     document.querySelectorAll("#data-table tbody tr").forEach(r => r.classList.remove("selected"));
-     row.classList.add("selected");
-   
-     const cells = row.querySelectorAll("td");
-     if (cells.length < 2) return;
-     const playerId = cells[1].textContent.trim(); // column 1 = ID
-     updateChartsForPlayer(playerId);
-   });
-   
-   // restore column visibility from localStorage
-   const savedVisibility = JSON.parse(localStorage.getItem("colVisibility") || "{}");
-   Object.keys(savedVisibility).forEach(idx => {
-     dataTableInstance.column(idx).visible(savedVisibility[idx]);
-   });
-   
-   // listen for visibility changes
-   dataTableInstance.on('column-visibility.dt', function(e, settings, column, state) {
-     const vis = JSON.parse(localStorage.getItem("colVisibility") || "{}");
-     vis[column] = state;
-     localStorage.setItem("colVisibility", JSON.stringify(vis));
-   });
+    document.querySelectorAll("#data-table tbody tr").forEach(r => r.classList.remove("selected"));
+    row.classList.add("selected");
 
-  // Totals
+    const cells = row.querySelectorAll("td");
+    if (cells.length < 2) return;
+    const playerId = cells[1].textContent.trim(); // column 1 = ID
+    updateChartsForPlayer(playerId);
+  });
+
+  // Column visibility persistence
+  const savedVisibility = JSON.parse(localStorage.getItem("colVisibility") || "{}");
+  Object.keys(savedVisibility).forEach(idx => {
+    dataTableInstance.column(idx).visible(savedVisibility[idx]);
+  });
+
+  dataTableInstance.on("column-visibility.dt", function (e, settings, column, state) {
+    const vis = JSON.parse(localStorage.getItem("colVisibility") || "{}");
+    vis[column] = state;
+    localStorage.setItem("colVisibility", JSON.stringify(vis));
+  });
+
+  // ----------------------------
+  // 5️⃣ Totals at bottom
+  // ----------------------------
   const totalsContainer = document.getElementById("bottom-totals");
   totalsContainer.innerHTML = "";
   const totalDefs = [
@@ -727,6 +792,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     totalsContainer.appendChild(box);
   });
 }
+
 
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
@@ -822,5 +888,3 @@ themeToggle.addEventListener("change", () => {
 </script>
 </body>
 </html>
-
-
