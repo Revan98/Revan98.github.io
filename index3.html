@@ -671,7 +671,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
       // progress bar
       // ✅ Show progress only for selected columns
-      const progressCols = [8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
       
       if (progressCols.includes(colIndex)) {
         const barContainer = document.createElement("div");
@@ -780,28 +780,42 @@ function renderTableFiltered(headers, rows, selectedCols) {
     localStorage.setItem("colVisibility", JSON.stringify(vis));
   });
 
-  // ----------------------------
-  // 5️⃣ Totals at bottom
-  // ----------------------------
-  const totalsContainer = document.getElementById("bottom-totals");
-  totalsContainer.innerHTML = "";
-  const totalDefs = [
-    { label: "Total T4 kills gained", col: 4 },
-    { label: "Total T5 kills gained", col: 5 },
-    { label: "Total Deads gained", col: 6 },
-    { label: "Total KP gained", col: 3 }
-  ];
-  totalDefs.forEach(item => {
-    let sum = 0;
-    rows.forEach(row => {
-      const diffs = getSheetDiffsForPlayers(row[0]);
-      if (diffs) sum += diffs[item.col] || 0;
-    });
-    const box = document.createElement("div");
-    box.className = "stat-box";
-    box.innerHTML = `<h3>${item.label}</h3><p>${sum.toLocaleString()}</p>`;
-    totalsContainer.appendChild(box);
+// ----------------------------
+// 5️⃣ Totals with diffs to the right of the value
+// ----------------------------
+const totalsContainer = document.getElementById("bottom-totals");
+totalsContainer.innerHTML = "";
+
+const totalDefs = [
+  { label: "Total T4 kills gained", col: 4, color: "#00bcd4" },
+  { label: "Total T5 kills gained", col: 5, color: "#ffc107" },
+  { label: "Total Deads gained", col: 6, color: "#f44336" },
+  { label: "Total KP gained", col: 3, color: "#e91e63" }
+];
+
+totalDefs.forEach(item => {
+  let sum = 0;
+  rows.forEach(row => {
+    const diffs = getSheetDiffsForPlayers(row[0]);
+    if (diffs) sum += diffs[item.col] || 0;
   });
+
+  const box = document.createElement("div");
+  box.className = "stat-box";
+
+  const sign = sum > 0 ? "+" : sum < 0 ? "−" : "";
+  const diffColor = sum > 0 ? "green" : sum < 0 ? "red" : "inherit";
+
+  box.innerHTML = `
+    <h3>${item.label}</h3>
+    <p style="display:flex; align-items:center; justify-content:center; gap:6px;">
+      <span style="font-weight:bold;">${sum.toLocaleString()}</span>
+      <span style="color:${diffColor}; font-size:13px;">(${sign}${formatNumber(sum)})</span>
+    </p>
+  `;
+  totalsContainer.appendChild(box);
+});
+
 }
 
 
