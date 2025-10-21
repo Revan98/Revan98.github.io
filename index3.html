@@ -654,7 +654,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
         displayVal = val.toLocaleString("en-US").replace(/\s/g, "");
       }
 
-
       // container for number + progress bar
       const wrapper = document.createElement("div");
       wrapper.style.display = "flex";
@@ -669,8 +668,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
       text.style.fontSize = "13px";
       wrapper.appendChild(text);
 
-      // progress bar
-      // ✅ Show progress only for selected columns
+      // Show progress only for selected columns
       const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
       
       if (progressCols.includes(colIndex)) {
@@ -699,7 +697,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
         barContainer.appendChild(bar);
         wrapper.appendChild(barContainer);
       }
-
 
       td.appendChild(wrapper);
 
@@ -746,53 +743,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
       topStart: {
-         buttons: [
-            {
-              extend: "excelHtml5",
-              text: "Export Excel",
-              customizeData: function (data) {
-                // Which headers to split for diffs
-                const diffHeaders = ["Power", "T4 Kills", "T5 Kills", "Killpoints", "Deads"];
-            
-                const originalHeaders = [...data.header];
-                const newHeaders = [];
-            
-                // Add Δ header after each of the above
-                originalHeaders.forEach(h => {
-                  newHeaders.push(h);
-                  if (diffHeaders.includes(h)) {
-                    newHeaders.push(h + " Δ");
-                  }
-                });
-            
-                data.header = newHeaders;
-            
-                // Build new rows
-                const newBody = data.body.map(row => {
-                  const newRow = [];
-                  originalHeaders.forEach((h, i) => {
-                    const val = row[i] ?? "";
-                    newRow.push(val);
-            
-                    if (diffHeaders.includes(h)) {
-                      // Extract diff value if present, e.g. "78.49M (-5.33M)" → "-5.33M"
-                      const match = val.match(/\(([-+0-9.,A-Za-z]+)\)/);
-                      const diff = match ? match[1] : "";
-                      // Remove any "+" and parentheses — keep plain number text
-                      newRow.push(diff.replace(/[()+]/g, "").trim());
-                    }
-                  });
-                  return newRow;
-                });
-            
-                data.body = newBody;
-              }
-            },
-
-           "csv",
-           "colvis"
-         ]
-
+        buttons: ["csv", "excel", "colvis"]
       },
       bottomStart: {
         pageLength: { menu: [20, 40, 60, 80, 100] }
