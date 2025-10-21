@@ -642,13 +642,13 @@ function renderTableFiltered(headers, rows, selectedCols) {
       const shortenableCols = [8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
       if (shortenableCols.includes(colIndex)) {
         displayVal = formatNumber(val);
+      } else if (headers[colIndex] === "DKP%") {
+        displayVal = val.toFixed(2) + "%";
       } else {
         // Keep full number for IDs, DKP%, DKP, etc.
         displayVal = val.toLocaleString();
       }
-      else if (headers[colIndex] === "DKP%") {
-        displayVal = val.toFixed(2) + "%";
-      }
+
 
       // container for number + progress bar
       const wrapper = document.createElement("div");
