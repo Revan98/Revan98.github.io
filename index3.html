@@ -619,12 +619,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
-      let val = row[colIndex] ?? "";
-
-      if ([2, 12, 13, 14, 15].includes(colIndex) && val !== "") {
-        val = formatNumber(val);
-      }
-
+      const td = document.createElement("td");
       let val = parseFloat(row[colIndex]) || 0;
       const displayVal = formatNumber(val);
       
