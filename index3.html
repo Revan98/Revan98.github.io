@@ -751,37 +751,42 @@ function renderTableFiltered(headers, rows, selectedCols) {
               extend: "excelHtml5",
               text: "Export Excel",
               customizeData: function (data) {
-                // Define which columns should have diffs appended
+                // Define which columns have diffs and their corresponding indices
+                // These indices match the visible table columns (0-based)
                 const diffColumns = {
-                  "Power": 2,
-                  "T4 kills": 12,
-                  "T5 kills": 13,
-                  "KP": 14,
-                  "Deads": 15
+                  "Power": 3,
+                  "T4 Kills": 4,
+                  "T5 Kills": 5,
+                  "Killpoints": 6,
+                  "Deads": 7
                 };
             
-                // Insert new headers after each relevant column
+                // Clone original headers first (before modification)
+                const originalHeaders = [...data.header];
                 const newHeaders = [];
-                data.header.forEach(h => {
+            
+                // Add an extra "Δ" header after each matching column
+                originalHeaders.forEach(h => {
                   newHeaders.push(h);
                   if (h in diffColumns) {
-                    newHeaders.push(h + " Δ"); // e.g., “T4 kills Δ”
+                    newHeaders.push(h + " Δ");
                   }
                 });
+            
                 data.header = newHeaders;
             
-                // Insert diff values next to relevant columns for each row
+                // Rebuild rows to insert diff columns properly
                 const newBody = data.body.map(row => {
-                  const playerId = row[1]; // assuming ID is the 2nd column
+                  const playerId = row[1]; // Assuming ID is in the 2nd column
                   const diffs = getSheetDiffsForPlayers(playerId);
                   const newRow = [];
             
-                  row.forEach((val, i) => {
-                    newRow.push(val);
-                    const header = data.header[i];
-                    const match = Object.entries(diffColumns).find(([key]) => key === header);
-                    if (match && diffs) {
-                      const diffVal = diffs[match[1]] || 0;
+                  originalHeaders.forEach((h, i) => {
+                    newRow.push(row[i]); // Original value
+            
+                    // If this header has a diff, append diff value
+                    if (h in diffColumns && diffs) {
+                      const diffVal = diffs[diffColumns[h]] || 0;
                       // plain number, no +, no commas
                       const diffDisplay = diffVal === 0 ? "" : String(diffVal);
                       newRow.push(diffDisplay);
