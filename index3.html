@@ -646,6 +646,9 @@ function renderTableFiltered(headers, rows, selectedCols) {
         // Keep full number for IDs, DKP%, DKP, etc.
         displayVal = val.toLocaleString();
       }
+      else if (headers[colIndex] === "DKP%") {
+        displayVal = val.toFixed(2) + "%";
+      }
 
       // container for number + progress bar
       const wrapper = document.createElement("div");
