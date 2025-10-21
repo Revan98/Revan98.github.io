@@ -670,30 +670,36 @@ function renderTableFiltered(headers, rows, selectedCols) {
       wrapper.appendChild(text);
 
       // progress bar
-      const barContainer = document.createElement("div");
-      barContainer.style.width = "80%";
-      barContainer.style.height = "6px";
-      barContainer.style.background = "rgba(255,255,255,0.1)";
-      barContainer.style.borderRadius = "4px";
+      // ✅ Show progress only for selected columns
+      const progressCols = [8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      
+      if (progressCols.includes(colIndex)) {
+        const barContainer = document.createElement("div");
+        barContainer.style.width = "80%";
+        barContainer.style.height = "6px";
+        barContainer.style.background = "rgba(255,255,255,0.1)";
+        barContainer.style.borderRadius = "4px";
+      
+        const bar = document.createElement("div");
+        bar.style.height = "100%";
+        bar.style.borderRadius = "4px";
+      
+        const colors = {
+          12: "#00bcd4", // T4 kills (cyan)
+          13: "#ffc107", // T5 kills (yellow)
+          14: "#e91e63", // KP (pink)
+          15: "#f44336", // Dead (red)
+          8: "#4caf50"   // Power (green)
+        };
+        bar.style.background = colors[colIndex] || "#2196f3";
+      
+        const maxVal = columnMaxValues[colIndex];
+        bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
+      
+        barContainer.appendChild(bar);
+        wrapper.appendChild(barContainer);
+      }
 
-      const bar = document.createElement("div");
-      bar.style.height = "100%";
-      bar.style.borderRadius = "4px";
-
-      const colors = {
-        12: "#00bcd4", // T4 kills (cyan)
-        13: "#ffc107", // T5 kills (yellow)
-        14: "#e91e63", // KP (pink)
-        15: "#f44336", // Dead (red)
-        8: "#4caf50"   // Healed (green)
-      };
-      bar.style.background = colors[colIndex] || "#2196f3";
-
-      const maxVal = columnMaxValues[colIndex];
-      bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
-
-      barContainer.appendChild(bar);
-      wrapper.appendChild(barContainer);
 
       td.appendChild(wrapper);
 
