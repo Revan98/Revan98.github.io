@@ -667,18 +667,11 @@ function renderTableFiltered(headers, rows, selectedCols) {
        buttons: ['csv', 'excel', 'colvis'],
      },
       bottomStart: {
-       pageLength: {
+       pageLength: 20 {
          menu: [20, 40, 60, 80, 100, "All"]}
      }
    }
   });
-
-   // Default page lenght
-   $(document).ready( function () {
-     $('#data-table').dataTable( {
-       "pageLength": 20
-     } );
-   } );
    
   // Search container
   const searchContainer = document.querySelector('div.dt-search');
