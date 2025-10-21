@@ -634,21 +634,27 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
-      let val = parseFloat(row[colIndex]) || 0;
+      let rawVal = row[colIndex];
+      let val = isNaN(parseFloat(rawVal)) ? rawVal : parseFloat(rawVal);
        //////////////////////////////
-      let displayVal;
-      
       // Only shorten numbers for specific columns
       const shortenableCols = [8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      
+      let displayVal;
+      
       if (shortenableCols.includes(colIndex)) {
+        // Short numeric values
         displayVal = formatNumber(val);
       } else if (headers[colIndex] === "DKP%") {
-        displayVal = val.toFixed(2) + "%";
+        // Handle DKP% explicitly
+        displayVal = isNaN(val) ? val : val.toFixed(2) + "%";
+      } else if (typeof val === "string") {
+        // Names, IDs, text — keep as-is
+        displayVal = val;
       } else {
-        // Keep full number for IDs, DKP%, DKP, etc.
-        displayVal = val.toLocaleString();
+        // Regular numeric columns (full numbers, no K/M/B)
+        displayVal = val.toLocaleString("en-US").replace(/\s/g, "");
       }
-
 
       // container for number + progress bar
       const wrapper = document.createElement("div");
