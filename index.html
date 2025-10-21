@@ -651,22 +651,28 @@ function renderTableFiltered(headers, rows, selectedCols) {
   table.appendChild(tbody);
 
   dataTableInstance = new DataTable("#data-table", {
-    paging: false,
-    scrollY: '50vh',
-    scrollX: '100%',
+    paging: true,
+    scrollY: "50vh",
+    scrollX: "100%",
     scrollCollapse: true,
     order: [],
     searching: true,
     info: false,
     autoWidth: true,
-    columnDefs: [{ orderable: false, searchable: false, targets: 0 },
-                { targets: [9, 10], visible: false }],
+    pageLength: 20,
+    columnDefs: [
+      { orderable: false, searchable: false, targets: 0 },
+      { targets: [9, 10], visible: false }
+    ],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
-   layout: {
-     topStart: {
-       buttons: ['csv', 'excel', 'colvis'],
-     },
-   }
+    layout: {
+      topStart: {
+        buttons: ["csv", "excel", "colvis"]
+      },
+      bottomStart: {
+        pageLength: { menu: [20, 40, 60, 80, 100] }
+      }
+    }
   });
 
   // Search container
@@ -816,4 +822,5 @@ themeToggle.addEventListener("change", () => {
 </script>
 </body>
 </html>
+
 
