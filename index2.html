@@ -568,6 +568,11 @@ div.dt-scroll-body {
   background: var(--table-bg);
 }
 
+/* Hide duplicate header cloned for scrolling */
+div.dt-scroll-body thead {
+  visibility: collapse !important;
+}
+   
 </style>
 </head>
 <body>
@@ -998,8 +1003,7 @@ document.addEventListener("DOMContentLoaded", async () => {
          );
       
          const firstSheet = googleSheetNames[googleSheetNames.length - 1];
-         //renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
-         renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(2), selectedColumns); 
+         renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
        } catch (err) {
          alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
        }
