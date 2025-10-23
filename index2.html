@@ -104,13 +104,13 @@ body {
 
 #left-sidebar,
 #right-sidebar {
-  width: 10%;
+  width: 20%;
 }
 
 #table-container {
   padding-top: 30px;
   justify-content: center;
-  width: 80%;
+  width: 60%;
   overflow-x: auto;
 }
 
@@ -255,13 +255,12 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
    8. CHARTS
    ========================================================= */
 #charts-container {
-  display: grid;
-  grid-template-columns: repeat(2, auto);
+  display: block;
   gap: 20px;
   justify-content: center;
   align-items: start;
   margin: 30px auto;
-  max-width: 39vw;
+  max-width: 85%;
 }
 
 #charts-container canvas {
@@ -297,7 +296,7 @@ div.dt-scroll-body::-webkit-scrollbar-thumb {
    ========================================================= */
 div.dt-buttons button {
   background: var(--accent) !important;
-  font-color: var(--text-color) !important;
+  color: var(--text-color) !important;
   border: 1px solid var(--table-border) !important;
   border-radius: 6px !important;
   padding: 6px 12px !important;
@@ -312,35 +311,74 @@ div.dt-buttons button:hover {
 }
 
 /* Column visibility dropdown menu */
-div.dt-button-collection {
-  background: var(--table-bg) !important;
-  border: 1px solid var(--table-border) !important;
-  border-radius: 8px !important;
-  padding: 8px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+div.dt-button-collection .dt-button-active {
+  padding-right: 3em;
+}
+div.dt-button-collection .dt-button-active:after {
+  position: absolute;
+  top: 50%;
+  margin-top: -10px;
+  right: 1em;
+  display: inline-block;
+  content: "\2713";
+  color: inherit;
+}
+div.dt-button-collection .dt-button-active.dt-button-split {
+  padding-right: 0;
+}
+div.dt-button-collection .dt-button-active.dt-button-split:after {
+  display: none;
+}
+div.dt-button-collection .dt-button-active.dt-button-split > *:first-child {
+  padding-right: 3em;
+}
+div.dt-button-collection .dt-button-active.dt-button-split > *:first-child:after {
+  position: absolute;
+  top: 50%;
+  margin-top: -10px;
+  right: 1em;
+  display: inline-block;
+  content: "\2713";
+  color: inherit;
 }
 
-div.dt-button-collection button {
-  display: block;
+div.dt-button-collection {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  background-color: var(--table-bg) !important;
+  overflow: hidden;
+  z-index: 2002;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 8px;
+  box-shadow: 3px 4px 10px 1px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  color: inherit;
+}
+div.dt-button-collection .dt-button {
+  position: relative;
+  left: 0;
+  right: 0;
   width: 100%;
   text-align: left;
-  margin: 2px 0 !important;
-  background: transparent !important;
-  font-color: var(--text-color) !important;
+  display: flex;
+  float: none;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  margin: 0;
+  padding: 6px 10px;
   border: none !important;
-  padding: 6px 10px !important;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-color);
 }
 
-div.dt-button-collection button:hover {
-  background: rgba(0,123,255,0.1) !important;
-}
-
-/* Tick/checkmark color */
-div.dt-button-collection button.active::before {
-  content: "✔ ";
-  color: var(--checkmark-color);
-}
-/*-----------------*/
 /* Loading spinner container */
 #loading-overlay {
   display: none;
@@ -927,6 +965,3 @@ themeToggle.addEventListener("change", () => {
 </script>
 </body>
 </html>
-
-
-
