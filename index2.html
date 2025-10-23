@@ -998,7 +998,8 @@ document.addEventListener("DOMContentLoaded", async () => {
          );
       
          const firstSheet = googleSheetNames[googleSheetNames.length - 1];
-         renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+         //renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+         renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(2), selectedColumns); 
        } catch (err) {
          alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
        }
