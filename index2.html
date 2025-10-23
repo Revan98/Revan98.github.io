@@ -6,8 +6,6 @@
 <title>DKP stats</title>
 
 <!-- DataTables v2 -->
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.dataTables.css">
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
 <script src="https://cdn.datatables.net/buttons/3.2.5/js/dataTables.buttons.js"></script>
@@ -415,7 +413,161 @@ div.dt-button-collection button.active::before {
 .theme-toggle input:checked + .toggle-slider::before {
   transform: translateX(26px);
 }
-   
+/*aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa */
+/* =========================================================
+   DATATABLES CORE ELEMENTS (MINIMAL NEEDED)
+   ========================================================= */
+table.dataTable thead th {
+  cursor: pointer;
+  vertical-align: bottom;
+  border-bottom: 2px solid var(--table-border);
+}
+
+table.dataTable.no-footer {
+  border-bottom: 1px solid var(--table-border);
+}
+
+/* Sort icons (ascending/descending) */
+table.dataTable thead .sorting:after,
+table.dataTable thead .sorting_asc:after,
+table.dataTable thead .sorting_desc:after {
+  position: absolute;
+  right: 8px;
+  font-family: "Arial", sans-serif;
+  opacity: 0.4;
+}
+
+table.dataTable thead .sorting:after {
+  content: "⇅";
+}
+table.dataTable thead .sorting_asc:after {
+  content: "↑";
+  opacity: 0.8;
+}
+table.dataTable thead .sorting_desc:after {
+  content: "↓";
+  opacity: 0.8;
+}
+
+/* Pagination controls */
+div.dt-container .dt-paging {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin: 10px 0;
+}
+
+div.dt-container .dt-paging button {
+  background: var(--accent);
+  color: var(--text-color);
+  border: 1px solid var(--table-border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+div.dt-container .dt-paging button:hover {
+  background: rgba(0,123,255,0.15);
+}
+
+div.dt-container .dt-paging button.current {
+  background: rgba(0,123,255,0.25);
+  font-weight: bold;
+}
+
+/* Length menu + info area */
+div.dt-container .dt-length,
+div.dt-container .dt-info {
+  margin: 6px 8px;
+  font-size: 13px;
+  color: var(--text-color);
+}
+
+/* Align info at bottom left */
+div.dt-container .dt-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   DATATABLES BUTTONS (MINIMAL NEEDED)
+   ========================================================= */
+div.dt-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+}
+
+div.dt-buttons button.dt-button {
+  background: var(--accent);
+  color: var(--text-color);
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+div.dt-buttons button.dt-button:hover {
+  background: rgba(0,123,255,0.2);
+}
+
+div.dt-buttons button.dt-button:active {
+  background: rgba(0,123,255,0.3);
+}
+
+/* Button dropdown (colVis collection) */
+div.dt-button-collection {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 2000;
+}
+
+div.dt-button-collection button.dt-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+}
+
+div.dt-button-collection button.dt-button:hover {
+  background: rgba(0,123,255,0.1);
+}
+
+div.dt-button-collection button.active::before {
+  content: "✔ ";
+  color: var(--checkmark-color);
+}
+
+/* =========================================================
+   DATATABLES SCROLL WRAPPER ALIGNMENT
+   ========================================================= */
+div.dt-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+div.dt-scroll-head {
+  border-bottom: 1px solid var(--table-border);
+}
+
+div.dt-scroll-body {
+  background: var(--table-bg);
+}
+
 </style>
 </head>
 <body>
