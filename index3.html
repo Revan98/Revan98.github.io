@@ -6,6 +6,7 @@
 <title>DKP stats</title>
 
 <!-- DataTables v2 -->
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.dataTables.css">
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
@@ -304,7 +305,6 @@ div.dt-buttons button {
   cursor: pointer;
   transition: background 0.2s ease;
   margin: 0 4px !important;
-  color: inherit;
 }
 
 div.dt-buttons button:hover {
@@ -421,7 +421,6 @@ div.dt-scroll-body thead {
   visibility: collapse !important;
 }
 
-
 /* Pagination controls */
 div.dt-container .dt-paging {
   display: flex !important;
@@ -450,6 +449,12 @@ div.dt-container .dt-paging button.current {
   font-weight: bold !important;
 }
 
+/* Style page lenght selection dropdown */
+.dt-length select {
+   background: var(--table-bg) !important;
+   color: inherit !important;
+}
+   
 </style>
 </head>
 <body>
