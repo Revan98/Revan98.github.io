@@ -572,7 +572,61 @@ div.dt-scroll-body {
 div.dt-scroll-body thead {
   visibility: collapse !important;
 }
-   
+
+
+/* =========================================================
+   FIX: Column Visibility Dropdown (colVis) Styling
+   ========================================================= */
+
+/* Ensure dropdown positions correctly below its parent button */
+div.dt-button-collection {
+  min-width: max-content !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  margin-top: 6px !important;
+  white-space: nowrap !important;
+  background: var(--table-bg) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  z-index: 2001;
+  padding: 6px 0 !important;
+}
+
+/* Each option in dropdown */
+div.dt-button-collection .dt-button {
+  display: flex !important;
+  align-items: center;
+  width: 100% !important;
+  padding: 6px 14px !important;
+  font-size: 13px !important;
+  color: var(--text-color) !important;
+  background: transparent !important;
+  border: none !important;
+  text-align: left !important;
+}
+
+/* Hover feedback */
+div.dt-button-collection .dt-button:hover {
+  background: rgba(0,123,255,0.15) !important;
+}
+
+/* Checkmark (active columns) */
+div.dt-button-collection .dt-button.active::before {
+  content: "✔";
+  color: var(--checkmark-color);
+  display: inline-block;
+  width: 18px;
+  text-align: center;
+  margin-right: 4px;
+}
+
+/* Ensure text aligns neatly after checkmark */
+div.dt-button-collection .dt-button span {
+  flex: 1;
+}
+
 </style>
 </head>
 <body>
