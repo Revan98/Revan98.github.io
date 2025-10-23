@@ -415,7 +415,56 @@ div.dt-button-collection button.active::before {
 .theme-toggle input:checked + .toggle-slider::before {
   transform: translateX(26px);
 }
-   
+
+/* Hide duplicate header cloned for scrolling */
+div.dt-scroll-body thead {
+  visibility: collapse !important;
+}
+
+
+/* Pagination controls */
+div.dt-container .dt-paging {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 10px 0 !important;
+}
+
+div.dt-container .dt-paging button {
+  background: var(--accent) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 4px !important;
+  padding: 4px 10px !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+}
+
+div.dt-container .dt-paging button:hover {
+  background: rgba(0,123,255,0.15) !important;
+}
+
+div.dt-container .dt-paging button.current {
+  background: rgba(0,123,255,0.25) !important;
+  font-weight: bold !important;
+}
+
+/* Length menu + info area */
+div.dt-container .dt-length,
+div.dt-container .dt-info {
+  margin: 6px 8px !important;
+  font-size: 13px !important;
+  color: var(--text-color) !important;
+}
+
+/* Align info at bottom left */
+div.dt-container .dt-bottom {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+}
 </style>
 </head>
 <body>
@@ -552,15 +601,7 @@ function getSheetDiffsForPlayers(playerId) {
 
 function formatNumber(num) {
   if (num === null || num === undefined || isNaN(num)) return "";
-  num = Number(num);
-
-  const sign = num < 0 ? "-" : "";
-  const abs = Math.abs(num);
-
-  if (abs >= 1e9) return sign + (abs / 1e9).toFixed(2).replace(/\.00$/, "") + "B";
-  if (abs >= 1e6) return sign + (abs / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
-  if (abs >= 1e3) return sign + (abs / 1e3).toFixed(2).replace(/\.00$/, "") + "K";
-  return sign + abs.toString();
+  return Number(num).toLocaleString("en-US");
 }
 
 function renderTableFiltered(headers, rows, selectedCols) {
@@ -638,7 +679,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
       let rawVal = row[colIndex];
       let val = isNaN(parseFloat(rawVal)) ? rawVal : parseFloat(rawVal);
       
-      const shortenableCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      const shortenableCols = [2, 12, 13, 14, 15, 8]; // Power, T4, T5, KP, Deads
       let displayVal;
       
       if (colIndex === 0) {
