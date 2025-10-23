@@ -420,7 +420,34 @@ div.dt-button-collection button.active::before {
 div.dt-scroll-body thead {
   visibility: collapse !important;
 }
-   
+
+/* Pagination controls */
+div.dt-container .dt-paging {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 10px 0 !important;
+}
+
+div.dt-container .dt-paging button {
+  background: var(--accent) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 4px !important;
+  padding: 4px 10px !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+}
+
+div.dt-container .dt-paging button:hover {
+  background: rgba(0,123,255,0.15) !important;
+}
+
+div.dt-container .dt-paging button.current {
+  background: rgba(0,123,255,0.25) !important;
+  font-weight: bold !important;
+}
 </style>
 </head>
 <body>
@@ -893,4 +920,5 @@ themeToggle.addEventListener("change", () => {
 </script>
 </body>
 </html>
+
 
