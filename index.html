@@ -415,6 +415,11 @@ div.dt-button-collection button.active::before {
 .theme-toggle input:checked + .toggle-slider::before {
   transform: translateX(26px);
 }
+
+/* Hide duplicate header cloned for scrolling */
+div.dt-scroll-body thead {
+  visibility: collapse !important;
+}
    
 </style>
 </head>
@@ -888,3 +893,4 @@ themeToggle.addEventListener("change", () => {
 </script>
 </body>
 </html>
+
