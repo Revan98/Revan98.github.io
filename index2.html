@@ -36,6 +36,8 @@
   --checkmark-color: #666;
   --row-selected-bg: #cce5ff;
   --row-selected-text: #000;
+  --diff-positive: green;
+  --diff-negative: red;
 }
 
 body.dark {
@@ -51,6 +53,8 @@ body.dark {
   --checkmark-color: white;
   --row-selected-bg: #004085;
   --row-selected-text: #fff;
+  --diff-positive: #6aff6a; /* bright lime green */
+  --diff-negative: #ff7b7b; /* bright red/pink for better visibility */
 }
 
 /* =========================================================
@@ -777,7 +781,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
           if (diff !== 0) {
             const diffSpan = document.createElement("span");
             diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
-            diffSpan.style.color = diff > 0 ? "green" : "red";
+            diffSpan.style.color = diff > 0 ? "--diff-positive" : "--diff-negative";
             diffSpan.style.marginLeft = "4px";
             td.appendChild(diffSpan);
           }
