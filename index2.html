@@ -471,7 +471,12 @@ function renderplayerstoptable(headers, rows) {
     order: [[3, "desc"]], // sort by DKP
     columnDefs: [
       { orderable: false, targets: 0 } // rank column not sortable
-    ]
+    ],
+    layout: {
+      topStart: {
+        buttons: ["copy"]
+      }
+    }
   });
 }
 
