@@ -379,9 +379,9 @@ function renderTableFiltered(headers, rows, selectedCols) {
       const box = document.createElement("div");
       box.className = "player-box";
       box.innerHTML = `
-        <div class="player-rank">TOP${idx + 1}</div>
-        <h3>${name}</h3>
-        <p>ID: ${id}</p>
+        <h1>TOP${idx + 1}</h1>
+        <h2>${name}</h2>
+        <h2>ID:${id}</h2>
       `;
       topContainer.appendChild(box);
     });
