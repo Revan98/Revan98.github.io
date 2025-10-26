@@ -334,7 +334,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     scrollY: "50vh",
     scrollX: "100%",
     scrollCollapse: true,
-    order: [],
+    order: [[selectedCols.indexOf(8) + 1, "desc"]], // Default DKP descending
     searching: true,
     info: false,
     autoWidth: true,
@@ -346,13 +346,38 @@ function renderTableFiltered(headers, rows, selectedCols) {
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
       topStart: {
-        buttons: ["csv", "excel", "colvis"]
+        buttons: [
+          "copy",
+          "csv",
+          "excel",
+          "colvis",
+          {
+            extend: "copyHtml5",
+            text: "Copy top 18 (ID, Name, DKP)",
+            exportOptions: {
+              // Columns: # (0), ID (1), Name (2), DKP (8)
+              columns: [0, 1, selectedCols.indexOf(8) + 1],
+              // Rows: only the first 18
+              modifier: {
+                page: "all"
+              },
+              rows: function (idx, data, node) {
+                return idx < 18; // top 18 only
+              }
+            },
+            customize: function (data, config, dt) {
+              // Optional: Add a title header
+              return "Top 18 Governors (ID, Name, DKP)\n\n" + data;
+            }
+          }
+        ]
       },
       bottomStart: {
         pageLength: { menu: [20, 40, 60, 80, 100] }
       }
     }
   });
+
 
   // Click to update charts
   document.querySelector("#data-table tbody").addEventListener("click", function (e) {
