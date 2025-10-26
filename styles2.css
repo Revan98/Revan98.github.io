@@ -658,5 +658,5 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
 }
 
 #playerstopc {
-  margin-top: 20vh; /* adjust as needed */
+  margin-top: 5vh; /* adjust as needed */
 }
