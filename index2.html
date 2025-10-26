@@ -412,7 +412,7 @@ function renderplayerstoptable(headers, rows) {
   rows.sort((a, b) => (parseFloat(b[8]) || 0) - (parseFloat(a[8]) || 0));
 
   // Take top N (optional — e.g., top 10)
-  const topRows = rows.slice(0, 10);
+  const topRows = rows.slice(0, 18);
 
   // Destroy old table if exists
   if ($.fn.DataTable.isDataTable("#playerstop-table")) {
@@ -459,7 +459,7 @@ function renderplayerstoptable(headers, rows) {
 
   // Initialize minimal DataTable
   new DataTable("#playerstop-table", {
-    paging: true,
+    paging: false,
     searching: false,
     info: false,
     ordering: true,
