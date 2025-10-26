@@ -332,7 +332,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     scrollY: "50vh",
     scrollX: "100%",
     scrollCollapse: true,
-    order: [],
+    order: [[3, "desc"]], // sort by DKP
     searching: true,
     info: false,
     autoWidth: true,
@@ -465,6 +465,7 @@ function renderplayerstoptable(headers, rows) {
     ordering: true,
     scrollY: "40vh",
     scrollCollapse: true,
+    pageLength: 18,
     order: [[3, "desc"]], // sort by DKP
     columnDefs: [
       { orderable: false, targets: 0 } // rank column not sortable
