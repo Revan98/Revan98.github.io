@@ -30,8 +30,8 @@
   </label>
 </div>
 
-<div class="left_column">
-   <div id="playertopc">
+<div class="left_column"><p></p>
+   <div id="playerstopc">
    <table id="playerstop-table" class="playerstop"></table>
    </div>
 </div>
@@ -170,6 +170,25 @@ function renderTableFiltered(headers, rows, selectedCols) {
   resetCharts(); // clear old chart data
   rows = removeEmptyRows(rows);
   rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
+
+  // ----------------------------
+  // 1️⃣ Top players section
+  // ----------------------------
+  const dkpColIndex = selectedCols.indexOf(8);
+  if (dkpColIndex !== -1) {
+    rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
+    const top3 = rows.slice(0, 3);
+    const topContainer = document.getElementById("top-players");
+    topContainer.innerHTML = "";
+    top3.forEach((player, idx) => {
+      const id = player[0] ?? "";
+      const name = player[1] ?? "";
+      const box = document.createElement("div");
+      box.className = "player-box";
+      box.innerHTML = `<div class="player-rank">TOP${idx + 1}</div><h3>${name}</h3><p>ID: ${id}</p>`;
+      topContainer.appendChild(box);
+    });
+  }
 
   // ----------------------------
   // 2️⃣ Rebuild DataTable
@@ -360,38 +379,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     vis[column] = state;
     localStorage.setItem("colVisibility", JSON.stringify(vis));
   });
-  
-  // ----------------------------
-  // 3️⃣ Build Top Players section from DataTable order
-  // ----------------------------
-  function updateTopPlayersFromTable() {
-    const topContainer = document.getElementById("top-players");
-    topContainer.innerHTML = "";
-  
-    const tableData = dataTableInstance.rows({ order: 'applied', search: 'applied' }).data().toArray();
-  
-    // Take top 3 rows from currently sorted & filtered data
-    const top3 = tableData.slice(0, 3);
-  
-    top3.forEach((row, idx) => {
-      const id = row[1]; // ID (remember index 0 is "#")
-      const name = row[2];
-      const dkp = row[selectedCols.indexOf(8) + 1]; // adjust index due to "#"
-  
-      const box = document.createElement("div");
-      box.className = "player-box";
-      box.innerHTML = `
-        <h1>TOP${idx + 1}</h1>
-        <h2>${name}</h2>
-        <h2>ID:${id}</h2>
-      `;
-      topContainer.appendChild(box);
-    });
-  }
-  
-  // Run once after load
-  updateTopPlayersFromTable();
-  
+
   // ----------------------------
   // 5️⃣ Totals at bottom
   // ----------------------------
