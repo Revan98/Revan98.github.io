@@ -657,7 +657,6 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
   display: none;
 }
 
-.playertopc {
-   margin-top: 500px;
-   padding-top: 500px;
+#playerstop-table {
+  margin-top: 160px; /* adjust as needed */
 }
