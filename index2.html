@@ -459,7 +459,7 @@ function renderplayerstoptable(headers, rows) {
   table.appendChild(thead);
   table.appendChild(tbody);
 
-  // Initialize minimal DataTable
+    // Initialize minimal DataTable
   new DataTable("#playerstop-table", {
     paging: false,
     searching: false,
@@ -468,19 +468,21 @@ function renderplayerstoptable(headers, rows) {
     scrollY: "40vh",
     scrollCollapse: true,
     pageLength: 18,
-    order: [[3, "desc"]], // sort by DKP
+    order: [[3, "desc"]],
     columnDefs: [
-      { orderable: false, targets: 0 } // rank column not sortable
+      { orderable: false, targets: 0 }
     ],
     layout: {
       topStart: {
-        buttons: ["copy"]
+        buttons: [
+          {
+            extend: "copy",
+            text: "Copy Top18 Players", // ← your custom text
+          }
+        ]
       }
     }
   });
-}
-
-
 
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
