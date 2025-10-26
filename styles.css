@@ -656,7 +656,3 @@ table.dataTable thead > tr > th.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
 table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-ordering-desc) span.dt-column-order:empty {
   display: none;
 }
-
-#playerstop-table {
-  margin-top: 40px; /* or more if needed */
-}
