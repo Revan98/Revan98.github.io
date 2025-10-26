@@ -1,0 +1,658 @@
+/* =========================================================
+   1. THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-color: #e5e5e5;
+  --text-color: #333;
+  --table-bg: #fff;
+  --table-border: #ccc;
+  --accent: #fff;
+  --scrollbar-bg: rgba(0,0,0,0.3);
+  --chart-text: #333;
+  --chart-grid: rgba(0, 0, 0, 0.1);
+  --chart-line: #007bff;
+  --checkmark-color: #666;
+  --row-selected-bg: #cce5ff;
+  --row-selected-text: #000;
+}
+
+body.dark {
+  --bg-color: #1c1c1c;
+  --text-color: #eee;
+  --table-bg: #2a2a2a;
+  --table-border: #444;
+  --accent: #2a2a2a;
+  --scrollbar-bg: rgba(255,255,255,0.4);
+  --chart-text: #eee;
+  --chart-grid: rgba(255,255,255,0.2);
+  --chart-line: #ff9800;
+  --checkmark-color: white;
+  --row-selected-bg: #004085;
+  --row-selected-text: #fff;
+}
+
+
+/* =========================================================
+   2. GLOBAL
+   ========================================================= */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* =========================================================
+   3. NAVIGATION BAR
+   ========================================================= */
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.topnav a,
+.topnav button {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.topnav a:hover,
+.topnav button:hover {
+  background-color: #4e4d4d;
+}
+/* =========================================================
+   7. PLAYER & STATS BOXES
+   ========================================================= */
+.player-box,
+.stat-box {
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  width: 180px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.player-rank {
+  font-weight: bold;
+  font-size: 14px;
+  color: var(--text-color);
+  margin-bottom: 5px;
+}
+
+.player-box h3,
+.stat-box h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.player-box p,
+.stat-box p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+#top-players{
+   display: flex; 
+   justify-content: center; 
+   gap: 20px; 
+   margin-top: 20px;}
+
+#bottom-totals{
+   display: flex; 
+   justify-content: center; 
+   gap: 20px; 
+   margin-top: 20px;}
+
+@media (max-width: 768px) {
+  #top-players,
+  #bottom-totals {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #top-players .player-box,
+  #bottom-totals .stat-box {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  #charts-container {
+    grid-template-columns: 1fr;
+    max-width: 90vw;
+  }
+}
+/* =========================================================
+    8. DARK MODE TOGGLE
+    ========================================================= */
+ /* Toggle switch styling */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #f2f2f2;
+  font-size: 16px;
+}
+
+.theme-toggle input {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background-color: #777;
+  border-radius: 12px;
+  transition: background-color 0.3s;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.theme-toggle input:checked + .toggle-slider {
+  background-color: #ff9800;
+}
+
+.theme-toggle input:checked + .toggle-slider::before {
+  transform: translateX(26px);
+}
+
+/* =========================================================
+   9. LOADING SPINNER
+   ========================================================= */
+/* Loading spinner container */
+#loading-overlay {
+  display: none;
+  height: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  font-size: 18px;
+}
+
+/* Spinner circle */
+.spinner {
+  border: 6px solid var(--table-border);
+  border-top: 6px solid var(--chart-line);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* =========================================================
+   10. MISCELLANEOUS
+   ========================================================= */
+.left_column {
+  float: left;
+  width: 20%;
+}
+.right_column {
+  float: left;
+  width: 20%;
+}
+.center_column {
+  float: left;
+  width: 60%;
+}
+/* =========================================================
+   8. CHARTS
+   ========================================================= */
+#charts-container {
+    top: 0;
+    left: 0;
+    margin-top: 20px;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--table-bg);
+    border-radius: 8px;
+}
+#charts-container2 {
+    top: 0;
+    left: 0;
+    margin-top: 15px;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--table-bg);
+    border-radius: 8px;
+}
+#charts-container3 {
+    top: 0;
+    left: 0;
+    margin-top: 15px;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--table-bg);
+    border-radius: 8px;
+}
+#charts-container4 {
+    top: 0;
+    left: 0;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--table-bg);
+    border-radius: 8px;
+}
+/* =========================================================
+   4. DATA TABLE
+   ========================================================= */
+div.dt-container {
+    margin: 0 auto;
+    position: relative;
+    clear: both;
+}
+div.dt-container div.dt-layout-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0.75em 0;
+}
+div.dt-container div.dt-layout-row div.dt-layout-cell {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+div.dt-container div.dt-layout-row div.dt-layout-cell.dt-layout-start {
+  justify-content: flex-start;
+  margin-right: auto;
+}
+div.dt-container div.dt-layout-row div.dt-layout-cell.dt-layout-end {
+  justify-content: flex-end;
+  margin-left: auto;
+}
+div.dt-container div.dt-layout-row div.dt-layout-cell:empty {
+  display: none;
+}
+
+@media screen and (max-width: 767px) {
+  div.dt-container div.dt-layout-row:not(.dt-layout-table) {
+    display: block;
+  }
+  div.dt-container div.dt-layout-row:not(.dt-layout-table) div.dt-layout-cell {
+    display: block;
+    text-align: center;
+  }
+  div.dt-container div.dt-layout-row:not(.dt-layout-table) div.dt-layout-cell > * {
+    margin: 0.5em 0;
+  }
+  div.dt-container div.dt-layout-row:not(.dt-layout-table) div.dt-layout-cell.dt-layout-start {
+    margin-right: 0;
+  }
+  div.dt-container div.dt-layout-row:not(.dt-layout-table) div.dt-layout-cell.dt-layout-end {
+    margin-left: 0;
+  }
+}
+div.dt-container div.dt-layout-start > *:not(:last-child) {
+  margin-right: 1em;
+}
+div.dt-container div.dt-layout-end > *:not(:first-child) {
+  margin-left: 1em;
+}
+div.dt-container div.dt-layout-full {
+  width: 100%;
+}
+div.dt-container div.dt-layout-full > *:only-child {
+  margin-left: auto;
+  margin-right: auto;
+}
+div.dt-container div.dt-layout-table > div {
+  display: block !important;
+}
+
+@media screen and (max-width: 767px) {
+  div.dt-container div.dt-layout-start > *:not(:last-child) {
+    margin-right: 0;
+  }
+  div.dt-container div.dt-layout-end > *:not(:first-child) {
+    margin-left: 0;
+  }
+}
+
+/* Hide duplicate header cloned for scrolling */
+div.dt-scroll-body thead {
+  visibility: collapse !important;
+}
+
+/* Pagination controls */
+div.dt-container .dt-paging {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 10px 0 !important;
+}
+
+div.dt-container .dt-paging button {
+  background: var(--accent) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 4px !important;
+  padding: 4px 10px !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+}
+
+div.dt-container .dt-paging button:hover {
+  background: rgba(0,123,255,0.15) !important;
+}
+
+div.dt-container .dt-paging button.current {
+  background: rgba(0,123,255,0.25) !important;
+  font-weight: bold !important;
+}
+
+/* Style page lenght selection dropdown */
+.dt-length select {
+   background: var(--table-bg) !important;
+   color: inherit !important;
+}
+
+div.dt-container select.dt-input {
+    padding: 4px;
+}
+/* =========================================================
+   DATATABLES BUTTONS STYLING
+   ========================================================= */
+div.dt-buttons button {
+  background: var(--accent) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin: 0 4px !important;
+}
+
+div.dt-buttons button:hover {
+  background: rgba(0,123,255,0.2) !important;
+}
+
+/* Column visibility dropdown menu */
+div.dt-button-collection .dt-button-active {
+  padding-right: 3em;
+}
+div.dt-button-collection .dt-button-active:after {
+  position: absolute;
+  top: 50%;
+  margin-top: -10px;
+  right: 1em;
+  display: inline-block;
+  content: "\2713";
+  color: inherit;
+}
+div.dt-button-collection .dt-button-active.dt-button-split {
+  padding-right: 0;
+}
+div.dt-button-collection .dt-button-active.dt-button-split:after {
+  display: none;
+}
+div.dt-button-collection .dt-button-active.dt-button-split > *:first-child {
+  padding-right: 3em;
+}
+div.dt-button-collection .dt-button-active.dt-button-split > *:first-child:after {
+  position: absolute;
+  top: 50%;
+  margin-top: -10px;
+  right: 1em;
+  display: inline-block;
+  content: "\2713";
+  color: inherit;
+}
+
+div.dt-button-collection {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  background-color: var(--table-bg) !important;
+  overflow: hidden;
+  z-index: 2002;
+  border: 1px solid var(--table-border) !important;
+  border-radius: 8px;
+  box-shadow: 3px 4px 10px 1px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  color: inherit;
+}
+div.dt-button-collection .dt-button {
+  position: relative;
+  left: 0;
+  right: 0;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  float: none;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  margin: 0;
+  padding: 6px 10px;
+  border: none !important;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-color);
+}
+/* =========================================================
+   6. SCROLLBARS
+   ========================================================= */
+div.dt-scroll-body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-bg) transparent;
+}
+
+div.dt-scroll-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+div.dt-scroll-body:hover::-webkit-scrollbar {
+  width: 10px;
+}
+
+div.dt-scroll-body::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-bg);
+  border-radius: 10px;
+}
+
+/* =========================================================
+   5. SEARCH / FILTER BAR
+   ========================================================= */
+div.dt-search {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin: 5px 5px !important;
+}
+
+div.dt-search input {
+  width: 200px !important;
+  max-width: 100%;
+  padding: 9px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid #ccc !important;
+  background-color: #ccc !important;
+  color: #333 !important;
+  font-size: 14px !important;
+}
+
+div.dt-search input::placeholder {
+  color: var(--text-color) !important;
+  opacity: 0.8 !important;
+}
+
+/* Dark mode search */
+body.dark div.dt-search input {
+  background-color: #444 !important;
+  color: #eee !important;
+  border: 1px solid #666 !important;
+}
+
+/* Hide clear (×) button */
+div.dt-search input[type="search"]::-webkit-search-cancel-button,
+div.dt-search input[type="search"]::-ms-clear {
+  display: none;
+}
+/* =========================================================
+   11. RESPONSIVE ADJUSTMENTS
+   ========================================================= */
+table.dataTable {
+  background: var(--table-bg);
+  border-collapse: collapse;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+table.dataTable th {
+  font-size: 16px;
+  text-align: center !important;
+}
+
+table.dataTable th,
+table.dataTable td {
+  padding: 8px 10px !important;
+  border: 1px solid var(--table-border) !important;
+}
+   
+table.dataTable tbody th, table.dataTable tbody td {
+    height: 10px !important;
+    padding: 7px 10px !important;
+    text-align: center !important;
+}
+
+table.dataTable tbody tr:nth-child(odd) {
+  background-color: rgba(0,0,0,0.02);
+}
+
+table.dataTable tbody tr:hover {
+  background-color: rgba(0,123,255,0.1);
+}
+/* highlight clicked row */
+table.dataTable tbody > tr.selected > * {
+  box-shadow: inset 0 0 0 9999px var(--row-selected-bg) !important;
+  color: var(--row-selected-text) !important;
+}
+
+
+:root {
+  /* Light mode */
+  --sort-arrow-color: rgba(0, 0, 0, 0.6);
+  --sort-arrow-active: rgba(0, 0, 0, 0.9);
+}
+
+body.dark {
+  /* Dark mode */
+  --sort-arrow-color: rgba(255, 255, 255, 0.5);
+  --sort-arrow-active: rgba(255, 255, 255, 0.9);
+}
+/* ======== DataTables Sorting Arrows (Theme-aware) ======== */
+table.dataTable thead > tr > th.dt-orderable-asc span.dt-column-order:before,
+table.dataTable thead > tr > th.dt-ordering-asc span.dt-column-order:before,
+table.dataTable thead > tr > td.dt-orderable-asc span.dt-column-order:before,
+table.dataTable thead > tr > td.dt-ordering-asc span.dt-column-order:before {
+  position: absolute;
+  display: block;
+  bottom: 50%;
+  content: "\25B2"; /* Up arrow ▲ */
+  color: inherit;
+  margin-left: 3px;
+}
+
+table.dataTable thead > tr > th.dt-orderable-desc span.dt-column-order:after,
+table.dataTable thead > tr > th.dt-ordering-desc span.dt-column-order:after,
+table.dataTable thead > tr > td.dt-orderable-desc span.dt-column-order:after,
+table.dataTable thead > tr > td.dt-ordering-desc span.dt-column-order:after {
+  position: absolute;
+  display: block;
+  top: 50%;
+  content: "\25BC"; /* Down arrow ▼ */
+  color: inherit;
+  margin-left: 3px;
+}
+
+table.dataTable thead > tr > th.dt-orderable-asc span.dt-column-order,
+table.dataTable thead > tr > th.dt-orderable-desc span.dt-column-order,
+table.dataTable thead > tr > th.dt-ordering-asc span.dt-column-order,
+table.dataTable thead > tr > th.dt-ordering-desc span.dt-column-order,
+table.dataTable thead > tr > td.dt-orderable-asc span.dt-column-order,
+table.dataTable thead > tr > td.dt-orderable-desc span.dt-column-order,
+table.dataTable thead > tr > td.dt-ordering-asc span.dt-column-order,
+table.dataTable thead > tr > td.dt-ordering-desc span.dt-column-order {
+  position: relative;
+  width: 12px;
+  height: 20px;
+  margin-left: 3px;
+}
+
+/* Base arrow style */
+table.dataTable thead > tr > th span.dt-column-order:before,
+table.dataTable thead > tr > th span.dt-column-order:after,
+table.dataTable thead > tr > td span.dt-column-order:before,
+table.dataTable thead > tr > td span.dt-column-order:after {
+  left: 0;
+  opacity: 0.4;
+  line-height: 9px;
+  font-size: 0.8em;
+  margin-left: 3px;
+}
+
+/* Active sorting arrow gets stronger color */
+table.dataTable thead > tr > th.dt-ordering-asc span.dt-column-order:before,
+table.dataTable thead > tr > th.dt-ordering-desc span.dt-column-order:after,
+table.dataTable thead > tr > td.dt-ordering-asc span.dt-column-order:before,
+table.dataTable thead > tr > td.dt-ordering-desc span.dt-column-order:after {
+  color: inherit;
+  opacity: 1;
+}
+
+/* Hide disabled or unsortable arrows */
+table.dataTable thead > tr > th.dt-orderable-none:not(.dt-ordering-asc, .dt-ordering-desc) span.dt-column-order:empty,
+table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-ordering-desc) span.dt-column-order:empty {
+  display: none;
+}
