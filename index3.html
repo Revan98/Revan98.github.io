@@ -282,6 +282,19 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
       tr.appendChild(td);
 
+      // container for number + progress bar
+      const wrapper = document.createElement("div");
+      wrapper.style.display = "flex";
+      wrapper.style.flexDirection = "column";
+      wrapper.style.alignItems = "center";
+      wrapper.style.gap = "4px";
+
+      // text value
+      const text = document.createElement("div");
+      text.textContent = displayVal;
+      text.style.fontWeight = "500";
+      text.style.fontSize = "13px";
+      wrapper.appendChild(text);
       // Show progress only for selected columns
       const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
       
