@@ -30,7 +30,11 @@
   </label>
 </div>
 
-<div class="left_column"><p></p></div>
+<div class="left_column"><p></p>
+   <div id="playerstopc">
+   <table id="playerstop-table" class="playerstop"></table>
+   </div>
+</div>
 <div class="center_column">
     <div id="loading-overlay">
         <div class="spinner"></div>
@@ -62,6 +66,7 @@ const CONFIG = {
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9, 7];
+const selectedColumnsTop = [0, 1, 9];
 
 let dataTableInstance = null;
 let googleSheetId = null;
@@ -244,77 +249,80 @@ function renderTableFiltered(headers, rows, selectedCols) {
         displayVal = String(rawVal);
       } else if (shortenableCols.includes(colIndex)) {
         displayVal = formatNumber(val);
-      } else if (headers[colIndex] === "DKP%") {
-        displayVal = isNaN(val) ? val : val.toFixed(2) + "%";
       } else if (typeof rawVal === "string") {
         displayVal = rawVal;
       } else {
         displayVal = val.toLocaleString("en-US").replace(/\s/g, "");
       }
-
-      // container for number + progress bar
+    
+      // wrapper container for all elements
       const wrapper = document.createElement("div");
       wrapper.style.display = "flex";
       wrapper.style.flexDirection = "column";
       wrapper.style.alignItems = "center";
       wrapper.style.gap = "4px";
-
-      // text value
+    
+      // 1️⃣ value text
       const text = document.createElement("div");
       text.textContent = displayVal;
       text.style.fontWeight = "500";
       text.style.fontSize = "13px";
       wrapper.appendChild(text);
-
-      // Show progress only for selected columns
-      const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
-      
-      if (progressCols.includes(colIndex)) {
-        const barContainer = document.createElement("div");
-        barContainer.style.width = "80%";
-        barContainer.style.height = "6px";
-        barContainer.style.background = "rgba(255,255,255,0.1)";
-        barContainer.style.borderRadius = "4px";
-      
-        const bar = document.createElement("div");
-        bar.style.height = "100%";
-        bar.style.borderRadius = "4px";
-      
-        const colors = {
-          12: "#00bcd4", // T4 kills (cyan)
-          13: "#ffc107", // T5 kills (yellow)
-          14: "#e91e63", // KP (pink)
-          15: "#f44336", // Dead (red)
-          8: "#4caf50"   // Power (green)
-        };
-        bar.style.background = colors[colIndex] || "#2196f3";
-      
-        const maxVal = columnMaxValues[colIndex];
-        bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
-      
-        barContainer.appendChild(bar);
-        wrapper.appendChild(barContainer);
-      }
-
-      td.appendChild(wrapper);
-
-      // diff display
+    
+      // detect theme dynamically
+      const isDark = document.body.classList.contains("dark");
+    
+      // 2️⃣ diff box (under value)
+      let diffBox = null;
       if ([2, 12, 13, 14, 15].includes(colIndex)) {
         const diffs = getSheetDiffsForPlayers(row[0]);
         if (diffs) {
           const diff = diffs[colIndex] ?? 0;
           if (diff !== 0) {
-            const diffSpan = document.createElement("span");
-            diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
-            diffSpan.style.color = diff > 0 ? "green" : "red";
-            diffSpan.style.marginLeft = "4px";
-            td.appendChild(diffSpan);
+            const diffBox = document.createElement("div");
+            diffBox.className = `diff-box ${diff > 0 ? "diff-positive" : "diff-negative"}`;
+            diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
+            wrapper.appendChild(diffBox);
           }
         }
       }
 
+      // 3️⃣ progress bar (under diff box)
+      const progressCols = [2, 8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      if (progressCols.includes(colIndex)) {
+        const barContainer = document.createElement("div");
+        barContainer.style.width = "80%";
+        barContainer.style.height = "6px";
+        barContainer.style.borderRadius = "4px";
+        barContainer.style.marginTop = "3px";
+        barContainer.style.background = isDark
+          ? "rgba(255,255,255,0.1)"
+          : "rgba(0,0,0,0.1)";
+    
+        const bar = document.createElement("div");
+        bar.style.height = "100%";
+        bar.style.borderRadius = "4px";
+    
+        const colors = {
+          12: "#00bcd4", // T4 kills
+          13: "#ffc107", // T5 kills
+          14: "#e91e63", // KP
+          15: "#f44336", // Deads
+          8: "#4caf50"   // Power
+        };
+        bar.style.background = colors[colIndex] || "#2196f3";
+    
+        const maxVal = columnMaxValues[colIndex];
+        bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
+    
+        barContainer.appendChild(bar);
+        wrapper.appendChild(barContainer);
+      }
+    
+      td.appendChild(wrapper);
       tr.appendChild(td);
     });
+
     tbody.appendChild(tr);
   });
 
@@ -336,7 +344,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     pageLength: 20,
     columnDefs: [
       { orderable: false, searchable: false, targets: 0 },
-      { targets: [9, 10], visible: false }
+      { targets: [10], visible: false }
     ],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
@@ -399,7 +407,85 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
 }
 
+function renderplayerstoptable(headers, rows) {
+  rows = removeEmptyRows(rows);
+  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
 
+  // Sort by DKP (col 8) descending
+  rows.sort((a, b) => (parseFloat(b[8]) || 0) - (parseFloat(a[8]) || 0));
+
+  // Take top N (optional — e.g., top 10)
+  const topRows = rows.slice(0, 18);
+
+  // Destroy old table if exists
+  if ($.fn.DataTable.isDataTable("#playerstop-table")) {
+    $("#playerstop-table").DataTable().destroy();
+  }
+
+  const table = document.getElementById("playerstop-table");
+  table.innerHTML = "";
+
+  // Headers (ID, Name, DKP)
+  const filteredHeaders = [headers[0], headers[1], headers[8]];
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  const indexTh = document.createElement("th");
+  indexTh.textContent = "#";
+  headRow.appendChild(indexTh);
+  filteredHeaders.forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h ?? "";
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+
+  // Body
+  const tbody = document.createElement("tbody");
+  topRows.forEach((row, rowIdx) => {
+    const tr = document.createElement("tr");
+    const indexTd = document.createElement("td");
+    indexTd.textContent = rowIdx + 1;
+    tr.appendChild(indexTd);
+
+    [0, 1, 8].forEach(colIndex => {
+      const td = document.createElement("td");
+      let val = row[colIndex];
+      if (colIndex === 8) val = formatNumber(val); // DKP formatting
+      td.textContent = val;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+
+    // Initialize minimal DataTable
+  new DataTable("#playerstop-table", {
+    paging: false,
+    searching: false,
+    info: false,
+    ordering: true,
+    scrollY: "50vh",
+    scrollCollapse: true,
+    pageLength: 18,
+    order: [[3, "desc"]],
+    columnDefs: [
+      { orderable: false, targets: 0 }
+    ],
+    layout: {
+      topStart: {
+        buttons: [
+          {
+            extend: "copy",
+            text: "Copy Top18 Players", // ← your custom text
+          }
+        ]
+      }
+    }
+  });
+}
+  
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
 
@@ -453,6 +539,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       
          const firstSheet = googleSheetNames[googleSheetNames.length - 1];
          renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+         renderplayerstoptable(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1));
        } catch (err) {
          alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
        }
@@ -494,4 +581,3 @@ themeToggle.addEventListener("change", () => {
 </script>
 </body>
 </html>
-
