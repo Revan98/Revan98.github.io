@@ -293,8 +293,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
             if (isDark) {
               diffBox.style.color = positive ? "#a3ffb1" : "#ffb0b0";
               diffBox.style.backgroundColor = positive
-                ? "rgba(255, 80, 80, 0.1)"
-                : "rgba(0, 255, 100, 0.1)";
+                ? "rgba(0, 255, 100, 0.1)"
+                : "rgba(255, 80, 80, 0.1)";
             } else {
               diffBox.style.color = positive ? "#0a6025" : "#7a0e0e";
               diffBox.style.backgroundColor = positive
@@ -596,6 +596,12 @@ themeToggle.addEventListener("change", () => {
     chart.data.datasets[0].borderColor = chartLineColor;
     chart.data.datasets[0].backgroundColor = chartLineColor + "33";
     chart.update();
+  // Force re-render of table diff colors after theme switch
+  if (dataTableInstance) {
+    const currentPage = dataTableInstance.page();
+    dataTableInstance.rows().invalidate().draw(false);
+    dataTableInstance.page(currentPage).draw(false);
+  }
   });
 });
 
