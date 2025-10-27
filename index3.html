@@ -271,58 +271,55 @@ function renderTableFiltered(headers, rows, selectedCols) {
       text.style.fontSize = "13px";
       wrapper.appendChild(text);
 
-      // Show progress only for selected columns
-      const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
-
-      // diff display (now shown below value, above progress bar)
-      let diffBox = null;
-      if ([2, 12, 13, 14, 15].includes(colIndex)) {
-        const diffs = getSheetDiffsForPlayers(row[0]);
-        if (diffs) {
-          const diff = diffs[colIndex] ?? 0;
-          if (diff !== 0) {
-            diffBox = document.createElement("div");
-            diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
-            diffBox.style.padding = "2px 6px";
-            diffBox.style.marginTop = "2px";
-            diffBox.style.borderRadius = "4px";
-            diffBox.style.fontSize = "12px";
-            diffBox.style.fontWeight = "500";
-            diffBox.style.color = diff > 0 ? "#0a6025" : "#7a0e0e";
-            diffBox.style.backgroundColor = diff > 0 ? "rgba(0, 200, 83, 0.15)" : "rgba(244, 67, 54, 0.15)";
-            wrapper.appendChild(diffBox); // add below value
-          }
+    // diff display (now shown below value, above progress bar)
+    let diffBox = null;
+    if ([2, 12, 13, 14, 15].includes(colIndex)) {
+      const diffs = getSheetDiffsForPlayers(row[0]);
+      if (diffs) {
+        const diff = diffs[colIndex] ?? 0;
+        if (diff !== 0) {
+          diffBox = document.createElement("div");
+          diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
+          diffBox.style.padding = "2px 6px";
+          diffBox.style.marginTop = "2px";
+          diffBox.style.borderRadius = "4px";
+          diffBox.style.fontSize = "12px";
+          diffBox.style.fontWeight = "500";
+          diffBox.style.color = diff > 0 ? "#0a6025" : "#7a0e0e";
+          diffBox.style.backgroundColor = diff > 0 ? "rgba(0, 200, 83, 0.15)" : "rgba(244, 67, 54, 0.15)";
+          wrapper.appendChild(diffBox); // add below value
         }
       }
-      
-      // progress bar (moved after diff)
-      if (progressCols.includes(colIndex)) {
-        const barContainer = document.createElement("div");
-        barContainer.style.width = "80%";
-        barContainer.style.height = "6px";
-        barContainer.style.background = "rgba(255,255,255,0.1)";
-        barContainer.style.borderRadius = "4px";
-        barContainer.style.marginTop = "3px";
-      
-        const bar = document.createElement("div");
-        bar.style.height = "100%";
-        bar.style.borderRadius = "4px";
-      
-        const colors = {
-          12: "#00bcd4", // T4 kills
-          13: "#ffc107", // T5 kills
-          14: "#e91e63", // KP
-          15: "#f44336", // Deads
-          8: "#4caf50"   // Power
-        };
-        bar.style.background = colors[colIndex] || "#2196f3";
-      
-        const maxVal = columnMaxValues[colIndex];
-        bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
-      
-        barContainer.appendChild(bar);
-        wrapper.appendChild(barContainer);
-      }
+    }
+    
+    // progress bar (moved after diff)
+    if (progressCols.includes(colIndex)) {
+      const barContainer = document.createElement("div");
+      barContainer.style.width = "80%";
+      barContainer.style.height = "6px";
+      barContainer.style.background = "rgba(255,255,255,0.1)";
+      barContainer.style.borderRadius = "4px";
+      barContainer.style.marginTop = "3px";
+    
+      const bar = document.createElement("div");
+      bar.style.height = "100%";
+      bar.style.borderRadius = "4px";
+    
+      const colors = {
+        12: "#00bcd4", // T4 kills
+        13: "#ffc107", // T5 kills
+        14: "#e91e63", // KP
+        15: "#f44336", // Deads
+        8: "#4caf50"   // Power
+      };
+      bar.style.background = colors[colIndex] || "#2196f3";
+    
+      const maxVal = columnMaxValues[colIndex];
+      bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
+    
+      barContainer.appendChild(bar);
+      wrapper.appendChild(barContainer);
+    }
 
 
       tr.appendChild(td);
@@ -411,6 +408,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
 }
 
+   
+
 function renderplayerstoptable(headers, rows) {
   rows = removeEmptyRows(rows);
   rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
@@ -489,7 +488,6 @@ function renderplayerstoptable(headers, rows) {
     }
   });
   }
-  
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
 
