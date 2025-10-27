@@ -256,70 +256,75 @@ function renderTableFiltered(headers, rows, selectedCols) {
       } else {
         displayVal = val.toLocaleString("en-US").replace(/\s/g, "");
       }
-
-      // container for number + progress bar
+    
+      // wrapper container for all elements
       const wrapper = document.createElement("div");
       wrapper.style.display = "flex";
       wrapper.style.flexDirection = "column";
       wrapper.style.alignItems = "center";
       wrapper.style.gap = "4px";
-
-      // text value
+    
+      // 1️⃣ value text
       const text = document.createElement("div");
       text.textContent = displayVal;
       text.style.fontWeight = "500";
       text.style.fontSize = "13px";
       wrapper.appendChild(text);
-
-      // Show progress only for selected columns
-      const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
-      
-      if (progressCols.includes(colIndex)) {
-        const barContainer = document.createElement("div");
-        barContainer.style.width = "80%";
-        barContainer.style.height = "6px";
-        barContainer.style.background = "rgba(255,255,255,0.1)";
-        barContainer.style.borderRadius = "4px";
-      
-        const bar = document.createElement("div");
-        bar.style.height = "100%";
-        bar.style.borderRadius = "4px";
-      
-        const colors = {
-          12: "#00bcd4", // T4 kills (cyan)
-          13: "#ffc107", // T5 kills (yellow)
-          14: "#e91e63", // KP (pink)
-          15: "#f44336", // Dead (red)
-          8: "#4caf50"   // Power (green)
-        };
-        bar.style.background = colors[colIndex] || "#2196f3";
-      
-        const maxVal = columnMaxValues[colIndex];
-        bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
-      
-        barContainer.appendChild(bar);
-        wrapper.appendChild(barContainer);
-      }
-
-      td.appendChild(wrapper);
-
-      // diff display
+    
+      // detect theme dynamically
+      const isDark = document.body.classList.contains("dark");
+    
+      // 2️⃣ diff box (under value)
+      let diffBox = null;
       if ([2, 12, 13, 14, 15].includes(colIndex)) {
         const diffs = getSheetDiffsForPlayers(row[0]);
         if (diffs) {
           const diff = diffs[colIndex] ?? 0;
           if (diff !== 0) {
-            const diffSpan = document.createElement("span");
-            diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
-            diffSpan.style.color = diff > 0 ? "green" : "red";
-            diffSpan.style.marginLeft = "4px";
-            td.appendChild(diffSpan);
+            const diffBox = document.createElement("div");
+            diffBox.className = `diff-box ${diff > 0 ? "diff-positive" : "diff-negative"}`;
+            diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
+            wrapper.appendChild(diffBox);
           }
         }
       }
 
+      // 3️⃣ progress bar (under diff box)
+      const progressCols = [2, 8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      if (progressCols.includes(colIndex)) {
+        const barContainer = document.createElement("div");
+        barContainer.style.width = "80%";
+        barContainer.style.height = "6px";
+        barContainer.style.borderRadius = "4px";
+        barContainer.style.marginTop = "3px";
+        barContainer.style.background = isDark
+          ? "rgba(255,255,255,0.1)"
+          : "rgba(0,0,0,0.1)";
+    
+        const bar = document.createElement("div");
+        bar.style.height = "100%";
+        bar.style.borderRadius = "4px";
+    
+        const colors = {
+          12: "#00bcd4", // T4 kills
+          13: "#ffc107", // T5 kills
+          14: "#e91e63", // KP
+          15: "#f44336", // Deads
+          8: "#4caf50"   // Power
+        };
+        bar.style.background = colors[colIndex] || "#2196f3";
+    
+        const maxVal = columnMaxValues[colIndex];
+        bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
+    
+        barContainer.appendChild(bar);
+        wrapper.appendChild(barContainer);
+      }
+    
+      td.appendChild(wrapper);
       tr.appendChild(td);
     });
+
     tbody.appendChild(tr);
   });
 
@@ -341,7 +346,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     pageLength: 20,
     columnDefs: [
       { orderable: false, searchable: false, targets: 0 },
-      { targets: [9, 10], visible: false }
+      { targets: [10], visible: false }
     ],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
@@ -403,8 +408,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
     totalsContainer.appendChild(box);
   });
 }
-
-   
 
 function renderplayerstoptable(headers, rows) {
   rows = removeEmptyRows(rows);
@@ -483,7 +486,8 @@ function renderplayerstoptable(headers, rows) {
       }
     }
   });
-  }
+}
+  
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
 
