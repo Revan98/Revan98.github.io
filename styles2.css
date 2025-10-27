@@ -14,6 +14,10 @@
   --checkmark-color: #666;
   --row-selected-bg: #cce5ff;
   --row-selected-text: #000;
+  --diff-positive-bg: rgba(0, 200, 83, 0.15);
+  --diff-negative-bg: rgba(244, 67, 54, 0.15);
+  --diff-positive-text: #0a6025;
+  --diff-negative-text: #7a0e0e;
 }
 
 body.dark {
@@ -29,6 +33,10 @@ body.dark {
   --checkmark-color: white;
   --row-selected-bg: #004085;
   --row-selected-text: #fff;
+  --diff-positive-bg: rgba(0, 60, 0, 0.7);
+  --diff-negative-bg: rgba(80, 0, 0, 0.7);
+  --diff-positive-text: #b8ffba;
+  --diff-negative-text: #ffbaba;
 }
 
 
@@ -660,4 +668,24 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
 #playerstopc {
   width:98%;
   margin-top: 15vh; /* adjust as needed */
+}
+
+.diff-box {
+  padding: 2px 6px;
+  margin-top: 2px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+  text-align: center;
+}
+
+.diff-positive {
+  color: var(--diff-positive-text);
+  background-color: var(--diff-positive-bg);
+}
+
+.diff-negative {
+  color: var(--diff-negative-text);
+  background-color: var(--diff-negative-bg);
 }
