@@ -289,9 +289,8 @@ function renderTableFiltered(headers, rows, selectedCols) {
         }
       }
 
-    
       // 3️⃣ progress bar (under diff box)
-      const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      const progressCols = [2, 8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
       if (progressCols.includes(colIndex)) {
         const barContainer = document.createElement("div");
         barContainer.style.width = "80%";
@@ -325,7 +324,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
       td.appendChild(wrapper);
       tr.appendChild(td);
     });
-
 
     tbody.appendChild(tr);
   });
@@ -411,8 +409,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
 }
 
-   
-
 function renderplayerstoptable(headers, rows) {
   rows = removeEmptyRows(rows);
   rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
@@ -490,7 +486,8 @@ function renderplayerstoptable(headers, rows) {
       }
     }
   });
-  }
+}
+  
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
 
