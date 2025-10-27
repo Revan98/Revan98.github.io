@@ -297,20 +297,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
       td.appendChild(wrapper);
 
-      // diff display
-      if ([16, 12, 13, 14, 15].includes(colIndex)) {
-        const diffs = getSheetDiffsForPlayers(row[0]);
-        if (diffs) {
-          const diff = diffs[colIndex] ?? 0;
-          if (diff !== 0) {
-            const diffSpan = document.createElement("span");
-            diffSpan.textContent = ` (${diff > 0 ? "+" : ""}${formatNumber(diff)})`;
-            diffSpan.style.color = diff > 0 ? "green" : "red";
-            diffSpan.style.marginLeft = "4px";
-            td.appendChild(diffSpan);
-          }
-        }
-      }
+
 
       tr.appendChild(td);
     });
