@@ -65,7 +65,7 @@ const CONFIG = {
 };
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
-const selectedColumns = [0, 1, 16, 3, 4, 5, 6, 8, 9, 7];
+const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9, 7];
 const selectedColumnsTop = [0, 1, 9];
 
 let dataTableInstance = null;
@@ -132,6 +132,33 @@ function resetCharts() {
     chart.data.datasets.forEach(ds => ds.data = []);
     chart.update();
   });
+}
+function getSheetDiffsForPlayers(playerId) {
+  let lastRows;
+
+  if (currentSource === "google") {
+    const lastSheet = googleSheetNames[googleSheetNames.length - 1];
+    lastRows = (googleSheetsData[lastSheet] || []).slice(1);
+  }
+
+  if (!lastRows) return null;
+
+  const lastRow = lastRows.find(r => String(r[0]).trim() === String(playerId).trim());
+  if (!lastRow) return null;
+
+  return {
+    3: parseFloat(lastRow[3]) || 0,
+    4: parseFloat(lastRow[4]) || 0,
+    5: parseFloat(lastRow[5]) || 0,
+    6: parseFloat(lastRow[6]) || 0,
+
+    // still mapping extra columns directly from last sheet
+    2: parseFloat(lastRow[16]) || 0,
+    12: parseFloat(lastRow[4]) || 0,
+    13: parseFloat(lastRow[5]) || 0,
+    14: parseFloat(lastRow[3]) || 0,
+    15: parseFloat(lastRow[6]) || 0,
+  };
 }
 
 function formatNumber(num) {
@@ -202,70 +229,104 @@ function renderTableFiltered(headers, rows, selectedCols) {
 
   rows.forEach((row, rowIdx) => {
     const tr = document.createElement("tr");
-  
-    // Row index #
+
     const indexTd = document.createElement("td");
     indexTd.textContent = rowIdx + 1;
     tr.appendChild(indexTd);
-  
+    tr.dataset.originalIndex = rowIdx + 1;
+
     selectedCols.forEach(colIndex => {
       const td = document.createElement("td");
-  
-      // parse numeric values
+      // ---------------- Value formatting ----------------
       let rawVal = row[colIndex];
-      let val = parseFloat(rawVal);
-      if (isNaN(val)) val = rawVal;
-  
-      // show commas for numbers
-      const displayVal = typeof val === "number" ? formatNumber(val) : val;
-  
-      // wrapper for value + progress
+      let val = isNaN(parseFloat(rawVal)) ? rawVal : parseFloat(rawVal);
+      
+      const shortenableCols = [2, 12, 13, 14, 15, 8]; // Power, T4, T5, KP, Deads
+      let displayVal;
+      
+      if (colIndex === 0) {
+        // ID column: show as-is, no separators
+        displayVal = String(rawVal);
+      } else if (shortenableCols.includes(colIndex)) {
+        displayVal = formatNumber(val);
+      } else if (headers[colIndex] === "DKP%") {
+        displayVal = isNaN(val) ? val : val.toFixed(2) + "%";
+      } else if (typeof rawVal === "string") {
+        displayVal = rawVal;
+      } else {
+        displayVal = val.toLocaleString("en-US").replace(/\s/g, "");
+      }
+
+      // container for number + progress bar
       const wrapper = document.createElement("div");
       wrapper.style.display = "flex";
       wrapper.style.flexDirection = "column";
       wrapper.style.alignItems = "center";
       wrapper.style.gap = "4px";
-  
-      // value text
+
+      // text value
       const text = document.createElement("div");
       text.textContent = displayVal;
       text.style.fontWeight = "500";
       text.style.fontSize = "13px";
       wrapper.appendChild(text);
-  
-      // progress bars for gained columns
-      const progressCols = [3, 4, 5, 6, 16]; // these are your "diffs"
-      if (progressCols.includes(colIndex) && typeof val === "number") {
+
+      // Show progress only for selected columns
+      const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+
+      // diff display (now shown below value, above progress bar)
+      let diffBox = null;
+      if ([2, 12, 13, 14, 15].includes(colIndex)) {
+        const diffs = getSheetDiffsForPlayers(row[0]);
+        if (diffs) {
+          const diff = diffs[colIndex] ?? 0;
+          if (diff !== 0) {
+            diffBox = document.createElement("div");
+            diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
+            diffBox.style.padding = "2px 6px";
+            diffBox.style.marginTop = "2px";
+            diffBox.style.borderRadius = "4px";
+            diffBox.style.fontSize = "12px";
+            diffBox.style.fontWeight = "500";
+            diffBox.style.color = diff > 0 ? "#0a6025" : "#7a0e0e";
+            diffBox.style.backgroundColor = diff > 0 ? "rgba(0, 200, 83, 0.15)" : "rgba(244, 67, 54, 0.15)";
+            wrapper.appendChild(diffBox); // add below value
+          }
+        }
+      }
+      
+      // progress bar (moved after diff)
+      if (progressCols.includes(colIndex)) {
         const barContainer = document.createElement("div");
         barContainer.style.width = "80%";
         barContainer.style.height = "6px";
         barContainer.style.background = "rgba(255,255,255,0.1)";
         barContainer.style.borderRadius = "4px";
-  
+        barContainer.style.marginTop = "3px";
+      
         const bar = document.createElement("div");
         bar.style.height = "100%";
         bar.style.borderRadius = "4px";
-  
+      
         const colors = {
-          3: "#e91e63",  // KP gained
-          4: "#00bcd4",  // T4 gained
-          5: "#ffc107",  // T5 gained
-          6: "#f44336",  // Deads gained
-          16: "#4caf50"  // Power gained
+          12: "#00bcd4", // T4 kills
+          13: "#ffc107", // T5 kills
+          14: "#e91e63", // KP
+          15: "#f44336", // Deads
+          8: "#4caf50"   // Power
         };
         bar.style.background = colors[colIndex] || "#2196f3";
-  
+      
         const maxVal = columnMaxValues[colIndex];
         bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
-  
+      
         barContainer.appendChild(bar);
         wrapper.appendChild(barContainer);
       }
-  
-      td.appendChild(wrapper);
+
+
       tr.appendChild(td);
     });
-  
     tbody.appendChild(tr);
   });
 
@@ -287,7 +348,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     pageLength: 20,
     columnDefs: [
       { orderable: false, searchable: false, targets: 0 },
-      { targets: [7], visible: false }
+      { targets: [9, 10], visible: false }
     ],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
@@ -332,18 +393,16 @@ function renderTableFiltered(headers, rows, selectedCols) {
   const totalsContainer = document.getElementById("bottom-totals");
   totalsContainer.innerHTML = "";
   const totalDefs = [
-    { label: "Total KP gained", col: 3 },
     { label: "Total T4 kills gained", col: 4 },
     { label: "Total T5 kills gained", col: 5 },
     { label: "Total Deads gained", col: 6 },
-    { label: "Total Power gained", col: 16 }
+    { label: "Total KP gained", col: 3 }
   ];
-  
   totalDefs.forEach(item => {
     let sum = 0;
     rows.forEach(row => {
-      const val = parseFloat(row[item.col]);
-      if (!isNaN(val)) sum += val;
+      const diffs = getSheetDiffsForPlayers(row[0]);
+      if (diffs) sum += diffs[item.col] || 0;
     });
     const box = document.createElement("div");
     box.className = "stat-box";
@@ -351,7 +410,6 @@ function renderTableFiltered(headers, rows, selectedCols) {
     totalsContainer.appendChild(box);
   });
 }
-
 
 function renderplayerstoptable(headers, rows) {
   rows = removeEmptyRows(rows);
@@ -431,6 +489,7 @@ function renderplayerstoptable(headers, rows) {
     }
   });
   }
+  
 function updateChartsForPlayer(playerId) {
   const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
 
