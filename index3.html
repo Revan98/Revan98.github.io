@@ -345,7 +345,13 @@ function renderTableFiltered(headers, rows, selectedCols) {
       const val = parseFloat(row[item.col]);
       if (!isNaN(val)) sum += val;
     });
+    const box = document.createElement("div");
+    box.className = "stat-box";
+    box.innerHTML = `<h3>${item.label}</h3><p>${sum.toLocaleString()}</p>`;
+    totalsContainer.appendChild(box);
+  });
 }
+
 
 function renderplayerstoptable(headers, rows) {
   rows = removeEmptyRows(rows);
