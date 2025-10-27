@@ -257,19 +257,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
         displayVal = val.toLocaleString("en-US").replace(/\s/g, "");
       }
 
-      // container for number + progress bar
-      const wrapper = document.createElement("div");
-      wrapper.style.display = "flex";
-      wrapper.style.flexDirection = "column";
-      wrapper.style.alignItems = "center";
-      wrapper.style.gap = "4px";
 
-      // text value
-      const text = document.createElement("div");
-      text.textContent = displayVal;
-      text.style.fontWeight = "500";
-      text.style.fontSize = "13px";
-      wrapper.appendChild(text);
 
       // diff display (now shown below value, above progress bar)
       let diffBox = null;
@@ -291,9 +279,12 @@ function renderTableFiltered(headers, rows, selectedCols) {
           }
         }
       }
+
+      tr.appendChild(td);
+
       // Show progress only for selected columns
       const progressCols = [2, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
-        
+      
       // progress bar (moved after diff)
       if (progressCols.includes(colIndex)) {
         const barContainer = document.createElement("div");
@@ -323,8 +314,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
         wrapper.appendChild(barContainer);
       }
 
-
-      tr.appendChild(td);
+      td.appendChild(wrapper);
     });
     tbody.appendChild(tr);
   });
