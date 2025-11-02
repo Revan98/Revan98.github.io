@@ -102,7 +102,6 @@
   <div class="container">
     <header>
       <h1>DKP Calculator — Browser-only</h1>
-      <button id="theme-toggle" class="small-btn">🌙 Dark mode</button>
       <p class="muted">No backend. Data persisted locally (IndexedDB).</p>
     </header>
 
@@ -110,6 +109,7 @@
     <section class="card">
       <h2>Settings</h2>
       <div class="row">
+        <button id="theme-toggle" class="small-btn">🌙 Dark mode</button>
         <button id="export-settings" class="primary">💾 Export Settings (.json)</button>
         <button id="import-settings">📂 Import Settings (.json)</button>
         <input id="import-settings-file" type="file" accept=".json" style="display:none" />
@@ -554,7 +554,7 @@
             // 🔹 Zero out all stats if user is missing in either scan
             if (status === "missing in start" || status === "missing in new") {
               Object.keys(row).forEach(k => {
-                if (!["ID", "Name", "Status", "Vacation"].includes(k)) {
+                if (!["ID", "Name", "Power", "Status", "Vacation"].includes(k)) {
                   row[k] = 0;
                 }
               });
