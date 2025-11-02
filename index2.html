@@ -1,17 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Excel Merger</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel Merge Tool</title>
   <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: #f7f9fb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      color: #333;
+    }
+    h1 {
+      margin-bottom: 1rem;
+      color: #222;
+    }
+    .card {
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 500px;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    select, input[type="file"], button {
+      margin-top: 0.5rem;
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #0078ff;
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1.5rem;
+    }
+    button:hover {
+      background-color: #005fcc;
+    }
+    .log {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      background: #f3f3f3;
+      border-radius: 6px;
+      width: 100%;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
 <body>
-  <h2>Excel Merge Tool</h2>
-  
-  <input type="file" id="file1" accept=".xlsx" />
-  <input type="file" id="file2" accept=".xlsx" />
-  <button id="merge">Merge Files</button>
+  <h1>Excel Merge Tool</h1>
+  <div class="card">
+    <label>File 1 (Base):</label>
+    <input type="file" id="file1" accept=".xlsx" />
+
+    <label>File 2 (Merge Source):</label>
+    <input type="file" id="file2" accept=".xlsx" />
+
+    <div id="columnSelectors" style="display:none;">
+      <label for="idColumn">Select ID column:</label>
+      <select id="idColumn"></select>
+
+      <label for="mergeColumn">Select column to merge from File 2:</label>
+      <select id="mergeColumn"></select>
+    </div>
+
+    <button id="mergeBtn" disabled>Merge & Download</button>
+    <div id="log" class="log"></div>
+  </div>
 
   <script>
+    let file1Data = [];
+    let file2Data = [];
+
+    const log = (msg, isError = false) => {
+      const logDiv = document.getElementById("log");
+      logDiv.textContent += (isError ? "❌ " : "✅ ") + msg + "\n";
+      if (isError) logDiv.style.color = "red";
+      else logDiv.style.color = "black";
+    };
+
     async function readExcel(file) {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: "array" });
@@ -19,36 +101,92 @@
       return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
     }
 
+    async function handleFiles() {
+      const file1 = document.getElementById("file1").files[0];
+      const file2 = document.getElementById("file2").files[0];
+      const selectors = document.getElementById("columnSelectors");
+
+      if (!file1 || !file2) {
+        log("Please select both files.", true);
+        return;
+      }
+
+      try {
+        log("Reading File 1...");
+        file1Data = await readExcel(file1);
+        log("Reading File 2...");
+        file2Data = await readExcel(file2);
+
+        if (!file1Data.length || !file2Data.length) {
+          log("One of the files is empty or invalid.", true);
+          return;
+        }
+
+        // Populate dropdowns
+        const idSelect = document.getElementById("idColumn");
+        const mergeSelect = document.getElementById("mergeColumn");
+        idSelect.innerHTML = "";
+        mergeSelect.innerHTML = "";
+
+        Object.keys(file1Data[0]).forEach(col => {
+          idSelect.innerHTML += `<option value="${col}">${col}</option>`;
+        });
+        Object.keys(file2Data[0]).forEach(col => {
+          mergeSelect.innerHTML += `<option value="${col}">${col}</option>`;
+        });
+
+        selectors.style.display = "block";
+        document.getElementById("mergeBtn").disabled = false;
+        log("Files loaded. Select columns and click Merge.");
+      } catch (err) {
+        log("Error reading files: " + err.message, true);
+      }
+    }
+
     function mergeData(file1Data, file2Data, idColumn, mergeColumn) {
       const map = {};
       for (const row of file2Data) {
         map[row[idColumn]] = row[mergeColumn];
       }
-      for (const row of file1Data) {
+
+      const merged = file1Data.map(row => {
         const id = row[idColumn];
         if (map[id] !== undefined) {
-          row[mergeColumn] = map[id];
+          return { ...row, [mergeColumn]: map[id] };
         }
-      }
-      return file1Data;
+        return row;
+      });
+
+      return merged;
     }
 
-    document.getElementById("merge").addEventListener("click", async () => {
-      const file1 = document.getElementById("file1").files[0];
-      const file2 = document.getElementById("file2").files[0];
-      if (!file1 || !file2) return alert("Please select both files.");
+    async function doMerge() {
+      const idColumn = document.getElementById("idColumn").value;
+      const mergeColumn = document.getElementById("mergeColumn").value;
 
-      const file1Data = await readExcel(file1);
-      const file2Data = await readExcel(file2);
+      if (!idColumn || !mergeColumn) {
+        log("Please select both columns.", true);
+        return;
+      }
 
-      // You can later make these dynamic (user selects columns)
-      const merged = mergeData(file1Data, file2Data, "ID", "Value");
+      try {
+        log(`Merging based on ID: "${idColumn}" and column "${mergeColumn}"...`);
+        const merged = mergeData(file1Data, file2Data, idColumn, mergeColumn);
 
-      const ws = XLSX.utils.json_to_sheet(merged);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Merged");
-      XLSX.writeFile(wb, "merged.xlsx");
-    });
+        const ws = XLSX.utils.json_to_sheet(merged);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Merged");
+        XLSX.writeFile(wb, "merged.xlsx");
+
+        log("Merge complete! File downloaded.");
+      } catch (err) {
+        log("Merge failed: " + err.message, true);
+      }
+    }
+
+    document.getElementById("file1").addEventListener("change", handleFiles);
+    document.getElementById("file2").addEventListener("change", handleFiles);
+    document.getElementById("mergeBtn").addEventListener("click", doMerge);
   </script>
 </body>
 </html>
