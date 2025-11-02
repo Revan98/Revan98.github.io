@@ -314,7 +314,6 @@
             <input id="pr-percent" placeholder="Percentage (e.g. 0.6)">
             <button id="pr-add">Add / Update</button>
             <button id="pr-save">Save ranges</button>
-            <button id="pr-load-defaults">Load sensible defaults</button>
           </div>
         </div>
       </section>
@@ -403,7 +402,6 @@
       const prPercent = document.getElementById("pr-percent");
       const prAddBtn = document.getElementById("pr-add");
       const prSaveBtn = document.getElementById("pr-save");
-      const prLoadDefaults = document.getElementById("pr-load-defaults");
     
       const vacInput = document.getElementById("vacation-input");
       const vacSaveBtn = document.getElementById("vac-save");
@@ -550,18 +548,6 @@
       prSaveBtn.addEventListener("click", async () => {
         await savePowerRangesToStorage();
         renderPowerRanges();
-      });
-    
-      prLoadDefaults.addEventListener("click", async () => {
-        powerRanges = [
-          { min_power: 0, max_power: 100000, percentage: 0.6 },
-          { min_power: 100000, max_power: 200000, percentage: 0.55 },
-          { min_power: 200000, max_power: 400000, percentage: 0.5 },
-          { min_power: 400000, max_power: null, percentage: 0.45 }
-        ];
-        await savePowerRangesToStorage();
-        renderPowerRanges();
-        alert("Default ranges loaded.");
       });
     
       // -------------------------
