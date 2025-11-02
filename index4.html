@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DKP Web App (Browser only)</title>
+
+  <!-- CDN: SheetJS for Excel/CSV read & write -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- CDN: localForage for simple IndexedDB wrapper -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --accent: #0b74d1;
+      --muted: #586069;
+    }
+    *{box-sizing:border-box}
+    body {
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: var(--bg);
+      color: #111827;
+    }
+    .container { max-width:1100px; margin:24px auto; padding:16px; }
+    header h1 { margin:0 0 6px; }
+    .muted { color: var(--muted); font-size:0.9rem; }
+    .card {
+      background: var(--card);
+      padding:14px;
+      border-radius:10px;
+      box-shadow: 0 4px 18px rgba(11,20,40,0.04);
+      margin:14px 0;
+    }
+    .row {
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    input[type="file"] { padding:6px; }
+    input[type="number"], input[type="text"], input[type="search"], input[type="text"]{
+      padding:8px 10px; border-radius:6px; border:1px solid #e2e8f0; min-width:120px;
+    }
+    button {
+      padding:8px 12px; border-radius:8px; border: none; cursor:pointer; background:#e6eef9; color:#053b6b;
+    }
+    button.primary { background: var(--accent); color:white; box-shadow: 0 6px 14px rgba(11,74,209,0.12); }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    thead th { text-align:left; padding:8px; font-weight:600; border-bottom: 1px solid #eef2f7; }
+    tbody td { padding:8px; border-bottom:1px solid #f3f6fb; }
+    small { color:var(--muted) }
+    #results-table-wrap { overflow:auto; max-height:420px; border-radius:8px; background:#fff; padding:8px; }
+    progress { width:200px; height:14px; }
+    .file-col { min-width:240px; }
+    footer { margin-top:18px; }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>DKP Calculator — Browser-only</h1>
+      <p class="muted">No backend. Data persisted locally (IndexedDB).</p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Multipliers</h2>
+        <div class="row">
+          <label>T4: <input id="t4" type="number" step="0.01"></label>
+          <label>T5: <input id="t5" type="number" step="0.01"></label>
+          <label>Deads: <input id="deads" type="number" step="0.01"></label>
+          <button id="save-multipliers">Save</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Power Ranges (Min Power → Max Power optional → %)</h2>
+        <div id="power-ranges-wrap">
+          <table id="power-ranges-table">
+            <thead><tr><th>Min</th><th>Max</th><th>%</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="row">
+            <input id="pr-min" placeholder="Min power (integer)">
+            <input id="pr-max" placeholder="Max power (optional)">
+            <input id="pr-percent" placeholder="Percentage (e.g. 0.6)">
+            <button id="pr-add">Add / Update</button>
+            <button id="pr-save">Save ranges</button>
+            <button id="pr-load-defaults">Load sensible defaults</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Vacation List</h2>
+        <div class="row">
+          <input id="vacation-input" placeholder="IDs, comma separated (e.g. 123,456)">
+          <button id="vac-save">Save Vacation List</button>
+          <button id="vac-clear">Clear Vacation List</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Input Scans</h2>
+        <div class="row">
+          <div class="file-col">
+            <label>First scan (old): <input id="file1" type="file" accept=".xlsx,.xls,.csv"></label>
+            <small>Header names supported: ID, Name, Power, Killpoints, Deads, T4 Kills, T5 Kills</small>
+          </div>
+          <div class="file-col">
+            <label>Latest scan (new): <input id="file2" type="file" accept=".xlsx,.xls,.csv"></label>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>DKP Mode:
+            <label><input name="mode" value="lilithdata" type="radio" checked> Lilith</label>
+            <label><input name="mode" value="default" type="radio"> Default</label>
+          </label>
+        </div>
+
+        <div class="row">
+          <button id="run-dkp" class="primary">Calculate DKP</button>
+          <progress id="progress" max="100" value="0"></progress>
+        </div>
+
+        <div class="row">
+          <button id="export-xlsx">Export XLSX</button>
+          <button id="export-csv">Export CSV</button>
+          <button id="export-json">Export JSON</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Results (Top rows)</h2>
+        <div id="results-info" class="muted">No results yet.</div>
+        <div id="results-table-wrap"></div>
+      </section>
+
+      <footer class="muted">
+        <small>Data persisted locally with IndexedDB (localForage). Min DKP values are saved and reused across runs.</small>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    /* DKP Browser-only implementation
+       - Uses XLSX (SheetJS) to read/write files client-side
+       - Uses localForage (IndexedDB) for persistence: keys used:
+           "multipliers" -> {t4, t5, deads}
+           "power_ranges" -> array [{min_power, max_power|null, percentage}]
+           "vacation_list" -> array of IDs (strings)
+           "min_dkp" -> object mapping id -> min_dkp (number)
+    */
+    
+    (() => {
+      // -------------------------
+      // Setup localforage store
+      // -------------------------
+      localforage.config({ name: "dkp_web_app" });
+    
+      // Keys
+      const KEY_MULT = "multipliers";
+      const KEY_PR = "power_ranges";
+      const KEY_VAC = "vacation_list";
+      const KEY_MIN = "min_dkp";
+    
+      // UI elements
+      const t4El = document.getElementById("t4");
+      const t5El = document.getElementById("t5");
+      const deadsEl = document.getElementById("deads");
+      const saveMultBtn = document.getElementById("save-multipliers");
+    
+      const prTableBody = document.querySelector("#power-ranges-table tbody");
+      const prMin = document.getElementById("pr-min");
+      const prMax = document.getElementById("pr-max");
+      const prPercent = document.getElementById("pr-percent");
+      const prAddBtn = document.getElementById("pr-add");
+      const prSaveBtn = document.getElementById("pr-save");
+      const prLoadDefaults = document.getElementById("pr-load-defaults");
+    
+      const vacInput = document.getElementById("vacation-input");
+      const vacSaveBtn = document.getElementById("vac-save");
+      const vacClearBtn = document.getElementById("vac-clear");
+    
+      const file1El = document.getElementById("file1");
+      const file2El = document.getElementById("file2");
+      const runBtn = document.getElementById("run-dkp");
+      const progressEl = document.getElementById("progress");
+      const resultsWrap = document.getElementById("results-table-wrap");
+      const resultsInfo = document.getElementById("results-info");
+    
+      const exportX = document.getElementById("export-xlsx");
+      const exportC = document.getElementById("export-csv");
+      const exportJ = document.getElementById("export-json");
+    
+      // In-memory caches
+      let powerRanges = []; // [{min_power, max_power|null, percentage}]
+      let multipliers = { t4: 0.0, t5: 0.0, deads: 0.0 };
+      let vacationList = []; // array of ids (strings)
+      let minDkpMap = {}; // id -> min_dkp (number)
+      let lastResults = null; // array of result objects
+    
+      // -------------------------
+      // Helpers: persistence
+      // -------------------------
+      async function loadAllFromStorage() {
+        const m = await localforage.getItem(KEY_MULT);
+        if (m) multipliers = m;
+        const pr = await localforage.getItem(KEY_PR);
+        if (Array.isArray(pr)) powerRanges = pr.slice();
+        const v = await localforage.getItem(KEY_VAC);
+        if (Array.isArray(v)) vacationList = v.slice();
+        const md = await localforage.getItem(KEY_MIN);
+        if (md && typeof md === "object") minDkpMap = md;
+      }
+    
+      async function saveMultipliers() {
+        multipliers = { t4: parseFloat(t4El.value) || 0, t5: parseFloat(t5El.value) || 0, deads: parseFloat(deadsEl.value) || 0 };
+        await localforage.setItem(KEY_MULT, multipliers);
+        alert("Multipliers saved locally.");
+      }
+    
+      async function savePowerRangesToStorage() {
+        // Sort by min_power
+        powerRanges.sort((a, b) => a.min_power - b.min_power);
+        await localforage.setItem(KEY_PR, powerRanges);
+        alert("Power ranges saved locally.");
+      }
+    
+      async function saveVacationList() {
+        const raw = vacInput.value.trim();
+        if (!raw) {
+          vacationList = [];
+        } else {
+          vacationList = raw.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        await localforage.setItem(KEY_VAC, vacationList);
+        alert("Vacation list saved.");
+      }
+    
+      async function clearVacationList() {
+        if (!confirm("Clear vacation list (set to empty)?")) return;
+        vacationList = [];
+        vacInput.value = "";
+        await localforage.setItem(KEY_VAC, vacationList);
+        alert("Vacation list cleared.");
+      }
+    
+      async function saveMinDkpMap() {
+        await localforage.setItem(KEY_MIN, minDkpMap);
+      }
+    
+      // -------------------------
+      // UI: power ranges table
+      // -------------------------
+      function renderPowerRanges() {
+        prTableBody.innerHTML = "";
+        powerRanges.forEach((r, idx) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${r.min_power}</td><td>${r.max_power === null ? "" : r.max_power}</td><td>${r.percentage}</td>
+            <td>
+              <button class="pr-edit" data-idx="${idx}">Edit</button>
+              <button class="pr-delete" data-idx="${idx}">Delete</button>
+            </td>`;
+          prTableBody.appendChild(tr);
+        });
+        // attach listeners
+        prTableBody.querySelectorAll(".pr-edit").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            const i = Number(e.currentTarget.dataset.idx);
+            const r = powerRanges[i];
+            prMin.value = r.min_power;
+            prMax.value = r.max_power === null ? "" : r.max_power;
+            prPercent.value = r.percentage;
+            prAddBtn.dataset.editIdx = i;
+            prAddBtn.textContent = "Update";
+          });
+        });
+        prTableBody.querySelectorAll(".pr-delete").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            const i = Number(e.currentTarget.dataset.idx);
+            if (!confirm("Delete this range?")) return;
+            powerRanges.splice(i, 1);
+            await savePowerRangesToStorage();
+            renderPowerRanges();
+          });
+        });
+      }
+    
+      prAddBtn.addEventListener("click", async () => {
+        const minv = parseInt(prMin.value, 10);
+        if (Number.isNaN(minv)) return alert("Min power must be an integer");
+        const maxRaw = prMax.value.trim();
+        const maxv = maxRaw === "" ? null : (Number.isInteger(Number(maxRaw)) ? parseInt(maxRaw, 10) : null);
+        const perc = parseFloat(prPercent.value);
+        if (Number.isNaN(perc)) return alert("Percentage required (e.g. 0.6)");
+    
+        const item = { min_power: minv, max_power: maxv, percentage: perc };
+    
+        if (prAddBtn.dataset.editIdx !== undefined) {
+          const idx = Number(prAddBtn.dataset.editIdx);
+          powerRanges[idx] = item;
+          delete prAddBtn.dataset.editIdx;
+          prAddBtn.textContent = "Add / Update";
+        } else {
+          powerRanges.push(item);
+        }
+        // keep sorted and non-overlapping is user's responsibility; we sort on save
+        await savePowerRangesToStorage();
+        renderPowerRanges();
+        prMin.value = prMax.value = prPercent.value = "";
+      });
+    
+      prSaveBtn.addEventListener("click", async () => {
+        await savePowerRangesToStorage();
+        renderPowerRanges();
+      });
+    
+      prLoadDefaults.addEventListener("click", async () => {
+        // sensible defaults similar to typical ranges
+        powerRanges = [
+          { min_power: 0, max_power: 100000, percentage: 0.6 },
+          { min_power: 100000, max_power: 200000, percentage: 0.55 },
+          { min_power: 200000, max_power: 400000, percentage: 0.5 },
+          { min_power: 400000, max_power: null, percentage: 0.45 }
+        ];
+        await savePowerRangesToStorage();
+        renderPowerRanges();
+        alert("Default ranges loaded.");
+      });
+    
+      // -------------------------
+      // Utility: read spreadsheet file (.xlsx or .csv)
+      // -------------------------
+      async function readSpreadsheetFile(file) {
+        if (!file) throw new Error("No file provided");
+        const arrBuf = await file.arrayBuffer();
+        const wb = XLSX.read(arrBuf, { type: "array" });
+        const first = wb.SheetNames[0];
+        const sheet = wb.Sheets[first];
+        // Convert to array of objects
+        const json = XLSX.utils.sheet_to_json(sheet, { defval: null });
+        // Normalize header keys: lowercase & trimmed & mapping to expected columns
+        return json.map(row => {
+          const normalized = {};
+          Object.keys(row).forEach(k => {
+            const key = String(k).trim().toLowerCase();
+            const val = row[k];
+            // map variants to consistent keys: ID, Name, Power, Killpoints, Deads, T4 Kills, T5 Kills
+            if (["character id", "id"].includes(key)) normalized.ID = val;
+            else if (["username", "name"].includes(key)) normalized.Name = val;
+            else if (["current power", "power"].includes(key)) normalized.Power = val;
+            else if (["total kill points", "killpoints", "kills"].includes(key)) normalized.Killpoints = val;
+            else if (["deaths", "deads"].includes(key)) normalized.Deads = val;
+            else if (["t4", "t4 kills", "tier 4 kills"].includes(key)) normalized["T4 Kills"] = val;
+            else if (["t5", "t5 kills", "tier 5 kills"].includes(key)) normalized["T5 Kills"] = val;
+            else normalized[k] = val; // keep other columns if any
+          });
+          return normalized;
+        });
+      }
+    
+      // -------------------------
+      // DKP logic port (JS version of dkp.py)
+      // -------------------------
+      function getMinDkpPercent(power) {
+        // find first range that matches (powerRanges expected sorted by min_power ascending)
+        // matching: if max_power is null and power >= min_power OR min<=power<max
+        for (const r of powerRanges) {
+          if (r.max_power === null) {
+            if (power >= r.min_power) return Number(r.percentage);
+          } else {
+            if (power >= r.min_power && power < r.max_power) return Number(r.percentage);
+          }
+        }
+        return 0.6; // fallback default
+      }
+    
+      async function ensureMinDkpForIds(allIds, df1, df2) {
+        // df1/df2 are arrays of objects with ID and Power fields
+        // allIds is array of ID values (strings)
+        const toInsert = [];
+        for (const gid of allIds) {
+          const gidStr = String(gid).trim();
+          if (gidStr === "") continue;
+          if (minDkpMap[gidStr] !== undefined) continue; // already present
+          // find power in df1 then df2
+          const findPower = (arr) => {
+            const row = arr.find(r => String(r.ID).trim() === gidStr && r.Power != null && r.Power !== "");
+            if (!row) return null;
+            const p = Number(row.Power);
+            return Number.isFinite(p) ? p : null;
+          };
+          let power = findPower(df1);
+          if (power === null) power = findPower(df2);
+          if (power === null) {
+            console.warn(`[DKP] No Power for ID ${gidStr} — skipping min_dkp calculation`);
+            continue;
+          }
+          const perc = getMinDkpPercent(power);
+          const minDkp = Math.round(power * perc);
+          minDkpMap[gidStr] = minDkp;
+          toInsert.push({ id: gidStr, minDkp });
+        }
+        if (toInsert.length) {
+          await saveMinDkpMap();
+        }
+      }
+    
+      function safeNum(v) {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : 0;
+      }
+    
+      async function calculateDkp({ mode = "lilithdata" } = {}) {
+        // Read files
+        const f1 = file1El.files[0];
+        const f2 = file2El.files[0];
+        if (!f1 || !f2) return alert("Please select both files.");
+        progressEl.value = 5;
+    
+        const [df1Raw, df2Raw] = await Promise.all([readSpreadsheetFile(f1), readSpreadsheetFile(f2)]);
+        progressEl.value = 20;
+    
+        // required columns check (we'll allow missing optional columns, but require ID & Power & Killpoints & Deads fields exist in either)
+        // gather unique IDs
+        const mapById = (arr) => {
+          const m = {};
+          arr.forEach(r => {
+            const idS = String(r.ID).trim();
+            if (!idS) return;
+            m[idS] = r;
+          });
+          return m;
+        };
+    
+        const map1 = mapById(df1Raw);
+        const map2 = mapById(df2Raw);
+    
+        progressEl.value = 35;
+    
+        // build list of all unique IDs
+        const allIdsSet = new Set([...Object.keys(map1), ...Object.keys(map2)]);
+        const allIds = Array.from(allIdsSet);
+    
+        // Ensure min_dkp exists for missing IDs (persisted)
+        await ensureMinDkpForIds(allIds, df1Raw, df2Raw);
+        progressEl.value = 55;
+    
+        // Build final dkp_data rows
+        const results = [];
+        const t4 = multipliers.t4, t5 = multipliers.t5, deads = multipliers.deads;
+    
+        for (const id of allIds) {
+          const a = map1[id] || {};
+          const b = map2[id] || {};
+          const name = (b.Name ?? a.Name ?? "Missing") + "";
+          const powerVal = safeNum(b.Power ?? a.Power ?? 0);
+          // mode differences
+          let t4g = 0, t5g = 0, deg = 0, kp = 0;
+          if (mode === "default") {
+            t4g = safeNum(b["T4 Kills"]) - safeNum(a["T4 Kills"]);
+            t5g = safeNum(b["T5 Kills"]) - safeNum(a["T5 Kills"]);
+            deg = safeNum(b.Deads) - safeNum(a.Deads);
+            kp = safeNum(b.Killpoints) - safeNum(a.Killpoints);
+          } else { // lilithdata
+            t4g = safeNum(b["T4 Kills"]);
+            t5g = safeNum(b["T5 Kills"]);
+            deg = safeNum(b.Deads);
+            kp = safeNum(b.Killpoints);
+          }
+    
+          // get min dkp (from persisted map)
+          const minDkp = minDkpMap[id] !== undefined ? Number(minDkpMap[id]) : Math.round(powerVal * getMinDkpPercent(powerVal));
+          // DKP calculation
+          const DKP = Math.round((t4g * t4) + (t5g * t5) + (deg * deads));
+          const DKPpercent = minDkp ? (DKP / minDkp) : 0;
+    
+          // Status for missing
+          const status = (a.Power === undefined || a.Power === null || a.Power === "") ? "missing in start" :
+                         (b.Power === undefined || b.Power === null || b.Power === "") ? "missing in new" : "OK";
+    
+          const vacation = vacationList.includes(id) ? "YES" : "NO";
+    
+          results.push({
+            ID: id,
+            Name: name,
+            Power: powerVal,
+            "Power diff": Math.round((safeNum(b.Power) - safeNum(a.Power))),
+            "KP gained": Math.round(kp),
+            "T4 gained": Math.round(t4g),
+            "T5 gained": Math.round(t5g),
+            "Deads gained": Math.round(deg),
+            "Min DKP": Math.round(minDkp),
+            "DKP": Math.round(DKP),
+            "DKP%": Number.isFinite(DKPpercent) ? Number(DKPpercent.toFixed(4)) : 0,
+            "Vacation": vacation,
+            "Status": status
+          });
+        }
+    
+        // sort by DKP desc
+        results.sort((x, y) => y.DKP - x.DKP);
+    
+        lastResults = results;
+        renderResultsTable(results);
+        progressEl.value = 100;
+        resultsInfo.textContent = `Calculated ${results.length} rows (showing top 200).`;
+      }
+    
+      // -------------------------
+      // Render results (table)
+      // -------------------------
+      function renderResultsTable(rows) {
+        resultsWrap.innerHTML = "";
+        if (!rows || rows.length === 0) {
+          resultsInfo.textContent = "No results.";
+          return;
+        }
+        const max = Math.min(rows.length, 200);
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        const columns = Object.keys(rows[0]);
+        thead.innerHTML = "<tr>" + columns.map(c => `<th>${c}</th>`).join("") + "</tr>";
+        table.appendChild(thead);
+        const tbody = document.createElement("tbody");
+        for (let i = 0; i < max; i++) {
+          const r = rows[i];
+          const tr = document.createElement("tr");
+          tr.innerHTML = columns.map(c => `<td>${String(r[c] ?? "")}</td>`).join("");
+          tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        resultsWrap.appendChild(table);
+      }
+    
+      // -------------------------
+      // Export: XLSX / CSV / JSON
+      // -------------------------
+      function exportToXlsx(rows) {
+        if (!rows) return alert("No results to export.");
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "DKP");
+        XLSX.writeFile(wb, `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.xlsx`);
+      }
+      function exportToCsv(rows) {
+        if (!rows) return alert("No results to export.");
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const csv = XLSX.utils.sheet_to_csv(ws);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      }
+      function exportToJson(rows) {
+        if (!rows) return alert("No results to export.");
+        const txt = JSON.stringify(rows, null, 2);
+        const blob = new Blob([txt], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      }
+    
+      // -------------------------
+      // Init wiring
+      // -------------------------
+      async function init() {
+        await loadAllFromStorage();
+        // populate UI
+        t4El.value = multipliers.t4 ?? 0;
+        t5El.value = multipliers.t5 ?? 0;
+        deadsEl.value = multipliers.deads ?? 0;
+        vacInput.value = (vacationList || []).join(", ");
+        renderPowerRanges();
+        progressEl.value = 0;
+        resultsInfo.textContent = "Ready.";
+      }
+    
+      saveMultBtn.addEventListener("click", saveMultipliers);
+      vacSaveBtn.addEventListener("click", saveVacationList);
+      vacClearBtn.addEventListener("click", clearVacationList);
+    
+      runBtn.addEventListener("click", async () => {
+        // update multipliers in memory before run
+        multipliers.t4 = parseFloat(t4El.value) || 0;
+        multipliers.t5 = parseFloat(t5El.value) || 0;
+        multipliers.deads = parseFloat(deadsEl.value) || 0;
+        // choose mode
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        progressEl.value = 2;
+        try {
+          await calculateDkp({ mode });
+          // persist minDkpMap too
+          await saveMinDkpMap();
+        } catch (err) {
+          console.error(err);
+          alert("Error during calculation: " + (err.message || err));
+        } finally {
+          progressEl.value = 100;
+        }
+      });
+    
+      exportX.addEventListener("click", () => exportToXlsx(lastResults));
+      exportC.addEventListener("click", () => exportToCsv(lastResults));
+      exportJ.addEventListener("click", () => exportToJson(lastResults));
+    
+      // initial load
+      init().catch(err => console.error("Init error", err));
+    })();
+
+  </script>
+</body>
+</html>
