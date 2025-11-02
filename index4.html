@@ -57,6 +57,44 @@
     progress { width:200px; height:14px; }
     .file-col { min-width:240px; }
     footer { margin-top:18px; }
+    /* --- Dark mode --- */
+    body.dark {
+      background: #111;
+      color: #f1f1f1;
+    }
+    body.dark .card {
+      background: #1a1a1a;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    }
+    body.dark table {
+      background: #1e1e1e;
+      color: #ddd;
+    }
+    body.dark thead th {
+      border-bottom: 1px solid #333;
+    }
+    body.dark tbody td {
+      border-bottom: 1px solid #222;
+    }
+    body.dark input, body.dark select {
+      background: #222;
+      color: #eee;
+      border: 1px solid #444;
+    }
+    body.dark button {
+      background: #333;
+      color: #eee;
+    }
+    body.dark button.primary {
+      background: #0b74d1;
+      color: #fff;
+    }
+    .small-btn {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
 
   </style> 
 </head>
@@ -64,6 +102,7 @@
   <div class="container">
     <header>
       <h1>DKP Calculator — Browser-only</h1>
+      <button id="theme-toggle" class="small-btn">🌙 Dark mode</button>
       <p class="muted">No backend. Data persisted locally (IndexedDB).</p>
     </header>
 
@@ -495,6 +534,13 @@
             "T4 gained": Math.round(t4g),
             "T5 gained": Math.round(t5g),
             "Deads gained": Math.round(deg),
+          
+            // 🔹 Add full totals from latest scan (b)
+            "T4 Kills": safeNum(a["T4 Kills"]),
+            "T5 Kills": safeNum(a["T5 Kills"]),
+            "Killpoints": safeNum(a.Killpoints),
+            "Deads": safeNum(a.Deads),
+          
             "Min DKP": Math.round(minDkp),
             "DKP": Math.round(DKP),
             "DKP%": Number.isFinite(DKPpercent) ? Number(DKPpercent.toFixed(4)) : 0,
@@ -660,6 +706,21 @@
       // -------------------------
       async function init() {
         await loadAllFromStorage();
+        // --- Dark mode toggle ---
+        const themeToggle = document.getElementById("theme-toggle");
+        function applyTheme(isDark) {
+          document.body.classList.toggle("dark", isDark);
+          themeToggle.textContent = isDark ? "☀️ Light mode" : "🌙 Dark mode";
+          localStorage.setItem("dkp_darkmode", isDark ? "1" : "0");
+        }
+        themeToggle.addEventListener("click", () => {
+          const current = document.body.classList.contains("dark");
+          applyTheme(!current);
+        });
+        // restore saved preference
+        const savedDark = localStorage.getItem("dkp_darkmode") === "1";
+        applyTheme(savedDark);
+        // dark end
         populateUIFromMemory();
         renderPowerRanges();
         progressEl.value = 0;
