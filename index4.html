@@ -529,23 +529,25 @@
             ID: id,
             Name: name,
             Power: powerVal,
-            "Power diff": Math.round((safeNum(b.Power) - safeNum(a.Power))),
+            
             "KP gained": Math.round(kp),
             "T4 gained": Math.round(t4g),
             "T5 gained": Math.round(t5g),
             "Deads gained": Math.round(deg),
-          
-            // 🔹 Add full totals from latest scan (b)
-            "T4 Kills": safeNum(a["T4 Kills"]),
-            "T5 Kills": safeNum(a["T5 Kills"]),
-            "Killpoints": safeNum(a.Killpoints),
-            "Deads": safeNum(a.Deads),
-          
+
             "Min DKP": Math.round(minDkp),
             "DKP": Math.round(DKP),
             "DKP%": Number.isFinite(DKPpercent) ? Number(DKPpercent.toFixed(4)) : 0,
             "Vacation": vacation,
-            "Status": status
+            "Status": status,
+            
+            // Full totals
+            "T4 Kills": safeNum(a["T4 Kills"]),
+            "T5 Kills": safeNum(a["T5 Kills"]),
+            "Killpoints": safeNum(a.Killpoints),
+            "Deads": safeNum(a.Deads),
+  
+            "Power diff": Math.round((safeNum(b.Power) - safeNum(a.Power)))
           });
         }
     
