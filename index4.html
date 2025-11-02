@@ -524,38 +524,44 @@
                          (b.Power === undefined || b.Power === null || b.Power === "") ? "missing in new" : "OK";
     
           const vacation = vacationList.includes(id) ? "YES" : "NO";
-    
-          // Build the row object
-          const row = {
+                
+            // Build the row object
+            const row = {
             ID: id,
             Name: name,
             Power: powerVal,
-            "Power diff": Math.round((safeNum(b.Power) - safeNum(a.Power))),
+            
             "KP gained": Math.round(kp),
             "T4 gained": Math.round(t4g),
             "T5 gained": Math.round(t5g),
             "Deads gained": Math.round(deg),
-            "T4 Kills": safeNum(b["T4 Kills"]),
-            "T5 Kills": safeNum(b["T5 Kills"]),
-            "Killpoints": safeNum(b.Killpoints),
-            "Deads": safeNum(b.Deads),
+
             "Min DKP": Math.round(minDkp),
             "DKP": Math.round(DKP),
             "DKP%": Number.isFinite(DKPpercent) ? Number(DKPpercent.toFixed(4)) : 0,
             "Vacation": vacation,
-            "Status": status
-          };
-          
-          // 🔹 Zero out all stats if user is missing in either scan
-          if (status === "missing in start" || status === "missing in new") {
-            Object.keys(row).forEach(k => {
-              if (!["ID", "Name", "Status", "Vacation"].includes(k)) {
-                row[k] = 0;
-              }
-            });
-          }
-          
-          results.push(row);
+            "Status": status,
+            
+            // Full totals
+            "T4 Kills": safeNum(a["T4 Kills"]),
+            "T5 Kills": safeNum(a["T5 Kills"]),
+            "Killpoints": safeNum(a.Killpoints),
+            "Deads": safeNum(a.Deads),
+  
+            "Power diff": Math.round((safeNum(b.Power) - safeNum(a.Power)))
+            };
+            
+            // 🔹 Zero out all stats if user is missing in either scan
+            if (status === "missing in start" || status === "missing in new") {
+              Object.keys(row).forEach(k => {
+                if (!["ID", "Name", "Status", "Vacation"].includes(k)) {
+                  row[k] = 0;
+                }
+              });
+            }
+            
+            results.push(row);
+        }
     
         results.sort((x, y) => y.DKP - x.DKP);
     
