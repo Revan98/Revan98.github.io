@@ -16,6 +16,7 @@
       --card: #ffffff;
       --accent: #0b74d1;
       --muted: #586069;
+      --table-wrap: #fff;
     }
     *{box-sizing:border-box}
     
@@ -116,7 +117,7 @@
       overflow:auto; 
       max-height:420px; 
       border-radius:8px; 
-      background:#fff; 
+      background: var(--table-wrap); 
       padding:8px; 
     }
     
@@ -138,6 +139,7 @@
       background: #111;
       color: #f1f1f1;
       --muted: white;
+      --table-wrap: #ddd;
     }
     
     body.dark .card {
