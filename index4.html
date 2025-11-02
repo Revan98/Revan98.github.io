@@ -24,9 +24,21 @@
       background: var(--bg);
       color: #111827;
     }
-    .container { max-width:1100px; margin:24px auto; padding:16px; }
-    header h1 { margin:0 0 6px; }
-    .muted { color: var(--muted); font-size:0.9rem; }
+    .container { 
+      max-width:1100px; 
+      margin:24px auto; 
+      padding:16px; 
+    }
+    
+    header h1 { 
+      margin:0 0 6px; 
+    }
+    
+    .muted { 
+      color: var(--muted); 
+      font-size:0.9rem; 
+    }
+    
     .card {
       background: var(--card);
       padding:14px;
@@ -34,6 +46,7 @@
       box-shadow: 0 4px 18px rgba(11,20,40,0.04);
       margin:14px 0;
     }
+    
     .row {
       display:flex;
       gap:10px;
@@ -41,54 +54,123 @@
       flex-wrap:wrap;
       margin-top:10px;
     }
-    input[type="file"] { padding:6px; }
-    input[type="number"], input[type="text"], input[type="search"], input[type="text"]{
-      padding:8px 10px; border-radius:6px; border:1px solid #e2e8f0; min-width:120px;
+    
+    input[type="file"] { 
+      padding:6px; 
     }
+    
+    input[type="number"], input[type="text"], input[type="search"] {
+      padding:8px 10px; 
+      border-radius:6px; 
+      border:1px solid #e2e8f0; 
+      min-width:120px;
+    }
+
+    input {
+      padding:8px 10px; 
+      border-radius:6px; 
+      border:1px solid #e2e8f0; 
+      min-width:120px;
+    }
+    
     button {
-      padding:8px 12px; border-radius:8px; border: none; cursor:pointer; background:#e6eef9; color:#053b6b;
+      padding:8px 12px; 
+      border-radius:8px; 
+      border: none; 
+      cursor:pointer; 
+      background:#e6eef9; 
+      color:#053b6b;
     }
-    button.primary { background: var(--accent); color:white; box-shadow: 0 6px 14px rgba(11,74,209,0.12); }
-    table { width:100%; border-collapse:collapse; margin-top:8px; }
-    thead th { text-align:left; padding:8px; font-weight:600; border-bottom: 1px solid #eef2f7; }
-    tbody td { padding:8px; border-bottom:1px solid #f3f6fb; }
-    small { color:var(--muted) }
-    #results-table-wrap { overflow:auto; max-height:420px; border-radius:8px; background:#fff; padding:8px; }
-    progress { width:200px; height:14px; }
-    .file-col { min-width:240px; }
-    footer { margin-top:18px; }
+    
+    button.primary { 
+      background: var(--accent); 
+      color:white; 
+      box-shadow: 0 6px 14px rgba(11,74,209,0.12); 
+    }
+    
+    table { 
+      width:100%; 
+      border-collapse:collapse; 
+      margin-top:8px; 
+    }
+    
+    thead th { 
+      text-align:left; 
+      padding:8px; 
+      font-weight:600; 
+      border-bottom: 1px solid #eef2f7; 
+    }
+    
+    tbody td { 
+      padding:8px; 
+      border-bottom:1px solid #f3f6fb; 
+    }
+    
+    small { 
+      color:var(--muted) 
+    }
+    
+    #results-table-wrap { 
+      overflow:auto; 
+      max-height:420px; 
+      border-radius:8px; 
+      background:#fff; 
+      padding:8px; 
+    }
+    
+    progress { 
+      width:200px; 
+      height:14px; 
+    }
+    
+    .file-col { 
+      min-width:240px; 
+    }
+    
+    footer { 
+      margin-top:18px; 
+    }
+    
     /* --- Dark mode --- */
     body.dark {
       background: #111;
       color: #f1f1f1;
     }
+    
     body.dark .card {
       background: #1a1a1a;
       box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     }
+    
     body.dark table {
       background: #1e1e1e;
       color: #ddd;
     }
+    
     body.dark thead th {
       border-bottom: 1px solid #333;
     }
+    
     body.dark tbody td {
       border-bottom: 1px solid #222;
     }
+    
     body.dark input, body.dark select {
       background: #222;
       color: #eee;
       border: 1px solid #444;
     }
+    
     body.dark button {
       background: #333;
       color: #eee;
     }
+    
     body.dark button.primary {
       background: #0b74d1;
       color: #fff;
     }
+    
   </style> 
   
 </head>
@@ -96,7 +178,7 @@
   <div class="container">
     <header>
       <h1>DKP Calculator — Browser-only</h1>
-      <p>No backend. Data persisted locally (IndexedDB).</p>
+      <p class="muted">No backend. Data persisted locally (IndexedDB).</p>
     </header>
 
     <!-- SETTINGS (top) -->
