@@ -525,7 +525,7 @@
     
           const vacation = vacationList.includes(id) ? "YES" : "NO";
     
-          results.push({
+          const row = {
             ID: id,
             Name: name,
             Power: powerVal,
@@ -548,8 +548,18 @@
             "Deads": safeNum(a.Deads),
   
             "Power diff": Math.round((safeNum(b.Power) - safeNum(a.Power)))
-          });
-        }
+            };
+            
+            // 🔹 Zero out all stats if user is missing in either scan
+            if (status === "missing in start" || status === "missing in new") {
+              Object.keys(row).forEach(k => {
+                if (!["ID", "Name", "Status", "Vacation"].includes(k)) {
+                  row[k] = 0;
+                }
+              });
+            }
+            
+            results.push(row);
     
         results.sort((x, y) => y.DKP - x.DKP);
     
