@@ -1,192 +1,246 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Excel Merge Tool</title>
-  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>File Comparator</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    body {
-      font-family: "Inter", system-ui, sans-serif;
-      background: #f7f9fb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-      color: #333;
-    }
-    h1 {
-      margin-bottom: 1rem;
-      color: #222;
-    }
-    .card {
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      padding: 2rem;
-      width: 100%;
-      max-width: 500px;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: 600;
-    }
-    select, input[type="file"], button {
-      margin-top: 0.5rem;
-      width: 100%;
-      padding: 0.6rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    button {
-      background-color: #0078ff;
-      color: white;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 1.5rem;
-    }
-    button:hover {
-      background-color: #005fcc;
-    }
-    .log {
-      margin-top: 1rem;
-      padding: 0.8rem;
-      background: #f3f3f3;
-      border-radius: 6px;
-      width: 100%;
-      font-family: monospace;
-      white-space: pre-wrap;
-    }
-  </style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f6f8;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem;
+}
+
+.container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  padding: 2rem;
+  width: 400px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.input-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 0.25rem;
+}
+
+input[type="file"],
+input[type="text"],
+select {
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: #007bff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+.formats {
+  display: flex;
+  gap: 1rem;
+}
+
+progress {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+#output {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: green;
+  text-align: center;
+}
+</style>
 </head>
 <body>
-  <h1>Excel Merge Tool</h1>
-  <div class="card">
-    <label>File 1 (Base):</label>
-    <input type="file" id="file1" accept=".xlsx" />
+  <div class="container">
+    <h1>Compare Two Files</h1>
 
-    <label>File 2 (Merge Source):</label>
-    <input type="file" id="file2" accept=".xlsx" />
-
-    <div id="columnSelectors" style="display:none;">
-      <label for="idColumn">Select ID column:</label>
-      <select id="idColumn"></select>
-
-      <label for="mergeColumn">Select column to merge from File 2:</label>
-      <select id="mergeColumn"></select>
+    <div class="input-group">
+      <label>File 1:</label>
+      <input type="file" id="file1" accept=".xlsx,.csv,.json" />
     </div>
 
-    <button id="mergeBtn" disabled>Merge & Download</button>
-    <div id="log" class="log"></div>
+    <div class="input-group">
+      <label>File 2:</label>
+      <input type="file" id="file2" accept=".xlsx,.csv,.json" />
+    </div>
+
+    <div class="input-group">
+      <label>Key Column:</label>
+      <input type="text" id="keyColumn" placeholder="Enter column name" />
+    </div>
+
+    <div class="input-group">
+      <label>Comparison Option:</label>
+      <select id="compareOption">
+        <option value="both">Both</option>
+        <option value="pierwszy">First Only</option>
+        <option value="drugi">Second Only</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label>Output Format:</label>
+      <div class="formats">
+        <label><input type="checkbox" value="xlsx" checked /> XLSX</label>
+        <label><input type="checkbox" value="csv" /> CSV</label>
+        <label><input type="checkbox" value="json" /> JSON</label>
+      </div>
+    </div>
+
+    <button id="compareBtn">Compare</button>
+    <progress id="progressBar" value="0" max="100"></progress>
+
+    <div id="output"></div>
   </div>
 
-  <script>
-    let file1Data = [];
-    let file2Data = [];
-
-    const log = (msg, isError = false) => {
-      const logDiv = document.getElementById("log");
-      logDiv.textContent += (isError ? "❌ " : "✅ ") + msg + "\n";
-      if (isError) logDiv.style.color = "red";
-      else logDiv.style.color = "black";
+<script>
+// Utility: read Excel/CSV/JSON file and return Promise of data array
+async function readFile(file) {
+  const name = file.name.toLowerCase();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        if (name.endsWith(".xlsx")) {
+          const wb = XLSX.read(e.target.result, { type: "binary" });
+          const firstSheet = wb.SheetNames[0];
+          const data = XLSX.utils.sheet_to_json(wb.Sheets[firstSheet]);
+          resolve(data);
+        } else if (name.endsWith(".csv")) {
+          const wb = XLSX.read(e.target.result, { type: "binary" });
+          const sheet = wb.SheetNames[0];
+          const data = XLSX.utils.sheet_to_json(wb.Sheets[sheet]);
+          resolve(data);
+        } else if (name.endsWith(".json")) {
+          resolve(JSON.parse(e.target.result));
+        } else {
+          reject("Unsupported file format");
+        }
+      } catch (err) {
+        reject(err);
+      }
     };
-
-    async function readExcel(file) {
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    if (name.endsWith(".xlsx") || name.endsWith(".csv")) {
+      reader.readAsBinaryString(file);
+    } else {
+      reader.readAsText(file);
     }
+  });
+}
 
-    async function handleFiles() {
-      const file1 = document.getElementById("file1").files[0];
-      const file2 = document.getElementById("file2").files[0];
-      const selectors = document.getElementById("columnSelectors");
+// Comparison logic similar to Python version
+function compareData(df1, df2, keyColumn, option) {
+  const keys1 = new Set(df1.map(r => r[keyColumn]));
+  const keys2 = new Set(df2.map(r => r[keyColumn]));
 
-      if (!file1 || !file2) {
-        log("Please select both files.", true);
-        return;
-      }
+  const matching = df1.filter(r => keys2.has(r[keyColumn]));
+  const nonMatch1 = df1.filter(r => !keys2.has(r[keyColumn]));
+  const nonMatch2 = df2.filter(r => !keys1.has(r[keyColumn]));
 
-      try {
-        log("Reading File 1...");
-        file1Data = await readExcel(file1);
-        log("Reading File 2...");
-        file2Data = await readExcel(file2);
+  if (option === "pierwszy") {
+    return { matching, nonMatching: nonMatch1 };
+  } else if (option === "drugi") {
+    return { matching, nonMatching: nonMatch2 };
+  } else {
+    return { matching, nonMatching: [...nonMatch1, ...nonMatch2] };
+  }
+}
 
-        if (!file1Data.length || !file2Data.length) {
-          log("One of the files is empty or invalid.", true);
-          return;
-        }
+// Save data in various formats
+function downloadData(data, baseName, format) {
+  const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0,16);
+  const fileName = `${baseName}_${ts}.${format}`;
+  let blob;
 
-        // Populate dropdowns
-        const idSelect = document.getElementById("idColumn");
-        const mergeSelect = document.getElementById("mergeColumn");
-        idSelect.innerHTML = "";
-        mergeSelect.innerHTML = "";
+  if (format === "json") {
+    blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  } else if (format === "csv") {
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    blob = new Blob([csv], { type: "text/csv" });
+  } else if (format === "xlsx") {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, fileName);
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  link.click();
+}
 
-        Object.keys(file1Data[0]).forEach(col => {
-          idSelect.innerHTML += `<option value="${col}">${col}</option>`;
-        });
-        Object.keys(file2Data[0]).forEach(col => {
-          mergeSelect.innerHTML += `<option value="${col}">${col}</option>`;
-        });
+document.getElementById("compareBtn").addEventListener("click", async () => {
+  const file1 = document.getElementById("file1").files[0];
+  const file2 = document.getElementById("file2").files[0];
+  const keyCol = document.getElementById("keyColumn").value.trim();
+  const option = document.getElementById("compareOption").value;
+  const formats = [...document.querySelectorAll(".formats input:checked")].map(cb => cb.value);
+  const progress = document.getElementById("progressBar");
+  const output = document.getElementById("output");
 
-        selectors.style.display = "block";
-        document.getElementById("mergeBtn").disabled = false;
-        log("Files loaded. Select columns and click Merge.");
-      } catch (err) {
-        log("Error reading files: " + err.message, true);
-      }
-    }
+  output.textContent = "";
+  progress.value = 0;
 
-    function mergeData(file1Data, file2Data, idColumn, mergeColumn) {
-      const map = {};
-      for (const row of file2Data) {
-        map[row[idColumn]] = row[mergeColumn];
-      }
+  if (!file1 || !file2 || !keyCol) {
+    alert("Please select both files and a key column.");
+    return;
+  }
 
-      const merged = file1Data.map(row => {
-        const id = row[idColumn];
-        if (map[id] !== undefined) {
-          return { ...row, [mergeColumn]: map[id] };
-        }
-        return row;
-      });
+  try {
+    progress.value = 10;
+    const df1 = await readFile(file1);
+    progress.value = 40;
+    const df2 = await readFile(file2);
+    progress.value = 60;
 
-      return merged;
-    }
+    const { matching, nonMatching } = compareData(df1, df2, keyCol, option);
+    progress.value = 80;
 
-    async function doMerge() {
-      const idColumn = document.getElementById("idColumn").value;
-      const mergeColumn = document.getElementById("mergeColumn").value;
+    formats.forEach(fmt => {
+      downloadData(matching, "Matching", fmt);
+      downloadData(nonMatching, "NonMatching", fmt);
+    });
 
-      if (!idColumn || !mergeColumn) {
-        log("Please select both columns.", true);
-        return;
-      }
+    progress.value = 100;
+    output.textContent = "Comparison complete! Files downloaded.";
+  } catch (err) {
+    console.error(err);
+    alert("Error: " + err);
+  }
+});
 
-      try {
-        log(`Merging based on ID: "${idColumn}" and column "${mergeColumn}"...`);
-        const merged = mergeData(file1Data, file2Data, idColumn, mergeColumn);
-
-        const ws = XLSX.utils.json_to_sheet(merged);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Merged");
-        XLSX.writeFile(wb, "merged.xlsx");
-
-        log("Merge complete! File downloaded.");
-      } catch (err) {
-        log("Merge failed: " + err.message, true);
-      }
-    }
-
-    document.getElementById("file1").addEventListener("change", handleFiles);
-    document.getElementById("file2").addEventListener("change", handleFiles);
-    document.getElementById("mergeBtn").addEventListener("click", doMerge);
-  </script>
+  
+</script>
 </body>
 </html>
