@@ -157,27 +157,50 @@ async function readFile(file) {
   });
 }
 
-// Comparison logic similar to Python version
-function compareData(df1, df2, keyColumn, option) {
-  const keys1 = new Set(df1.map(r => r[keyColumn]));
-  const keys2 = new Set(df2.map(r => r[keyColumn]));
-
-  const matching = df1.filter(r => keys2.has(r[keyColumn]));
-  const nonMatch1 = df1.filter(r => !keys2.has(r[keyColumn]));
-  const nonMatch2 = df2.filter(r => !keys1.has(r[keyColumn]));
-
-  if (option === "pierwszy") {
-    return { matching, nonMatching: nonMatch1 };
-  } else if (option === "drugi") {
-    return { matching, nonMatching: nonMatch2 };
-  } else {
-    return { matching, nonMatching: [...nonMatch1, ...nonMatch2] };
+// Merge two rows side by side (File1 + File2 data)
+function mergeRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
+  const merged = {};
+  if (row1) {
+    for (const [k, v] of Object.entries(row1)) merged[prefix1 + k] = v;
   }
+  if (row2) {
+    for (const [k, v] of Object.entries(row2)) merged[prefix2 + k] = v;
+  }
+  return merged;
+}
+
+// Enhanced comparison logic with merge view
+function compareData(df1, df2, keyColumn, option) {
+  const map1 = new Map(df1.map(r => [r[keyColumn], r]));
+  const map2 = new Map(df2.map(r => [r[keyColumn], r]));
+  const allKeys = new Set([...map1.keys(), ...map2.keys()]);
+
+  const matching = [];
+  const nonMatching = [];
+
+  for (const key of allKeys) {
+    const in1 = map1.has(key);
+    const in2 = map2.has(key);
+
+    if (in1 && in2) {
+      // Matched keys: merge side-by-side
+      matching.push(mergeRows(map1.get(key), map2.get(key)));
+    } else if (option === "both") {
+      // Collect non-matching from both sides
+      nonMatching.push(mergeRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null));
+    } else if (option === "pierwszy" && in1 && !in2) {
+      nonMatching.push(mergeRows(map1.get(key), null));
+    } else if (option === "drugi" && in2 && !in1) {
+      nonMatching.push(mergeRows(null, map2.get(key)));
+    }
+  }
+
+  return { matching, nonMatching };
 }
 
 // Save data in various formats
 function downloadData(data, baseName, format) {
-  const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0,16);
+  const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 16);
   const fileName = `${baseName}_${ts}.${format}`;
   let blob;
 
@@ -194,6 +217,7 @@ function downloadData(data, baseName, format) {
     XLSX.writeFile(wb, fileName);
     return;
   }
+
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = fileName;
@@ -229,7 +253,7 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
 
     formats.forEach(fmt => {
       downloadData(matching, "Matching", fmt);
-      downloadData(nonMatching, "NonMatching", fmt);
+      if (nonMatching.length) downloadData(nonMatching, "NonMatching", fmt);
     });
 
     progress.value = 100;
@@ -239,8 +263,6 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
     alert("Error: " + err);
   }
 });
-
-  
 </script>
 </body>
 </html>
