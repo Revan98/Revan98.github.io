@@ -292,31 +292,20 @@
   
   <div class="container">
     <section class="card">
+      <h2>Merge Files</h2>
       <div class="row">
-        <label>File 1 (Base):</label>
-        <input type="file" id="file1" accept=".xlsx" />
+        <label>Select file 1: <input id="merge-file1" type="file" accept=".xlsx,.xls,.csv"></label>
+        <label>Select file 2: <input id="merge-file2" type="file" accept=".xlsx,.xls,.csv"></label>
       </div>
-
       <div class="row">
-        <label>File 2 (Merge Source):</label>
-        <input type="file" id="file2" accept=".xlsx" />
+        <button id="merge-btn" class="primary">🔄 Merge Files</button>
       </div>
-      
-      <div id="columnSelectors" style="display:none;">
-        <div class="row">
-          <label for="idColumn">Select ID column:</label>
-          <select id="idColumn"></select>
-        </div>
-
-        <div class="row">
-          <label for="mergeColumn">Select column to merge from File 2:</label>
-          <select id="mergeColumn"></select>
-        </div>
-      </div>
-      
       <div class="row">
-        <button id="mergeBtn" class="primary" disabled>Merge & Download</button>
+        <button id="merge-export-xlsx">💾 Export XLSX</button>
+        <button id="merge-export-csv">📄 Export CSV</button>
+        <button id="merge-export-json">🔣 Export JSON</button>
       </div>
+      <div id="merge-results" class="muted">No merged data yet.</div>
     </section>
   </div>
   
@@ -405,6 +394,83 @@
     document.getElementById("file1").addEventListener("change", handleFiles);
     document.getElementById("file2").addEventListener("change", handleFiles);
     document.getElementById("mergeBtn").addEventListener("click", doMerge);
+
+(() => {
+  const f1 = document.getElementById("merge-file1");
+  const f2 = document.getElementById("merge-file2");
+  const mergeBtn = document.getElementById("merge-btn");
+  const exportXlsxBtn = document.getElementById("merge-export-xlsx");
+  const exportCsvBtn = document.getElementById("merge-export-csv");
+  const exportJsonBtn = document.getElementById("merge-export-json");
+  const mergeResults = document.getElementById("merge-results");
+
+  let mergedData = null;
+
+  // Helper: read XLSX/CSV into JSON
+  async function readFile(file) {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array" });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  }
+
+  mergeBtn.addEventListener("click", async () => {
+    const file1 = f1.files[0];
+    const file2 = f2.files[0];
+    if (!file1 || !file2) {
+      alert("Please select both files first!");
+      return;
+    }
+    mergeResults.textContent = "Merging files...";
+    try {
+      const [data1, data2] = await Promise.all([readFile(file1), readFile(file2)]);
+      // Example merge: combine all rows (you can customize merge logic)
+      mergedData = [...data1, ...data2];
+      mergeResults.textContent = `Merged ${data1.length} + ${data2.length} = ${mergedData.length} rows.`;
+    } catch (err) {
+      console.error(err);
+      alert("Error merging files: " + err.message);
+      mergeResults.textContent = "Merge failed.";
+    }
+  });
+
+  function exportXlsx(data) {
+    if (!data) return alert("No merged data to export.");
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Merged");
+    XLSX.writeFile(wb, `merged_${new Date().toISOString().replace(/[:.]/g,"-")}.xlsx`);
+  }
+
+  function exportCsv(data) {
+    if (!data) return alert("No merged data to export.");
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `merged_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportJson(data) {
+    if (!data) return alert("No merged data to export.");
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `merged_${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  exportXlsxBtn.addEventListener("click", () => exportXlsx(mergedData));
+  exportCsvBtn.addEventListener("click", () => exportCsv(mergedData));
+  exportJsonBtn.addEventListener("click", () => exportJson(mergedData));
+})();
+
   </script>
 </body>
 </html>
