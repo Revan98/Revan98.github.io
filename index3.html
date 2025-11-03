@@ -535,7 +535,7 @@
       const ws = XLSX.utils.json_to_sheet(rows);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "DKP");
-      XLSX.writeFile(wb, `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.xlsx`);
+      XLSX.writeFile(wb, `merge_output_${new Date().toISOString().replace(/[:.]/g,"-")}.xlsx`);
     }
     function exportToCsv(rows) {
       if (!rows) return alert("No results to export.");
@@ -545,7 +545,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
+      a.download = `merge_output_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     }
@@ -556,7 +556,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
+      a.download = `merge_output_${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     }
