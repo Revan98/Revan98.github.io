@@ -248,6 +248,11 @@ body {
    ========================================================= */
 .layout {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .left_column {
