@@ -47,6 +47,7 @@ body.dark {
    ========================================================= */
 body {
   font-family: Arial, sans-serif;
+  margin: 0;
   background: var(--bg-color);
   color: var(--text-color);
 }
