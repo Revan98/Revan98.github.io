@@ -325,13 +325,18 @@
           <button id="export-csv">Export CSV</button>
           <button id="export-json">Export JSON</button>
       </div>
-      <div id="merge-results" class="muted">No merged data yet.</div>
+      <div id="merge-results-info" class="muted">No merged data yet.</div>
+      <div id="merge-results-wrap" style="overflow:auto; max-height:400px; background:#fff; padding:8px; border-radius:8px;"></div>
     </section>
   </div>
   
   <script>
     let file1Data = [];
     let file2Data = [];
+    let mergedResults = null;
+    const progressEl = document.getElementById("progress");
+    const resultsWrap = document.getElementById("merge-results-wrap");
+    const resultsInfo = document.getElementById("merge-results-info");
 
     async function readExcel(file) {
       const data = await file.arrayBuffer();
@@ -382,50 +387,102 @@
         return row;
       });
     }
-      // -------------------------
-      // Export: XLSX / CSV / JSON
-      // -------------------------
-      function exportToXlsx(rows) {
-        if (!rows) return alert("No results to export.");
-        const ws = XLSX.utils.json_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "DKP");
-        XLSX.writeFile(wb, `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.xlsx`);
+
+    function renderResultsTable(rows) {
+      resultsWrap.innerHTML = "";
+      if (!rows || rows.length === 0) {
+        resultsInfo.textContent = "No results.";
+        return;
       }
-      function exportToCsv(rows) {
-        if (!rows) return alert("No results to export.");
-        const ws = XLSX.utils.json_to_sheet(rows);
-        const csv = XLSX.utils.sheet_to_csv(ws);
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
+    
+      const max = Math.min(rows.length, 200); // show top 200 rows
+      const table = document.createElement("table");
+      table.style.width = "100%";
+      table.style.borderCollapse = "collapse";
+    
+      const columns = Object.keys(rows[0]);
+      const thead = document.createElement("thead");
+      thead.innerHTML = "<tr>" + columns.map(c => `<th style='border-bottom:1px solid #eee;padding:6px;text-align:left;'>${c}</th>`).join("") + "</tr>";
+      table.appendChild(thead);
+    
+      const tbody = document.createElement("tbody");
+      for (let i = 0; i < max; i++) {
+        const r = rows[i];
+        const tr = document.createElement("tr");
+        tr.innerHTML = columns.map(c => `<td style='padding:6px;border-bottom:1px solid #f3f3f3;'>${String(r[c] ?? "")}</td>`).join("");
+        tbody.appendChild(tr);
       }
-      function exportToJson(rows) {
-        if (!rows) return alert("No results to export.");
-        const txt = JSON.stringify(rows, null, 2);
-        const blob = new Blob([txt], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-      }
+      table.appendChild(tbody);
+      resultsWrap.appendChild(table);
+    }
+
+    
+    // -------------------------
+    // Export: XLSX / CSV / JSON
+    // -------------------------
+    function exportToXlsx(rows) {
+      if (!rows) return alert("No results to export.");
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "DKP");
+      XLSX.writeFile(wb, `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.xlsx`);
+    }
+    function exportToCsv(rows) {
+      if (!rows) return alert("No results to export.");
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+    function exportToJson(rows) {
+      if (!rows) return alert("No results to export.");
+      const txt = JSON.stringify(rows, null, 2);
+      const blob = new Blob([txt], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `dkp_output_${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+    
     async function doMerge() {
       const idColumn = document.getElementById("idColumn").value;
       const mergeColumn = document.getElementById("mergeColumn").value;
-
-      if (!idColumn || !mergeColumn) return;
-
-      const merged = mergeData(file1Data, file2Data, idColumn, mergeColumn);
-      const ws = XLSX.utils.json_to_sheet(merged);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Merged");
-      XLSX.writeFile(wb, "merged.xlsx");
+    
+      if (!idColumn || !mergeColumn) return alert("Please select columns first.");
+    
+      progressEl.value = 10;
+    
+      // Build a lookup map from file2
+      const map = {};
+      for (const row of file2Data) {
+        map[row[idColumn]] = row[mergeColumn];
+      }
+    
+      progressEl.value = 40;
+    
+      // Merge into file1Data
+      const merged = file1Data.map(row => {
+        const id = row[idColumn];
+        const newVal = map[id];
+        if (newVal !== undefined) {
+          return { ...row, [mergeColumn]: newVal };
+        }
+        return row;
+      });
+    
+      progressEl.value = 80;
+    
+      mergedResults = merged;
+      renderResultsTable(merged);
+      progressEl.value = 100;
+      resultsInfo.textContent = `Merged ${merged.length} rows using ID "${idColumn}" and column "${mergeColumn}" from File 2.`;
     }
 
     // Theme toggle
@@ -446,6 +503,10 @@
     document.getElementById("file1").addEventListener("change", handleFiles);
     document.getElementById("file2").addEventListener("change", handleFiles);
     document.getElementById("mergeBtn").addEventListener("click", doMerge);
+
+    document.getElementById("export-xlsx").addEventListener("click", () => exportToXlsx(mergedResults));
+    document.getElementById("export-csv").addEventListener("click", () => exportToCsv(mergedResults));
+    document.getElementById("export-json").addEventListener("click", () => exportToJson(mergedResults));
   </script>
 </body>
 </html>
