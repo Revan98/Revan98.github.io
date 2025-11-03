@@ -330,8 +330,9 @@
         </label>
       </div>
     </header>
-
-  <div class="card">
+ <div class="container">
+  <section class="card">
+    <div class="row">
     <label>File 1 (Base):</label>
     <input type="file" id="file1" accept=".xlsx" />
 
@@ -348,8 +349,9 @@
 
     <button id="mergeBtn" disabled>Merge & Download</button>
     <div id="log" class="log"></div>
+    </div>
+  </section>
   </div>
-
   <script>
     let file1Data = [];
     let file2Data = [];
