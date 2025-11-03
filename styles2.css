@@ -182,7 +182,7 @@ body {
   width: 60%;
 }
 /* Clear floats after the columns */
-.row:after {
+body::after {
   content: "";
   display: table;
   clear: both;
