@@ -53,32 +53,164 @@ body {
 /* =========================================================
    3. NAVIGATION BAR
    ========================================================= */
-.topnav {
-  overflow: hidden;
-  background-color: #333;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.topnav a,
-.topnav button {
-  float: left;
-  display: block;
-  color: #f2f2f2;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font: inherit;
-}
-
-.topnav a:hover,
-.topnav button:hover {
-  background-color: #4e4d4d;
-}
+    /* --- Navbar --- */
+    .navbar {
+      position: sticky;
+      top: 8px;
+      z-index: 999;
+      width: 75%;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      padding: 10px 24px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .nav-links {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+    }
+    
+    .nav-links a {
+      text-decoration: none;
+      font-weight: 500;
+      color: #053b6b;
+      transition: color 0.3s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+    
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: #053b6b;
+      font-size: 16px;
+      margin-left: auto;
+    }
+    
+    .theme-toggle input {
+      display: none;
+    }
+    
+    .toggle-slider {
+      position: relative;
+      width: 50px;
+      height: 24px;
+      background-color: #ccc;
+      border-radius: 12px;
+      transition: background-color 0.3s;
+    }
+    
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+    
+    .theme-toggle input:checked + .toggle-slider {
+      background-color: #ff9800;
+    }
+    
+    .theme-toggle input:checked + .toggle-slider::before {
+      transform: translateX(26px);
+    }
+    
+    .hamburger {
+      display: none;
+      font-size: 22px;
+      background: none;
+      border: none;
+      color: #053b6b;
+      cursor: pointer;
+    }
+    
+    @media (max-width: 768px) {
+      .navbar {
+        width: 90%;
+        padding: 10px 18px;
+      }
+    
+      .nav-links {
+        position: absolute;
+        top: 58px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        margin: 0 auto;
+        width: 50%;
+        gap: 16px;
+        padding: 12px 0;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.25s ease;
+      }
+      
+      body.dark .nav-links {
+        background: rgba(26, 26, 26, 0.85);
+      }
+      
+      .nav-links.show {
+        transform: scaleY(1);
+      }
+    
+      .hamburger {
+        display: block;
+      }
+    
+      .theme-toggle {
+        margin-left: 12px;
+      }
+    }
+    
+    body.dark .navbar {
+      background: rgba(26, 26, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+    }
+    
+    body.dark .nav-links a {
+      color: #eee;
+    }
+    
+    body.dark .nav-links a:hover {
+      color: #ff9800;
+    }
+    
+    body.dark .theme-toggle {
+      color: #eee;
+    }
+    
+    body.dark .hamburger {
+      color: #eee;
+    }
+    
 /* =========================================================
    7. PLAYER & STATS BOXES
    ========================================================= */
@@ -143,54 +275,6 @@ body {
     grid-template-columns: 1fr;
     max-width: 90vw;
   }
-}
-/* =========================================================
-    8. DARK MODE TOGGLE
-    ========================================================= */
- /* Toggle switch styling */
-.theme-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  cursor: pointer;
-  background: none;
-  border: none;
-  color: #f2f2f2;
-  font-size: 16px;
-}
-
-.theme-toggle input {
-  display: none;
-}
-
-.toggle-slider {
-  position: relative;
-  width: 50px;
-  height: 24px;
-  background-color: #777;
-  border-radius: 12px;
-  transition: background-color 0.3s;
-}
-
-.toggle-slider::before {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  background-color: white;
-  border-radius: 50%;
-  transition: transform 0.3s;
-}
-
-.theme-toggle input:checked + .toggle-slider {
-  background-color: #ff9800;
-}
-
-.theme-toggle input:checked + .toggle-slider::before {
-  transform: translateX(26px);
 }
 
 /* =========================================================
