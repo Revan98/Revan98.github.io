@@ -246,25 +246,17 @@ body {
 /* =========================================================
    10. MISCELLANEOUS
    ========================================================= */
-.layout {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  max-width: 100%;
-  margin: 0 auto;
-}
-
 .left_column {
-  flex: 0 0 20%;
+  float: left;
+  width: 20%;
 }
-
-.center_column {
-  flex: 0 0 60%;
-}
-
 .right_column {
-  flex: 0 0 20%;
+  float: left;
+  width: 20%;
+}
+.center_column {
+  float: left;
+  width: 60%;
 }
 /* =========================================================
    8. CHARTS
@@ -694,12 +686,12 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
 /* =========================================================
    X. Media responsive
    ========================================================= */
- @media (max-width: 768px) {
+ @media (max-width: 992px) {
    .navbar {
      width: 90%;
      padding: 10px 18px;
    }
- 
+
    .nav-links {
      position: absolute;
      top: 58px;
@@ -718,19 +710,19 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
      transform-origin: top;
      transition: transform 0.25s ease;
    }
-   
+
    body.dark .nav-links {
      background: rgba(26, 26, 26, 0.85);
    }
-   
+
    .nav-links.show {
      transform: scaleY(1);
    }
- 
+
    .hamburger {
      display: block;
    }
- 
+
    .theme-toggle {
      margin-left: 12px;
    }
@@ -773,93 +765,3 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
     order: 3;
   }
  }
-
- @media (max-width: 992px) {
-   .navbar {
-     width: 90%;
-     padding: 10px 18px;
-   }
- 
-   .nav-links {
-     position: absolute;
-     top: 58px;
-     left: 0;
-     right: 0;
-     flex-direction: column;
-     align-items: center;
-     background: rgba(255, 255, 255, 0.95);
-     border-radius: 16px;
-     margin: 0 auto;
-     width: 50%;
-     gap: 16px;
-     padding: 12px 0;
-     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-     transform: scaleY(0);
-     transform-origin: top;
-     transition: transform 0.25s ease;
-   }
-   
-   body.dark .nav-links {
-     background: rgba(26, 26, 26, 0.85);
-   }
-   
-   .nav-links.show {
-     transform: scaleY(1);
-   }
- 
-   .hamburger {
-     display: block;
-   }
- 
-   .theme-toggle {
-     margin-left: 12px;
-   }
-
-  /* --- Responsive columns --- */
-  .layout {
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-    width: 100%;
-  }
-
-  .left_column,
-  .center_column,
-  .right_column {
-    flex: 1 1 100%;
-    width: 100%;
-    max-width: 95vw;
-  }
-
-  /* Optional: Change order on mobile */
-  .right_column { order: 1; }
-  .center_column { order: 2; }
-  .left_column  { order: 3; }
-
-  /* --- Responsive charts and tables --- */
-  #top-players,
-  #bottom-totals {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-
-  #top-players .player-box,
-  #bottom-totals .stat-box {
-    width: 100%;
-    max-width: 320px;
-  }
-
-  #charts-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    width: 100%;
-    max-width: 95vw;
-  }
-
-  canvas {
-    width: 100% !important;
-    height: auto !important;
-  }
-}
