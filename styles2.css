@@ -172,24 +172,19 @@ body {
  /* =========================================================
    10. MISCELLANEOUS
    ========================================================= */
-/* Create three unequal columns that floats next to each other */
-.column {
-  float: left;
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .left, .right {
-  width: 20%;
+  flex: 0 0 20%;
 }
 
 .middle {
-  width: 60%;
-}
-
-/* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
+  flex: 1;
 }
 /* =========================================================
    7. PLAYER & STATS BOXES
@@ -753,24 +748,11 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
     max-width: 90vw;
   }
 
-  .left_column,
-  .center_column,
-  .right_column {
-    float: none;
+  .row {
+    flex-direction: column;
+  }
+  .left, .middle, .right {
+    flex: 0 0 auto;
     width: 100%;
-    display: block;
-  }
-
-  /* Ensure right_column (Top 18) appears above main table on mobile */
-  .right_column {
-    order: 1;
-  }
-
-  .center_column {
-    order: 2;
-  }
-
-  .left_column {
-    order: 3;
   }
  }
