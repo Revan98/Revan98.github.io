@@ -7,146 +7,140 @@
   <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     :root {
-      --bg-color: #f7f9fb;
-      --text-color: #222;
-      --card-bg: #fff;
-      --input-bg: #fff;
-      --border-color: #ccc;
-      --btn-bg: #0078ff;
-      --btn-bg-hover: #005fcc;
-      --log-bg: #f3f3f3;
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --accent: #0b74d1;
+      --muted: #586069;
+      --table-wrap: #fff;
     }
-    body.dark {
-      --bg-color: #121212;
-      --text-color: #eee;
-      --card-bg: #1e1e1e;
-      --input-bg: #2b2b2b;
-      --border-color: #444;
-      --btn-bg: #2196f3;
-      --btn-bg-hover: #1976d2;
-      --log-bg: #2a2a2a;
-    }
-
+    *{box-sizing:border-box}
+    
     body {
-      font-family: "Inter", system-ui, sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-      transition: background 0.3s, color 0.3s;
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: var(--bg);
+      color: #111827;
     }
 
-    h1 {
-      margin-bottom: 1rem;
+    .container { 
+      max-width:1100px; 
+      margin:24px auto; 
+      padding:16px; 
     }
-
+    
+    header h1 { 
+      margin:0 0 6px; 
+    }
+    
+    .muted { 
+      color: var(--muted); 
+      font-size:0.9rem; 
+    }
+    
     .card {
-      background: var(--card-bg);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      border-radius: 8px;
-      padding: 2rem;
-      width: 100%;
-      max-width: 500px;
-      transition: background 0.3s;
+      background: var(--card);
+      padding:14px;
+      padding-top:5px;
+      border-radius:10px;
+      box-shadow: 0 4px 18px rgba(11,20,40,0.04);
+      margin:14px 0;
     }
 
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: 600;
+    .row {
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top:10px;
     }
-
-    select, input[type="file"], button {
-      margin-top: 0.5rem;
-      width: 100%;
-      padding: 0.6rem;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-      background: var(--input-bg);
-      color: var(--text-color);
-      font-size: 1rem;
-      transition: background 0.3s, color 0.3s;
+    
+    input[type="file"] { 
+      padding:6px; 
+    }
+    
+    input[type="number"], input[type="text"], input[type="search"], 
+    input#vacation-input, input#pr-min, input#pr-max, input#pr-percent {
+      padding:8px 10px; 
+      border-radius:6px; 
+      border:1px solid #e2e8f0; 
+      min-width:120px;
     }
 
     button {
-      background-color: var(--btn-bg);
-      color: white;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 1.5rem;
+      padding:8px 12px; 
+      border-radius:8px; 
+      border: none; 
+      cursor:pointer; 
+      background:#e6eef9; 
+      color:#053b6b;
     }
 
-    button:hover {
-      background-color: var(--btn-bg-hover);
+    ::file-selector-button {
+      padding:4px 6px; 
+      border-radius:8px; 
+      border: none; 
+      cursor:pointer; 
+      background:#e6eef9; 
+      color:#053b6b;
     }
 
-    .log {
-      margin-top: 1rem;
-      padding: 0.8rem;
-      background: var(--log-bg);
-      border-radius: 6px;
-      width: 100%;
-      font-family: monospace;
-      white-space: pre-wrap;
-      transition: background 0.3s;
+    button.primary {  
+      background: var(--accent); 
+      color:white; 
+      box-shadow: 0 6px 14px rgba(11,74,209,0.12); 
     }
 
-    .top-bar {
-      width: 100%;
-      max-width: 500px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
+    button.secondary {  
+      background: #DC143C;; 
+      color:white; 
+      box-shadow: 0 6px 14px rgba(11,74,209,0.12); 
     }
 
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 26px;
+    progress { 
+      width:200px; 
+      height:14px; 
     }
 
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+    /* --- Dark mode --- */
+    body.dark {
+      background: #111;
+      color: #f1f1f1;
+      --muted: white;
+      --table-wrap: #ddd;
+    }
+    
+    body.dark .card {
+      background: #1a1a1a;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     }
 
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 26px;
+    body.dark input, body.dark select {
+      background: #222;
+      color: #eee;
+      border: 1px solid #444;
+    }
+    
+    body.dark button {
+      background: #333;
+      color: #eee;
     }
 
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
+    body.dark button.primary {
+      background: #0b74d1;
+      color: #fff;
     }
 
-    input:checked + .slider {
-      background-color: #2196f3;
+    body.dark button.secondary {
+      background: #DC143C;
+      color: #fff;
+    }
+    
+    body.dark ::file-selector-button {
+      background: #333;
+      color: #eee;
     }
 
-    input:checked + .slider:before {
-      transform: translateX(24px);
-    }
+    
 
     /* --- Floating Rounded Navbar --- */
     .navbar {
