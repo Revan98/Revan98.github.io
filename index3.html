@@ -11,7 +11,6 @@
       --card: #ffffff;
       --accent: #0b74d1;
       --muted: #586069;
-      --table-wrap: #fff;
     }
     *{box-sizing:border-box}
     
@@ -28,25 +27,20 @@
       padding:16px; 
     }
 
-    .muted { 
-      color: var(--muted); 
-      font-size:0.9rem; 
-    }
-    
     .card {
       background: var(--card);
-      padding:14px;
-      padding-top:5px;
+      padding:20px;
       border-radius:10px;
       box-shadow: 0 4px 18px rgba(11,20,40,0.04);
       margin:14px 0;
-      align-items:center;
+      text-align:center;
     }
 
     .row {
       display:flex;
-      gap:10px;
+      justify-content:center;
       align-items:center;
+      gap:10px;
       flex-wrap:wrap;
       margin-top:10px;
     }
@@ -55,11 +49,11 @@
       padding:6px; 
     }
     
-    input[type="number"], input[type="text"], input[type="search"] {
+    input[type="number"], input[type="text"], input[type="search"], select {
       padding:8px 10px; 
       border-radius:6px; 
       border:1px solid #e2e8f0; 
-      min-width:120px;
+      min-width:150px;
     }
 
     button {
@@ -86,17 +80,11 @@
       box-shadow: 0 6px 14px rgba(11,74,209,0.12); 
     }
 
-    progress { 
-      width:200px; 
-      height:14px; 
-    }
-
     /* --- Dark mode --- */
     body.dark {
       background: #111;
       color: #f1f1f1;
       --muted: white;
-      --table-wrap: #ddd;
     }
     
     body.dark .card {
@@ -120,17 +108,12 @@
       color: #fff;
     }
 
-    body.dark button.secondary {
-      background: #DC143C;
-      color: #fff;
-    }
-    
     body.dark ::file-selector-button {
       background: #333;
       color: #eee;
     }
 
-    /* --- Floating Rounded Navbar --- */
+    /* --- Navbar --- */
     .navbar {
       position: sticky;
       top: 8px;
@@ -152,7 +135,6 @@
       justify-content: space-between;
     }
     
-    /* Centered Links */
     .nav-links {
       flex: 1;
       display: flex;
@@ -171,7 +153,6 @@
       color: var(--accent);
     }
     
-    /* --- Toggle --- */
     .theme-toggle {
       display: flex;
       align-items: center;
@@ -217,7 +198,6 @@
       transform: translateX(26px);
     }
     
-    /* --- Hamburger (hidden on desktop) --- */
     .hamburger {
       display: none;
       font-size: 22px;
@@ -227,7 +207,6 @@
       cursor: pointer;
     }
     
-    /* --- Mobile layout --- */
     @media (max-width: 768px) {
       .navbar {
         width: 90%;
@@ -252,7 +231,7 @@
         transform-origin: top;
         transition: transform 0.25s ease;
       }
-    
+      
       body.dark .nav-links {
         background: rgba(26, 26, 26, 0.85);
       }
@@ -270,7 +249,6 @@
       }
     }
     
-    /* --- Dark Mode --- */
     body.dark .navbar {
       background: rgba(26, 26, 26, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.05);
@@ -292,24 +270,17 @@
     body.dark .hamburger {
       color: #eee;
     }
-    
   </style>
 </head>
 <body>
     <header class="navbar">
       <div class="nav-container">
-        <!-- Hamburger for mobile -->
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-          ☰
-        </button>
-    
+        <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
         <div class="nav-links" id="nav-links">
           <a href="index3.html">Merge</a>
           <a href="index4.html">DKP Calculator</a>
           <a href="index2.html">Compare</a>
         </div>
-    
-        <!-- 🌙 Theme toggle -->
         <label class="theme-toggle">
           🌞
           <input type="checkbox" id="toggle-theme">
@@ -319,48 +290,39 @@
       </div>
     </header>
   
- <div class="container">
-  <section class="card">
-    <div class="row">
-      <label>File 1 (Base):</label>
-      <input type="file" id="file1" accept=".xlsx" />
-    </div>
-
-    <div class="row">
-      <label>File 2 (Merge Source):</label>
-      <input type="file" id="file2" accept=".xlsx" />
-    </div>
-    
-    <div id="columnSelectors" style="display:none;">
+  <div class="container">
+    <section class="card">
       <div class="row">
-        <label for="idColumn">Select ID column:</label>
-        <select id="idColumn"></select>
+        <label>File 1 (Base):</label>
+        <input type="file" id="file1" accept=".xlsx" />
       </div>
 
       <div class="row">
-        <label for="mergeColumn">Select column to merge from File 2:</label>
-        <select id="mergeColumn"></select>
+        <label>File 2 (Merge Source):</label>
+        <input type="file" id="file2" accept=".xlsx" />
       </div>
-    </div>
-    
-    <div class="row">
-      <button id="mergeBtn" class="primary" disabled>Merge & Download</button>
-    </div>
-    
-    <div id="log" class="log"></div>
-    </div>
-  </section>
+      
+      <div id="columnSelectors" style="display:none;">
+        <div class="row">
+          <label for="idColumn">Select ID column:</label>
+          <select id="idColumn"></select>
+        </div>
+
+        <div class="row">
+          <label for="mergeColumn">Select column to merge from File 2:</label>
+          <select id="mergeColumn"></select>
+        </div>
+      </div>
+      
+      <div class="row">
+        <button id="mergeBtn" class="primary" disabled>Merge & Download</button>
+      </div>
+    </section>
   </div>
   
   <script>
     let file1Data = [];
     let file2Data = [];
-
-    const log = (msg, isError = false) => {
-      const logDiv = document.getElementById("log");
-      logDiv.textContent += (isError ? "❌ " : "✅ ") + msg + "\n";
-      logDiv.scrollTop = logDiv.scrollHeight;
-    };
 
     async function readExcel(file) {
       const data = await file.arrayBuffer();
@@ -374,39 +336,27 @@
       const file2 = document.getElementById("file2").files[0];
       const selectors = document.getElementById("columnSelectors");
 
-      if (!file1 || !file2) {
-        return;
-      }
+      if (!file1 || !file2) return;
 
-      try {
-        log("Reading files...");
-        file1Data = await readExcel(file1);
-        file2Data = await readExcel(file2);
+      file1Data = await readExcel(file1);
+      file2Data = await readExcel(file2);
 
-        if (!file1Data.length || !file2Data.length) {
-          log("One of the files is empty or invalid.", true);
-          return;
-        }
+      if (!file1Data.length || !file2Data.length) return;
 
-        // Populate dropdowns
-        const idSelect = document.getElementById("idColumn");
-        const mergeSelect = document.getElementById("mergeColumn");
-        idSelect.innerHTML = "";
-        mergeSelect.innerHTML = "";
+      const idSelect = document.getElementById("idColumn");
+      const mergeSelect = document.getElementById("mergeColumn");
+      idSelect.innerHTML = "";
+      mergeSelect.innerHTML = "";
 
-        Object.keys(file1Data[0]).forEach(col => {
-          idSelect.innerHTML += `<option value="${col}">${col}</option>`;
-        });
-        Object.keys(file2Data[0]).forEach(col => {
-          mergeSelect.innerHTML += `<option value="${col}">${col}</option>`;
-        });
+      Object.keys(file1Data[0]).forEach(col => {
+        idSelect.innerHTML += `<option value="${col}">${col}</option>`;
+      });
+      Object.keys(file2Data[0]).forEach(col => {
+        mergeSelect.innerHTML += `<option value="${col}">${col}</option>`;
+      });
 
-        selectors.style.display = "block";
-        document.getElementById("mergeBtn").disabled = false;
-        log("Files loaded. Select columns and click Merge.");
-      } catch (err) {
-        log("Error reading files: " + err.message, true);
-      }
+      selectors.style.display = "block";
+      document.getElementById("mergeBtn").disabled = false;
     }
 
     function mergeData(file1Data, file2Data, idColumn, mergeColumn) {
@@ -415,42 +365,29 @@
         map[row[idColumn]] = row[mergeColumn];
       }
 
-      const merged = file1Data.map(row => {
+      return file1Data.map(row => {
         const id = row[idColumn];
         if (map[id] !== undefined) {
           return { ...row, [mergeColumn]: map[id] };
         }
         return row;
       });
-
-      return merged;
     }
 
     async function doMerge() {
       const idColumn = document.getElementById("idColumn").value;
       const mergeColumn = document.getElementById("mergeColumn").value;
 
-      if (!idColumn || !mergeColumn) {
-        log("Please select both columns.", true);
-        return;
-      }
+      if (!idColumn || !mergeColumn) return;
 
-      try {
-        log(`Merging on ID: "${idColumn}" and copying "${mergeColumn}"...`);
-        const merged = mergeData(file1Data, file2Data, idColumn, mergeColumn);
-
-        const ws = XLSX.utils.json_to_sheet(merged);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Merged");
-        XLSX.writeFile(wb, "merged.xlsx");
-
-        log("✅ Merge complete! File downloaded.");
-      } catch (err) {
-        log("Merge failed: " + err.message, true);
-      }
+      const merged = mergeData(file1Data, file2Data, idColumn, mergeColumn);
+      const ws = XLSX.utils.json_to_sheet(merged);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Merged");
+      XLSX.writeFile(wb, "merged.xlsx");
     }
 
-    // --- Dark mode toggle ---
+    // Theme toggle
     const toggleTheme = document.getElementById("toggle-theme");
     function applyTheme(isDark) {
       document.body.classList.toggle("dark", isDark);
@@ -460,18 +397,10 @@
     toggleTheme.addEventListener("change", (e) => applyTheme(e.target.checked));
     applyTheme(localStorage.getItem("dkp_darkmode") === "1");
     
-    // --- Hamburger menu ---
+    // Hamburger menu
     const hamburger = document.getElementById("hamburger");
     const navLinks = document.getElementById("nav-links");
-    
-    hamburger.addEventListener("click", () => {
-      navLinks.classList.toggle("show");
-    });
-
-    
-    // restore saved preference
-    const savedDark = localStorage.getItem("dkp_darkmode") === "1";
-    applyTheme(savedDark);
+    hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
 
     document.getElementById("file1").addEventListener("change", handleFiles);
     document.getElementById("file2").addEventListener("change", handleFiles);
