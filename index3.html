@@ -507,28 +507,26 @@
         return;
       }
     
-      const max = Math.min(rows.length, 200); // show top 200 rows
+      const max = Math.min(rows.length, 200);
       const table = document.createElement("table");
-      table.style.width = "100%";
-      table.style.borderCollapse = "collapse";
-    
       const columns = Object.keys(rows[0]);
+    
       const thead = document.createElement("thead");
-      thead.innerHTML = "<tr>" + columns.map(c => `<th style='border-bottom:1px solid #eee;padding:6px;text-align:left;'>${c}</th>`).join("") + "</tr>";
+      thead.innerHTML = "<tr>" + columns.map(c => `<th>${c}</th>`).join("") + "</tr>";
       table.appendChild(thead);
     
       const tbody = document.createElement("tbody");
       for (let i = 0; i < max; i++) {
         const r = rows[i];
         const tr = document.createElement("tr");
-        tr.innerHTML = columns.map(c => `<td style='padding:6px;border-bottom:1px solid #f3f3f3;'>${String(r[c] ?? "")}</td>`).join("");
+        tr.innerHTML = columns.map(c => `<td>${String(r[c] ?? "")}</td>`).join("");
         tbody.appendChild(tr);
       }
+    
       table.appendChild(tbody);
       resultsWrap.appendChild(table);
     }
 
-    
     // -------------------------
     // Export: XLSX / CSV / JSON
     // -------------------------
