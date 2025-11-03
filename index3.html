@@ -44,6 +44,7 @@
       border-radius:10px;
       box-shadow: 0 4px 18px rgba(11,20,40,0.04);
       margin:14px 0;
+      align-items:center;
     }
 
     .row {
@@ -58,8 +59,7 @@
       padding:6px; 
     }
     
-    input[type="number"], input[type="text"], input[type="search"], 
-    input#vacation-input, input#pr-min, input#pr-max, input#pr-percent {
+    input[type="number"], input[type="text"], input[type="search"] {
       padding:8px 10px; 
       border-radius:6px; 
       border:1px solid #e2e8f0; 
@@ -86,12 +86,6 @@
 
     button.primary {  
       background: var(--accent); 
-      color:white; 
-      box-shadow: 0 6px 14px rgba(11,74,209,0.12); 
-    }
-
-    button.secondary {  
-      background: #DC143C;; 
       color:white; 
       box-shadow: 0 6px 14px rgba(11,74,209,0.12); 
     }
@@ -139,8 +133,6 @@
       background: #333;
       color: #eee;
     }
-
-    
 
     /* --- Floating Rounded Navbar --- */
     .navbar {
@@ -330,6 +322,7 @@
         </label>
       </div>
     </header>
+  
  <div class="container">
   <section class="card">
     <div class="row">
@@ -343,18 +336,26 @@
     </div>
     
     <div id="columnSelectors" style="display:none;">
-      <label for="idColumn">Select ID column:</label>
-      <select id="idColumn"></select>
+      <div class="row">
+        <label for="idColumn">Select ID column:</label>
+        <select id="idColumn"></select>
+      </div>
 
-      <label for="mergeColumn">Select column to merge from File 2:</label>
-      <select id="mergeColumn"></select>
+      <div class="row">
+        <label for="mergeColumn">Select column to merge from File 2:</label>
+        <select id="mergeColumn"></select>
+      </div>
     </div>
-
-    <button id="mergeBtn" disabled>Merge & Download</button>
+    
+    <div class="row">
+      <button id="mergeBtn" disabled>Merge & Download</button>
+    </div>
+    
     <div id="log" class="log"></div>
     </div>
   </section>
   </div>
+  
   <script>
     let file1Data = [];
     let file2Data = [];
