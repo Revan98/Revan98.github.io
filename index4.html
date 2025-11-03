@@ -300,31 +300,29 @@
 
 
 
-/* --- Modern Sticky Navbar --- */
+/* --- Floating Rounded Navbar --- */
 .navbar {
-  margin-top: 10px;
-  width: 75%;
-  border-radius: 8px;
   position: sticky;
-  top: 0;
+  top: 8px;
   z-index: 999;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  width: 75%;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   padding: 10px 24px;
+  transition: all 0.3s ease;
 }
 
-/* Layout container */
 .nav-container {
-
-  margin: 0 auto;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
-/* Centered links */
+/* Centered Links */
 .nav-links {
   flex: 1;
   display: flex;
@@ -343,7 +341,7 @@
   color: var(--accent);
 }
 
-/* --- Toggle switch styling --- */
+/* --- Toggle --- */
 .theme-toggle {
   display: flex;
   align-items: center;
@@ -353,7 +351,7 @@
   border: none;
   color: #053b6b;
   font-size: 16px;
-  margin-left: auto; /* pushes it to the far right */
+  margin-left: auto;
 }
 
 .theme-toggle input {
@@ -389,12 +387,60 @@
   transform: translateX(26px);
 }
 
-/* --- Dark Mode Adjustments --- */
+/* --- Hamburger (hidden on desktop) --- */
+.hamburger {
+  display: none;
+  font-size: 22px;
+  background: none;
+  border: none;
+  color: #053b6b;
+  cursor: pointer;
+}
+
+/* --- Mobile layout --- */
+@media (max-width: 768px) {
+  .navbar {
+    width: 90%;
+    padding: 10px 18px;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 58px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    margin: 0 auto;
+    width: 90%;
+    gap: 16px;
+    padding: 12px 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.25s ease;
+  }
+
+  .nav-links.show {
+    transform: scaleY(1);
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  .theme-toggle {
+    margin-left: 12px;
+  }
+}
+
+/* --- Dark Mode --- */
 body.dark .navbar {
-  background: rgba(26, 26, 26, 0.75);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+  background: rgba(26, 26, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
 }
 
 body.dark .nav-links a {
@@ -409,6 +455,11 @@ body.dark .theme-toggle {
   color: #eee;
 }
 
+body.dark .hamburger {
+  color: #eee;
+}
+
+
 
 
   </style> 
@@ -418,7 +469,12 @@ body.dark .theme-toggle {
  
     <header class="navbar">
       <div class="nav-container">
-        <div class="nav-links">
+        <!-- Hamburger for mobile -->
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          ☰
+        </button>
+    
+        <div class="nav-links" id="nav-links">
           <a href="#">Home</a>
           <a href="#">DKP Calculator</a>
           <a href="#">Settings</a>
@@ -433,6 +489,7 @@ body.dark .theme-toggle {
         </label>
       </div>
     </header>
+
  <div class="container">
 
     <!-- SETTINGS (top) -->
@@ -1036,18 +1093,24 @@ body.dark .theme-toggle {
       async function init() {
         await loadAllFromStorage();
         // --- Dark mode toggle ---
-        // --- Dark mode toggle (new switch) ---
+        // --- Dark mode toggle ---
         const toggleTheme = document.getElementById("toggle-theme");
-        
         function applyTheme(isDark) {
           document.body.classList.toggle("dark", isDark);
           localStorage.setItem("dkp_darkmode", isDark ? "1" : "0");
           toggleTheme.checked = isDark;
         }
+        toggleTheme.addEventListener("change", (e) => applyTheme(e.target.checked));
+        applyTheme(localStorage.getItem("dkp_darkmode") === "1");
         
-        toggleTheme.addEventListener("change", (e) => {
-          applyTheme(e.target.checked);
+        // --- Hamburger menu ---
+        const hamburger = document.getElementById("hamburger");
+        const navLinks = document.getElementById("nav-links");
+        
+        hamburger.addEventListener("click", () => {
+          navLinks.classList.toggle("show");
         });
+
         
         // restore saved preference
         const savedDark = localStorage.getItem("dkp_darkmode") === "1";
