@@ -693,6 +693,17 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
    X. Media responsive
    ========================================================= */
  @media (max-width: 992px) {
+  #top-players,
+  #bottom-totals {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #top-players .player-box,
+  #bottom-totals .stat-box {
+    width: 100%;
+    max-width: 280px;
+  }
    .navbar {
      width: 90%;
      padding: 10px 18px;
@@ -735,6 +746,17 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
  }
 /* Tablet view (768px–991px) */
 @media (max-width: 991px) {
+  #top-players,
+  #bottom-totals {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #top-players .player-box,
+  #bottom-totals .stat-box {
+    width: 100%;
+    max-width: 280px;
+  }
   .row {
     flex-wrap: wrap;
   }
