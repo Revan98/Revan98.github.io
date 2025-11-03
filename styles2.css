@@ -172,20 +172,21 @@ body {
  /* =========================================================
    10. MISCELLANEOUS
    ========================================================= */
-.left_column {
+/* Create three unequal columns that floats next to each other */
+.column {
   float: left;
+}
+
+.left, .right {
   width: 20%;
 }
-.right_column {
-  float: left;
-  width: 20%;
-}
-.center_column {
-  float: left;
+
+.middle {
   width: 60%;
 }
+
 /* Clear floats after the columns */
-body::after {
+.row:after {
   content: "";
   display: table;
   clear: both;
