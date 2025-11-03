@@ -26,9 +26,7 @@
       background: var(--bg);
       color: #111827;
     }
-    tr, td {
-      border: 1px solid;
-    }
+
     .container { 
       max-width:1100px; 
       margin:24px auto; 
@@ -89,6 +87,18 @@
       cursor:pointer; 
       background:#e6eef9; 
       color:#053b6b;
+    }
+
+    button.primary {  
+      background: var(--accent); 
+      color:white; 
+      box-shadow: 0 6px 14px rgba(11,74,209,0.12); 
+    }
+
+    button.secondary {  
+      background: red; 
+      color:white; 
+      box-shadow: 0 6px 14px rgba(11,74,209,0.12); 
     }
     
     table { 
@@ -296,7 +306,7 @@
         <button id="export-settings">💾 Export Settings (.json)</button>
         <button id="import-settings">📂 Import Settings (.json)</button>
         <input id="import-settings-file" type="file" accept=".json" style="display:none" />
-        <button id="clear-min-dkp">🧹 Clear all saved Min DKP</button>
+        <button id="clear-min-dkp" class="secondary">🧹 Clear all saved Min DKP</button>
         <div class="muted" style="margin-left:10px;">Export/import includes multipliers, power ranges, vacation list and min_dkp.</div>
       </div>
     </section>
@@ -334,7 +344,7 @@
         <div class="row">
           <input id="vacation-input" placeholder="IDs, comma separated (e.g. 123,456)">
           <button id="vac-save">Save Vacation List</button>
-          <button id="vac-clear">Clear Vacation List</button>
+          <button id="vac-clear" class="secondary">Clear Vacation List</button>
         </div>
       </section>
 
