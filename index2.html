@@ -390,7 +390,7 @@
       <div class="nav-container">
         <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
         <div class="nav-links" id="nav-links">
-          <a href="index3.html">Merge</a>
+          <a href="index3.html">compare</a>
           <a href="index4.html">DKP Calculator</a>
           <a href="index2.html">Compare</a>
         </div>
@@ -430,7 +430,9 @@
           <option value="drugi">Second Only</option>
         </select>
       </div>
-  
+
+      <progress id="progress" max="100" value="0"></progress>
+      
       <div class="row">
         <label>Output Format:</label>
         <button id="export-xlsx">Export XLSX</button>
@@ -442,7 +444,8 @@
         <button id="compareBtn">Compare</button>
         <progress id="progressBar" value="0" max="100"></progress>
       </div>
-      <div id="output"></div>
+      <div id="compare-results-info" class="muted">No compared data yet.</div>
+      <div id="compare-results-wrap"></div>
     </section>
   </div>
 
@@ -481,19 +484,19 @@ async function readFile(file) {
   });
 }
 
-// Merge two rows side by side (File1 + File2 data)
-function mergeRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
-  const merged = {};
+// compare two rows side by side (File1 + File2 data)
+function compareRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
+  const compared = {};
   if (row1) {
-    for (const [k, v] of Object.entries(row1)) merged[prefix1 + k] = v;
+    for (const [k, v] of Object.entries(row1)) compared[prefix1 + k] = v;
   }
   if (row2) {
-    for (const [k, v] of Object.entries(row2)) merged[prefix2 + k] = v;
+    for (const [k, v] of Object.entries(row2)) compared[prefix2 + k] = v;
   }
-  return merged;
+  return compared;
 }
 
-// Enhanced comparison logic with merge view
+// Enhanced comparison logic with compare view
 function compareData(df1, df2, keyColumn, option) {
   const map1 = new Map(df1.map(r => [r[keyColumn], r]));
   const map2 = new Map(df2.map(r => [r[keyColumn], r]));
@@ -507,21 +510,53 @@ function compareData(df1, df2, keyColumn, option) {
     const in2 = map2.has(key);
 
     if (in1 && in2) {
-      // Matched keys: merge side-by-side
-      matching.push(mergeRows(map1.get(key), map2.get(key)));
+      // Matched keys: compare side-by-side
+      matching.push(compareRows(map1.get(key), map2.get(key)));
     } else if (option === "both") {
       // Collect non-matching from both sides
-      nonMatching.push(mergeRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null));
+      nonMatching.push(compareRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null));
     } else if (option === "pierwszy" && in1 && !in2) {
-      nonMatching.push(mergeRows(map1.get(key), null));
+      nonMatching.push(compareRows(map1.get(key), null));
     } else if (option === "drugi" && in2 && !in1) {
-      nonMatching.push(mergeRows(null, map2.get(key)));
+      nonMatching.push(compareRows(null, map2.get(key)));
     }
   }
 
   return { matching, nonMatching };
 }
-
+    // -------------------------
+    // Export: XLSX / CSV / JSON
+    // -------------------------
+    function exportToXlsx(rows) {
+      if (!rows) return alert("No results to export.");
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "DKP");
+      XLSX.writeFile(wb, `merge_output_${new Date().toISOString().replace(/[:.]/g,"-")}.xlsx`);
+    }
+    function exportToCsv(rows) {
+      if (!rows) return alert("No results to export.");
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `merge_output_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+    function exportToJson(rows) {
+      if (!rows) return alert("No results to export.");
+      const txt = JSON.stringify(rows, null, 2);
+      const blob = new Blob([txt], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `merge_output_${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
 // Save data in various formats
 function downloadData(data, baseName, format) {
   const ts = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 16);
@@ -548,45 +583,196 @@ function downloadData(data, baseName, format) {
   link.click();
 }
 
+let file1Data = [];
+let file2Data = [];
+let comparedResults = { matching: [], nonMatching: [] };
+
+const progressEl = document.getElementById("progressBar");
+const resultsWrap = document.getElementById("compare-results-wrap");
+const resultsInfo = document.getElementById("compare-results-info");
+
+// -----------------------------
+// Utility: read Excel/CSV/JSON
+// -----------------------------
+async function readFile(file) {
+  const name = file.name.toLowerCase();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        if (name.endsWith(".xlsx") || name.endsWith(".csv")) {
+          const wb = XLSX.read(e.target.result, { type: "binary" });
+          const first = wb.SheetNames[0];
+          resolve(XLSX.utils.sheet_to_json(wb.Sheets[first], { defval: null }));
+        } else if (name.endsWith(".json")) {
+          resolve(JSON.parse(e.target.result));
+        } else {
+          reject("Unsupported file format");
+        }
+      } catch (err) {
+        reject(err);
+      }
+    };
+    if (name.endsWith(".xlsx") || name.endsWith(".csv")) reader.readAsBinaryString(file);
+    else reader.readAsText(file);
+  });
+}
+
+// -----------------------------
+// Compare logic
+// -----------------------------
+function compareRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
+  const compared = {};
+  if (row1) for (const [k, v] of Object.entries(row1)) compared[prefix1 + k] = v;
+  if (row2) for (const [k, v] of Object.entries(row2)) compared[prefix2 + k] = v;
+  return compared;
+}
+
+function compareData(df1, df2, keyColumn) {
+  const map1 = new Map(df1.map(r => [r[keyColumn], r]));
+  const map2 = new Map(df2.map(r => [r[keyColumn], r]));
+  const allKeys = new Set([...map1.keys(), ...map2.keys()]);
+  const matching = [];
+  const nonMatching = [];
+
+  for (const key of allKeys) {
+    const in1 = map1.has(key);
+    const in2 = map2.has(key);
+    if (in1 && in2) matching.push(compareRows(map1.get(key), map2.get(key)));
+    else nonMatching.push(compareRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null));
+  }
+
+  return { matching, nonMatching };
+}
+
+// -----------------------------
+// Render results tables
+// -----------------------------
+function renderResultsTables(matchRows, nonMatchRows) {
+  resultsWrap.innerHTML = "";
+
+  const makeTable = (rows, title) => {
+    const section = document.createElement("div");
+    section.innerHTML = `<h3>${title}</h3>`;
+    const table = document.createElement("table");
+    if (!rows.length) {
+      section.innerHTML += `<div class="muted">No ${title.toLowerCase()} rows.</div>`;
+      return section;
+    }
+    const columns = Object.keys(rows[0]);
+    const thead = document.createElement("thead");
+    thead.innerHTML = "<tr>" + columns.map(c => `<th>${c}</th>`).join("") + "</tr>";
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    const max = Math.min(rows.length, 10);
+    for (let i = 0; i < max; i++) {
+      const r = rows[i];
+      const tr = document.createElement("tr");
+      tr.innerHTML = columns.map(c => `<td>${r[c] ?? ""}</td>`).join("");
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    section.appendChild(table);
+    return section;
+  };
+
+  resultsWrap.appendChild(makeTable(matchRows, "Matching Rows (Top 10)"));
+  resultsWrap.appendChild(makeTable(nonMatchRows, "Non-Matching Rows (Top 10)"));
+}
+
+// -----------------------------
+// Export utilities
+// -----------------------------
+function exportToXlsx(rows) {
+  if (!rows || !rows.length) return alert("No results to export.");
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Compare");
+  XLSX.writeFile(wb, `compare_output_${new Date().toISOString().replace(/[:.]/g,"-")}.xlsx`);
+}
+function exportToCsv(rows) {
+  if (!rows || !rows.length) return alert("No results to export.");
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const csv = XLSX.utils.sheet_to_csv(ws);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `compare_output_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function exportToJson(rows) {
+  if (!rows || !rows.length) return alert("No results to export.");
+  const txt = JSON.stringify(rows, null, 2);
+  const blob = new Blob([txt], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `compare_output_${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// -----------------------------
+// Compare button action
+// -----------------------------
 document.getElementById("compareBtn").addEventListener("click", async () => {
   const file1 = document.getElementById("file1").files[0];
   const file2 = document.getElementById("file2").files[0];
   const keyCol = document.getElementById("keyColumn").value.trim();
-  const option = document.getElementById("compareOption").value;
-  const formats = [...document.querySelectorAll(".formats input:checked")].map(cb => cb.value);
-  const progress = document.getElementById("progressBar");
-  const output = document.getElementById("output");
+  if (!file1 || !file2 || !keyCol) return alert("Please select both files and a key column.");
 
-  output.textContent = "";
-  progress.value = 0;
-
-  if (!file1 || !file2 || !keyCol) {
-    alert("Please select both files and a key column.");
-    return;
-  }
-
+  progressEl.value = 5;
+  resultsInfo.textContent = "Reading files...";
   try {
-    progress.value = 10;
     const df1 = await readFile(file1);
-    progress.value = 40;
+    progressEl.value = 30;
     const df2 = await readFile(file2);
-    progress.value = 60;
-
-    const { matching, nonMatching } = compareData(df1, df2, keyCol, option);
-    progress.value = 80;
-
-    formats.forEach(fmt => {
-      downloadData(matching, "Matching", fmt);
-      if (nonMatching.length) downloadData(nonMatching, "NonMatching", fmt);
-    });
-
-    progress.value = 100;
-    output.textContent = "Comparison complete! Files downloaded.";
+    progressEl.value = 60;
+    const { matching, nonMatching } = compareData(df1, df2, keyCol);
+    comparedResults = { matching, nonMatching };
+    renderResultsTables(matching, nonMatching);
+    progressEl.value = 100;
+    resultsInfo.textContent = `Comparison complete: ${matching.length} matching, ${nonMatching.length} non-matching rows.`;
   } catch (err) {
     console.error(err);
     alert("Error: " + err);
   }
 });
+
+// -----------------------------
+// Export buttons
+// -----------------------------
+document.getElementById("export-xlsx").addEventListener("click", () => {
+  const all = [...comparedResults.matching, ...comparedResults.nonMatching];
+  exportToXlsx(all);
+});
+document.getElementById("export-csv").addEventListener("click", () => {
+  const all = [...comparedResults.matching, ...comparedResults.nonMatching];
+  exportToCsv(all);
+});
+document.getElementById("export-json").addEventListener("click", () => {
+  const all = [...comparedResults.matching, ...comparedResults.nonMatching];
+  exportToJson(all);
+});
+
+// Theme toggle
+const toggleTheme = document.getElementById("toggle-theme");
+function applyTheme(isDark) {
+  document.body.classList.toggle("dark", isDark);
+  localStorage.setItem("dkp_darkmode", isDark ? "1" : "0");
+  toggleTheme.checked = isDark;
+}
+toggleTheme.addEventListener("change", (e) => applyTheme(e.target.checked));
+applyTheme(localStorage.getItem("dkp_darkmode") === "1");
+
+// Hamburger menu
+const hamburger = document.getElementById("hamburger");
+const navLinks = document.getElementById("nav-links");
+hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+
 </script>
 </body>
 </html>
