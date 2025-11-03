@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<title>DKP stats</title>
+
+<!-- DataTables v2 -->
+<link rel="stylesheet" href="styles2.css">
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/dataTables.buttons.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.dataTables.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.colVis.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+
+</head>
+<body>
+
+    <header class="navbar">
+      <div class="nav-container">
+        <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+        <div class="nav-links" id="nav-links">
+        </div>
+        <label class="theme-toggle">
+          🌞
+          <input type="checkbox" id="toggle-theme">
+          <span class="toggle-slider"></span>
+          🌙
+        </label>
+      </div>
+    </header>
+
+<div class="left_column"><p></p>
+   <div id="playerstopc">
+   <table id="playerstop-table" class="playerstop"></table>
+   </div>
+</div>
+<div class="center_column">
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        Loading data...
+    </div>
+    <div id="top-players"></div>
+    <table id="data-table" class="dataTable"></table>
+    <div id="bottom-totals"></div>
+    <div id="charts-container">
+        <canvas id="chart4"></canvas>
+    </div>
+    <div id="charts-container2">
+        <canvas id="chart5"></canvas>
+    </div>
+    <div id="charts-container3">
+        <canvas id="chart6"></canvas>
+    </div>
+    <div id="charts-container4">
+        <canvas id="chart7"></canvas>
+    </div>
+</div>
+<div class="right_column"><p></p></div>
+
+<script>
+const CONFIG = {
+  source: "google",
+  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
+};
+
+const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
+const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9, 7];
+const selectedColumnsTop = [0, 1, 9];
+
+let dataTableInstance = null;
+let googleSheetId = null;
+let googleSheetNames = [];
+let googleSheetsData = {};
+let currentSource = null;
+let charts = {};
+let tableClickHandler = null;
+
+function initCharts() {
+  const chartConfigs = [
+    { id: "chart4", label: "T4 kills" },
+    { id: "chart5", label: "T5 kills" },
+    { id: "chart6", label: "Deads gained" },
+    { id: "chart7", label: "KP gained" }
+  ];
+
+  const chartTextColor = getComputedStyle(document.body).getPropertyValue("--chart-text").trim();
+  const chartGridColor = getComputedStyle(document.body).getPropertyValue("--chart-grid").trim();
+  const chartLineColor = getComputedStyle(document.body).getPropertyValue("--chart-line").trim();
+
+  chartConfigs.forEach(cfg => {
+    const ctx = document.getElementById(cfg.id).getContext("2d");
+    charts[cfg.id] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: cfg.label,
+          data: [],
+          borderColor: chartLineColor,
+          backgroundColor: chartLineColor + "33",
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: { color: chartTextColor }
+          }
+        },
+        scales: {
+          x: { ticks: { color: chartTextColor },
+               grid: { color: chartGridColor } 
+             },
+          y: { ticks: { color: chartTextColor },
+               grid: { color: chartGridColor } 
+             }
+        }
+      }
+    });
+  });
+}
+
+function removeEmptyRows(rows) {
+  return rows.filter(row => row.some(cell => cell && String(cell).trim() !== ""));
+}
+
+function resetCharts() {
+  Object.values(charts).forEach(chart => {
+    chart.data.labels = [];
+    chart.data.datasets.forEach(ds => ds.data = []);
+    chart.update();
+  });
+}
+function getSheetDiffsForPlayers(playerId) {
+  let lastRows;
+
+  if (currentSource === "google") {
+    const lastSheet = googleSheetNames[googleSheetNames.length - 1];
+    lastRows = (googleSheetsData[lastSheet] || []).slice(1);
+  }
+
+  if (!lastRows) return null;
+
+  const lastRow = lastRows.find(r => String(r[0]).trim() === String(playerId).trim());
+  if (!lastRow) return null;
+
+  return {
+    3: parseFloat(lastRow[3]) || 0,
+    4: parseFloat(lastRow[4]) || 0,
+    5: parseFloat(lastRow[5]) || 0,
+    6: parseFloat(lastRow[6]) || 0,
+
+    // still mapping extra columns directly from last sheet
+    2: parseFloat(lastRow[16]) || 0,
+    12: parseFloat(lastRow[4]) || 0,
+    13: parseFloat(lastRow[5]) || 0,
+    14: parseFloat(lastRow[3]) || 0,
+    15: parseFloat(lastRow[6]) || 0,
+  };
+}
+
+function formatNumber(num) {
+  if (num === null || num === undefined || isNaN(num)) return "";
+  return Number(num).toLocaleString("en-US");
+}
+
+function renderTableFiltered(headers, rows, selectedCols) {
+  resetCharts(); // clear old chart data
+  rows = removeEmptyRows(rows);
+  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
+
+  // ----------------------------
+  // 1️⃣ Top players section
+  // ----------------------------
+  const dkpColIndex = selectedCols.indexOf(8);
+  if (dkpColIndex !== -1) {
+    rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
+    const top3 = rows.slice(0, 3);
+    const topContainer = document.getElementById("top-players");
+    topContainer.innerHTML = "";
+    top3.forEach((player, idx) => {
+      const id = player[0] ?? "";
+      const name = player[1] ?? "";
+      const box = document.createElement("div");
+      box.className = "player-box";
+      box.innerHTML = `<div class="player-rank">TOP${idx + 1}</div><h3>${name}</h3><p>ID: ${id}</p>`;
+      topContainer.appendChild(box);
+    });
+  }
+
+  // ----------------------------
+  // 2️⃣ Rebuild DataTable
+  // ----------------------------
+  if (dataTableInstance) {
+    dataTableInstance.destroy();
+    dataTableInstance = null;
+  }
+
+  const table = document.getElementById("data-table");
+  table.innerHTML = "";
+
+  // Headers
+  const filteredHeaders = selectedCols.map(i => headers[i] ?? "");
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  const indexTh = document.createElement("th");
+  indexTh.textContent = "#";
+  headRow.appendChild(indexTh);
+  filteredHeaders.forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h ?? "";
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+
+  // ----------------------------
+  // 3️⃣ Table Body with Bars
+  // ----------------------------
+  const tbody = document.createElement("tbody");
+  const columnMaxValues = {};
+
+  // Precompute max for each column (for bar scaling)
+  selectedCols.forEach(col => {
+    const values = rows.map(r => parseFloat(r[col]) || 0);
+    columnMaxValues[col] = Math.max(...values);
+  });
+
+  rows.forEach((row, rowIdx) => {
+    const tr = document.createElement("tr");
+
+    const indexTd = document.createElement("td");
+    indexTd.textContent = rowIdx + 1;
+    tr.appendChild(indexTd);
+    tr.dataset.originalIndex = rowIdx + 1;
+
+    selectedCols.forEach(colIndex => {
+      const td = document.createElement("td");
+      // ---------------- Value formatting ----------------
+      let rawVal = row[colIndex];
+      let val = isNaN(parseFloat(rawVal)) ? rawVal : parseFloat(rawVal);
+      
+      const shortenableCols = [2, 12, 13, 14, 15, 8]; // Power, T4, T5, KP, Deads
+      let displayVal;
+      
+      if (colIndex === 0) {
+        // ID column: show as-is, no separators
+        displayVal = String(rawVal);
+      } else if (shortenableCols.includes(colIndex)) {
+        displayVal = formatNumber(val);
+      } else if (typeof rawVal === "string") {
+        displayVal = rawVal;
+      } else {
+        displayVal = val.toLocaleString("en-US").replace(/\s/g, "");
+      }
+    
+      // wrapper container for all elements
+      const wrapper = document.createElement("div");
+      wrapper.style.display = "flex";
+      wrapper.style.flexDirection = "column";
+      wrapper.style.alignItems = "center";
+      wrapper.style.gap = "4px";
+    
+      // 1️⃣ value text
+      const text = document.createElement("div");
+      text.textContent = displayVal;
+      text.style.fontWeight = "500";
+      text.style.fontSize = "13px";
+      wrapper.appendChild(text);
+    
+      // detect theme dynamically
+      const isDark = document.body.classList.contains("dark");
+    
+      // 2️⃣ diff box (under value)
+      let diffBox = null;
+      if ([2, 12, 13, 14, 15].includes(colIndex)) {
+        const diffs = getSheetDiffsForPlayers(row[0]);
+        if (diffs) {
+          const diff = diffs[colIndex] ?? 0;
+          if (diff !== 0) {
+            const diffBox = document.createElement("div");
+            diffBox.className = `diff-box ${diff > 0 ? "diff-positive" : "diff-negative"}`;
+            diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
+            wrapper.appendChild(diffBox);
+          }
+        }
+      }
+
+      // 3️⃣ progress bar (under diff box)
+      const progressCols = [2, 8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
+      if (progressCols.includes(colIndex)) {
+        const barContainer = document.createElement("div");
+        barContainer.style.width = "80%";
+        barContainer.style.height = "6px";
+        barContainer.style.borderRadius = "4px";
+        barContainer.style.marginTop = "3px";
+        barContainer.style.background = isDark
+          ? "rgba(255,255,255,0.1)"
+          : "rgba(0,0,0,0.1)";
+    
+        const bar = document.createElement("div");
+        bar.style.height = "100%";
+        bar.style.borderRadius = "4px";
+    
+        const colors = {
+          12: "#00bcd4", // T4 kills
+          13: "#ffc107", // T5 kills
+          14: "#e91e63", // KP
+          15: "#f44336", // Deads
+          8: "#4caf50"   // Power
+        };
+        bar.style.background = colors[colIndex] || "#2196f3";
+    
+        const maxVal = columnMaxValues[colIndex];
+        bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
+    
+        barContainer.appendChild(bar);
+        wrapper.appendChild(barContainer);
+      }
+    
+      td.appendChild(wrapper);
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+
+  // ----------------------------
+  // 4️⃣ Initialize DataTable
+  // ----------------------------
+  dataTableInstance = new DataTable("#data-table", {
+    paging: true,
+    scrollY: "50vh",
+    scrollX: "100%",
+    scrollCollapse: true,
+    order: [],
+    searching: true,
+    info: false,
+    autoWidth: true,
+    pageLength: 20,
+    columnDefs: [
+      { orderable: false, searchable: false, targets: 0 },
+      { targets: [10], visible: false }
+    ],
+    language: { searchPlaceholder: "Search by name or ID", search: "" },
+    layout: {
+      topStart: {
+        buttons: ["csv", "excel", "colvis"]
+      },
+      bottomStart: {
+        pageLength: { menu: [20, 40, 60, 80, 100] }
+      }
+    }
+  });
+
+  // Click to update charts
+  document.querySelector("#data-table tbody").addEventListener("click", function (e) {
+    const row = e.target.closest("tr");
+    if (!row) return;
+
+    document.querySelectorAll("#data-table tbody tr").forEach(r => r.classList.remove("selected"));
+    row.classList.add("selected");
+
+    const cells = row.querySelectorAll("td");
+    if (cells.length < 2) return;
+    const playerId = cells[1].textContent.trim(); // column 1 = ID
+    updateChartsForPlayer(playerId);
+  });
+
+  // Column visibility persistence
+  const savedVisibility = JSON.parse(localStorage.getItem("colVisibility") || "{}");
+  Object.keys(savedVisibility).forEach(idx => {
+    dataTableInstance.column(idx).visible(savedVisibility[idx]);
+  });
+
+  dataTableInstance.on("column-visibility.dt", function (e, settings, column, state) {
+    const vis = JSON.parse(localStorage.getItem("colVisibility") || "{}");
+    vis[column] = state;
+    localStorage.setItem("colVisibility", JSON.stringify(vis));
+  });
+
+  // ----------------------------
+  // 5️⃣ Totals at bottom
+  // ----------------------------
+  const totalsContainer = document.getElementById("bottom-totals");
+  totalsContainer.innerHTML = "";
+  const totalDefs = [
+    { label: "Total T4 kills gained", col: 4 },
+    { label: "Total T5 kills gained", col: 5 },
+    { label: "Total Deads gained", col: 6 },
+    { label: "Total KP gained", col: 3 }
+  ];
+  totalDefs.forEach(item => {
+    let sum = 0;
+    rows.forEach(row => {
+      const diffs = getSheetDiffsForPlayers(row[0]);
+      if (diffs) sum += diffs[item.col] || 0;
+    });
+    const box = document.createElement("div");
+    box.className = "stat-box";
+    box.innerHTML = `<h3>${item.label}</h3><p>${sum.toLocaleString()}</p>`;
+    totalsContainer.appendChild(box);
+  });
+}
+
+function renderplayerstoptable(headers, rows) {
+  rows = removeEmptyRows(rows);
+  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
+
+  // Sort by DKP (col 8) descending
+  rows.sort((a, b) => (parseFloat(b[8]) || 0) - (parseFloat(a[8]) || 0));
+
+  // Take top N (optional — e.g., top 10)
+  const topRows = rows.slice(0, 18);
+
+  // Destroy old table if exists
+  if ($.fn.DataTable.isDataTable("#playerstop-table")) {
+    $("#playerstop-table").DataTable().destroy();
+  }
+
+  const table = document.getElementById("playerstop-table");
+  table.innerHTML = "";
+
+  // Headers (ID, Name, DKP)
+  const filteredHeaders = [headers[0], headers[1], headers[8]];
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  const indexTh = document.createElement("th");
+  indexTh.textContent = "#";
+  headRow.appendChild(indexTh);
+  filteredHeaders.forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h ?? "";
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+
+  // Body
+  const tbody = document.createElement("tbody");
+  topRows.forEach((row, rowIdx) => {
+    const tr = document.createElement("tr");
+    const indexTd = document.createElement("td");
+    indexTd.textContent = rowIdx + 1;
+    tr.appendChild(indexTd);
+
+    [0, 1, 8].forEach(colIndex => {
+      const td = document.createElement("td");
+      let val = row[colIndex];
+      if (colIndex === 8) val = formatNumber(val); // DKP formatting
+      td.textContent = val;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+
+    // Initialize minimal DataTable
+  new DataTable("#playerstop-table", {
+    paging: false,
+    searching: false,
+    info: false,
+    ordering: true,
+    scrollY: "50vh",
+    scrollCollapse: true,
+    pageLength: 18,
+    order: [[3, "desc"]],
+    columnDefs: [
+      { orderable: false, targets: 0 }
+    ],
+    layout: {
+      topStart: {
+        buttons: [
+          {
+            extend: "copy",
+            text: "Copy Top18 Players", // ← your custom text
+          }
+        ]
+      }
+    }
+  });
+}
+  
+function updateChartsForPlayer(playerId) {
+  const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
+
+  if (currentSource === "google" && Object.keys(googleSheetsData).length) {
+    const sheetNames = googleSheetNames;
+    sheetNames.forEach(sheetName => {
+      const rows = googleSheetsData[sheetName] || [];
+      const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
+      chartData.chart4.push(playerRow?.[4] || 0);
+      chartData.chart5.push(playerRow?.[5] || 0);
+      chartData.chart6.push(playerRow?.[6] || 0);
+      chartData.chart7.push(playerRow?.[3] || 0);
+    });
+    Object.keys(chartData).forEach(chartId => {
+      charts[chartId].data.labels = sheetNames;
+      charts[chartId].data.datasets[0].data = chartData[chartId];
+      charts[chartId].update();
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
+  }
+  initCharts();
+  document.getElementById("loading-overlay").style.display = "flex";
+  try {
+     if (CONFIG.source === "google") {
+       resetCharts();
+       const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+       if (!match) return alert("Invalid Google Sheets URL");
+       googleSheetId = match[1];
+       try {
+         const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
+         if (!metaRes.ok) throw new Error("Google Sheets API error");
+         const meta = await metaRes.json();
+         if (!meta.sheets) throw new Error("No sheets found or access denied.");
+      
+         googleSheetNames = meta.sheets.map(s => s.properties.title);
+         currentSource = "google";
+         googleSheetsData = {};
+         await Promise.all(
+           googleSheetNames.map(async name => {
+             const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
+             if (!res.ok) throw new Error("Error fetching sheet: " + name);
+             const data = await res.json();
+             googleSheetsData[name] = data.values || [];
+           })
+         );
+      
+         const firstSheet = googleSheetNames[googleSheetNames.length - 1];
+         renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+         renderplayerstoptable(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1));
+       } catch (err) {
+         alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
+       }
+     }
+   } finally {
+     document.getElementById("loading-overlay").style.display = "none";
+   }
+});
+
+const themeToggle = document.getElementById("toggle-theme");
+
+// Load saved theme
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark");
+  themeToggle.checked = true;
+}
+
+themeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark", themeToggle.checked);
+  localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+
+  // Update chart colors
+  const chartTextColor = getComputedStyle(document.body).getPropertyValue("--chart-text").trim();
+  const chartGridColor = getComputedStyle(document.body).getPropertyValue("--chart-grid").trim();
+  const chartLineColor = getComputedStyle(document.body).getPropertyValue("--chart-line").trim();
+
+  Object.values(charts).forEach(chart => {
+    chart.options.plugins.legend.labels.color = chartTextColor;
+    chart.options.scales.x.ticks.color = chartTextColor;
+    chart.options.scales.y.ticks.color = chartTextColor;
+    chart.options.scales.x.grid.color = chartGridColor;
+    chart.options.scales.y.grid.color = chartGridColor;
+    chart.data.datasets[0].borderColor = chartLineColor;
+    chart.data.datasets[0].backgroundColor = chartLineColor + "33";
+    chart.update();
+  });
+});
+
+const hamburger = document.getElementById("hamburger");
+const navLinks = document.getElementById("nav-links");
+hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+</script>
+</body>
+</html>
