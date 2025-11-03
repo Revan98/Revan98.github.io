@@ -322,6 +322,12 @@ body {
   float: left;
   width: 60%;
 }
+@media (max-width: 768px) {
+  .left_column, .right_column, .center_column {
+    float: none;
+    width: 100%;
+  }
+}
 /* =========================================================
    8. CHARTS
    ========================================================= */
