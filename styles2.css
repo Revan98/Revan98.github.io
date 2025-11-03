@@ -322,12 +322,36 @@ body {
   float: left;
   width: 60%;
 }
-@media (max-width: 768px) {
-  .left_column, .right_column, .center_column {
+/* Mobile-friendly column stacking */
+@media (max-width: 992px) {
+  .left_column,
+  .center_column,
+  .right_column {
     float: none;
     width: 100%;
+    display: block;
+  }
+
+  /* Ensure right_column (Top 18) appears above main table on mobile */
+  .right_column {
+    order: 1;
+  }
+
+  .center_column {
+    order: 2;
+  }
+
+  .left_column {
+    order: 3;
+  }
+
+  /* Apply flex container to parent if needed */
+  .main-container {
+    display: flex;
+    flex-direction: column;
   }
 }
+
 /* =========================================================
    8. CHARTS
    ========================================================= */
