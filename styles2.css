@@ -247,15 +247,15 @@ body {
    10. MISCELLANEOUS
    ========================================================= */
 .left_column {
-  float: left;
+
   width: 20%;
 }
 .right_column {
-  float: left;
+
   width: 20%;
 }
 .center_column {
-  float: left;
+
   width: 60%;
 }
 /* =========================================================
