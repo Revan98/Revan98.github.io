@@ -300,24 +300,35 @@
 
 
 
-/* --- Modern Navbar --- */
+/* --- Modern Sticky Navbar --- */
 .navbar {
-  background: var(--card);
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  padding: 10px 20px;
-  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  padding: 10px 24px;
 }
 
+/* Layout container */
 .nav-container {
+  max-width: 1100px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+/* Center the links */
 .nav-links {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  gap: 20px;
+  gap: 28px;
 }
 
 .nav-links a {
@@ -336,7 +347,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
   cursor: pointer;
   background: none;
   border: none;
@@ -379,8 +389,10 @@
 
 /* --- Dark Mode Adjustments --- */
 body.dark .navbar {
-  background: #1a1a1a;
-  color: #eee;
+  background: rgba(26, 26, 26, 0.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
 }
 
 body.dark .nav-links a {
@@ -394,6 +406,7 @@ body.dark .nav-links a:hover {
 body.dark .theme-toggle {
   color: #eee;
 }
+
 
   </style> 
   
