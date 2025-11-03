@@ -411,7 +411,7 @@
     right: 0;
     flex-direction: column;
     align-items: center;
-    background: rgba(26, 26, 26, 0.85);
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 16px;
     margin: 0 auto;
     width: 90%;
@@ -423,6 +423,10 @@
     transition: transform 0.25s ease;
   }
 
+  body.dark .nav-links {
+    rgba(26, 26, 26, 0.85);
+  }
+  
   .nav-links.show {
     transform: scaleY(1);
   }
