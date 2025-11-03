@@ -246,17 +246,20 @@ body {
 /* =========================================================
    10. MISCELLANEOUS
    ========================================================= */
+.layout {
+  display: flex;
+}
+
 .left_column {
-  float: left;
-  width: 20%;
+  flex: 0 0 20%;
 }
-.right_column {
-  float: left;
-  width: 20%;
-}
+
 .center_column {
-  float: left;
-  width: 60%;
+  flex: 1 1 60%;
+}
+
+.right_column {
+  flex: 0 0 20%;
 }
 /* =========================================================
    8. CHARTS
