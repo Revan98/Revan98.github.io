@@ -251,20 +251,20 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
 }
 
 .left_column {
-  flex: 1 1 20%;
+  flex: 0 0 20%;
 }
 
 .center_column {
-  flex: 1 1 60%;
+  flex: 0 0 60%;
 }
 
 .right_column {
-  flex: 1 1 20%;
+  flex: 0 0 20%;
 }
 /* =========================================================
    8. CHARTS
