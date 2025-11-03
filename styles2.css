@@ -68,7 +68,6 @@ body {
    border-radius: 20px;
    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
    padding: 10px 24px;
-   transition: all 0.3s ease;
  }
  
  .nav-container {
@@ -88,7 +87,6 @@ body {
    text-decoration: none;
    font-weight: 500;
    color: #053b6b;
-   transition: color 0.3s;
  }
  
  .nav-links a:hover {
@@ -117,7 +115,6 @@ body {
    height: 24px;
    background-color: #ccc;
    border-radius: 12px;
-   transition: background-color 0.3s;
  }
  
  .toggle-slider::before {
@@ -129,7 +126,6 @@ body {
    height: 18px;
    background-color: white;
    border-radius: 50%;
-   transition: transform 0.3s;
  }
  
  .theme-toggle input:checked + .toggle-slider {
@@ -409,7 +405,6 @@ div.dt-buttons button {
   padding: 6px 12px !important;
   font-size: 13px !important;
   cursor: pointer;
-  transition: background 0.2s ease;
   margin: 0 4px !important;
 }
 
@@ -712,7 +707,6 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
      transform: scaleY(0);
      transform-origin: top;
-     transition: transform 0.25s ease;
    }
 
    body.dark .nav-links {
