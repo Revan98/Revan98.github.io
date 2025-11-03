@@ -169,18 +169,25 @@ body {
  /* =========================================================
    10. MISCELLANEOUS
    ========================================================= */
+/* Default (desktop) */
 .row {
-    display:flex;
-    flex-wrap:wrap;
+  display: flex;
+  flex-wrap: nowrap;
 }
 
-.left, .right {
+.left {
   flex: 0 0 20%;
+  max-width: 20%;
 }
 
 .middle {
-  flex: 1;
-  min-width: 0; 
+  flex: 0 0 60%;
+  max-width: 60%;
+}
+
+.right {
+  flex: 0 0 20%;
+  max-width: 20%;
 }
 /* =========================================================
    7. PLAYER & STATS BOXES
@@ -725,28 +732,39 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
      margin-left: 12px;
    }
 
-  #top-players,
-  #bottom-totals {
-    flex-direction: column;
-    align-items: center;
+ }
+/* Tablet view (768px–991px) */
+@media (max-width: 991px) {
+  .row {
+    flex-wrap: wrap;
   }
-
-  #top-players .player-box,
-  #bottom-totals .stat-box {
-    width: 100%;
-    max-width: 280px;
+  .left,
+  .middle,
+  .right {
+    flex: 0 0 100%;
+    max-width: 100%;
   }
-
-  #charts-container {
-    grid-template-columns: 1fr;
-    max-width: 90vw;
+  .left {
+    order: 1;
   }
+  .middle {
+    order: 2;
+  }
+  .right {
+    order: 3;
+  }
+}
 
+/* Mobile view (<768px) */
+@media (max-width: 767px) {
   .row {
     flex-direction: column;
   }
-  .left, .middle, .right {
-    flex: 0 0 auto;
+  .left,
+  .middle,
+  .right {
     width: 100%;
+    flex: 0 0 auto;
+    max-width: 100%;
   }
- }
+}
