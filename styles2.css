@@ -174,11 +174,8 @@ body {
    10. MISCELLANEOUS
    ========================================================= */
 .row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-  width: 100%;
+    display:flex;
+    flex-wrap:wrap;
 }
 
 .left, .right {
