@@ -166,7 +166,27 @@ body {
  body.dark .hamburger {
    color: #eee;
  }
- 
+ /* =========================================================
+   10. MISCELLANEOUS
+   ========================================================= */
+.left_column {
+  float: left;
+  width: 20%;
+}
+.right_column {
+  float: left;
+  width: 20%;
+}
+.center_column {
+  float: left;
+  width: 60%;
+}
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
 /* =========================================================
    7. PLAYER & STATS BOXES
    ========================================================= */
@@ -242,21 +262,6 @@ body {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-/* =========================================================
-   10. MISCELLANEOUS
-   ========================================================= */
-.left_column {
-
-  width: 20%;
-}
-.right_column {
-
-  width: 20%;
-}
-.center_column {
-
-  width: 60%;
 }
 /* =========================================================
    8. CHARTS
