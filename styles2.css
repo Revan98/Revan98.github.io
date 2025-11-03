@@ -326,7 +326,11 @@ body {
 @media (max-width: 992px) {
   .left_column,
   .center_column,
-  .right_column {
+  .right_column,
+  #charts-container1,
+  #charts-container2,
+  #charts-container3,
+  #charts-container4 {
     float: none;
     width: 100%;
     display: block;
@@ -344,6 +348,21 @@ body {
   .left_column {
     order: 3;
   }
+  #charts-container1 {
+    order: 4;
+  }
+
+  #charts-container2 {
+    order: 5;
+  }
+
+  #charts-container3 {
+    order: 6;
+  }
+  #charts-container4 {
+    order: 7;
+  }
+
 
   /* Apply flex container to parent if needed */
   .main-container {
@@ -396,6 +415,7 @@ body {
     background: var(--table-bg);
     border-radius: 8px;
 }
+
 /* =========================================================
    4. DATA TABLE
    ========================================================= */
