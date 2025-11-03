@@ -810,41 +810,51 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
      margin-left: 12px;
    }
 
-  #top-players,
-  #bottom-totals {
+  /* --- Responsive columns --- */
+  .layout {
     flex-direction: column;
     align-items: center;
-  }
-
-  #top-players .player-box,
-  #bottom-totals .stat-box {
+    gap: 24px;
     width: 100%;
-    max-width: 280px;
-  }
-
-  #charts-container {
-    grid-template-columns: 1fr;
-    max-width: 90vw;
   }
 
   .left_column,
   .center_column,
   .right_column {
-    float: none;
+    flex: 1 1 100%;
     width: 100%;
-    display: block;
+    max-width: 95vw;
   }
 
-  /* Ensure right_column (Top 18) appears above main table on mobile */
-  .right_column {
-    order: 1;
+  /* Optional: Change order on mobile */
+  .right_column { order: 1; }
+  .center_column { order: 2; }
+  .left_column  { order: 3; }
+
+  /* --- Responsive charts and tables --- */
+  #top-players,
+  #bottom-totals {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
   }
 
-  .center_column {
-    order: 2;
+  #top-players .player-box,
+  #bottom-totals .stat-box {
+    width: 100%;
+    max-width: 320px;
   }
 
-  .left_column {
-    order: 3;
+  #charts-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 95vw;
   }
- }
+
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
