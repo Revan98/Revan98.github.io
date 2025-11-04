@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel Merge Tool</title>
+  <link rel="stylesheet" href="compare.css">
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <header class="navbar">
+      <div class="nav-container">
+        <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+        <div class="nav-links" id="nav-links">
+          <a href="index3.html">Merge</a>
+          <a href="index4.html">DKP Calculator</a>
+          <a href="index2.html">Compare</a>
+        </div>
+        <label class="theme-toggle">
+          🌞
+          <input type="checkbox" id="toggle-theme">
+          <span class="toggle-slider"></span>
+          🌙
+        </label>
+      </div>
+    </header>
+  
+  <div class="container">
+    <section class="card">
+      <div class="row">
+        <label>File 1 (Base):</label>
+        <input type="file" id="file1" accept=".xlsx" />
+      </div>
+
+      <div class="row">
+        <label>File 2 (Merge Source):</label>
+        <input type="file" id="file2" accept=".xlsx" />
+      </div>
+      
+      <div id="columnSelectors" style="display:none;">
+        <div class="row">
+          <label for="idColumn">Select ID column:</label>
+          <select id="idColumn"></select>
+        </div>
+
+        <div class="row">
+          <label for="mergeColumn">Select column to merge from File 2:</label>
+          <select id="mergeColumn"></select>
+        </div>
+      </div>
+      
+      <div class="row">
+        <button id="mergeBtn" class="primary" disabled>Merge</button>
+        <progress id="progress" max="100" value="0"></progress>
+      </div>
+      
+      <div class="row">
+          <button id="export-xlsx">Export XLSX</button>
+          <button id="export-csv">Export CSV</button>
+          <button id="export-json">Export JSON</button>
+      </div>
+      
+      <div id="merge-results-info" class="muted">No merged data yet.</div>
+      <div id="merge-results-wrap"></div>
+    </section>
+  </div>
+  
+<script src="compare.js"> </script>
+</body>
+</html>
