@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DKP Web App (Browser only)</title>
+  <link rel="stylesheet" href="dkp.css">
+  <!-- SheetJS for Excel/CSV read & write -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- localForage (IndexedDB wrapper) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+
+</head>
+<body>
+ 
+    <header class="navbar">
+      <div class="nav-container">
+        <!-- Hamburger for mobile -->
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          ☰
+        </button>
+    
+        <div class="nav-links" id="nav-links">
+          <a href="index3.html">Merge</a>
+          <a href="index4.html">DKP Calculator</a>
+          <a href="index2.html">Compare</a>
+        </div>
+    
+        <!-- 🌙 Theme toggle -->
+        <label class="theme-toggle">
+          🌞
+          <input type="checkbox" id="toggle-theme">
+          <span class="toggle-slider"></span>
+          🌙
+        </label>
+      </div>
+    </header>
+
+ <div class="container">
+
+    <!-- SETTINGS (top) -->
+    <section class="card">
+      <h2>Settings</h2>
+      <div class="row">
+        <button id="export-settings">💾 Export Settings (.json)</button>
+        <button id="import-settings">📂 Import Settings (.json)</button>
+        <input id="import-settings-file" type="file" accept=".json" style="display:none" />
+        <button id="clear-min-dkp" class="secondary">🧹 Clear all saved Min DKP</button>
+        <div class="muted" style="margin-left:10px;">Export/import includes multipliers, power ranges, vacation list and min_dkp.</div>
+      </div>
+    </section>
+
+    <main>
+      <section class="card">
+        <h2>Multipliers</h2>
+        <div class="row">
+          <label>T4: <input id="t4" type="number" step="0.01"></label>
+          <label>T5: <input id="t5" type="number" step="0.01"></label>
+          <label>Deads: <input id="deads" type="number" step="0.01"></label>
+          <button id="save-multipliers">Save</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Power Ranges (Min → Max optional → %)</h2>
+        <div id="power-ranges-wrap">
+          <table id="power-ranges-table">
+            <thead><tr><th>Min</th><th>Max</th><th>%</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="row">
+            <input id="pr-min" placeholder="Min power (integer)">
+            <input id="pr-max" placeholder="Max power (optional)">
+            <input id="pr-percent" placeholder="Percentage (e.g. 0.6)">
+            <button id="pr-add">Add / Update</button>
+            <button id="pr-save">Save ranges</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Vacation List</h2>
+        <div class="row">
+          <input id="vacation-input" placeholder="IDs, comma separated (e.g. 123,456)">
+          <button id="vac-save">Save Vacation List</button>
+          <button id="vac-clear" class="secondary">Clear Vacation List</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Input Scans</h2>
+        <div class="row">
+          <div class="file-col">
+            <label>First scan (old): <input id="file1" type="file" accept=".xlsx,.xls,.csv"></label>
+            <small>Header names supported: ID, Name, Power, Killpoints, Deads, T4 Kills, T5 Kills, CH</small>
+          </div>
+          <div class="file-col">
+            <label>Latest scan (new): <input id="file2" type="file" accept=".xlsx,.xls,.csv"></label>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>DKP Mode:
+            <label><input name="mode" value="lilithdata" type="radio" checked> Lilith</label>
+            <label><input name="mode" value="default" type="radio"> Default</label>
+          </label>
+        </div>
+
+        <div class="row">
+          <button id="run-dkp" class="primary">Calculate DKP</button>
+          <progress id="progress" max="100" value="0"></progress>
+        </div>
+
+        <div class="row">
+          <button id="export-xlsx">Export XLSX</button>
+          <button id="export-csv">Export CSV</button>
+          <button id="export-json">Export JSON</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Results (Top rows)</h2>
+        <div id="results-info" class="muted">No results yet.</div>
+        <div id="results-table-wrap"></div>
+      </section>
+
+      <footer class="muted">
+        <small>Data persisted locally with IndexedDB (localForage). Min DKP values are saved and reused across runs.</small>
+      </footer>
+    </main>
+  </div>
+
+<script src="dkp.js"></script>
+</body>
+</html>
