@@ -68,14 +68,19 @@ function renderTableFiltered(headers, rows) {
     indexTd.textContent = rowIdx + 1;
     tr.appendChild(indexTd);
 
-    headers.forEach((_, colIdx) => {
-      const td = document.createElement("td");
-      const rawVal = row[colIdx] ?? "";
+  headers.forEach((_, colIdx) => {
+    const td = document.createElement("td");
+    const rawVal = row[colIdx] ?? "";
+  
+    // Exclude col0 (first column) from number formatting
+    if (colIdx === 0) {
+      td.textContent = rawVal;
+    } else {
       const val = parseFloat(rawVal);
       td.textContent = isNaN(val) ? rawVal : formatNumber(val);
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
+    }
+  
+    tr.appendChild(td);
   });
 
   table.appendChild(thead);
