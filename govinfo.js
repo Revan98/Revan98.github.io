@@ -71,19 +71,11 @@ function renderTableFiltered(headers, rows) {
     headers.forEach((_, colIdx) => {
       const td = document.createElement("td");
       const rawVal = row[colIdx] ?? "";
-
-      // Exclude columns 0, 1, and 2 from thousand separator formatting
-      if ([0, 1, 2].includes(colIdx)) {
-        td.textContent = rawVal;
-      } else {
-        const val = parseFloat(rawVal);
-        td.textContent = isNaN(val) ? rawVal : formatNumber(val);
-      }
-
+      const val = parseFloat(rawVal);
+      td.textContent = isNaN(val) ? rawVal : formatNumber(val);
       tr.appendChild(td);
     });
-
-    tbody.appendChild(tr); // ✅ you were missing this in your version
+    tbody.appendChild(tr);
   });
 
   table.appendChild(thead);
