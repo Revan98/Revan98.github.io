@@ -68,19 +68,22 @@ function renderTableFiltered(headers, rows) {
     indexTd.textContent = rowIdx + 1;
     tr.appendChild(indexTd);
 
-  headers.forEach((_, colIdx) => {
-    const td = document.createElement("td");
-    const rawVal = row[colIdx] ?? "";
-  
-    // Exclude columns 0, 1, and 2 from thousand separator formatting
-    if ([0, 1, 2].includes(colIdx)) {
-      td.textContent = rawVal;
-    } else {
-      const val = parseFloat(rawVal);
-      td.textContent = isNaN(val) ? rawVal : formatNumber(val);
-    }
-  
-    tr.appendChild(td);
+    headers.forEach((_, colIdx) => {
+      const td = document.createElement("td");
+      const rawVal = row[colIdx] ?? "";
+
+      // Exclude columns 0, 1, and 2 from thousand separator formatting
+      if ([0, 1, 2].includes(colIdx)) {
+        td.textContent = rawVal;
+      } else {
+        const val = parseFloat(rawVal);
+        td.textContent = isNaN(val) ? rawVal : formatNumber(val);
+      }
+
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr); // ✅ you were missing this in your version
   });
 
   table.appendChild(thead);
