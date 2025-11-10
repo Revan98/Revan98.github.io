@@ -127,23 +127,6 @@ async function loadGoogleSheets() {
     "<p style='text-align:center;margin-top:30px;'>Select a worksheet to display data.</p>";
 }
 
-  // load all sheets in parallel
-  await Promise.all(
-    googleSheetNames.map(async name => {
-      const res = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`
-      );
-      if (!res.ok) throw new Error("Error fetching sheet: " + name);
-      const data = await res.json();
-      googleSheetsData[name] = data.values || [];
-    })
-  );
-
-  // show the latest (last) by default
-  const lastSheet = googleSheetNames[googleSheetNames.length - 1];
-  selector.value = lastSheet;
-  renderCurrentSheet(lastSheet);
-}
 
 function renderCurrentSheet(sheetName) {
   const data = googleSheetsData[sheetName];
