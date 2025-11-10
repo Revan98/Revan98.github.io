@@ -14,6 +14,7 @@
   --checkmark-color: #666;
   --row-selected-bg: #cce5ff;
   --row-selected-text: #000;
+  --chart-line: #007bff;
 }
 
 body.dark {
@@ -26,6 +27,7 @@ body.dark {
   --checkmark-color: white;
   --row-selected-bg: #004085;
   --row-selected-text: #fff;
+  --chart-line: #ff9800;
 }
 
 /* =========================================================
