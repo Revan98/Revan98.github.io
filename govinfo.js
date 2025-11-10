@@ -126,45 +126,45 @@ function renderTableFiltered(headers, rows, selectedCols) {
   });
 }
 
-// --- Data Loading ---
 document.addEventListener("DOMContentLoaded", async () => {
   if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark");
   }
-
+  initCharts();
   document.getElementById("loading-overlay").style.display = "flex";
   try {
-    if (CONFIG.source === "google") {
-      const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-      if (!match) return alert("Invalid Google Sheets URL");
-
-      googleSheetId = match[1];
-      const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
-      if (!metaRes.ok) throw new Error("Google Sheets API error");
-      const meta = await metaRes.json();
-      if (!meta.sheets) throw new Error("No sheets found or access denied.");
-
-      googleSheetNames = meta.sheets.map(s => s.properties.title);
-      currentSource = "google";
-      googleSheetsData = {};
-
-      await Promise.all(
-        googleSheetNames.map(async name => {
-          const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
-          if (!res.ok) throw new Error("Error fetching sheet: " + name);
-          const data = await res.json();
-          googleSheetsData[name] = data.values || [];
-        })
-      );
-
-      const lastSheet = googleSheetNames[googleSheetNames.length - 1];
-      renderTableFiltered(googleSheetsData[lastSheet][0], googleSheetsData[lastSheet].slice(1), selectedColumns);
-    }
-  } catch (err) {
-    alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
-  } finally {
-    document.getElementById("loading-overlay").style.display = "none";
-  }
+     if (CONFIG.source === "google") {
+       resetCharts();
+       const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+       if (!match) return alert("Invalid Google Sheets URL");
+       googleSheetId = match[1];
+       try {
+         const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
+         if (!metaRes.ok) throw new Error("Google Sheets API error");
+         const meta = await metaRes.json();
+         if (!meta.sheets) throw new Error("No sheets found or access denied.");
+      
+         googleSheetNames = meta.sheets.map(s => s.properties.title);
+         currentSource = "google";
+         googleSheetsData = {};
+         await Promise.all(
+           googleSheetNames.map(async name => {
+             const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
+             if (!res.ok) throw new Error("Error fetching sheet: " + name);
+             const data = await res.json();
+             googleSheetsData[name] = data.values || [];
+           })
+         );
+      
+         const firstSheet = googleSheetNames[googleSheetNames.length - 1];
+         renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
+       } catch (err) {
+         alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
+       }
+     }
+   } finally {
+     document.getElementById("loading-overlay").style.display = "none";
+   }
 });
 
 // --- Theme Toggle ---
