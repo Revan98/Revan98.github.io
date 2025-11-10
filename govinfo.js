@@ -67,12 +67,19 @@ function renderTableFiltered(headers, rows) {
     const indexTd = document.createElement("td");
     indexTd.textContent = rowIdx + 1;
     tr.appendChild(indexTd);
-
+  
     headers.forEach((_, colIdx) => {
       const td = document.createElement("td");
       const rawVal = row[colIdx] ?? "";
-      const val = parseFloat(rawVal);
-      td.textContent = isNaN(val) ? rawVal : formatNumber(val);
+  
+      // ✅ Only format numbers for columns AFTER index 5
+      if (colIdx > 5) {
+        const val = parseFloat(rawVal);
+        td.textContent = isNaN(val) ? rawVal : formatNumber(val);
+      } else {
+        td.textContent = rawVal;
+      }
+  
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
