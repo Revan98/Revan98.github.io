@@ -619,4 +619,5 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
 .middlecont {
   margin-top: 50px;
   padding-top:50px;
+  min-width: 700px;
 }
