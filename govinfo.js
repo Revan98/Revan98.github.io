@@ -127,7 +127,22 @@ async function loadGoogleSheets() {
     "<p style='text-align:center;margin-top:30px;'>Select a worksheet to display data.</p>";
 }
 
+document.addEventListener("DOMContentLoaded", async () => {
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
+  }
 
+  document.getElementById("loading-overlay").style.display = "flex";
+  try {
+    if (CONFIG.source === "google") {
+      await loadGoogleSheets(); // loads only sheet names
+    }
+  } catch (err) {
+    alert("Failed to load Google Sheets metadata.\n\n" + err.message);
+  } finally {
+    document.getElementById("loading-overlay").style.display = "none";
+  }
+});
 function renderCurrentSheet(sheetName) {
   const data = googleSheetsData[sheetName];
   if (!data || !data.length) {
@@ -164,22 +179,7 @@ document.getElementById("sheet-selector").addEventListener("change", async e => 
   }
 });
 
-document.addEventListener("DOMContentLoaded", async () => {
-  if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark");
-  }
 
-  document.getElementById("loading-overlay").style.display = "flex";
-  try {
-    if (CONFIG.source === "google") {
-      await loadGoogleSheets(); // loads only sheet names
-    }
-  } catch (err) {
-    alert("Failed to load Google Sheets metadata.\n\n" + err.message);
-  } finally {
-    document.getElementById("loading-overlay").style.display = "none";
-  }
-});
 
 // --- Theme Toggle ---
 const themeToggle = document.getElementById("toggle-theme");
