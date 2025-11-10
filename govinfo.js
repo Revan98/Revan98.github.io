@@ -100,7 +100,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     pageLength: 20,
     columnDefs: [
       { orderable: false, searchable: false, targets: 0 },
-      { targets: [10], visible: false }
+      { targets: [11,12,13,14], visible: false }
     ],
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
