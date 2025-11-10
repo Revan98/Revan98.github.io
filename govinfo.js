@@ -73,7 +73,7 @@ function renderTableFiltered(headers, rows) {
     const rawVal = row[colIdx] ?? "";
   
     // Exclude col0 (first column) from number formatting
-    if (colIdx === 0) {
+    if (colIdx === 1) {
       td.textContent = rawVal;
     } else {
       const val = parseFloat(rawVal);
