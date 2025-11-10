@@ -148,6 +148,15 @@ function renderCurrentSheet(sheetName) {
   const rows = data.slice(1);
   renderTableFiltered(headers, rows);
 }
+async function loadSheetByName(sheetName) {
+  const res = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`
+  );
+  if (!res.ok) throw new Error(`Error fetching ${sheetName}: ${res.statusText}`);
+  const data = await res.json();
+  googleSheetsData[sheetName] = data.values || [];
+  renderCurrentSheet(sheetName);
+}
 
 // --- DOM Ready ---
 document.addEventListener("DOMContentLoaded", async () => {
@@ -169,9 +178,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // --- Sheet Selector Change ---
 document.getElementById("sheet-selector").addEventListener("change", e => {
-  const selected = e.target.value;
-  renderCurrentSheet(selected);
+  loadSheetByName(e.target.value);
 });
+
 
 // --- Theme Toggle ---
 const themeToggle = document.getElementById("toggle-theme");
