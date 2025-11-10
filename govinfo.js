@@ -72,8 +72,8 @@ function renderTableFiltered(headers, rows) {
     const td = document.createElement("td");
     const rawVal = row[colIdx] ?? "";
   
-    // Exclude col0 (first column) from number formatting
-    if (colIdx === 0) {
+    // Exclude columns 0, 1, and 2 from thousand separator formatting
+    if ([0, 1, 2].includes(colIdx)) {
       td.textContent = rawVal;
     } else {
       const val = parseFloat(rawVal);
