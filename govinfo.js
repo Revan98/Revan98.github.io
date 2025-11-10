@@ -101,16 +101,18 @@ async function loadGoogleSheets() {
   if (!match) return alert("Invalid Google Sheets URL");
   googleSheetId = match[1];
 
-  const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
+  // Step A: Fetch sheet metadata (names only)
+  const metaRes = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`
+  );
   if (!metaRes.ok) throw new Error("Google Sheets API error");
   const meta = await metaRes.json();
   if (!meta.sheets) throw new Error("No sheets found or access denied.");
 
   googleSheetNames = meta.sheets.map(s => s.properties.title);
   currentSource = "google";
-  googleSheetsData = {};
 
-  // populate dropdown
+  // Step B: populate dropdown
   const selector = document.getElementById("sheet-selector");
   selector.innerHTML = "";
   googleSheetNames.forEach(name => {
@@ -119,6 +121,11 @@ async function loadGoogleSheets() {
     opt.textContent = name;
     selector.appendChild(opt);
   });
+
+  // Step C: don't load any sheet yet — wait for user to pick
+  document.getElementById("data-table").innerHTML =
+    "<p style='text-align:center;margin-top:30px;'>Select a worksheet to display data.</p>";
+}
 
   // load all sheets in parallel
   await Promise.all(
@@ -159,7 +166,21 @@ async function loadSheetByName(sheetName) {
   renderCurrentSheet(sheetName);
 }
 
-// --- DOM Ready ---
+
+
+// --- Sheet Selector Change ---
+document.getElementById("sheet-selector").addEventListener("change", async e => {
+  const overlay = document.getElementById("loading-overlay");
+  overlay.style.display = "flex";
+  try {
+    await loadSheetByName(e.target.value);
+  } catch (err) {
+    alert("Error loading selected sheet: " + err.message);
+  } finally {
+    overlay.style.display = "none";
+  }
+});
+
 document.addEventListener("DOMContentLoaded", async () => {
   if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark");
@@ -168,20 +189,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("loading-overlay").style.display = "flex";
   try {
     if (CONFIG.source === "google") {
-      await loadGoogleSheets();
+      await loadGoogleSheets(); // loads only sheet names
     }
   } catch (err) {
-    alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
+    alert("Failed to load Google Sheets metadata.\n\n" + err.message);
   } finally {
     document.getElementById("loading-overlay").style.display = "none";
   }
 });
-
-// --- Sheet Selector Change ---
-document.getElementById("sheet-selector").addEventListener("change", e => {
-  loadSheetByName(e.target.value);
-});
-
 
 // --- Theme Toggle ---
 const themeToggle = document.getElementById("toggle-theme");
