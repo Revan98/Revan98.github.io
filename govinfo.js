@@ -73,7 +73,7 @@ function renderTableFiltered(headers, rows) {
       const rawVal = row[colIdx] ?? "";
   
       // ✅ Only format numbers for columns AFTER index 5
-      if (colIdx > 5) {
+      if (colIdx > 1) {
         const val = parseFloat(rawVal);
         td.textContent = isNaN(val) ? rawVal : formatNumber(val);
       } else {
