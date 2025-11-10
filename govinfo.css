@@ -612,8 +612,8 @@ table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-orde
 }
 
 #sheet-selector select {
-   background: var(--table-bg) !important;
-   color: inherit !important;
+   background: var(--table-bg);
+   color: inherit;
 }
 
 .middlecont {
