@@ -85,9 +85,6 @@ function renderTableFiltered(headers, rows) {
     pageLength: 20,
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
-      topStart: {
-        buttons: ["csv", "excel", "colvis"]
-      },
       bottomStart: {
         pageLength: { menu: [20, 40, 60, 80, 100] }
       }
@@ -148,6 +145,7 @@ function renderCurrentSheet(sheetName) {
   const rows = data.slice(1);
   renderTableFiltered(headers, rows);
 }
+
 async function loadSheetByName(sheetName) {
   const res = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`
