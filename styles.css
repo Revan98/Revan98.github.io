@@ -645,19 +645,6 @@ table.dataTable tbody > tr.selected > * {
 /* =========================================================
    12. RESPONSIVE CARD & TABLE IMPROVEMENTS
    ========================================================= */
-
-/* Base improvements for middle content */
-.middlecont {
-  margin-top: 50px;
-  padding-top: 50px;
-  width: 100%;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
 /* Card layout - make it flexible */
 .card {
   background: var(--table-bg);
@@ -708,10 +695,6 @@ div.dt-scroll {
 
 /* --- Mobile (≤767px) --- */
 @media (max-width: 767px) {
-  .middlecont {
-    padding-top: 30px;
-  }
-
   .card {
     padding: 12px;
     border-radius: 8px;
@@ -749,3 +732,4 @@ div.dt-scroll {
     font-size: 13px !important;
   }
 }
+
