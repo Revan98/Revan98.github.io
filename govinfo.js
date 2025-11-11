@@ -127,21 +127,26 @@ async function loadGoogleSheets() {
 
   googleSheetNames = meta.sheets.map((s) => s.properties.title);
   currentSource = "google";
-
+  
   // Step B: populate dropdown
   const selector = document.getElementById("sheet-selector");
   selector.innerHTML = "";
-  googleSheetNames.forEach((name) => {
+  googleSheetNames.forEach((name, idx) => {
     const opt = document.createElement("option");
     opt.value = name;
     opt.textContent = name;
+    if (idx === 0) opt.selected = true; // ✅ select first sheet by default
     selector.appendChild(opt);
   });
-
-  // Step C: show placeholder
-  document.getElementById("data-table").innerHTML =
-    "<p style='text-align:center;margin-top:30px;'>Select a worksheet to display data.</p>";
-}
+  
+  // Step C: show placeholder or load first sheet
+  if (googleSheetNames.length > 0) {
+    // ✅ automatically load and render the first sheet
+    await loadSheetByName(googleSheetNames[0]);
+  } else {
+    document.getElementById("data-table").innerHTML =
+      "<p style='text-align:center;margin-top:30px;'>No worksheets found.</p>";
+  }
 
 async function loadSheetByName(sheetName) {
   const res = await fetch(
