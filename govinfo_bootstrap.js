@@ -35,14 +35,24 @@ function formatNumber(num) {
 function showLoading(show = true) {
   const overlay = document.getElementById("loading-overlay");
   const content = document.getElementById("main-content");
+
   if (show) {
+    // Show overlay
     overlay.style.display = "flex";
+    overlay.style.opacity = "1";
+    content.classList.remove("show");
     content.style.display = "none";
   } else {
-    overlay.style.display = "none";
-    content.style.display = "block";
+    // Fade out overlay and show content
+    overlay.style.opacity = "0";
+    setTimeout(() => {
+      overlay.style.display = "none";
+      content.style.display = "block";
+      setTimeout(() => content.classList.add("show"), 10);
+    }, 400);
   }
 }
+
 
 // Core rendering
 function renderTableFiltered(headers, rows) {
@@ -220,3 +230,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 });
+
