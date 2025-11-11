@@ -1,0 +1,104 @@
+/* =========================================================
+   THEME VARIABLES
+   ========================================================= */
+:root {
+  --bg-color: #f8f9fa;
+  --text-color: #212529;
+  --accent: #ffffff;
+  --table-bg: #ffffff;
+  --table-border: #dee2e6;
+  --chart-line: #0d6efd;
+  --row-selected-bg: #cce5ff;
+  --row-selected-text: #000;
+}
+
+body.dark {
+  --bg-color: #1c1c1c;
+  --text-color: #f1f1f1;
+  --accent: #2a2a2a;
+  --table-bg: #2a2a2a;
+  --table-border: #444;
+  --chart-line: #ff9800;
+  --row-selected-bg: #004085;
+  --row-selected-text: #fff;
+}
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.table {
+  color: var(--text-color);
+  background: var(--table-bg);
+}
+
+/* Navbar translucent + rounded */
+.navbar {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+body.dark .navbar {
+  background: rgba(30, 30, 30, 0.8);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.nav-link {
+  color: #053b6b !important;
+  transition: color 0.3s;
+}
+.nav-link:hover, .nav-link.active {
+  color: var(--chart-line) !important;
+}
+body.dark .nav-link {
+  color: #eee !important;
+}
+body.dark .nav-link:hover, body.dark .nav-link.active {
+  color: #ff9800 !important;
+}
+
+/* =========================================================
+   LOADING OVERLAY
+   ========================================================= */
+#loading-overlay {
+  display: none;
+  height: 40vh;
+  color: var(--text-color);
+  font-size: 1.2rem;
+}
+.spinner {
+  border: 6px solid var(--table-border);
+  border-top: 6px solid var(--chart-line);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   DATATABLES CUSTOMIZATION
+   ========================================================= */
+div.dt-container .dt-buttons .btn {
+  @extend .btn;
+  @extend .btn-outline-primary;
+}
+table.dataTable tbody > tr.selected > * {
+  box-shadow: inset 0 0 0 9999px var(--row-selected-bg) !important;
+  color: var(--row-selected-text) !important;
+}
+
+/* Dark mode adjustments */
+body.dark .form-select,
+body.dark .form-control {
+  background-color: #444;
+  color: #eee;
+  border: 1px solid #666;
+}
