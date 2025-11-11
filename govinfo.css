@@ -468,3 +468,39 @@ table.dataTable tbody > tr.selected > * {
   padding-top:50px;
   min-width: 700px;
 }
+
+/* =========================================================
+   CARD COMPONENT
+   ========================================================= */
+.card {
+  background: var(--table-bg);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.04);
+  margin: 14px 0;
+  text-align: center;
+  border: 1px solid var(--table-border);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.dark .card {
+  background: #2a2a2a;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* Optional: adjust spacing of elements inside card */
+.card #controls {
+  margin-bottom: 20px;
+}
+
+.card label {
+  margin-right: 8px;
+  font-weight: 600;
+}
+
+.card select {
+  margin-right: 16px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+}
