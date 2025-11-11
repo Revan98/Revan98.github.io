@@ -47,10 +47,7 @@
   </nav>
 
   <!-- MAIN CONTENT -->
-  <div id="loading-overlay">
-    <div class="spinner"></div>
-    <div>Loading data...</div>
-  </div>
+
   
   <div id="main-content" class="container my-5">
     <div class="row justify-content-center">
@@ -63,7 +60,10 @@
             <label for="sheet-selector" class="form-label mb-0">Select Worksheet:</label>
             <select id="sheet-selector" class="form-select w-auto"></select>
           </div>
-  
+          <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div>Loading data...</div>
+          </div>
           <div class="table-responsive">
             <table id="data-table" class="table table-striped table-bordered table-hover w-100"></table>
           </div>
@@ -90,4 +90,5 @@
           crossorigin="anonymous"></script>
 </body>
 </html>
+
 
