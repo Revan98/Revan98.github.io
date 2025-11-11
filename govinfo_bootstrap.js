@@ -198,9 +198,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // Theme toggle
-const themeToggle = document.getElementById("toggle-theme");
-if (localStorage.getItem("theme") === "dark") themeToggle.checked = true;
-themeToggle.addEventListener("change", () => {
-  document.body.classList.toggle("dark", themeToggle.checked);
-  localStorage.setItem("theme", themeToggle.checked ? "dark" : "light");
+const toggle = document.getElementById("toggle-theme");
+toggle.addEventListener("change", () => {
+  const theme = toggle.checked ? "dark" : "light";
+  document.body.setAttribute("data-bs-theme", theme);
+  localStorage.setItem("theme", theme);
 });
+document.body.setAttribute("data-bs-theme", localStorage.getItem("theme") || "light");
+toggle.checked = (localStorage.getItem("theme") === "dark");
+
