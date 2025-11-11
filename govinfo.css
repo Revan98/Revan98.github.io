@@ -15,6 +15,7 @@
   --row-selected-bg: #cce5ff;
   --row-selected-text: #000;
   --chart-line: #007bff;
+  --card: #ffffff;
 }
 
 body.dark {
@@ -28,6 +29,7 @@ body.dark {
   --row-selected-bg: #004085;
   --row-selected-text: #fff;
   --chart-line: #ff9800;
+  --card: #1a1a1a;
 }
 
 /* =========================================================
@@ -509,7 +511,7 @@ body.dark .card {
 
 /* Card layout - make it flexible */
 .card {
-  background: var(--table-bg);
+  background: var(--card);
   border: 1px solid var(--table-border);
   border-radius: 10px;
   padding: 20px;
