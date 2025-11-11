@@ -1,5 +1,5 @@
 /* =========================================================
-   THEME VARIABLES — using Bootstrap color-mode system
+   THEME VARIABLES — Bootstrap color mode
    ========================================================= */
 :root,
 [data-bs-theme="light"] {
@@ -31,7 +31,9 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
-/* Navbar translucent + rounded */
+/* =========================================================
+   NAVBAR
+   ========================================================= */
 .navbar {
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(12px);
@@ -42,7 +44,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Navbar links */
 .nav-link {
   color: #053b6b !important;
   transition: color 0.3s;
@@ -81,14 +82,12 @@ body {
   color: var(--bs-body-bg) !important;
 }
 
-/* DataTables */
-div.dt-search input {
-  background-color: var(--bs-body-bg) !important;
-  color: var(--bs-body-color) !important;
-  border: 1px solid var(--bs-border-color) !important;
-}
+/* =========================================================
+   DATATABLES
+   ========================================================= */
+div.dt-search input,
 div.dt-paging button {
-  background: var(--bs-body-bg) !important;
+  background-color: var(--bs-body-bg) !important;
   color: var(--bs-body-color) !important;
   border: 1px solid var(--bs-border-color) !important;
 }
@@ -97,7 +96,7 @@ div.dt-paging button.current {
   color: #000 !important;
 }
 
-/* Selected rows */
+/* Selected row */
 table.dataTable tbody > tr.selected > * {
   box-shadow: inset 0 0 0 9999px var(--row-selected-bg) !important;
   color: var(--row-selected-text) !important;
@@ -115,20 +114,36 @@ table.dataTable tbody > tr.selected > * {
    LOADING OVERLAY
    ========================================================= */
 #loading-overlay {
-  display: none;
-  height: 40vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bs-body-bg);
   color: var(--bs-body-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
   font-size: 1.2rem;
 }
+
 .spinner {
   border: 6px solid var(--bs-border-color);
   border-top: 6px solid var(--accent-color);
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   animation: spin 1s linear infinite;
+  margin-bottom: 20px;
 }
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Hide table container until ready */
+#main-content {
+  display: none;
 }
