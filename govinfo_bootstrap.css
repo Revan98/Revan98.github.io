@@ -60,6 +60,65 @@ body.dark .nav-link {
 body.dark .nav-link:hover, body.dark .nav-link.active {
   color: #ff9800 !important;
 }
+/* =========================================================
+   COMPLETE DARK MODE OVERRIDES
+   ========================================================= */
+body.dark {
+  background-color: #121212 !important;
+  color: #f1f1f1 !important;
+}
+
+body.dark .card,
+body.dark .table,
+body.dark .form-select,
+body.dark .form-control {
+  background-color: #2a2a2a !important;
+  color: #eee !important;
+  border-color: #555 !important;
+}
+
+body.dark .navbar {
+  background: rgba(20, 20, 20, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark .nav-link {
+  color: #eee !important;
+}
+body.dark .nav-link.active,
+body.dark .nav-link:hover {
+  color: #ff9800 !important;
+}
+
+body.dark .btn-outline-primary {
+  color: #ff9800 !important;
+  border-color: #ff9800 !important;
+}
+body.dark .btn-outline-primary:hover {
+  background-color: #ff9800 !important;
+  color: #121212 !important;
+}
+
+/* DataTables search and pagination */
+body.dark div.dt-search input {
+  background-color: #444 !important;
+  color: #fff !important;
+  border: 1px solid #666 !important;
+}
+body.dark div.dt-paging button {
+  background: #333 !important;
+  color: #eee !important;
+  border: 1px solid #666 !important;
+}
+body.dark div.dt-paging button.current {
+  background: #ff9800 !important;
+  color: #000 !important;
+}
+
+/* Scrollbar */
+body.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.4);
+}
 
 /* =========================================================
    LOADING OVERLAY
@@ -102,3 +161,4 @@ body.dark .form-control {
   color: #eee;
   border: 1px solid #666;
 }
+
