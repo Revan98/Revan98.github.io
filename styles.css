@@ -641,3 +641,111 @@ table.dataTable tbody > tr.selected > * {
   }
 }
 
+
+/* =========================================================
+   12. RESPONSIVE CARD & TABLE IMPROVEMENTS
+   ========================================================= */
+
+/* Base improvements for middle content */
+.middlecont {
+  margin-top: 50px;
+  padding-top: 50px;
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Card layout - make it flexible */
+.card {
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 14px auto;
+  text-align: center;
+  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.04);
+  max-width: 100%;
+  overflow-x: auto; /* safe scroll if needed */
+}
+
+/* =========================================================
+   TABLE RESPONSIVENESS
+   ========================================================= */
+table.dataTable {
+  width: 100% !important;
+  table-layout: auto !important;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+div.dt-scroll {
+  overflow-x: auto !important;
+  max-width: 100%;
+}
+
+/* =========================================================
+   MEDIA QUERIES
+   ========================================================= */
+
+/* --- Tablets (≤991px) --- */
+@media (max-width: 991px) {
+  .navbar {
+    width: 95%;
+    padding: 10px 14px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  table.dataTable {
+    font-size: 12px;
+  }
+}
+
+/* --- Mobile (≤767px) --- */
+@media (max-width: 767px) {
+  .middlecont {
+    padding-top: 30px;
+  }
+
+  .card {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  table.dataTable th,
+  table.dataTable td {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+    text-align: center;
+  }
+
+  div.dt-search input {
+    width: 100% !important;
+  }
+
+  div.dt-container .dt-paging button {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+  }
+}
+
+/* --- Very small screens (<480px) --- */
+@media (max-width: 480px) {
+  table.dataTable {
+    font-size: 11px;
+  }
+
+  .card {
+    padding: 10px;
+  }
+
+  div.dt-search input {
+    padding: 6px 8px !important;
+    font-size: 13px !important;
+  }
+}
