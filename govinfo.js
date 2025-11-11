@@ -3,18 +3,27 @@
 // =========================================================
 
 const CONFIG = {
-  source: "google",
-  googleSheetUrl:
-    "https://docs.google.com/spreadsheets/d/1v9mdsOKtcypKClOvxIyrslXvGUsvVg_C6x7tHyv7N38/edit?usp=sharing",
+  sources: [
+    {
+      name: "KD3202",
+      url: "https://docs.google.com/spreadsheets/d/1v9mdsOKtcypKClOvxIyrslXvGUsvVg_C6x7tHyv7N38/edit?usp=sharing",
+    },
+    {
+      name: "KD2247",
+      url: "https://docs.google.com/spreadsheets/d/1Cdzv5wgPdczAvQwgpyO0CqjPbkzAjLDd8Uu4HHcoiFU/edit?usp=sharing",
+    },
+  ],
 };
+
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
 let dataTableInstance = null;
-let googleSheetId = null;
-let googleSheetNames = [];
 let googleSheetsData = {};
 let currentSource = null;
+let googleSheetId = null;
+let googleSheetNames = [];
+let sourceCache = {}; // cache to store metadata per source
 
 // =========================================================
 // Helpers
@@ -112,34 +121,40 @@ function renderTableFiltered(headers, rows) {
 // =========================================================
 // Google Sheets Data Loading (lazy mode)
 // =========================================================
-async function loadGoogleSheets() {
-  const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+async function loadGoogleSheets(sheetUrl) {
+  const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
   if (!match) return alert("Invalid Google Sheets URL");
   googleSheetId = match[1];
 
-  // Step A: fetch sheet metadata (names only)
-  const metaRes = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`
-  );
-  if (!metaRes.ok) throw new Error("Google Sheets API error");
-  const meta = await metaRes.json();
-  if (!meta.sheets) throw new Error("No sheets found or access denied.");
+  // Use cached metadata if available
+  if (sourceCache[googleSheetId]) {
+    googleSheetNames = sourceCache[googleSheetId];
+  } else {
+    const metaRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`
+    );
+    if (!metaRes.ok) throw new Error("Google Sheets API error");
+    const meta = await metaRes.json();
+    if (!meta.sheets) throw new Error("No sheets found or access denied.");
 
-  googleSheetNames = meta.sheets.map((s) => s.properties.title);
-  currentSource = "google";
+    googleSheetNames = meta.sheets.map((s) => s.properties.title);
+    sourceCache[googleSheetId] = googleSheetNames; // cache
+  }
 
-  // Step B: populate dropdown
+  currentSource = sheetUrl;
+
+  // Populate sheet selector
   const selector = document.getElementById("sheet-selector");
   selector.innerHTML = "";
   googleSheetNames.forEach((name, idx) => {
     const opt = document.createElement("option");
     opt.value = name;
     opt.textContent = name;
-    if (idx === 0) opt.selected = true; // ✅ select first one
+    if (idx === 0) opt.selected = true;
     selector.appendChild(opt);
   });
 
-  // Step C: always auto-load first sheet
+  // Auto-load first sheet
   if (googleSheetNames.length > 0) {
     const overlay = document.getElementById("loading-overlay");
     overlay.style.display = "flex";
@@ -150,26 +165,33 @@ async function loadGoogleSheets() {
     } finally {
       overlay.style.display = "none";
     }
-  } else {
-    document.getElementById("data-table").innerHTML =
-      "<p style='text-align:center;margin-top:30px;'>No worksheets found.</p>";
   }
 }
 
 async function loadSheetByName(sheetName) {
+  const match = currentSource.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const sheetId = match ? match[1] : googleSheetId;
+  const cacheKey = `${sheetId}:${sheetName}`;
+
+  // Cached data check
+  if (googleSheetsData[cacheKey]) {
+    renderCurrentSheet(cacheKey);
+    return;
+  }
+
   const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(
+    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(
       sheetName
     )}?key=${API_KEY}`
   );
   if (!res.ok) throw new Error(`Error fetching ${sheetName}: ${res.statusText}`);
   const data = await res.json();
-  googleSheetsData[sheetName] = data.values || [];
-  renderCurrentSheet(sheetName);
+  googleSheetsData[cacheKey] = data.values || [];
+  renderCurrentSheet(cacheKey);
 }
 
-function renderCurrentSheet(sheetName) {
-  const data = googleSheetsData[sheetName];
+function renderCurrentSheet(cacheKey) {
+  const data = googleSheetsData[cacheKey];
   if (!data || !data.length) {
     document.getElementById("data-table").innerHTML =
       "<p>No data found in this sheet.</p>";
@@ -186,14 +208,14 @@ function renderCurrentSheet(sheetName) {
 
 // Sheet selector
 document
-  .getElementById("sheet-selector")
+  .getElementById("source-selector")
   .addEventListener("change", async (e) => {
     const overlay = document.getElementById("loading-overlay");
     overlay.style.display = "flex";
     try {
-      await loadSheetByName(e.target.value);
+      await loadGoogleSheets(e.target.value);
     } catch (err) {
-      alert("Error loading selected sheet: " + err.message);
+      alert("Error loading selected source: " + err.message);
     } finally {
       overlay.style.display = "none";
     }
@@ -207,12 +229,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const overlay = document.getElementById("loading-overlay");
   overlay.style.display = "flex";
+
   try {
-    if (CONFIG.source === "google") {
-      await loadGoogleSheets(); // only names + dropdown
-    }
+    // ✅ Populate source dropdown
+    const sourceSelector = document.getElementById("source-selector");
+    CONFIG.sources.forEach((src, idx) => {
+      const opt = document.createElement("option");
+      opt.value = src.url;
+      opt.textContent = src.name;
+      if (idx === 0) opt.selected = true;
+      sourceSelector.appendChild(opt);
+    });
+
+    // ✅ Auto-load first source
+    await loadGoogleSheets(CONFIG.sources[0].url);
   } catch (err) {
-    alert("Failed to load Google Sheets metadata.\n\n" + err.message);
+    alert("Failed to load sources.\n\n" + err.message);
   } finally {
     overlay.style.display = "none";
   }
