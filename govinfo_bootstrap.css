@@ -173,3 +173,41 @@ table.dataTable tbody > tr.selected > * {
   display: block;
   opacity: 1;
 }
+
+
+
+div.dt-search {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin: 5px 5px !important;
+}
+
+div.dt-search input {
+  width: 200px !important;
+  max-width: 100%;
+  padding: 9px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid #ccc !important;
+  background-color: #ccc !important;
+  color: #333 !important;
+  font-size: 14px !important;
+}
+
+div.dt-search input::placeholder {
+  color: var(--text-color) !important;
+  opacity: 0.8 !important;
+}
+
+/* Dark mode search */
+[data-bs-theme="dark"] div.dt-search input {
+  background-color: #444 !important;
+  color: #eee !important;
+  border: 1px solid #666 !important;
+}
+
+/* Hide clear (×) button */
+div.dt-search input[type="search"]::-webkit-search-cancel-button,
+div.dt-search input[type="search"]::-ms-clear {
+  display: none;
+}
