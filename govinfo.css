@@ -463,25 +463,11 @@ table.dataTable tbody > tr.selected > * {
    color: inherit;
 }
 
-.middlecont {
-  margin-top: 50px;
-  padding-top:50px;
-  min-width: 700px;
-}
 
 /* =========================================================
    CARD COMPONENT
    ========================================================= */
-.card {
-  background: var(--table-bg);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.04);
-  margin: 14px 0;
-  text-align: center;
-  border: 1px solid var(--table-border);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-}
+
 
 body.dark .card {
   background: #2a2a2a;
@@ -503,4 +489,171 @@ body.dark .card {
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid var(--table-border);
+}
+
+/* =========================================================
+   12. RESPONSIVE CARD & TABLE IMPROVEMENTS
+   ========================================================= */
+
+/* Base improvements for middle content */
+.middlecont {
+  margin-top: 50px;
+  padding-top: 50px;
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Card layout - make it flexible */
+.card {
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 14px auto;
+  text-align: center;
+  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.04);
+  max-width: 100%;
+  overflow-x: auto; /* safe scroll if needed */
+}
+
+/* Controls alignment - desktop */
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+#controls label {
+  font-weight: 600;
+}
+
+#controls select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  background: var(--table-bg);
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+/* =========================================================
+   TABLE RESPONSIVENESS
+   ========================================================= */
+table.dataTable {
+  width: 100% !important;
+  table-layout: auto !important;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+div.dt-scroll {
+  overflow-x: auto !important;
+  max-width: 100%;
+}
+
+/* =========================================================
+   MEDIA QUERIES
+   ========================================================= */
+
+/* --- Tablets (≤991px) --- */
+@media (max-width: 991px) {
+  .navbar {
+    width: 95%;
+    padding: 10px 14px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  #controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #controls label,
+  #controls select {
+    width: 100%;
+    text-align: left;
+  }
+
+  table.dataTable {
+    font-size: 12px;
+  }
+}
+
+/* --- Mobile (≤767px) --- */
+@media (max-width: 767px) {
+  .middlecont {
+    padding-top: 30px;
+  }
+
+  .card {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  #controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  #controls label {
+    display: block;
+    font-size: 14px;
+  }
+
+  #controls select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  table.dataTable th,
+  table.dataTable td {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+    text-align: center;
+  }
+
+  div.dt-search input {
+    width: 100% !important;
+  }
+
+  div.dt-container .dt-paging button {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+  }
+}
+
+/* --- Very small screens (<480px) --- */
+@media (max-width: 480px) {
+  table.dataTable {
+    font-size: 11px;
+  }
+
+  .card {
+    padding: 10px;
+  }
+
+  #controls label {
+    font-size: 13px;
+  }
+
+  #controls select {
+    font-size: 13px;
+  }
+
+  div.dt-search input {
+    padding: 6px 8px !important;
+    font-size: 13px !important;
+  }
 }
