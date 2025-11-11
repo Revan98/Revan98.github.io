@@ -133,7 +133,7 @@
     
     /* --- Dark mode --- */
     body.dark {
-      background: #111;
+      background: #1c1c1c;
       color: #f1f1f1;
       --muted: white;
       --table-wrap: #ddd;
