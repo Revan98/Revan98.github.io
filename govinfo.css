@@ -450,70 +450,69 @@ table.dataTable tbody > tr.selected > * {
 }
 
 /* ======== DataTables Sorting Arrows ======== */
-/* =========================================================
-   Sorting icons (CSS-only, centered)
-   ========================================================= */
-
-/* Base style for all sort icons */
-table.dataTable thead th span.dt-column-order {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 0.8em;
-  height: 1em;
-  margin-left: 5px;
-  position: relative;
-}
-
-/* Draw the arrows */
-table.dataTable thead th span.dt-column-order::before,
-table.dataTable thead th span.dt-column-order::after {
-  content: "";
+table.dataTable thead > tr > th.dt-orderable-asc span.dt-column-order:before,
+table.dataTable thead > tr > th.dt-ordering-asc span.dt-column-order:before,
+table.dataTable thead > tr > td.dt-orderable-asc span.dt-column-order:before,
+table.dataTable thead > tr > td.dt-ordering-asc span.dt-column-order:before {
+  position: absolute;
   display: block;
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
+  bottom: 50%;
+  content: "\25B2"; /* Up arrow ▲ */
+  color: inherit;
+  margin-left: 3px;
+}
+
+table.dataTable thead > tr > th.dt-orderable-desc span.dt-column-order:after,
+table.dataTable thead > tr > th.dt-ordering-desc span.dt-column-order:after,
+table.dataTable thead > tr > td.dt-orderable-desc span.dt-column-order:after,
+table.dataTable thead > tr > td.dt-ordering-desc span.dt-column-order:after {
+  position: absolute;
+  display: block;
+  top: 50%;
+  content: "\25BC"; /* Down arrow ▼ */
+  color: inherit;
+  margin-left: 3px;
+}
+
+table.dataTable thead > tr > th.dt-orderable-asc span.dt-column-order,
+table.dataTable thead > tr > th.dt-orderable-desc span.dt-column-order,
+table.dataTable thead > tr > th.dt-ordering-asc span.dt-column-order,
+table.dataTable thead > tr > th.dt-ordering-desc span.dt-column-order,
+table.dataTable thead > tr > td.dt-orderable-asc span.dt-column-order,
+table.dataTable thead > tr > td.dt-orderable-desc span.dt-column-order,
+table.dataTable thead > tr > td.dt-ordering-asc span.dt-column-order,
+table.dataTable thead > tr > td.dt-ordering-desc span.dt-column-order {
+  position: relative;
+  width: 12px;
+  height: 20px;
+  margin-left: 3px;
+}
+
+/* Base arrow style */
+table.dataTable thead > tr > th span.dt-column-order:before,
+table.dataTable thead > tr > th span.dt-column-order:after,
+table.dataTable thead > tr > td span.dt-column-order:before,
+table.dataTable thead > tr > td span.dt-column-order:after {
+  left: 0;
   opacity: 0.4;
+  line-height: 9px;
+  font-size: 0.8em;
+  margin-left: 3px;
 }
 
-/* Up arrow */
-table.dataTable thead th span.dt-column-order::before {
-  border-bottom: 5px solid currentColor;
-  margin-bottom: 2px; /* small gap */
-}
-
-/* Down arrow */
-table.dataTable thead th span.dt-column-order::after {
-  border-top: 5px solid currentColor;
-  margin-top: 2px;
-}
-
-/* ====== Active states ====== */
-
-/* Ascending → only show up arrow (centered) */
-table.dataTable thead th.dt-ordering-asc span.dt-column-order::before {
+/* Active sorting arrow gets stronger color */
+table.dataTable thead > tr > th.dt-ordering-asc span.dt-column-order:before,
+table.dataTable thead > tr > th.dt-ordering-desc span.dt-column-order:after,
+table.dataTable thead > tr > td.dt-ordering-asc span.dt-column-order:before,
+table.dataTable thead > tr > td.dt-ordering-desc span.dt-column-order:after {
+  color: inherit;
   opacity: 1;
 }
-table.dataTable thead th.dt-ordering-asc span.dt-column-order::after {
-  opacity: 0;
-}
 
-/* Descending → only show down arrow (centered) */
-table.dataTable thead th.dt-ordering-desc span.dt-column-order::after {
-  opacity: 1;
-}
-table.dataTable thead th.dt-ordering-desc span.dt-column-order::before {
-  opacity: 0;
-}
-
-/* Default (unsorted) → both visible, stacked with gap */
-table.dataTable thead th.dt-orderable-none span.dt-column-order::before,
-table.dataTable thead th.dt-orderable-none span.dt-column-order::after,
-table.dataTable thead th:not(.dt-ordering-asc):not(.dt-ordering-desc) span.dt-column-order::before,
-table.dataTable thead th:not(.dt-ordering-asc):not(.dt-ordering-desc) span.dt-column-order::after {
-  opacity: 0.4;
+/* Hide disabled or unsortable arrows */
+table.dataTable thead > tr > th.dt-orderable-none:not(.dt-ordering-asc, .dt-ordering-desc) span.dt-column-order:empty,
+table.dataTable thead > tr > td.dt-orderable-none:not(.dt-ordering-asc, .dt-ordering-desc) span.dt-column-order:empty {
+  display: none;
 }
 
 /* =========================================================
