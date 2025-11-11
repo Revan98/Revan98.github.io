@@ -450,46 +450,54 @@ table.dataTable tbody > tr.selected > * {
 }
 
 /* ======== DataTables Sorting Arrows ======== */
-/* Base container for SVG */
+/* =========================================================
+   CUSTOM SVG SORTING ARROWS (V-style, larger)
+   ========================================================= */
+
+/* Remove default text arrows */
+table.dataTable thead span.dt-column-order::before,
+table.dataTable thead span.dt-column-order::after {
+  content: none !important;
+}
+
+/* Base icon container */
 table.dataTable thead span.dt-column-order {
   display: inline-block;
-  width: 12px;
-  height: 12px;
+  width: 18px;      /* bigger arrows */
+  height: 18px;
+  margin-left: 6px;
   vertical-align: middle;
-  margin-left: 5px;
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  opacity: 0.4;
+  opacity: 0.35;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Active ascending sort */
+/* Ascending = caret up (inverted V) */
 table.dataTable thead th.dt-ordering-asc span.dt-column-order {
   opacity: 1;
-  transform: rotate(0deg);
   background-image: url('data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23007bff">\
-<path d="M12 8l-6 8h12z"/>\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">\
+<path d="M4 16L12 8l8 8" stroke="%23007bff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\
 </svg>');
 }
 
-/* Active descending sort */
+/* Descending = caret down (V shape) */
 table.dataTable thead th.dt-ordering-desc span.dt-column-order {
   opacity: 1;
-  transform: rotate(0deg);
   background-image: url('data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff9800">\
-<path d="M12 16l6-8H6z"/>\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">\
+<path d="M4 8l8 8 8-8" stroke="%23ff9800" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\
 </svg>');
 }
 
-/* Unsigned (no sorting) */
+/* Default (unsorted) shows neutral gray V */
 table.dataTable thead th.dt-orderable-asc span.dt-column-order,
 table.dataTable thead th.dt-orderable-desc span.dt-column-order {
   background-image: url('data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666">\
-<path d="M12 8l-6 8h12z"/>\
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">\
+<path d="M4 8l8 8 8-8" stroke="%23666" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\
 </svg>');
 }
 
