@@ -221,6 +221,21 @@ document
     }
   });
 
+// Sheet selector
+document
+  .getElementById("sheet-selector")
+  .addEventListener("change", async (e) => {
+    const overlay = document.getElementById("loading-overlay");
+    overlay.style.display = "flex";
+    try {
+      await loadSheetByName(e.target.value);
+    } catch (err) {
+      alert("Error loading selected sheet: " + err.message);
+    } finally {
+      overlay.style.display = "none";
+    }
+  });
+
 // DOM ready
 document.addEventListener("DOMContentLoaded", async () => {
   if (localStorage.getItem("theme") === "dark") {
