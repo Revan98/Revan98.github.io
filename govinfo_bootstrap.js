@@ -165,7 +165,6 @@ function renderCurrentSheet(cacheKey) {
 
 // Event listeners
 document.addEventListener("DOMContentLoaded", async () => {
-  if (localStorage.getItem("theme") === "dark") document.body.classList.add("dark");
 
   const sourceSelector = document.getElementById("source-selector");
   CONFIG.sources.forEach((src, idx) => {
@@ -197,13 +196,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-// Theme toggle
+// Theme toggle using Bootstrap color modes
 const toggle = document.getElementById("toggle-theme");
+const savedTheme = localStorage.getItem("theme") || "light";
+document.body.setAttribute("data-bs-theme", savedTheme);
+toggle.checked = savedTheme === "dark";
+
 toggle.addEventListener("change", () => {
   const theme = toggle.checked ? "dark" : "light";
   document.body.setAttribute("data-bs-theme", theme);
   localStorage.setItem("theme", theme);
 });
-document.body.setAttribute("data-bs-theme", localStorage.getItem("theme") || "light");
-toggle.checked = (localStorage.getItem("theme") === "dark");
-
