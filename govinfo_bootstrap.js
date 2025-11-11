@@ -31,6 +31,19 @@ function formatNumber(num) {
   return Number(num).toLocaleString("en-US");
 }
 
+// Show/hide overlay
+function showLoading(show = true) {
+  const overlay = document.getElementById("loading-overlay");
+  const content = document.getElementById("main-content");
+  if (show) {
+    overlay.style.display = "flex";
+    content.style.display = "none";
+  } else {
+    overlay.style.display = "none";
+    content.style.display = "block";
+  }
+}
+
 // Core rendering
 function renderTableFiltered(headers, rows) {
   rows = removeEmptyRows(rows);
@@ -93,8 +106,9 @@ function renderTableFiltered(headers, rows) {
       bottomStart: { pageLength: { menu: [20, 40, 60, 80, 100] } },
     },
   });
+
   // Apply Bootstrap button classes to export buttons
-  document.querySelectorAll(".dt-buttons button").forEach(btn => {
+  document.querySelectorAll(".dt-buttons button").forEach((btn) => {
     btn.classList.add("btn", "btn-outline-primary", "btn-sm");
   });
 }
@@ -126,14 +140,13 @@ async function loadGoogleSheets(sheetUrl) {
   });
 
   if (googleSheetNames.length > 0) {
-    const overlay = document.getElementById("loading-overlay");
-    overlay.style.display = "flex";
+    showLoading(true);
     try {
       await loadSheetByName(googleSheetNames[0]);
     } catch (err) {
       alert("Error loading first worksheet: " + err.message);
     } finally {
-      overlay.style.display = "none";
+      showLoading(false);
     }
   }
 }
@@ -165,7 +178,18 @@ function renderCurrentSheet(cacheKey) {
 
 // Event listeners
 document.addEventListener("DOMContentLoaded", async () => {
+  // Theme restore
+  const toggle = document.getElementById("toggle-theme");
+  const savedTheme = localStorage.getItem("theme") || "light";
+  document.body.setAttribute("data-bs-theme", savedTheme);
+  toggle.checked = savedTheme === "dark";
+  toggle.addEventListener("change", () => {
+    const theme = toggle.checked ? "dark" : "light";
+    document.body.setAttribute("data-bs-theme", theme);
+    localStorage.setItem("theme", theme);
+  });
 
+  // Setup sources
   const sourceSelector = document.getElementById("source-selector");
   CONFIG.sources.forEach((src, idx) => {
     const opt = document.createElement("option");
@@ -177,33 +201,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await loadGoogleSheets(CONFIG.sources[0].url);
 
-  document.getElementById("source-selector").addEventListener("change", async (e) => {
-    document.getElementById("loading-overlay").style.display = "flex";
+  // Events
+  sourceSelector.addEventListener("change", async (e) => {
+    showLoading(true);
     try {
       await loadGoogleSheets(e.target.value);
     } finally {
-      document.getElementById("loading-overlay").style.display = "none";
+      showLoading(false);
     }
   });
 
   document.getElementById("sheet-selector").addEventListener("change", async (e) => {
-    document.getElementById("loading-overlay").style.display = "flex";
+    showLoading(true);
     try {
       await loadSheetByName(e.target.value);
     } finally {
-      document.getElementById("loading-overlay").style.display = "none";
+      showLoading(false);
     }
   });
-});
-
-// Theme toggle using Bootstrap color modes
-const toggle = document.getElementById("toggle-theme");
-const savedTheme = localStorage.getItem("theme") || "light";
-document.body.setAttribute("data-bs-theme", savedTheme);
-toggle.checked = savedTheme === "dark";
-
-toggle.addEventListener("change", () => {
-  const theme = toggle.checked ? "dark" : "light";
-  document.body.setAttribute("data-bs-theme", theme);
-  localStorage.setItem("theme", theme);
 });
