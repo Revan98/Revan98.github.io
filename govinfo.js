@@ -110,7 +110,7 @@ function renderTableFiltered(headers, rows) {
     pageLength: 20,
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
-      topStart: { buttons: ["csv", "excel"] },
+      topStart: { buttons: ["csv", "excel", "copy"] },
       bottomStart: {
         pageLength: { menu: [20, 40, 60, 80, 100] },
       },
