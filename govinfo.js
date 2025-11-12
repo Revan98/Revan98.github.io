@@ -1,7 +1,3 @@
-// =========================================================
-// GOVINFO.JS — optimized for lazy sheet loading
-// =========================================================
-
 const CONFIG = {
   sources: [
     {
@@ -15,7 +11,6 @@ const CONFIG = {
   ],
 };
 
-
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
 let dataTableInstance = null;
@@ -25,9 +20,7 @@ let googleSheetId = null;
 let googleSheetNames = [];
 let sourceCache = {}; // cache to store metadata per source
 
-// =========================================================
 // Helpers
-// =========================================================
 function removeEmptyRows(rows) {
   return rows.filter((row) =>
     row.some((cell) => cell && String(cell).trim() !== "")
@@ -39,9 +32,7 @@ function formatNumber(num) {
   return Number(num).toLocaleString("en-US");
 }
 
-// =========================================================
 // Core Table Rendering
-// =========================================================
 function renderTableFiltered(headers, rows) {
   rows = removeEmptyRows(rows);
   rows = rows.filter((r) => String(r[11]).trim().toUpperCase() !== "YES"); // optional governor filter
@@ -69,7 +60,7 @@ function renderTableFiltered(headers, rows) {
   });
   thead.appendChild(headRow);
 
-  // --- Build body ---
+  // Build body
   const tbody = document.createElement("tbody");
   rows.forEach((row, rowIdx) => {
     const tr = document.createElement("tr");
@@ -81,14 +72,13 @@ function renderTableFiltered(headers, rows) {
       const td = document.createElement("td");
       const rawVal = row[colIdx] ?? "";
   
-      // ✅ Only format numbers for columns AFTER index 5
+      // Only format numbers for columns AFTER index 1
       if (colIdx > 1) {
         const val = parseFloat(rawVal);
         td.textContent = isNaN(val) ? rawVal : formatNumber(val);
       } else {
         td.textContent = rawVal;
       }
-  
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
@@ -118,9 +108,7 @@ function renderTableFiltered(headers, rows) {
   });
 }
 
-// =========================================================
-// Google Sheets Data Loading (lazy mode)
-// =========================================================
+// Google Sheets Data Loading
 async function loadGoogleSheets(sheetUrl) {
   const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
   if (!match) return alert("Invalid Google Sheets URL");
@@ -202,10 +190,7 @@ function renderCurrentSheet(cacheKey) {
   renderTableFiltered(headers, rows);
 }
 
-// =========================================================
 // Event Listeners
-// =========================================================
-
 // Sheet selector
 document
   .getElementById("source-selector")
@@ -246,7 +231,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   overlay.style.display = "flex";
 
   try {
-    // ✅ Populate source dropdown
+    //  Populate source dropdown
     const sourceSelector = document.getElementById("source-selector");
     CONFIG.sources.forEach((src, idx) => {
       const opt = document.createElement("option");
@@ -256,7 +241,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       sourceSelector.appendChild(opt);
     });
 
-    // ✅ Auto-load first source
+    //  Auto-load first source
     await loadGoogleSheets(CONFIG.sources[0].url);
   } catch (err) {
     alert("Failed to load sources.\n\n" + err.message);
