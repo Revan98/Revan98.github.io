@@ -288,7 +288,7 @@ function renderTableFiltered(headers, rows, selectedCols) {
     language: { searchPlaceholder: "Search by name or ID", search: "" },
     layout: {
       topStart: {
-        buttons: ["csv", "excel", "colvis"]
+        buttons: ["csv", "excel", "colvis", "copy"]
       },
       bottomStart: {
         pageLength: { menu: [20, 40, 60, 80, 100] }
