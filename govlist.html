@@ -301,6 +301,7 @@ body.dark input {
             id: row["ID"],
             name: row["Name"],
             ch: row["CH"],
+            dkp: row["DKP"],
             farms: []
           };
           groups.push(currentMain);
@@ -308,7 +309,8 @@ body.dark input {
           currentMain.farms.push({
             id: row["ID"],
             name: row["Name"],
-            ch: row["CH"]
+            ch: row["CH"],
+            dkp: row["DKP"]
           });
         }
       }
@@ -341,7 +343,7 @@ body.dark input {
         tableContainer.className = "table-container";
 
         const header = document.createElement("h2");
-        header.textContent = `${gov.id} — ${gov.name} — ${gov.ch}`;
+        header.textContent = `${gov.id} — ${gov.name} — ${gov.ch} - ${gov.dkp}`;
         tableContainer.appendChild(header);
 
         const table = document.createElement("table");
@@ -351,6 +353,7 @@ body.dark input {
             <th>ID</th>
             <th>Name</th>
             <th>CH</th>
+            <th>DKP</th>
           </tr>
         `;
         table.appendChild(thead);
@@ -362,6 +365,7 @@ body.dark input {
             <td>${farm.id}</td>
             <td>${farm.name}</td>
             <td>${farm.ch}</td>
+            <td>${farm.dkp}</td>
           `;
           tbody.appendChild(row);
         });
