@@ -1,64 +1,74 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta charset="utf-8" />
-<title>DKP stats</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Governor Info</title>
 
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.min.css">
-<link rel="stylesheet" href="govinfo.css">
-
+  <link rel="stylesheet" href="govinfo.css">
 </head>
 <body>
-    <header class="navbar">
-      <div class="nav-container">
-        <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
-        <div class="nav-links" id="nav-links">
-          <a href="index.html">Dashboard</a>
-          <a href="compare.html">Compare</a>
-          <a href="dkp.html">DKP Calculator</a>
-          <a href="merge.html">Merge</a>
-          <a href="govinfo.html">Governor info</a>
-        </div>
-        <label class="theme-toggle">
-          🌞
-          <input type="checkbox" id="toggle-theme">
-          <span class="toggle-slider"></span>
-          🌙
-        </label>
-      </div>
-    </header>
-
-<div class="row">
-    <div class="left"><p></p>
+  <header class="navbar">
+    <div class="nav-container">
+      <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links"></div>
+      <label class="theme-toggle">
+        🌞
+        <input type="checkbox" id="toggle-theme">
+        <span class="toggle-slider"></span>
+        🌙
+      </label>
     </div>
-    <div class="middle">
-        <div class="middlecont">
-          <div class="card">
-            <div id="controls">
-              <label for="source-selector">Select Source:</label>
-              <select id="source-selector"></select>
-              <label for="sheet-selector">Select Worksheet:</label>
-              <select id="sheet-selector"></select>
-            </div>
-            <div id="loading-overlay">
-              <div class="spinner"></div>
-              Loading data...
-            </div>
-            <table id="data-table" class="dataTable"></table>
-          </div>
+  </header>
+
+  <main class="row">
+    <aside class="left"></aside>
+    
+    <aside class="middle">
+
+      <div class="card">
+
+        <div id="data-row">
+          <label for=""source-select>Select Source</label>
+          <select id="source-select">
+            <option value="">Select Source…</option>
+          </select>
+
+          <label for="worksheet-select">Select Worksheet</label>
+          <select id="worksheet-select">
+            <option value="">Select Worksheet…</option>
+          </select>
         </div>
-    <div class="right"><p></p></div>
-</div>
-    
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
-<script src="https://cdn.datatables.net/buttons/3.2.5/js/dataTables.buttons.js"></script>
-<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.dataTables.js"></script>
-<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.colVis.min.js"></script>
-<script src="govinfo.js"></script>
-    
+
+        <div id="loading-overlay">
+          <div class="spinner"></div>
+          Loading data...
+        </div>
+
+        <div class="dt-controls">
+          <label for="dt-size">Rows per page</label>
+          <select class="dt-size">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <input class="dt-search" placeholder="Search…" />
+        </div>
+
+        <div class="table-container">
+          <table id="data-table" class="dataTable"></table>
+        </div>
+
+        <div class="bottom-table-row">
+          <div class="dt-info"></div>
+          <div class="dt-pager"></div>
+        </div>
+      </div>
+    </aside>
+
+    <aside class="right"></aside>
+  </main>
+
+  <script src="govinfo.js"></script>
 </body>
 </html>
