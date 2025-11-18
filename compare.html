@@ -1,81 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>File Comparator</title>
-<link rel="stylesheet" href="compare.css">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Comparator</title>
+    <link rel="stylesheet" href="compare.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
+
 <body>
     <header class="navbar">
-      <div class="nav-container">
-        <!-- Hamburger for mobile -->
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-          ☰
-        </button>
-    
-        <div class="nav-links" id="nav-links">
-          <a href="index.html">Dashboard</a>
-          <a href="compare.html">Compare</a>
-          <a href="dkp.html">DKP Calculator</a>
-          <a href="merge.html">Merge</a>
-          <a href="govinfo.html">Governor info</a>
+        <div class="nav-container">
+            <!-- Hamburger for mobile -->
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                ☰
+            </button>
+
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Dashboard</a>
+                <a href="compare.html">Compare</a>
+                <a href="dkp.html">DKP Calculator</a>
+                <a href="merge.html">Merge</a>
+                <a href="govinfo.html">Governor info</a>
+            </div>
+
+            <!-- 🌙 Theme toggle -->
+            <label class="theme-toggle">
+                🌞
+                <input type="checkbox" id="toggle-theme">
+                <span class="toggle-slider"></span>
+                🌙
+            </label>
         </div>
-    
-        <!-- 🌙 Theme toggle -->
-        <label class="theme-toggle">
-          🌞
-          <input type="checkbox" id="toggle-theme">
-          <span class="toggle-slider"></span>
-          🌙
-        </label>
-      </div>
     </header>
-  
-  <div class="container">
-    <section class="card">
-      <h1>Compare Two Files</h1>
 
-      <div class="row">
-          <label>File 1:</label>
-          <input type="file" id="file1" accept=".xlsx,.csv,.json" />
-        </div>
-  
-      <div class="row">
-        <label>File 2:</label>
-        <input type="file" id="file2" accept=".xlsx,.csv,.json" />
-      </div>
-  
-      <div class="row">
-        <label>Key Column:</label>
-        <input type="text" id="keyColumn" placeholder="Enter column name" />
-      </div>
-  
-      <div class="row">
-        <label>Comparison Option:</label>
-        <select id="compareOption">
-          <option value="both">Both</option>
-          <option value="pierwszy">First Only</option>
-          <option value="drugi">Second Only</option>
-        </select>
-      </div>
+    <div class="container">
+        <section class="card">
+            <h1>Compare Two Files</h1>
 
-      <div class="row">
-        <button id="compareBtn" class="primary">Compare</button>
-        <progress id="progressBar" value="0" max="100"></progress>
-      </div>
+            <div class="row">
+                <label>File 1:</label>
+                <input type="file" id="file1" accept=".xlsx,.csv,.json" />
+            </div>
 
-      <div class="row">
-        <button id="export-xlsx">Export XLSX</button>
-        <button id="export-csv">Export CSV</button>
-        <button id="export-json">Export JSON</button>
-      </div>
-      
-      <div id="compare-results-info" class="muted">No compared data yet.</div>
-      <div id="compare-results-wrap"></div>
-    </section>
-  </div>
-<script src="compare.js"></script>
+            <div class="row">
+                <label>File 2:</label>
+                <input type="file" id="file2" accept=".xlsx,.csv,.json" />
+            </div>
+
+            <div class="row">
+                <label>Key Column:</label>
+                <input type="text" id="keyColumn" placeholder="Enter column name" />
+            </div>
+
+            <div class="row">
+                <label>Comparison Option:</label>
+                <select id="compareOption">
+                    <option value="both">Both</option>
+                    <option value="pierwszy">First Only</option>
+                    <option value="drugi">Second Only</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <button id="compareBtn" class="primary">Compare</button>
+                <progress id="progressBar" value="0" max="100"></progress>
+            </div>
+
+            <div class="row">
+                <button id="export-xlsx">Export XLSX</button>
+                <button id="export-csv">Export CSV</button>
+                <button id="export-json">Export JSON</button>
+            </div>
+
+            <div id="compare-results-info" class="muted">No compared data yet.</div>
+            <div id="compare-results-wrap"></div>
+        </section>
+    </div>
+    <script src="compare.js"></script>
 </body>
+
 </html>
