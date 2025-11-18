@@ -1,271 +1,289 @@
-const CONFIG = {
-  sources: [
-    {
-      name: "KD3202",
-      url: "https://docs.google.com/spreadsheets/d/1v9mdsOKtcypKClOvxIyrslXvGUsvVg_C6x7tHyv7N38/edit?usp=sharing",
-    },
-    {
-      name: "KD2247",
-      url: "https://docs.google.com/spreadsheets/d/1Cdzv5wgPdczAvQwgpyO0CqjPbkzAjLDd8Uu4HHcoiFU/edit?usp=sharing",
-    },
-  ],
-};
+  const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
-const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
+  let SELECTED_COLS = []; // will be set based on header length
 
-let dataTableInstance = null;
-let googleSheetsData = {};
-let currentSource = null;
-let googleSheetId = null;
-let googleSheetNames = [];
-let sourceCache = {}; // cache to store metadata per source
+  const SHORT_NUMBER_COLS = [2, 12, 13, 14, 15, 8];
 
-// Helpers
-function removeEmptyRows(rows) {
-  return rows.filter((row) =>
-    row.some((cell) => cell && String(cell).trim() !== "")
-  );
-}
+  let charts = {};
+  let diffsCache = {};
 
-function formatNumber(num) {
-  if (num === null || num === undefined || isNaN(num)) return "";
-  return Number(num).toLocaleString("en-US");
-}
+  const qs = (sel) => document.querySelector(sel);
 
-// Core Table Rendering
-function renderTableFiltered(headers, rows) {
-  rows = removeEmptyRows(rows);
-  rows = rows.filter((r) => String(r[11]).trim().toUpperCase() !== "YES"); // optional governor filter
-
-  // Destroy old DataTable if exists
-  if (dataTableInstance) {
-    dataTableInstance.destroy();
-    dataTableInstance = null;
+  function formatNumber(num) {
+    const n = Number(num);
+    return isNaN(n) ? "" : n.toLocaleString("en-US");
   }
 
-  const table = document.getElementById("data-table");
-  table.innerHTML = "";
+  function cleanRows(rows) {
+    return rows.filter((r) => r.some((c) => c && `${c}`.trim() !== ""));
+  }
 
-  // --- Build headers ---
-  const thead = document.createElement("thead");
-  const headRow = document.createElement("tr");
-  const indexTh = document.createElement("th");
-  indexTh.textContent = "#";
-  headRow.appendChild(indexTh);
+  function extractSheetId(url) {
+    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    return match ? match[1] : null;
+  }
 
-  headers.forEach((h) => {
-    const th = document.createElement("th");
-    th.textContent = h ?? "";
-    headRow.appendChild(th);
-  });
-  thead.appendChild(headRow);
+  // Multi-source cache 
+  const SOURCE_LIST = [
+    { name: "KD3202", url: "https://docs.google.com/spreadsheets/d/1v9mdsOKtcypKClOvxIyrslXvGUsvVg_C6x7tHyv7N38/edit?usp=sharing" },
+    { name: "KD2247", url: "https://docs.google.com/spreadsheets/d/1Cdzv5wgPdczAvQwgpyO0CqjPbkzAjLDd8Uu4HHcoiFU/edit?usp=sharing" },
+  ];
 
-  // Build body
-  const tbody = document.createElement("tbody");
-  rows.forEach((row, rowIdx) => {
+  const SourcesCache = new Map();
+
+  // Table render
+  function renderTable(headers, rawRows) {
+    let rows = cleanRows(rawRows);
+    rows = rows.filter((r) => String(r[11]).trim().toUpperCase() !== "YES");
+    SELECTED_COLS = headers.map((_, idx) => idx);
+    rows.sort((a,b)=>(+b[8]||0)-(+a[8]||0));
+    buildTable(headers, rows);
+  }
+
+  function buildTable(headers, rows) {
+    const table = qs("#data-table");
+    table.innerHTML = "";
+
+    const thead = document.createElement("thead");
     const tr = document.createElement("tr");
-    const indexTd = document.createElement("td");
-    indexTd.textContent = rowIdx + 1;
-    tr.appendChild(indexTd);
-  
-    headers.forEach((_, colIdx) => {
-      const td = document.createElement("td");
-      const rawVal = row[colIdx] ?? "";
-  
-      // Only format numbers for columns AFTER index 1
-      if (colIdx > 1) {
-        const val = parseFloat(rawVal);
-        td.textContent = isNaN(val) ? rawVal : formatNumber(val);
-      } else {
-        td.textContent = rawVal;
-      }
-      tr.appendChild(td);
+    const indexTh = document.createElement("th");
+    indexTh.textContent = "#";
+    tr.appendChild(indexTh);
+
+    SELECTED_COLS.forEach((i) => {
+      const th = document.createElement("th");
+      th.classList.add("dt-sortable");
+      const label = document.createElement("span");
+      label.textContent = headers[i] || "";
+      const icons = document.createElement("span");
+      icons.className = "sort-icons";
+      icons.innerHTML = `<span class="up">▲</span><span class="down">▼</span>`;
+      th.appendChild(label);
+      th.appendChild(icons);
+      tr.appendChild(th);
     });
-    tbody.appendChild(tr);
-  });
+    thead.appendChild(tr);
 
-  table.appendChild(thead);
-  table.appendChild(tbody);
-
-  // --- Initialize DataTable ---
-  dataTableInstance = new DataTable("#data-table", {
-    paging: true,
-    scrollY: "50vh",
-    scrollX: "100%",
-    scrollCollapse: true,
-    order: [],
-    searching: true,
-    info: false,
-    autoWidth: true,
-    pageLength: 20,
-    language: { searchPlaceholder: "Search by name or ID", search: "" },
-    layout: {
-      topStart: { buttons: ["csv", "excel", "copy"] },
-      bottomStart: {
-        pageLength: { menu: [20, 40, 60, 80, 100] },
-      },
-    },
-  });
-}
-
-// Google Sheets Data Loading
-async function loadGoogleSheets(sheetUrl) {
-  const match = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  if (!match) return alert("Invalid Google Sheets URL");
-  googleSheetId = match[1];
-
-  // Use cached metadata if available
-  if (sourceCache[googleSheetId]) {
-    googleSheetNames = sourceCache[googleSheetId];
-  } else {
-    const metaRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`
-    );
-    if (!metaRes.ok) throw new Error("Google Sheets API error");
-    const meta = await metaRes.json();
-    if (!meta.sheets) throw new Error("No sheets found or access denied.");
-
-    googleSheetNames = meta.sheets.map((s) => s.properties.title);
-    sourceCache[googleSheetId] = googleSheetNames; // cache
+    const tbody = document.createElement("tbody");
+    const maxValues = getMaxValues(rows);
+    rows.forEach((row, idx)=>{
+      const tr = document.createElement("tr");
+      tr.dataset.id = row[0];
+      const idxCell = document.createElement("td");
+      idxCell.textContent = idx+1;
+      tr.appendChild(idxCell);
+      SELECTED_COLS.forEach(col=>tr.appendChild(makeCell(row,col,maxValues[col])));
+      tbody.appendChild(tr);
+    });
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    activateDataTable();
   }
 
-  currentSource = sheetUrl;
+  function getMaxValues(rows) {
+    const max = {};
+    SELECTED_COLS.forEach(c=>max[c]=Math.max(...rows.map(r=>+r[c]||0)));
+    return max;
+  }
 
-  // Populate sheet selector
-  const selector = document.getElementById("sheet-selector");
-  selector.innerHTML = "";
-  googleSheetNames.forEach((name, idx) => {
+    function makeCell(row, col, maxVal) {
+    const td = document.createElement("td");
+    const wrapper = document.createElement("div");
+    wrapper.style.display = "flex";
+    wrapper.style.flexDirection = "column";
+    wrapper.style.alignItems = "center";
+    wrapper.style.gap = "4px";
+
+    const raw = row[col];
+    const numeric = +raw;
+    const text = document.createElement("div");
+    text.style.fontWeight = "500";
+    text.style.fontSize = "13px";
+
+    // Format numeric except first two columns
+    if (col > 1 && !isNaN(numeric)) {
+        text.textContent = formatNumber(numeric);
+    } else {
+        text.textContent = raw;
+    }
+
+    wrapper.appendChild(text);
+    td.appendChild(wrapper);
+    return td;
+    }
+
+  // Table
+  function activateDataTable(){
+    const table = qs("#data-table");
+    const tbody = table.querySelector("tbody");
+    if(!tbody) return;
+    const rows=[...tbody.querySelectorAll("tr")];
+    const state=table.__dtState||{filteredRows:rows.slice(),page:1,pageSize:20,currentSort:{col:null,dir:1}};
+    table.__dtState=state;
+
+    const controlBar = qs(".dt-controls");
+    const searchInput = controlBar.querySelector("input.dt-search");
+    const sizeSelect = controlBar.querySelector("select.dt-size");
+    const infoBox = qs(".bottom-table-row .dt-info");
+    const pager = qs(".bottom-table-row .dt-pager");
+
+    sizeSelect.value = state.pageSize;
+    searchInput.value = "";
+
+    searchInput.oninput = ()=>{
+      const q = searchInput.value.toLowerCase().trim();
+      state.filteredRows = rows.filter(r=>r.textContent.toLowerCase().includes(q));
+      state.page=1; renderPage();
+    };
+
+    sizeSelect.onchange = ()=>{
+      state.pageSize=+sizeSelect.value; state.page=1; renderPage();
+    };
+
+    table.querySelectorAll("thead th").forEach((th, colIndex)=>{
+      if(colIndex===0) return;
+      th.style.cursor="pointer";
+      th.onclick=()=>{
+        if(state.currentSort.col===colIndex) state.currentSort.dir*=-1;
+        else state.currentSort={col:colIndex,dir:1};
+        updateSortIcons();
+        state.filteredRows.sort((a,b)=>{
+          const Atext=a.children[colIndex].innerText.replace(/,/g,"").trim();
+          const Btext=b.children[colIndex].innerText.replace(/,/g,"").trim();
+          const An=Number(Atext); const Bn=Number(Btext);
+          const cmp=(isFinite(An)&&isFinite(Bn))?(An-Bn):Atext.localeCompare(Btext);
+          return cmp*state.currentSort.dir;
+        });
+        function updateSortIcons(){
+          table.querySelectorAll("thead th").forEach((th,idx)=>{
+            th.classList.remove("sorted-asc","sorted-desc");
+            if(idx===state.currentSort.col){
+              th.classList.add(state.currentSort.dir===1?"sorted-asc":"sorted-desc");
+            }
+          });
+        }
+        state.page=1; renderPage();
+      };
+    });
+
+    function makeBtn(label,page,opts={}){
+      const b=document.createElement("button");
+      b.textContent=label;
+      if(opts.disabled) b.disabled=true;
+      if(opts.active) b.classList.add("active");
+      b.onclick=()=>{if(opts.disabled)return; state.page=page; renderPage();};
+      return b;
+    }
+
+    function get5Centered(current,total,size=5){
+      if(total<=size) return Array.from({length:total},(_,i)=>i+1);
+      const half=Math.floor(size/2); let start=current-half; let end=current+half;
+      if(start<1){start=1;end=size;}
+      if(end>total){end=total-size+1;}
+      const arr=[]; for(let i=start;i<=end;i++) arr.push(i); return arr;
+    }
+
+    function renderPager(totalPages){
+      pager.innerHTML="";
+      pager.appendChild(makeBtn("<<",1,{disabled:state.page===1}));
+      pager.appendChild(makeBtn("<",Math.max(1,state.page-1),{disabled:state.page===1}));
+      const nums=get5Centered(state.page,totalPages,5);
+      if(nums[0]>1){const span=document.createElement("span");span.textContent="...";span.className="ell";pager.appendChild(span);}
+      nums.forEach(p=>pager.appendChild(makeBtn(p,p,{active:p===state.page})));
+      if(nums[nums.length-1]<totalPages){const span=document.createElement("span");span.textContent="...";span.className="ell";pager.appendChild(span);}
+      pager.appendChild(makeBtn(">",Math.min(totalPages,state.page+1),{disabled:state.page===totalPages}));
+      pager.appendChild(makeBtn(">>",totalPages,{disabled:state.page===totalPages}));
+    }
+
+    function renderPage(){
+      const prevSelectedId = tbody.querySelector(".selected")?.dataset?.id;
+      tbody.innerHTML="";
+      const total=state.filteredRows.length;
+      const totalPages=Math.max(1,Math.ceil(total/state.pageSize));
+      if(state.page>totalPages) state.page=totalPages;
+      const start=(state.page-1)*state.pageSize;
+      const end=Math.min(start+state.pageSize,total);
+      const slice=state.filteredRows.slice(start,end);
+      slice.forEach(r=>tbody.appendChild(r));
+      if(prevSelectedId){const row=tbody.querySelector(`tr[data-id="${prevSelectedId}"]`);if(row) row.classList.add("selected");}
+      infoBox.textContent = total===0?"No entries":`Showing ${start+1}–${end} of ${total}`;
+      renderPager(totalPages);
+    }
+
+    state.filteredRows = rows.slice();
+    renderPage();
+  }
+
+  // Multi-source loader
+  async function loadSourceSheet(url){
+    if(SourcesCache.has(url)) return SourcesCache.get(url);
+    const sheetId=extractSheetId(url);
+    if(!sheetId) throw new Error("Invalid Google Sheets URL: "+url);
+    const metaRes=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${API_KEY}`);
+    const meta=await metaRes.json();
+    const sheetNames=meta.sheets.map(s=>s.properties.title);
+    const entry={sheetId,sheetNames,data:{}};
+    SourcesCache.set(url,entry);
+    return entry;
+  }
+
+  async function loadWorksheetData(url,sheetName){
+    const entry=SourcesCache.get(url);
+    if(!entry) throw new Error("Source not in cache");
+    if(entry.data[sheetName]) return entry.data[sheetName];
+    const res=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${entry.sheetId}/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`);
+    const json=await res.json();
+    entry.data[sheetName]=json.values||[];
+    return entry.data[sheetName];
+  }
+
+  // Init 
+  document.addEventListener("DOMContentLoaded",async ()=>{
+    const savedTheme=localStorage.getItem("theme");
+    if(savedTheme==="dark"){document.body.classList.add("dark");qs("#toggle-theme").checked=true;}
+
+    const sourceSelect=qs("#source-select");
+    const worksheetSelect=qs("#worksheet-select");
+
+    SOURCE_LIST.forEach(src => {
     const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
-    if (idx === 0) opt.selected = true;
-    selector.appendChild(opt);
-  });
-
-  // Auto-load first sheet
-  if (googleSheetNames.length > 0) {
-    const overlay = document.getElementById("loading-overlay");
-    overlay.style.display = "flex";
-    try {
-      await loadSheetByName(googleSheetNames[0]);
-    } catch (err) {
-      alert("Error loading first worksheet: " + err.message);
-    } finally {
-      overlay.style.display = "none";
-    }
-  }
-}
-
-async function loadSheetByName(sheetName) {
-  const match = currentSource.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  const sheetId = match ? match[1] : googleSheetId;
-  const cacheKey = `${sheetId}:${sheetName}`;
-
-  // Cached data check
-  if (googleSheetsData[cacheKey]) {
-    renderCurrentSheet(cacheKey);
-    return;
-  }
-
-  const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(
-      sheetName
-    )}?key=${API_KEY}`
-  );
-  if (!res.ok) throw new Error(`Error fetching ${sheetName}: ${res.statusText}`);
-  const data = await res.json();
-  googleSheetsData[cacheKey] = data.values || [];
-  renderCurrentSheet(cacheKey);
-}
-
-function renderCurrentSheet(cacheKey) {
-  const data = googleSheetsData[cacheKey];
-  if (!data || !data.length) {
-    document.getElementById("data-table").innerHTML =
-      "<p>No data found in this sheet.</p>";
-    return;
-  }
-  const headers = data[0];
-  const rows = data.slice(1);
-  renderTableFiltered(headers, rows);
-}
-
-// Event Listeners
-// Sheet selector
-document
-  .getElementById("source-selector")
-  .addEventListener("change", async (e) => {
-    const overlay = document.getElementById("loading-overlay");
-    overlay.style.display = "flex";
-    try {
-      await loadGoogleSheets(e.target.value);
-    } catch (err) {
-      alert("Error loading selected source: " + err.message);
-    } finally {
-      overlay.style.display = "none";
-    }
-  });
-
-// Sheet selector
-document
-  .getElementById("sheet-selector")
-  .addEventListener("change", async (e) => {
-    const overlay = document.getElementById("loading-overlay");
-    overlay.style.display = "flex";
-    try {
-      await loadSheetByName(e.target.value);
-    } catch (err) {
-      alert("Error loading selected sheet: " + err.message);
-    } finally {
-      overlay.style.display = "none";
-    }
-  });
-
-// DOM ready
-document.addEventListener("DOMContentLoaded", async () => {
-  if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark");
-  }
-
-  const overlay = document.getElementById("loading-overlay");
-  overlay.style.display = "flex";
-
-  try {
-    //  Populate source dropdown
-    const sourceSelector = document.getElementById("source-selector");
-    CONFIG.sources.forEach((src, idx) => {
-      const opt = document.createElement("option");
-      opt.value = src.url;
-      opt.textContent = src.name;
-      if (idx === 0) opt.selected = true;
-      sourceSelector.appendChild(opt);
+    opt.value = src.url;    // URL still used internally
+    opt.textContent = src.name;  // Friendly name shown to user
+    sourceSelect.appendChild(opt);
     });
 
-    //  Auto-load first source
-    await loadGoogleSheets(CONFIG.sources[0].url);
-  } catch (err) {
-    alert("Failed to load sources.\n\n" + err.message);
-  } finally {
-    overlay.style.display = "none";
-  }
-});
+    sourceSelect.addEventListener("change",async ()=>{
+      const url=sourceSelect.value;
+      worksheetSelect.innerHTML=`<option value="">Select Worksheet…</option>`;
+      if(!url) return;
+      qs("#loading-overlay").style.display="flex";
+      try{
+        const entry=await loadSourceSheet(url);
+        entry.sheetNames.forEach(name=>{
+          const opt=document.createElement("option");
+          opt.value=name; opt.textContent=name;
+          worksheetSelect.appendChild(opt);
+        });
+      }catch(e){alert("Sheet load error:\n"+e.message);}finally{qs("#loading-overlay").style.display="none";}
+    });
 
-// Theme toggle
-const themeToggle = document.getElementById("toggle-theme");
-if (localStorage.getItem("theme") === "dark") {
-  document.body.classList.add("dark");
-  themeToggle.checked = true;
-}
+    worksheetSelect.addEventListener("change",async ()=>{
+      const url=sourceSelect.value;
+      const sheetName=worksheetSelect.value;
+      if(!url||!sheetName) return;
+      qs("#loading-overlay").style.display="flex";
+      try{
+        const rows=await loadWorksheetData(url,sheetName);
+        const headers=rows[0]||[];
+        const bodyRows=rows.slice(1);
+        renderTable(headers,bodyRows);
+      }catch(e){alert("Worksheet load error:\n"+e.message);
+      }finally{qs("#loading-overlay").style.display="none";}
+    });
+  });
 
-themeToggle.addEventListener("change", () => {
-  document.body.classList.toggle("dark", themeToggle.checked);
-  localStorage.setItem(
-    "theme",
-    document.body.classList.contains("dark") ? "dark" : "light"
-  );
-});
-
-// Mobile nav
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.getElementById("nav-links");
-hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+  // Theme toggle 
+  qs("#toggle-theme").addEventListener("change",(e)=>{
+    document.body.classList.toggle("dark", e.target.checked);
+    localStorage.setItem("theme", e.target.checked?"dark":"light");
+  });
