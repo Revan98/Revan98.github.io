@@ -119,8 +119,19 @@ function exportToXlsx(data, name) {
 
 function exportToCsv(data, name) {
   if (!data || !data.length) return;
-  const ws = XLSX.utils.json_to_sheet(data);
-  const csv = XLSX.utils.sheet_to_csv(ws);
+
+  const columns = Object.keys(data[0]);
+
+  // Escape CSV fields properly
+  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+
+  const csv =
+    columns.map(escape).join(",") +
+    "\n" +
+    data
+      .map((row) => columns.map((col) => escape(row[col])).join(","))
+      .join("\n");
+
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -132,9 +143,11 @@ function exportToCsv(data, name) {
 
 function exportToJson(data, name) {
   if (!data || !data.length) return;
+
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: "application/json",
   });
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
