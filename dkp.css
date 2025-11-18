@@ -4,7 +4,11 @@
       --accent: #0b74d1;
       --muted: #586069;
       --table-wrap: #fff;
+        --card-bg: rgba(255, 255, 255, 0.8);
     }
+body.dark  {
+   --card-bg: rgba(26, 26, 26, 0.85);
+}
     *{box-sizing:border-box}
     
     body {
