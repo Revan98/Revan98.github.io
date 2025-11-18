@@ -461,13 +461,22 @@
   }
   function exportToCsv(rows) {
     if (!rows) return alert("No results to export.");
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const csv = XLSX.utils.sheet_to_csv(ws);
+
+    const columns = Object.keys(rows[0]);
+    const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`; // proper CSV escaping
+
+    const csv =
+      columns.map(escape).join(",") +
+      "\n" +
+      rows
+        .map((row) => columns.map((col) => escape(row[col])).join(","))
+        .join("\n");
+
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dkp_output_${new Date()
+    a.download = `merge_output_${new Date()
       .toISOString()
       .replace(/[:.]/g, "-")}.csv`;
     document.body.appendChild(a);
@@ -475,14 +484,18 @@
     a.remove();
     URL.revokeObjectURL(url);
   }
+
   function exportToJson(rows) {
     if (!rows) return alert("No results to export.");
-    const txt = JSON.stringify(rows, null, 2);
-    const blob = new Blob([txt], { type: "application/json" });
+
+    const blob = new Blob([JSON.stringify(rows, null, 2)], {
+      type: "application/json",
+    });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dkp_output_${new Date()
+    a.download = `merge_output_${new Date()
       .toISOString()
       .replace(/[:.]/g, "-")}.json`;
     document.body.appendChild(a);
