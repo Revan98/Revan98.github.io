@@ -3,14 +3,12 @@ const progressEl = document.getElementById("progressBar");
 const resultsWrap = document.getElementById("compare-results-wrap");
 const resultsInfo = document.getElementById("compare-results-info");
 
-// -----------------------------
 // Read Excel/CSV/JSON
-// -----------------------------
 async function readFile(file) {
   const name = file.name.toLowerCase();
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = (e) => {
       try {
         if (name.endsWith(".xlsx") || name.endsWith(".csv")) {
           const wb = XLSX.read(e.target.result, { type: "binary" });
@@ -19,26 +17,29 @@ async function readFile(file) {
         } else if (name.endsWith(".json")) {
           resolve(JSON.parse(e.target.result));
         } else reject("Unsupported file format");
-      } catch (err) { reject(err); }
+      } catch (err) {
+        reject(err);
+      }
     };
-    if (name.endsWith(".xlsx") || name.endsWith(".csv")) reader.readAsBinaryString(file);
+    if (name.endsWith(".xlsx") || name.endsWith(".csv"))
+      reader.readAsBinaryString(file);
     else reader.readAsText(file);
   });
 }
 
-// -----------------------------
-// Compare logic (handles both files properly)
-// -----------------------------
+// Compare logic
 function compareRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
   const compared = {};
-  if (row1) for (const [k, v] of Object.entries(row1)) compared[prefix1 + k] = v;
-  if (row2) for (const [k, v] of Object.entries(row2)) compared[prefix2 + k] = v;
+  if (row1)
+    for (const [k, v] of Object.entries(row1)) compared[prefix1 + k] = v;
+  if (row2)
+    for (const [k, v] of Object.entries(row2)) compared[prefix2 + k] = v;
   return compared;
 }
 
 function compareData(df1, df2, keyColumn, option) {
-  const map1 = new Map(df1.map(r => [r[keyColumn], r]));
-  const map2 = new Map(df2.map(r => [r[keyColumn], r]));
+  const map1 = new Map(df1.map((r) => [r[keyColumn], r]));
+  const map2 = new Map(df2.map((r) => [r[keyColumn], r]));
   const allKeys = new Set([...map1.keys(), ...map2.keys()]);
 
   const matching = [];
@@ -51,17 +52,21 @@ function compareData(df1, df2, keyColumn, option) {
     if (in1 && in2) {
       // matched in both files
       matching.push(compareRows(map1.get(key), map2.get(key)));
-    } else if (option === "both" || (option === "pierwszy" && in1) || (option === "drugi" && in2)) {
+    } else if (
+      option === "both" ||
+      (option === "pierwszy" && in1) ||
+      (option === "drugi" && in2)
+    ) {
       // unmatched in one or both files
-      nonMatching.push(compareRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null));
+      nonMatching.push(
+        compareRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null)
+      );
     }
   }
   return { matching, nonMatching };
 }
 
-// -----------------------------
 // Render tables
-// -----------------------------
 function renderResultsTables(matchRows, nonMatchRows) {
   resultsWrap.innerHTML = "";
 
@@ -77,7 +82,8 @@ function renderResultsTables(matchRows, nonMatchRows) {
 
     const columns = Object.keys(rows[0]);
     const thead = document.createElement("thead");
-    thead.innerHTML = "<tr>" + columns.map(c => `<th>${c}</th>`).join("") + "</tr>";
+    thead.innerHTML =
+      "<tr>" + columns.map((c) => `<th>${c}</th>`).join("") + "</tr>";
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
@@ -85,7 +91,7 @@ function renderResultsTables(matchRows, nonMatchRows) {
     for (let i = 0; i < max; i++) {
       const r = rows[i];
       const tr = document.createElement("tr");
-      tr.innerHTML = columns.map(c => `<td>${r[c] ?? ""}</td>`).join("");
+      tr.innerHTML = columns.map((c) => `<td>${r[c] ?? ""}</td>`).join("");
       tbody.appendChild(tr);
     }
     table.appendChild(tbody);
@@ -94,18 +100,21 @@ function renderResultsTables(matchRows, nonMatchRows) {
   };
 
   resultsWrap.appendChild(makeTable(matchRows, "Matching Rows (Top 10)"));
-  resultsWrap.appendChild(makeTable(nonMatchRows, "Non-Matching Rows (Top 10)"));
+  resultsWrap.appendChild(
+    makeTable(nonMatchRows, "Non-Matching Rows (Top 10)")
+  );
 }
 
-// -----------------------------
 // Export helpers
-// -----------------------------
 function exportToXlsx(data, name) {
   if (!data || !data.length) return;
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Compare");
-  XLSX.writeFile(wb, `${name}_${new Date().toISOString().replace(/[:.]/g,"-")}.xlsx`);
+  XLSX.writeFile(
+    wb,
+    `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`
+  );
 }
 
 function exportToCsv(data, name) {
@@ -116,31 +125,32 @@ function exportToCsv(data, name) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${name}_${new Date().toISOString().replace(/[:.]/g,"-")}.csv`;
+  a.download = `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
 function exportToJson(data, name) {
   if (!data || !data.length) return;
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${name}_${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
+  a.download = `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-// -----------------------------
 // Compare button
-// -----------------------------
 document.getElementById("compareBtn").addEventListener("click", async () => {
   const file1 = document.getElementById("file1").files[0];
   const file2 = document.getElementById("file2").files[0];
   const keyCol = document.getElementById("keyColumn").value.trim();
   const option = document.getElementById("compareOption").value;
-  if (!file1 || !file2 || !keyCol) return alert("Please select both files and a key column.");
+  if (!file1 || !file2 || !keyCol)
+    return alert("Please select both files and a key column.");
 
   progressEl.value = 5;
   resultsInfo.textContent = "Reading files...";
@@ -162,9 +172,7 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
   }
 });
 
-// -----------------------------
 // Export buttons (save separate files)
-// -----------------------------
 document.getElementById("export-xlsx").addEventListener("click", () => {
   if (!comparedResults.matching.length && !comparedResults.nonMatching.length)
     return alert("No results to export yet.");
@@ -189,9 +197,7 @@ document.getElementById("export-json").addEventListener("click", () => {
     exportToJson(comparedResults.nonMatching, "compare_nonmatching");
 });
 
-// -----------------------------
 // Theme + hamburger menu
-// -----------------------------
 const toggleTheme = document.getElementById("toggle-theme");
 function applyTheme(isDark) {
   document.body.classList.toggle("dark", isDark);
