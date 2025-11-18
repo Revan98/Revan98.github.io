@@ -1,522 +1,601 @@
+
+/* CONFIGURATION */
 const CONFIG = {
-  source: "google",
-  googleSheetUrl: "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
+source: "google",
+googleSheetUrl:
+    "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
 };
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
-const selectedColumns = [0, 1, 2, 12, 13, 14, 15, 8, 9, 7];
-const selectedColumnsTop = [0, 1, 9];
 
-let dataTableInstance = null;
+const SELECTED_COLS = [0, 1, 2, 12, 13, 14, 15, 8, 9];
+const SHORT_NUMBER_COLS = [2, 12, 13, 14, 15, 8];
+const PROGRESS_COLS = [2, 12, 13, 14, 15];
+const DIFF_COLS = [2, 12, 13, 14, 15];
+
 let googleSheetId = null;
 let googleSheetNames = [];
 let googleSheetsData = {};
 let currentSource = null;
-let charts = {};
-let tableClickHandler = null;
 
+let charts = {};
+let diffsCache = {};
+
+const qs = (sel) => document.querySelector(sel);
+
+function formatNumber(num) {
+const n = Number(num);
+return isNaN(n) ? "" : n.toLocaleString("en-US");
+}
+
+function cleanRows(rows) {
+return rows.filter((r) => r.some((c) => c && `${c}`.trim() !== ""));
+}
+
+function extractSheetId(url) {
+const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+return match ? match[1] : null;
+}
+
+/* DIFF CALCULATIONS — CACHED */
+function computeDiffs() {
+diffsCache = {};
+
+const lastSheet = googleSheetNames.at(-1);
+const rows = googleSheetsData[lastSheet]?.slice(1) || [];
+
+rows.forEach((row) => {
+    const id = String(row[0]).trim();
+    diffsCache[id] = {
+    3: +row[3] || 0,
+    4: +row[4] || 0,
+    5: +row[5] || 0,
+    6: +row[6] || 0,
+    2: +row[16] || 0,
+    12: +row[4] || 0,
+    13: +row[5] || 0,
+    14: +row[3] || 0,
+    15: +row[6] || 0,
+    };
+});
+}
+
+function getDiff(id, col) {
+return diffsCache[id]?.[col] ?? 0;
+}
+
+/* CHARTS */
 function initCharts() {
-  const chartConfigs = [
+const chartConfigs = [
     { id: "chart4", label: "T4 kills" },
     { id: "chart5", label: "T5 kills" },
     { id: "chart6", label: "Deads gained" },
-    { id: "chart7", label: "KP gained" }
-  ];
+    { id: "chart7", label: "KP gained" },
+];
 
-  const chartTextColor = getComputedStyle(document.body).getPropertyValue("--chart-text").trim();
-  const chartGridColor = getComputedStyle(document.body).getPropertyValue("--chart-grid").trim();
-  const chartLineColor = getComputedStyle(document.body).getPropertyValue("--chart-line").trim();
+const styles = getChartStyles();
 
-  chartConfigs.forEach(cfg => {
-    const ctx = document.getElementById(cfg.id).getContext("2d");
-    charts[cfg.id] = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: cfg.label,
-          data: [],
-          borderColor: chartLineColor,
-          backgroundColor: chartLineColor + "33",
-          tension: 0.3
-        }]
-      },
-      options: {
+chartConfigs.forEach(({ id, label }) => {
+    const ctx = qs(`#${id}`).getContext("2d");
+    charts[id] = new Chart(ctx, {
+    type: "line",
+    data: { labels: [], datasets: [{ label, data: [], ...styles.dataset }] },
+    options: {
         responsive: true,
-        plugins: {
-          legend: {
-            labels: { color: chartTextColor }
-          }
-        },
+        plugins: { legend: { labels: { color: styles.text } } },
         scales: {
-          x: { ticks: { color: chartTextColor },
-               grid: { color: chartGridColor } 
-             },
-          y: { ticks: { color: chartTextColor },
-               grid: { color: chartGridColor } 
-             }
-        }
-      }
+        x: { ticks: { color: styles.text }, grid: { color: styles.grid } },
+        y: { ticks: { color: styles.text }, grid: { color: styles.grid } },
+        },
+    },
     });
-  });
+});
 }
 
-function removeEmptyRows(rows) {
-  return rows.filter(row => row.some(cell => cell && String(cell).trim() !== ""));
+function getChartStyles() {
+const css = (v) => getComputedStyle(document.body).getPropertyValue(v).trim();
+return {
+    text: css("--chart-text"),
+    grid: css("--chart-grid"),
+    line: css("--chart-line"),
+    dataset: {
+    borderColor: css("--chart-line"),
+    backgroundColor: css("--chart-line") + "33",
+    tension: 0.3,
+    },
+};
 }
 
 function resetCharts() {
-  Object.values(charts).forEach(chart => {
-    chart.data.labels = [];
-    chart.data.datasets.forEach(ds => ds.data = []);
-    chart.update();
-  });
-}
-function getSheetDiffsForPlayers(playerId) {
-  let lastRows;
-
-  if (currentSource === "google") {
-    const lastSheet = googleSheetNames[googleSheetNames.length - 1];
-    lastRows = (googleSheetsData[lastSheet] || []).slice(1);
-  }
-
-  if (!lastRows) return null;
-
-  const lastRow = lastRows.find(r => String(r[0]).trim() === String(playerId).trim());
-  if (!lastRow) return null;
-
-  return {
-    3: parseFloat(lastRow[3]) || 0,
-    4: parseFloat(lastRow[4]) || 0,
-    5: parseFloat(lastRow[5]) || 0,
-    6: parseFloat(lastRow[6]) || 0,
-
-    // still mapping extra columns directly from last sheet
-    2: parseFloat(lastRow[16]) || 0,
-    12: parseFloat(lastRow[4]) || 0,
-    13: parseFloat(lastRow[5]) || 0,
-    14: parseFloat(lastRow[3]) || 0,
-    15: parseFloat(lastRow[6]) || 0,
-  };
+Object.values(charts).forEach((c) => {
+    c.data.labels = [];
+    c.data.datasets[0].data = [];
+    c.update();
+});
 }
 
-function formatNumber(num) {
-  if (num === null || num === undefined || isNaN(num)) return "";
-  return Number(num).toLocaleString("en-US");
+function updateCharts(playerId) {
+const sheets = googleSheetNames;
+
+const values = sheets.map((sheet) => {
+    const row = googleSheetsData[sheet].slice(1).find((r) => `${r[0]}` === playerId);
+    return {
+    t4: row?.[4] || 0,
+    t5: row?.[5] || 0,
+    deads: row?.[6] || 0,
+    kp: row?.[3] || 0,
+    };
+});
+
+charts.chart4.data.labels = sheets;
+charts.chart4.data.datasets[0].data = values.map((v) => v.t4);
+
+charts.chart5.data.labels = sheets;
+charts.chart5.data.datasets[0].data = values.map((v) => v.t5);
+
+charts.chart6.data.labels = sheets;
+charts.chart6.data.datasets[0].data = values.map((v) => v.deads);
+
+charts.chart7.data.labels = sheets;
+charts.chart7.data.datasets[0].data = values.map((v) => v.kp);
+
+Object.values(charts).forEach((c) => c.update());
 }
 
-function renderTableFiltered(headers, rows, selectedCols) {
-  resetCharts(); // clear old chart data
-  rows = removeEmptyRows(rows);
-  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
+/* RENDER TABLE & UI */
+function renderTable(headers, rawRows) {
+resetCharts();
 
-  // ----------------------------
-  // 1️⃣ Top players section
-  // ----------------------------
-  const dkpColIndex = selectedCols.indexOf(8);
-  if (dkpColIndex !== -1) {
-    rows.sort((a, b) => (parseFloat(b[selectedCols[dkpColIndex]]) || 0) - (parseFloat(a[selectedCols[dkpColIndex]]) || 0));
-    const top3 = rows.slice(0, 3);
-    const topContainer = document.getElementById("top-players");
-    topContainer.innerHTML = "";
-    top3.forEach((player, idx) => {
-      const id = player[0] ?? "";
-      const name = player[1] ?? "";
-      const box = document.createElement("div");
-      box.className = "player-box";
-      box.innerHTML = `<div class="player-rank">TOP${idx + 1}</div><h3>${name}</h3><p>ID: ${id}</p>`;
-      topContainer.appendChild(box);
-    });
-  }
+let rows = cleanRows(rawRows);
+rows = rows.filter((r) => String(r[11]).trim().toUpperCase() !== "YES");
 
-  // ----------------------------
-  // 2️⃣ Rebuild DataTable
-  // ----------------------------
-  if (dataTableInstance) {
-    dataTableInstance.destroy();
-    dataTableInstance = null;
-  }
+computeDiffs(); // Cache diffs once
 
-  const table = document.getElementById("data-table");
-  table.innerHTML = "";
+rows.sort((a, b) => (+b[8] || 0) - (+a[8] || 0));
+renderTopPlayers(rows.slice(0, 3));
+buildTable(headers, rows);
+renderTotals(rows);
+}
 
-  // Headers
-  const filteredHeaders = selectedCols.map(i => headers[i] ?? "");
-  const thead = document.createElement("thead");
-  const headRow = document.createElement("tr");
-  const indexTh = document.createElement("th");
-  indexTh.textContent = "#";
-  headRow.appendChild(indexTh);
-  filteredHeaders.forEach(h => {
-    const th = document.createElement("th");
-    th.textContent = h ?? "";
-    headRow.appendChild(th);
-  });
-  thead.appendChild(headRow);
+function renderTopPlayers(players) {
+const box = qs("#top-players");
+box.innerHTML = "";
 
-  // ----------------------------
-  // 3️⃣ Table Body with Bars
-  // ----------------------------
-  const tbody = document.createElement("tbody");
-  const columnMaxValues = {};
+players.forEach((p, i) => {
+    const el = document.createElement("div");
+    el.className = "player-box";
+    el.innerHTML = `
+    <div class="player-rank">TOP${i + 1}</div>
+    <h3>${p[1]}</h3>
+    <p>ID: ${p[0]}</p>
+    `;
+    box.appendChild(el);
+});
+}
 
-  // Precompute max for each column (for bar scaling)
-  selectedCols.forEach(col => {
-    const values = rows.map(r => parseFloat(r[col]) || 0);
-    columnMaxValues[col] = Math.max(...values);
-  });
+function buildTable(headers, rows) {
+// Clear any previous DataTable instance placeholder
+const table = qs("#data-table");
+table.innerHTML = "";
 
-  rows.forEach((row, rowIdx) => {
+// Build header
+const thead = document.createElement("thead");
+const tr = document.createElement("tr");
+const indexTh = document.createElement("th");
+indexTh.textContent = "#";
+// no sort class, no icons
+tr.appendChild(indexTh);
+
+SELECTED_COLS.forEach((i) => {
+const th = document.createElement("th");
+th.classList.add("dt-sortable");
+
+const label = document.createElement("span");
+label.textContent = headers[i] || "";
+
+const icons = document.createElement("span");
+icons.className = "sort-icons";
+icons.innerHTML = `<span class="up">▲</span><span class="down">▼</span>`;
+
+th.appendChild(label);
+th.appendChild(icons);
+tr.appendChild(th);
+});
+
+thead.appendChild(tr);
+
+// Build body
+const tbody = document.createElement("tbody");
+const maxValues = getMaxValues(rows);
+
+rows.forEach((row, idx) => {
     const tr = document.createElement("tr");
+    tr.dataset.id = row[0];
 
-    const indexTd = document.createElement("td");
-    indexTd.textContent = rowIdx + 1;
-    tr.appendChild(indexTd);
-    tr.dataset.originalIndex = rowIdx + 1;
+    const idxCell = document.createElement("td");
+    idxCell.textContent = idx + 1;
+    tr.appendChild(idxCell);
 
-    selectedCols.forEach(colIndex => {
-      const td = document.createElement("td");
-      // ---------------- Value formatting ----------------
-      let rawVal = row[colIndex];
-      let val = isNaN(parseFloat(rawVal)) ? rawVal : parseFloat(rawVal);
-      
-      const shortenableCols = [2, 12, 13, 14, 15, 8]; // Power, T4, T5, KP, Deads
-      let displayVal;
-      
-      if (colIndex === 0) {
-        // ID column: show as-is, no separators
-        displayVal = String(rawVal);
-      } else if (shortenableCols.includes(colIndex)) {
-        displayVal = formatNumber(val);
-      } else if (typeof rawVal === "string") {
-        displayVal = rawVal;
-      } else {
-        displayVal = val.toLocaleString("en-US").replace(/\s/g, "");
-      }
-    
-      // wrapper container for all elements
-      const wrapper = document.createElement("div");
-      wrapper.style.display = "flex";
-      wrapper.style.flexDirection = "column";
-      wrapper.style.alignItems = "center";
-      wrapper.style.gap = "4px";
-    
-      // 1️⃣ value text
-      const text = document.createElement("div");
-      text.textContent = displayVal;
-      text.style.fontWeight = "500";
-      text.style.fontSize = "13px";
-      wrapper.appendChild(text);
-    
-      // detect theme dynamically
-      const isDark = document.body.classList.contains("dark");
-    
-      // 2️⃣ diff box (under value)
-      let diffBox = null;
-      if ([2, 12, 13, 14, 15].includes(colIndex)) {
-        const diffs = getSheetDiffsForPlayers(row[0]);
-        if (diffs) {
-          const diff = diffs[colIndex] ?? 0;
-          if (diff !== 0) {
-            const diffBox = document.createElement("div");
-            diffBox.className = `diff-box ${diff > 0 ? "diff-positive" : "diff-negative"}`;
-            diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
-            wrapper.appendChild(diffBox);
-          }
-        }
-      }
-
-      // 3️⃣ progress bar (under diff box)
-      const progressCols = [2, 8, 12, 13, 14, 15]; // Power, T4, T5, KP, Deads
-      if (progressCols.includes(colIndex)) {
-        const barContainer = document.createElement("div");
-        barContainer.style.width = "80%";
-        barContainer.style.height = "6px";
-        barContainer.style.borderRadius = "4px";
-        barContainer.style.marginTop = "3px";
-        barContainer.style.background = isDark
-          ? "rgba(255,255,255,0.1)"
-          : "rgba(0,0,0,0.1)";
-    
-        const bar = document.createElement("div");
-        bar.style.height = "100%";
-        bar.style.borderRadius = "4px";
-    
-        const colors = {
-          12: "#00bcd4", // T4 kills
-          13: "#ffc107", // T5 kills
-          14: "#e91e63", // KP
-          15: "#f44336", // Deads
-          8: "#4caf50"   // Power
-        };
-        bar.style.background = colors[colIndex] || "#2196f3";
-    
-        const maxVal = columnMaxValues[colIndex];
-        bar.style.width = maxVal > 0 ? `${(val / maxVal) * 100}%` : "0%";
-    
-        barContainer.appendChild(bar);
-        wrapper.appendChild(barContainer);
-      }
-    
-      td.appendChild(wrapper);
-      tr.appendChild(td);
+    SELECTED_COLS.forEach((col) => {
+    tr.appendChild(makeCell(row, col, maxValues[col]));
     });
 
     tbody.appendChild(tr);
-  });
+});
 
-  table.appendChild(thead);
-  table.appendChild(tbody);
+table.appendChild(thead);
+table.appendChild(tbody);
 
-  // ----------------------------
-  // 4️⃣ Initialize DataTable
-  // ----------------------------
-  dataTableInstance = new DataTable("#data-table", {
-    paging: true,
-    scrollY: "50vh",
-    scrollX: "100%",
-    scrollCollapse: true,
-    order: [],
-    searching: true,
-    info: false,
-    autoWidth: true,
-    pageLength: 20,
-    columnDefs: [
-      { orderable: false, searchable: false, targets: 0 },
-      { targets: [10], visible: false }
-    ],
-    language: { searchPlaceholder: "Search by name or ID", search: "" },
-    layout: {
-      topStart: {
-        buttons: ["csv", "excel", "colvis", "copy"]
-      },
-      bottomStart: {
-        pageLength: { menu: [20, 40, 60, 80, 100] }
-      }
+// Activate table features (search/sort/pagination)
+activateDataTable();
+addRowClickEvents();
+}
+
+function getMaxValues(rows) {
+const max = {};
+SELECTED_COLS.forEach((c) => {
+    max[c] = Math.max(...rows.map((r) => +r[c] || 0));
+});
+return max;
+}
+
+function makeCell(row, col, maxVal) {
+const td = document.createElement("td");
+const id = row[0];
+
+const wrapper = document.createElement("div");
+wrapper.style.display = "flex";
+wrapper.style.flexDirection = "column";
+wrapper.style.alignItems = "center";
+wrapper.style.gap = "4px";
+
+const raw = row[col];
+const numeric = +raw;
+
+const text = document.createElement("div");
+text.style.fontWeight = "500";
+text.style.fontSize = "13px";
+text.textContent =
+    col === 0
+    ? raw
+    : SHORT_NUMBER_COLS.includes(col)
+    ? formatNumber(numeric)
+    : raw;
+wrapper.appendChild(text);
+
+if (DIFF_COLS.includes(col)) {
+    const diff = getDiff(id, col);
+    if (diff !== 0) {
+    const diffBox = document.createElement("div");
+    diffBox.className = `diff-box ${diff > 0 ? "diff-positive" : "diff-negative"}`;
+    diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
+    wrapper.appendChild(diffBox);
     }
-  });
+}
 
-  // Click to update charts
-  document.querySelector("#data-table tbody").addEventListener("click", function (e) {
+if (PROGRESS_COLS.includes(col)) {
+    const barContainer = document.createElement("div");
+    barContainer.style.width = "80%";
+    barContainer.style.height = "6px";
+    barContainer.style.borderRadius = "4px";
+    barContainer.style.marginTop = "3px";
+
+    const isDark = document.body.classList.contains("dark");
+    barContainer.style.background = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
+
+    const bar = document.createElement("div");
+    bar.style.height = "100%";
+    bar.style.borderRadius = "4px";
+
+    const colors = {
+    12: "#00bcd4", // T4 kills
+    13: "#ffc107", // T5 kills
+    14: "#e91e63", // KP
+    15: "#f44336", // Deads
+    8: "#4caf50",  // Power
+    };
+    bar.style.background = colors[col] || "#2196f3";
+    bar.style.width = maxVal > 0 ? `${(numeric / maxVal) * 100}%` : "0%";
+
+    barContainer.appendChild(bar);
+    wrapper.appendChild(barContainer);
+}
+
+td.appendChild(wrapper);
+// Set clean sortable value
+if (!isNaN(numeric)) {
+    td.dataset.value = numeric;
+} else {
+    td.dataset.value = raw || "";
+}
+
+return td;
+}
+
+function activateDataTable() {
+const table = qs("#data-table");
+const tbody = table.querySelector("tbody");
+if (!tbody) return;
+
+// grab rows snapshot (original DOM rows)
+const rows = [...tbody.querySelectorAll("tr")];
+
+// state - store on table element so rebuilds reuse values
+const state = table.__dtState || {
+    filteredRows: rows.slice(),
+    page: 1,
+    pageSize: 20,
+    currentSort: { col: null, dir: 1 },
+};
+table.__dtState = state;
+
+// Reference existing HTML elements
+const controlBar = qs(".dt-controls");
+const searchInput = controlBar.querySelector("input.dt-search");
+const sizeSelect = controlBar.querySelector("select.dt-size");
+const infoBox = qs(".bottom-table-row .dt-info");
+const pager = qs(".bottom-table-row .dt-pager");
+
+// sync UI -> state
+sizeSelect.value = state.pageSize;
+searchInput.value = "";
+
+// SEARCH
+searchInput.oninput = () => {
+    const q = searchInput.value.toLowerCase().trim();
+    state.filteredRows = rows.filter(r => r.textContent.toLowerCase().includes(q));
+    state.page = 1;
+    renderPage();
+};
+
+// PAGE SIZE
+sizeSelect.onchange = () => {
+    state.pageSize = +sizeSelect.value;
+    state.page = 1;
+    renderPage();
+};
+
+// SORTING - attach to headers
+table.querySelectorAll("thead th").forEach((th, colIndex) => {
+    if (colIndex === 0) return; // skip index column
+    th.style.cursor = "pointer";
+    th.onclick = () => {
+    // toggle sort on this column
+    if (state.currentSort.col === colIndex) {
+        state.currentSort.dir *= -1;
+    } else {
+        state.currentSort = { col: colIndex, dir: 1 };
+    }
+
+    updateSortIcons();
+
+    // sort filteredRows - numeric when possible
+    state.filteredRows.sort((a, b) => {
+        const A = a.children[colIndex].dataset.value;
+        const B = b.children[colIndex].dataset.value;
+
+        const An = Number(A);
+        const Bn = Number(B);
+
+        // numeric sort if both are valid numbers
+        if (!isNaN(An) && !isNaN(Bn)) {
+            return (An - Bn) * state.currentSort.dir;
+        }
+
+        // fallback: text sort
+        return String(A).localeCompare(String(B)) * state.currentSort.dir;
+    });
+
+    function updateSortIcons() {
+    table.querySelectorAll("thead th").forEach((th, idx) => {
+        th.classList.remove("sorted-asc", "sorted-desc");
+
+        if (idx === state.currentSort.col) {
+        th.classList.add(
+            state.currentSort.dir === 1 ? "sorted-asc" : "sorted-desc"
+        );
+        }
+    });
+    }
+
+    state.page = 1;
+    renderPage();
+    };
+});
+
+// RENDER helpers
+function makeBtn(label, page, opts = {}) {
+const b = document.createElement("button");
+b.textContent = label;
+if (opts.disabled) b.disabled = true;
+if (opts.active) b.classList.add("active");
+b.onclick = () => {
+    if (opts.disabled) return;
+    state.page = page;
+    renderPage();
+};
+return b;
+}
+
+function get5Centered(current, total, size = 5) {
+if (total <= size) return Array.from({length: total}, (_,i)=>i+1);
+const half = Math.floor(size/2);
+let start = current - half;
+let end = current + half;
+if (start < 1) { start = 1; end = size; }
+if (end > total) { end = total - size + 1; }
+const arr = [];
+for (let i = start; i <= end; i++) arr.push(i);
+return arr;
+}
+
+function renderPager(totalPages) {
+pager.innerHTML = "";
+
+pager.appendChild(makeBtn("<<", 1, { disabled: state.page === 1 }));
+pager.appendChild(makeBtn("<", Math.max(1, state.page - 1), { disabled: state.page === 1 }));
+
+const nums = get5Centered(state.page, totalPages, 5);
+if (nums[0] > 1) {
+    const span = document.createElement("span");
+    span.textContent = "...";
+    span.className = "ell";
+    pager.appendChild(span);
+}
+
+nums.forEach(p => {
+    pager.appendChild(makeBtn(p, p, { active: p === state.page }));
+});
+
+if (nums[nums.length - 1] < totalPages) {
+    const span = document.createElement("span");
+    span.textContent = "...";
+    span.className = "ell";
+    pager.appendChild(span);
+}
+
+pager.appendChild(makeBtn(">", Math.min(totalPages, state.page + 1), { disabled: state.page === totalPages }));
+pager.appendChild(makeBtn(">>", totalPages, { disabled: state.page === totalPages }));
+}
+
+function renderPage() {
+const prevSelectedId = tbody.querySelector(".selected")?.dataset?.id;
+tbody.innerHTML = "";
+
+const total = state.filteredRows.length;
+const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+if (state.page > totalPages) state.page = totalPages;
+
+const start = (state.page - 1) * state.pageSize;
+const end = Math.min(start + state.pageSize, total);
+
+const slice = state.filteredRows.slice(start, end);
+slice.forEach(r => tbody.appendChild(r));
+
+if (prevSelectedId) {
+    const row = tbody.querySelector(`tr[data-id="${prevSelectedId}"]`);
+    if (row) row.classList.add("selected");
+}
+
+infoBox.textContent = total === 0 ? "No entries" : `Showing ${start + 1}–${end} of ${total}`;
+renderPager(totalPages);
+}
+
+state.filteredRows = rows.slice();
+renderPage();
+}
+
+/* CLICK EVENTS (preserve selection & update charts) */
+function addRowClickEvents() {
+const tbody = qs("#data-table tbody");
+if (!tbody) return;
+tbody.addEventListener("click", (e) => {
     const row = e.target.closest("tr");
     if (!row) return;
 
-    document.querySelectorAll("#data-table tbody tr").forEach(r => r.classList.remove("selected"));
+    tbody.querySelector(".selected")?.classList.remove("selected");
     row.classList.add("selected");
 
-    const cells = row.querySelectorAll("td");
-    if (cells.length < 2) return;
-    const playerId = cells[1].textContent.trim(); // column 1 = ID
-    updateChartsForPlayer(playerId);
-  });
+    updateCharts(row.dataset.id);
+});
+}
 
-  // Column visibility persistence
-  const savedVisibility = JSON.parse(localStorage.getItem("colVisibility") || "{}");
-  Object.keys(savedVisibility).forEach(idx => {
-    dataTableInstance.column(idx).visible(savedVisibility[idx]);
-  });
+/* TOTALS */
+function renderTotals(rows) {
+const container = qs("#bottom-totals");
+container.innerHTML = "";
 
-  dataTableInstance.on("column-visibility.dt", function (e, settings, column, state) {
-    const vis = JSON.parse(localStorage.getItem("colVisibility") || "{}");
-    vis[column] = state;
-    localStorage.setItem("colVisibility", JSON.stringify(vis));
-  });
+const defs = [
+    { label: "Total T4 kills", col: 4 },
+    { label: "Total T5 kills", col: 5 },
+    { label: "Total Deads", col: 6 },
+    { label: "Total KP", col: 3 },
+];
 
-  // ----------------------------
-  // 5️⃣ Totals at bottom
-  // ----------------------------
-  const totalsContainer = document.getElementById("bottom-totals");
-  totalsContainer.innerHTML = "";
-  const totalDefs = [
-    { label: "Total T4 kills gained", col: 4 },
-    { label: "Total T5 kills gained", col: 5 },
-    { label: "Total Deads gained", col: 6 },
-    { label: "Total KP gained", col: 3 }
-  ];
-  totalDefs.forEach(item => {
-    let sum = 0;
-    rows.forEach(row => {
-      const diffs = getSheetDiffsForPlayers(row[0]);
-      if (diffs) sum += diffs[item.col] || 0;
-    });
+defs.forEach(({ label, col }) => {
+    const sum = rows.reduce((acc, r) => acc + (diffsCache[r[0]]?.[col] || 0), 0);
     const box = document.createElement("div");
     box.className = "stat-box";
-    box.innerHTML = `<h3>${item.label}</h3><p>${sum.toLocaleString()}</p>`;
-    totalsContainer.appendChild(box);
-  });
+    box.innerHTML = `<h3>${label}</h3><p>${sum.toLocaleString()}</p>`;
+    container.appendChild(box);
+});
 }
 
-function renderplayerstoptable(headers, rows) {
-  rows = removeEmptyRows(rows);
-  rows = rows.filter(r => String(r[11]).trim().toUpperCase() !== "YES"); // filter out governors
+/* GOOGLE SHEETS LOADING */
+async function loadGoogleSheets() {
+googleSheetId = extractSheetId(CONFIG.googleSheetUrl);
+if (!googleSheetId) throw new Error("Invalid Google Sheets URL");
 
-  // Sort by DKP (col 8) descending
-  rows.sort((a, b) => (parseFloat(b[8]) || 0) - (parseFloat(a[8]) || 0));
+const metaRes = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`
+);
 
-  // Take top N (optional — e.g., top 10)
-  const topRows = rows.slice(0, 18);
+const meta = await metaRes.json();
+googleSheetNames = meta.sheets.map((s) => s.properties.title);
+currentSource = "google";
 
-  // Destroy old table if exists
-  if ($.fn.DataTable.isDataTable("#playerstop-table")) {
-    $("#playerstop-table").DataTable().destroy();
-  }
+googleSheetsData = {};
 
-  const table = document.getElementById("playerstop-table");
-  table.innerHTML = "";
-
-  // Headers (ID, Name, DKP)
-  const filteredHeaders = [headers[0], headers[1], headers[8]];
-  const thead = document.createElement("thead");
-  const headRow = document.createElement("tr");
-  const indexTh = document.createElement("th");
-  indexTh.textContent = "#";
-  headRow.appendChild(indexTh);
-  filteredHeaders.forEach(h => {
-    const th = document.createElement("th");
-    th.textContent = h ?? "";
-    headRow.appendChild(th);
-  });
-  thead.appendChild(headRow);
-
-  // Body
-  const tbody = document.createElement("tbody");
-  topRows.forEach((row, rowIdx) => {
-    const tr = document.createElement("tr");
-    const indexTd = document.createElement("td");
-    indexTd.textContent = rowIdx + 1;
-    tr.appendChild(indexTd);
-
-    [0, 1, 8].forEach(colIndex => {
-      const td = document.createElement("td");
-      let val = row[colIndex];
-      if (colIndex === 8) val = formatNumber(val); // DKP formatting
-      td.textContent = val;
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
-
-  table.appendChild(thead);
-  table.appendChild(tbody);
-
-    // Initialize minimal DataTable
-  new DataTable("#playerstop-table", {
-    paging: false,
-    searching: false,
-    info: false,
-    ordering: true,
-    scrollY: "50vh",
-    scrollCollapse: true,
-    pageLength: 18,
-    order: [[3, "desc"]],
-    columnDefs: [
-      { orderable: false, targets: 0 }
-    ],
-    layout: {
-      topStart: {
-        buttons: [
-          {
-            extend: "copy",
-            text: "Copy Top18 Players", // ← your custom text
-          }
-        ]
-      }
-    }
-  });
-}
-  
-function updateChartsForPlayer(playerId) {
-  const chartData = { chart4: [], chart5: [], chart6: [], chart7: [] };
-
-  if (currentSource === "google" && Object.keys(googleSheetsData).length) {
-    const sheetNames = googleSheetNames;
-    sheetNames.forEach(sheetName => {
-      const rows = googleSheetsData[sheetName] || [];
-      const playerRow = rows.slice(1).find(r => String(r[0]).trim() === String(playerId).trim());
-      chartData.chart4.push(playerRow?.[4] || 0);
-      chartData.chart5.push(playerRow?.[5] || 0);
-      chartData.chart6.push(playerRow?.[6] || 0);
-      chartData.chart7.push(playerRow?.[3] || 0);
-    });
-    Object.keys(chartData).forEach(chartId => {
-      charts[chartId].data.labels = sheetNames;
-      charts[chartId].data.datasets[0].data = chartData[chartId];
-      charts[chartId].update();
-    });
-  }
+await Promise.all(
+    googleSheetNames.map(async (name) => {
+    const r = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(
+        name
+        )}?key=${API_KEY}`
+    );
+    const json = await r.json();
+    googleSheetsData[name] = json.values || [];
+    })
+);
 }
 
+/* INITIALIZATION */
 document.addEventListener("DOMContentLoaded", async () => {
-  if (localStorage.getItem("theme") === "dark") {
+
+// apply stored theme BEFORE anything else
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
     document.body.classList.add("dark");
-  }
-  initCharts();
-  document.getElementById("loading-overlay").style.display = "flex";
-  try {
-     if (CONFIG.source === "google") {
-       resetCharts();
-       const match = CONFIG.googleSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-       if (!match) return alert("Invalid Google Sheets URL");
-       googleSheetId = match[1];
-       try {
-         const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}?key=${API_KEY}`);
-         if (!metaRes.ok) throw new Error("Google Sheets API error");
-         const meta = await metaRes.json();
-         if (!meta.sheets) throw new Error("No sheets found or access denied.");
-      
-         googleSheetNames = meta.sheets.map(s => s.properties.title);
-         currentSource = "google";
-         googleSheetsData = {};
-         await Promise.all(
-           googleSheetNames.map(async name => {
-             const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/${encodeURIComponent(name)}?key=${API_KEY}`);
-             if (!res.ok) throw new Error("Error fetching sheet: " + name);
-             const data = await res.json();
-             googleSheetsData[name] = data.values || [];
-           })
-         );
-      
-         const firstSheet = googleSheetNames[googleSheetNames.length - 1];
-         renderTableFiltered(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1), selectedColumns);
-         renderplayerstoptable(googleSheetsData[firstSheet][0], googleSheetsData[firstSheet].slice(1));
-       } catch (err) {
-         alert("Failed to load Google Sheets data. Please check API key or sharing settings.\n\n" + err.message);
-       }
-     }
-   } finally {
-     document.getElementById("loading-overlay").style.display = "none";
-   }
-});
-
-const themeToggle = document.getElementById("toggle-theme");
-
-// Load saved theme
-if (localStorage.getItem("theme") === "dark") {
-  document.body.classList.add("dark");
-  themeToggle.checked = true;
+    qs("#toggle-theme").checked = true;
 }
 
-themeToggle.addEventListener("change", () => {
-  document.body.classList.toggle("dark", themeToggle.checked);
-  localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+initCharts();
 
-  // Update chart colors
-  const chartTextColor = getComputedStyle(document.body).getPropertyValue("--chart-text").trim();
-  const chartGridColor = getComputedStyle(document.body).getPropertyValue("--chart-grid").trim();
-  const chartLineColor = getComputedStyle(document.body).getPropertyValue("--chart-line").trim();
+qs("#loading-overlay").style.display = "flex";
 
-  Object.values(charts).forEach(chart => {
-    chart.options.plugins.legend.labels.color = chartTextColor;
-    chart.options.scales.x.ticks.color = chartTextColor;
-    chart.options.scales.y.ticks.color = chartTextColor;
-    chart.options.scales.x.grid.color = chartGridColor;
-    chart.options.scales.y.grid.color = chartGridColor;
-    chart.data.datasets[0].borderColor = chartLineColor;
-    chart.data.datasets[0].backgroundColor = chartLineColor + "33";
-    chart.update();
-  });
+try {
+    if (CONFIG.source === "google") {
+    await loadGoogleSheets();
+    const sheet = googleSheetNames.at(-1);
+    renderTable(
+        googleSheetsData[sheet][0],
+        googleSheetsData[sheet].slice(1)
+    );
+    }
+} catch (e) {
+    alert("Google Sheets load error:\n" + e.message);
+    console.error(e);
+} finally {
+    qs("#loading-overlay").style.display = "none";
+}
 });
 
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.getElementById("nav-links");
-hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+/* THEME TOGGLE */
+qs("#toggle-theme").addEventListener("change", (e) => {
+document.body.classList.toggle("dark", e.target.checked);
+localStorage.setItem("theme", e.target.checked ? "dark" : "light");
+
+const styles = getChartStyles();
+Object.values(charts).forEach((chart) => {
+    chart.options.plugins.legend.labels.color = styles.text;
+    chart.options.scales.x.ticks.color = styles.text;
+    chart.options.scales.y.ticks.color = styles.text;
+    chart.options.scales.x.grid.color = styles.grid;
+    chart.options.scales.y.grid.color = styles.grid;
+
+    chart.data.datasets[0].borderColor = styles.line;
+    chart.data.datasets[0].backgroundColor = styles.line + "33";
+
+    chart.update();
+});
+});
