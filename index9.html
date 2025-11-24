@@ -2,123 +2,123 @@
 <html lang="en" data-bs-theme="light">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DKP Stats</title>
 
   <!-- Bootstrap 5.3.8 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+
 </head>
 
-<body>
+<body class="bg-body">
 
-  <!-- ========================= NAVBAR ========================= -->
-  <nav class="navbar navbar-expand-lg bg-body shadow-sm rounded-3 p-3 mx-auto mt-3" style="max-width: 1200px;">
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg bg-body-secondary shadow-sm">
     <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">DKP Stats</a>
 
-      <!-- Hamburger -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks"
-        aria-controls="navLinks" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <!-- Center links -->
-      <div class="collapse navbar-collapse justify-content-center" id="navLinks">
-        <ul class="navbar-nav gap-3" id="nav-links">
-          <!-- JS will populate links here -->
-        </ul>
-      </div>
+      <div class="collapse navbar-collapse" id="navMenu"></div>
 
-      <!-- Theme Toggle -->
+      <!-- Theme toggle -->
       <div class="form-check form-switch ms-auto">
-          <input class="form-check-input" type="checkbox" id="themeToggle">
-          <label class="form-check-label" for="themeToggle">
-              <span class="light-icon">🌞</span>
-              <span class="dark-icon d-none">🌙</span>
-          </label>
+        <input class="form-check-input" type="checkbox" id="toggle-theme">
+        <label class="form-check-label" for="toggle-theme">Dark mode</label>
       </div>
-
     </div>
   </nav>
 
-  <!-- ========================= MAIN LAYOUT ========================= -->
-  <main class="container-fluid mt-4">
-    <div class="row gx-3 gy-4">
+  <!-- MAIN LAYOUT -->
+  <div class="container-fluid py-3">
+    <div class="row">
 
-      <!-- Left spacer -->
-      <aside class="col-12 col-lg-2"></aside>
+      <!-- LEFT EMPTY -->
+      <div class="col-lg-2 d-none d-lg-block"></div>
 
-      <!-- ===================== MIDDLE COLUMN ======================== -->
-      <aside class="col-12 col-lg-8">
+      <!-- MAIN CONTENT -->
+      <div class="col-lg-8 col-12">
 
-        <!-- ===================== LOADING OVERLAY ===================== -->
-        <div id="loading-overlay" class="d-flex flex-column align-items-center justify-content-center p-5 d-none">
+        <!-- LOADING OVERLAY -->
+        <div id="loading-overlay" class="d-flex justify-content-center align-items-center py-5">
+          <div class="spinner-border me-3"></div>
+          <span class="fw-semibold">Loading data…</span>
+        </div>
 
+        <!-- TOP PLAYERS -->
+        <div id="top-players" class="row g-3 mb-4"></div>
 
+        <!-- TOTALS -->
+        <div id="bottom-totals" class="row g-3 mb-4"></div>
 
-        <!-- ===================== TOP PLAYERS ========================= -->
-        <div id="top-players" class="d-flex flex-wrap justify-content-center gap-3 mt-4"></div>
-
-        <!-- ===================== BOTTOM TOTALS ======================= -->
-        <div id="bottom-totals" class="d-flex flex-wrap justify-content-center gap-3 mt-4"></div>
-
-        <!-- ========================= DATA CARD ========================= -->
-        <div class="card mt-4 shadow-sm">
+        <!-- DATA TABLE -->
+        <div class="card shadow-sm mb-4">
           <div class="card-body">
 
-            <!-- Controls -->
-            <div class="dt-controls d-flex flex-wrap align-items-center justify-content-between mb-3 gap-3">
-            
-              <div class="d-flex align-items-center gap-2">
-                <label for="dt-size" class="fw-bold">Rows per page</label>
-                <select class="form-select form-select-sm dt-size" style="width: 80px;">
+            <div class="row g-3 mb-3 align-items-center">
+              <div class="col-auto">
+                <label class="col-form-label">Rows per page</label>
+              </div>
+              <div class="col-auto">
+                <select class="form-select dt-size">
                   <option value="20">20</option>
                   <option value="50">50</option>
                   <option value="100">100</option>
                 </select>
               </div>
-            
-              <input class="form-control dt-search" placeholder="Search…" style="max-width: 260px;">
+
+              <div class="col ms-auto">
+                <input type="search" class="form-control dt-search" placeholder="Search…">
+              </div>
             </div>
 
-            <!-- Scrollable table -->
-            <div class="table-responsive" style="max-height: 55vh; overflow-y: auto;">
-              <table id="data-table" class="table table-bordered table-hover align-middle text-center mb-0"></table>
+            <div class="table-responsive">
+              <table id="data-table" class="table table-striped table-hover"></table>
             </div>
 
-            <!-- Info + pagination -->
-            <div class="bottom-table-row d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
-                <div class="dt-info small"></div>
-                <div class="dt-pager d-flex gap-1"></div>
+            <div class="d-flex justify-content-between align-items-center pt-2">
+              <div class="dt-info small text-secondary"></div>
+              <div class="dt-pager"></div>
             </div>
-
           </div>
         </div>
 
-        <!-- ========================= CHARTS ========================= -->
-        <div class="mt-4">
-          <canvas id="chart4" class="w-100 mb-4"></canvas>
-          <canvas id="chart5" class="w-100 mb-4"></canvas>
-          <canvas id="chart6" class="w-100 mb-4"></canvas>
-          <canvas id="chart7" class="w-100 mb-4"></canvas>
+        <!-- CHARTS -->
+        <div class="row g-4 charts-container mb-5">
+          <div class="col-12">
+            <canvas id="chart4" height="120"></canvas>
+          </div>
+          <div class="col-12">
+            <canvas id="chart5" height="120"></canvas>
+          </div>
+          <div class="col-12">
+            <canvas id="chart6" height="120"></canvas>
+          </div>
+          <div class="col-12">
+            <canvas id="chart7" height="120"></canvas>
+          </div>
         </div>
 
-      </aside>
+      </div>
 
-      <!-- Right spacer -->
-      <aside class="col-12 col-lg-2"></aside>
+      <!-- RIGHT EMPTY -->
+      <div class="col-lg-2 d-none d-lg-block"></div>
 
     </div>
-  </main>
+  </div>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Chart JS -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+  <!-- Your Main Script -->
+  <script src="dashboard.js"></script>
 
-  <!-- Your JS -->
-  <script src="index9.js"></script>
 </body>
 
 </html>
