@@ -92,18 +92,21 @@ function initCharts() {
 }
 
 function getChartStyles() {
-  const css = (v) => getComputedStyle(document.body).getPropertyValue(v).trim();
+  const styles = getComputedStyle(document.documentElement);
+
   return {
-    text: css("--chart-text"),
-    grid: css("--chart-grid"),
-    line: css("--chart-line"),
+    text: styles.getPropertyValue("--bs-body-color").trim(),
+    grid: styles.getPropertyValue("--bs-border-color").trim(),
+    line: styles.getPropertyValue("--bs-primary").trim(),
     dataset: {
-      borderColor: css("--chart-line"),
-      backgroundColor: css("--chart-line") + "33",
+      borderColor: styles.getPropertyValue("--bs-primary").trim(),
+      backgroundColor:
+        styles.getPropertyValue("--bs-primary").trim() + "33",
       tension: 0.3,
     },
   };
 }
+
 
 function resetCharts() {
   Object.values(charts).forEach((c) => {
@@ -264,44 +267,24 @@ function makeCell(row, col, maxVal) {
       : raw;
   wrapper.appendChild(text);
 
-  if (DIFF_COLS.includes(col)) {
-    const diff = getDiff(id, col);
     if (diff !== 0) {
-      const diffBox = document.createElement("div");
-      diffBox.className = `diff-box ${
-        diff > 0 ? "diff-positive" : "diff-negative"
-      }`;
-      diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
-      wrapper.appendChild(diffBox);
+      const badge = document.createElement("span");
+      badge.className = "badge " + (diff > 0 ? "bg-success" : "bg-danger");
+      badge.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
+      wrapper.appendChild(badge);
     }
   }
 
   if (PROGRESS_COLS.includes(col)) {
+    const percent = maxVal > 0 ? (numeric / maxVal) * 100 : 0;
+  
     const barContainer = document.createElement("div");
-    barContainer.style.width = "80%";
-    barContainer.style.height = "6px";
-    barContainer.style.borderRadius = "4px";
-    barContainer.style.marginTop = "3px";
-
-    const isDark = document.body.classList.contains("dark");
-    barContainer.style.background = isDark
-      ? "rgba(255,255,255,0.08)"
-      : "rgba(0,0,0,0.06)";
-
+    barContainer.className = "progress w-100";
+  
     const bar = document.createElement("div");
-    bar.style.height = "100%";
-    bar.style.borderRadius = "4px";
-
-    const colors = {
-      12: "#00bcd4", // T4 kills
-      13: "#ffc107", // T5 kills
-      14: "#e91e63", // KP
-      15: "#f44336", // Deads
-      8: "#4caf50", // Power
-    };
-    bar.style.background = colors[col] || "#2196f3";
-    bar.style.width = maxVal > 0 ? `${(numeric / maxVal) * 100}%` : "0%";
-
+    bar.className = "progress-bar bg-primary";
+    bar.style.width = percent + "%";
+  
     barContainer.appendChild(bar);
     wrapper.appendChild(barContainer);
   }
@@ -584,7 +567,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   initCharts();
 
-  qs("#loading-overlay").style.display = "flex";
+  qs("#loading-overlay").classList.remove("d-none");
 
   try {
     if (CONFIG.source === "google") {
@@ -596,15 +579,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     alert("Google Sheets load error:\n" + e.message);
     console.error(e);
   } finally {
-    qs("#loading-overlay").style.display = "none";
+    qs("#loading-overlay").classList.add("d-none");
   }
 });
 
 /* THEME TOGGLE */
-qs("#toggle-theme").addEventListener("change", (e) => {
-  document.body.classList.toggle("dark", e.target.checked);
-  localStorage.setItem("theme", e.target.checked ? "dark" : "light");
+/* THEME TOGGLE — Bootstrap 5.3 data-bs-theme */
+const themeToggle = qs("#themeToggle");
 
+document.documentElement.setAttribute(
+  "data-bs-theme",
+  localStorage.getItem("theme") || "light"
+);
+
+themeToggle.checked = localStorage.getItem("theme") === "dark";
+
+themeToggle.addEventListener("change", () => {
+  const newTheme = themeToggle.checked ? "dark" : "light";
+  document.documentElement.setAttribute("data-bs-theme", newTheme);
+  localStorage.setItem("theme", newTheme);
+
+  // Update chart styles
   const styles = getChartStyles();
   Object.values(charts).forEach((chart) => {
     chart.options.plugins.legend.labels.color = styles.text;
@@ -618,4 +613,8 @@ qs("#toggle-theme").addEventListener("change", (e) => {
 
     chart.update();
   });
+
+  // Toggle sun/moon icons
+  qs(".light-icon").classList.toggle("d-none", newTheme !== "light");
+  qs(".dark-icon").classList.toggle("d-none", newTheme !== "dark");
 });
