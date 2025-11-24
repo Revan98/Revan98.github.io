@@ -1,3 +1,8 @@
+/* dashboard.js
+   Bootstrap 5.3.8 + Chart.js integration
+   Rewritten from your original file to use Bootstrap markup only.
+*/
+
 /* CONFIGURATION */
 const CONFIG = {
   source: "google",
@@ -22,13 +27,14 @@ let diffsCache = {};
 
 const qs = (sel) => document.querySelector(sel);
 
+/* Utilities */
 function formatNumber(num) {
   const n = Number(num);
   return isNaN(n) ? "" : n.toLocaleString("en-US");
 }
 
 function cleanRows(rows) {
-  return rows.filter((r) => r.some((c) => c && `${c}`.trim() !== ""));
+  return rows.filter((r) => r && r.some((c) => c !== undefined && `${c}`.trim() !== ""));
 }
 
 function extractSheetId(url) {
@@ -41,16 +47,22 @@ function computeDiffs() {
   diffsCache = {};
 
   const lastSheet = googleSheetNames.at(-1);
-  const rows = googleSheetsData[lastSheet]?.slice(1) || [];
+  const rows = googleSheetsData[lastSheet] || [];
+  // rows includes header; we want data rows
+  const dataRows = rows.slice(1);
 
-  rows.forEach((row) => {
-    const id = String(row[0]).trim();
+  dataRows.forEach((row) => {
+    const id = String(row[0] ?? "").trim();
+    if (!id) return;
+    // Keep mapping close to original intent.
+    // Original code had some cross mapping; keep consistent mapping for display:
+    // col keys correspond to the SELECTED_COLS indexes we show diffs for.
     diffsCache[id] = {
       3: +row[3] || 0,
       4: +row[4] || 0,
       5: +row[5] || 0,
       6: +row[6] || 0,
-      2: +row[16] || 0,
+      2: +row[16] || 0, // original used row[16] -> maybe previous value
       12: +row[4] || 0,
       13: +row[5] || 0,
       14: +row[3] || 0,
@@ -75,13 +87,32 @@ function initCharts() {
   const styles = getChartStyles();
 
   chartConfigs.forEach(({ id, label }) => {
-    const ctx = qs(`#${id}`).getContext("2d");
+    const canvas = qs(`#${id}`);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
     charts[id] = new Chart(ctx, {
       type: "line",
-      data: { labels: [], datasets: [{ label, data: [], ...styles.dataset }] },
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label,
+            data: [],
+            fill: true,
+            borderWidth: 2,
+            tension: 0.3,
+            borderColor: styles.line,
+            backgroundColor: styles.line + "33",
+            pointRadius: 3,
+          },
+        ],
+      },
       options: {
         responsive: true,
-        plugins: { legend: { labels: { color: styles.text } } },
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: styles.text } },
+        },
         scales: {
           x: { ticks: { color: styles.text }, grid: { color: styles.grid } },
           y: { ticks: { color: styles.text }, grid: { color: styles.grid } },
@@ -91,22 +122,29 @@ function initCharts() {
   });
 }
 
-function getChartStyles() {
-  const styles = getComputedStyle(document.documentElement);
-
-  return {
-    text: styles.getPropertyValue("--bs-body-color").trim(),
-    grid: styles.getPropertyValue("--bs-border-color").trim(),
-    line: styles.getPropertyValue("--bs-primary").trim(),
-    dataset: {
-      borderColor: styles.getPropertyValue("--bs-primary").trim(),
-      backgroundColor:
-        styles.getPropertyValue("--bs-primary").trim() + "33",
-      tension: 0.3,
-    },
-  };
+function isDarkTheme() {
+  const theme = document.documentElement.getAttribute("data-bs-theme");
+  return theme === "dark";
 }
 
+function getChartStyles() {
+  // Choose some readable defaults depending on Bootstrap theme
+  if (isDarkTheme()) {
+    return {
+      text: "#e9ecef",
+      grid: "rgba(255,255,255,0.06)",
+      line: "#66d9ff",
+      dataset: {},
+    };
+  } else {
+    return {
+      text: "#212529",
+      grid: "rgba(0,0,0,0.06)",
+      line: "#007bff",
+      dataset: {},
+    };
+  }
+}
 
 function resetCharts() {
   Object.values(charts).forEach((c) => {
@@ -118,30 +156,36 @@ function resetCharts() {
 
 function updateCharts(playerId) {
   const sheets = googleSheetNames;
+  if (!sheets || sheets.length === 0) return;
 
   const values = sheets.map((sheet) => {
-    const row = googleSheetsData[sheet]
+    const row = (googleSheetsData[sheet] || [])
       .slice(1)
       .find((r) => `${r[0]}` === playerId);
     return {
-      t4: row?.[4] || 0,
-      t5: row?.[5] || 0,
-      deads: row?.[6] || 0,
-      kp: row?.[3] || 0,
+      t4: +row?.[4] || 0,
+      t5: +row?.[5] || 0,
+      deads: +row?.[6] || 0,
+      kp: +row?.[3] || 0,
     };
   });
 
-  charts.chart4.data.labels = sheets;
-  charts.chart4.data.datasets[0].data = values.map((v) => v.t4);
-
-  charts.chart5.data.labels = sheets;
-  charts.chart5.data.datasets[0].data = values.map((v) => v.t5);
-
-  charts.chart6.data.labels = sheets;
-  charts.chart6.data.datasets[0].data = values.map((v) => v.deads);
-
-  charts.chart7.data.labels = sheets;
-  charts.chart7.data.datasets[0].data = values.map((v) => v.kp);
+  if (charts.chart4) {
+    charts.chart4.data.labels = sheets;
+    charts.chart4.data.datasets[0].data = values.map((v) => v.t4);
+  }
+  if (charts.chart5) {
+    charts.chart5.data.labels = sheets;
+    charts.chart5.data.datasets[0].data = values.map((v) => v.t5);
+  }
+  if (charts.chart6) {
+    charts.chart6.data.labels = sheets;
+    charts.chart6.data.datasets[0].data = values.map((v) => v.deads);
+  }
+  if (charts.chart7) {
+    charts.chart7.data.labels = sheets;
+    charts.chart7.data.datasets[0].data = values.map((v) => v.kp);
+  }
 
   Object.values(charts).forEach((c) => c.update());
 }
@@ -151,62 +195,89 @@ function renderTable(headers, rawRows) {
   resetCharts();
 
   let rows = cleanRows(rawRows);
-  rows = rows.filter((r) => String(r[11]).trim().toUpperCase() !== "YES");
+  // filter out rows with column 11 "YES"
+  rows = rows.filter((r) => String(r[11] ?? "").trim().toUpperCase() !== "YES");
 
   computeDiffs(); // Cache diffs once
 
+  // sort by column 8 descending (power)
   rows.sort((a, b) => (+b[8] || 0) - (+a[8] || 0));
+
   renderTopPlayers(rows.slice(0, 3));
   buildTable(headers, rows);
   renderTotals(rows);
 }
 
 function renderTopPlayers(players) {
-  const box = qs("#top-players");
-  box.innerHTML = "";
-
+  const container = qs("#top-players");
+  container.innerHTML = "";
+  // Use Bootstrap cards in a row
   players.forEach((p, i) => {
-    const el = document.createElement("div");
-    el.className = "player-box";
-    el.innerHTML = `
-    <div class="player-rank">TOP${i + 1}</div>
-    <h3>${p[1]}</h3>
-    <p>ID: ${p[0]}</p>
-    `;
-    box.appendChild(el);
+    const col = document.createElement("div");
+    col.className = "col-12 col-md-4";
+
+    const card = document.createElement("div");
+    card.className = "card h-100 shadow-sm";
+
+    const cardBody = document.createElement("div");
+    cardBody.className = "card-body";
+
+    const rank = document.createElement("div");
+    rank.className = "h6 text-muted";
+    rank.textContent = `TOP ${i + 1}`;
+
+    const name = document.createElement("h5");
+    name.className = "card-title mb-1";
+    name.textContent = p[1] || "";
+
+    const id = document.createElement("p");
+    id.className = "card-text text-muted small mb-0";
+    id.textContent = `ID: ${p[0] ?? ""}`;
+
+    cardBody.appendChild(rank);
+    cardBody.appendChild(name);
+    cardBody.appendChild(id);
+    card.appendChild(cardBody);
+    col.appendChild(card);
+    container.appendChild(col);
   });
 }
 
 function buildTable(headers, rows) {
-  // Clear any previous DataTable instance placeholder
+  // Clear previous table
   const table = qs("#data-table");
   table.innerHTML = "";
 
   // Build header
   const thead = document.createElement("thead");
-  const tr = document.createElement("tr");
-  const indexTh = document.createElement("th");
-  indexTh.textContent = "#";
-  // no sort class, no icons
-  tr.appendChild(indexTh);
+  const trHead = document.createElement("tr");
+
+  // Index column
+  const thIndex = document.createElement("th");
+  thIndex.scope = "col";
+  thIndex.textContent = "#";
+  trHead.appendChild(thIndex);
 
   SELECTED_COLS.forEach((i) => {
     const th = document.createElement("th");
-    th.classList.add("dt-sortable");
+    th.scope = "col";
+    th.classList.add("sortable");
+    th.style.userSelect = "none";
 
     const label = document.createElement("span");
-    label.textContent = headers[i] || "";
+    label.textContent = headers?.[i] ?? "";
 
-    const icons = document.createElement("span");
-    icons.className = "sort-icons";
-    icons.innerHTML = `<span class="up">▲</span><span class="down">▼</span>`;
+    const sortIcons = document.createElement("span");
+    sortIcons.className = "ms-2 text-muted small";
+    sortIcons.innerHTML = "▲▼";
 
     th.appendChild(label);
-    th.appendChild(icons);
-    tr.appendChild(th);
+    th.appendChild(sortIcons);
+    trHead.appendChild(th);
   });
 
-  thead.appendChild(tr);
+  thead.appendChild(trHead);
+  table.appendChild(thead);
 
   // Build body
   const tbody = document.createElement("tbody");
@@ -214,11 +285,11 @@ function buildTable(headers, rows) {
 
   rows.forEach((row, idx) => {
     const tr = document.createElement("tr");
-    tr.dataset.id = row[0];
+    tr.dataset.id = row[0] ?? "";
 
-    const idxCell = document.createElement("td");
-    idxCell.textContent = idx + 1;
-    tr.appendChild(idxCell);
+    const tdIndex = document.createElement("td");
+    tdIndex.textContent = idx + 1;
+    tr.appendChild(tdIndex);
 
     SELECTED_COLS.forEach((col) => {
       tr.appendChild(makeCell(row, col, maxValues[col]));
@@ -227,7 +298,6 @@ function buildTable(headers, rows) {
     tbody.appendChild(tr);
   });
 
-  table.appendChild(thead);
   table.appendChild(tbody);
 
   // Activate table features (search/sort/pagination)
@@ -238,128 +308,170 @@ function buildTable(headers, rows) {
 function getMaxValues(rows) {
   const max = {};
   SELECTED_COLS.forEach((c) => {
-    max[c] = Math.max(...rows.map((r) => +r[c] || 0));
+    const values = rows.map((r) => +r[c] || 0);
+    max[c] = values.length ? Math.max(...values) : 0;
   });
   return max;
 }
 
 function makeCell(row, col, maxVal) {
   const td = document.createElement("td");
-  const id = row[0];
+  const id = row[0] ?? "";
 
+  // wrapper using Bootstrap utilities via inline markup
   const wrapper = document.createElement("div");
-  wrapper.style.display = "flex";
-  wrapper.style.flexDirection = "column";
-  wrapper.style.alignItems = "center";
-  wrapper.style.gap = "4px";
+  wrapper.className = "d-flex flex-column align-items-center gap-1";
 
   const raw = row[col];
   const numeric = +raw;
 
   const text = document.createElement("div");
-  text.style.fontWeight = "500";
-  text.style.fontSize = "13px";
+  text.className = "fw-semibold small";
+  text.style.fontSize = "0.9rem";
   text.textContent =
     col === 0
       ? raw
       : SHORT_NUMBER_COLS.includes(col)
       ? formatNumber(numeric)
-      : raw;
+      : raw ?? "";
+
   wrapper.appendChild(text);
 
+  // DIFF box
+  if (DIFF_COLS.includes(col)) {
+    const diff = getDiff(id, col);
     if (diff !== 0) {
-      const badge = document.createElement("span");
-      badge.className = "badge " + (diff > 0 ? "bg-success" : "bg-danger");
-      badge.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
-      wrapper.appendChild(badge);
+      const diffBox = document.createElement("div");
+      diffBox.className = "small px-2 py-1 rounded";
+      diffBox.style.fontWeight = "600";
+      diffBox.style.fontSize = "0.75rem";
+      if (diff > 0) {
+        diffBox.classList.add("text-success", "bg-success", "bg-opacity-10");
+      } else {
+        diffBox.classList.add("text-danger", "bg-danger", "bg-opacity-10");
+      }
+      diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
+      wrapper.appendChild(diffBox);
     }
   }
 
+  // Progress bar for some columns
   if (PROGRESS_COLS.includes(col)) {
-    const percent = maxVal > 0 ? (numeric / maxVal) * 100 : 0;
-  
     const barContainer = document.createElement("div");
-    barContainer.className = "progress w-100";
-  
+    barContainer.className = "w-100";
+    barContainer.style.maxWidth = "120px";
+
+    const progress = document.createElement("div");
+    progress.className = "progress";
+    progress.style.height = "8px";
+
     const bar = document.createElement("div");
-    bar.className = "progress-bar bg-primary";
-    bar.style.width = percent + "%";
-  
-    barContainer.appendChild(bar);
+    bar.className = "progress-bar";
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-valuemin", "0");
+    bar.setAttribute("aria-valuemax", maxVal || 100);
+    const pct = maxVal > 0 ? (numeric / maxVal) * 100 : 0;
+    bar.style.width = `${pct}%`;
+    bar.setAttribute("aria-valuenow", Math.round(pct));
+
+    // Color mapping via Bootstrap utility classes is limited; use inline background for distinct colors
+    const colors = {
+      12: "#00bcd4", // T4 kills
+      13: "#ffc107", // T5 kills
+      14: "#e91e63", // KP
+      15: "#f44336", // Deads
+      8: "#4caf50", // Power
+    };
+    bar.style.backgroundColor = colors[col] || "#0d6efd";
+
+    progress.appendChild(bar);
+    barContainer.appendChild(progress);
     wrapper.appendChild(barContainer);
   }
 
   td.appendChild(wrapper);
-  // Set clean sortable value
-  if (!isNaN(numeric)) {
+
+  // Set a clean sortable value used by table sorting
+  if (!isNaN(numeric) && numeric !== 0) {
     td.dataset.value = numeric;
   } else {
-    td.dataset.value = raw || "";
+    td.dataset.value = raw ?? "";
   }
 
   return td;
 }
 
+/* DATATABLE: search / sort / pagination */
 function activateDataTable() {
   const table = qs("#data-table");
   const tbody = table.querySelector("tbody");
   if (!tbody) return;
 
-  // grab rows snapshot (original DOM rows)
-  const rows = [...tbody.querySelectorAll("tr")];
+  const originalRows = [...tbody.querySelectorAll("tr")];
 
-  // state - store on table element so rebuilds reuse values
+  // Table state stored on DOM element to survive rebuilds
   const state = table.__dtState || {
-    filteredRows: rows.slice(),
+    filteredRows: originalRows.slice(),
     page: 1,
     pageSize: 20,
     currentSort: { col: null, dir: 1 },
   };
   table.__dtState = state;
 
-  // Reference existing HTML elements
-  const controlBar = qs(".dt-controls");
-  const searchInput = controlBar.querySelector("input.dt-search");
-  const sizeSelect = controlBar.querySelector("select.dt-size");
-  const infoBox = qs(".bottom-table-row .dt-info");
-  const pager = qs(".bottom-table-row .dt-pager");
+  // Controls
+  const controlBar = qs(".dt-controls") || qs(".card-body") || document;
+  const searchInput = qs(".dt-search");
+  const sizeSelect = qs(".dt-size");
+  const infoBox = qs(".bottom-table-row .dt-info") || qs(".dt-info");
+  const pager = qs(".bottom-table-row .dt-pager") || qs(".dt-pager");
 
-  // sync UI -> state
-  sizeSelect.value = state.pageSize;
-  searchInput.value = "";
+  // Sync UI with state
+  if (sizeSelect) sizeSelect.value = state.pageSize;
+  if (searchInput) searchInput.value = "";
 
   // SEARCH
-  searchInput.oninput = () => {
-    const q = searchInput.value.toLowerCase().trim();
-    state.filteredRows = rows.filter((r) =>
-      r.textContent.toLowerCase().includes(q)
-    );
-    state.page = 1;
-    renderPage();
-  };
+  if (searchInput) {
+    searchInput.oninput = () => {
+      const q = searchInput.value.toLowerCase().trim();
+      state.filteredRows = originalRows.filter((r) =>
+        r.textContent.toLowerCase().includes(q)
+      );
+      state.page = 1;
+      renderPage();
+    };
+  }
 
   // PAGE SIZE
-  sizeSelect.onchange = () => {
-    state.pageSize = +sizeSelect.value;
-    state.page = 1;
-    renderPage();
-  };
+  if (sizeSelect) {
+    sizeSelect.onchange = () => {
+      state.pageSize = +sizeSelect.value;
+      state.page = 1;
+      renderPage();
+    };
+  }
 
-  // SORTING - attach to headers
+  // SORTING - attach to header cells
   table.querySelectorAll("thead th").forEach((th, colIndex) => {
-    if (colIndex === 0) return; // skip index column
+    if (colIndex === 0) return; // index column non-sortable
     th.style.cursor = "pointer";
     th.onclick = () => {
-      // toggle sort on this column
       if (state.currentSort.col === colIndex) {
         state.currentSort.dir *= -1;
       } else {
         state.currentSort = { col: colIndex, dir: 1 };
       }
 
-      updateSortIcons();
+      // Visual indicator (Bootstrap classes)
+      table.querySelectorAll("thead th").forEach((h, idx) => {
+        h.classList.remove("table-active");
+        h.dataset.sortDir = "";
+        if (idx === state.currentSort.col) {
+          h.classList.add("table-active");
+          h.dataset.sortDir = state.currentSort.dir === 1 ? "asc" : "desc";
+        }
+      });
 
-      // sort filteredRows - numeric when possible
+      // sort
       state.filteredRows.sort((a, b) => {
         const A = a.children[colIndex].dataset.value;
         const B = b.children[colIndex].dataset.value;
@@ -367,44 +479,33 @@ function activateDataTable() {
         const An = Number(A);
         const Bn = Number(B);
 
-        // numeric sort if both are valid numbers
         if (!isNaN(An) && !isNaN(Bn)) {
           return (An - Bn) * state.currentSort.dir;
         }
-
-        // fallback: text sort
         return String(A).localeCompare(String(B)) * state.currentSort.dir;
       });
-
-      function updateSortIcons() {
-        table.querySelectorAll("thead th").forEach((th, idx) => {
-          th.classList.remove("sorted-asc", "sorted-desc");
-
-          if (idx === state.currentSort.col) {
-            th.classList.add(
-              state.currentSort.dir === 1 ? "sorted-asc" : "sorted-desc"
-            );
-          }
-        });
-      }
 
       state.page = 1;
       renderPage();
     };
   });
 
-  // RENDER helpers
+  // Pager helpers
   function makeBtn(label, page, opts = {}) {
-    const b = document.createElement("button");
-    b.textContent = label;
-    if (opts.disabled) b.disabled = true;
-    if (opts.active) b.classList.add("active");
-    b.onclick = () => {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-sm btn-outline-primary me-1";
+    if (opts.disabled) btn.classList.add("disabled");
+    if (opts.active) {
+      btn.classList.remove("btn-outline-primary");
+      btn.classList.add("btn-primary");
+    }
+    btn.textContent = label;
+    btn.onclick = () => {
       if (opts.disabled) return;
       state.page = page;
       renderPage();
     };
-    return b;
+    return btn;
   }
 
   function get5Centered(current, total, size = 5) {
@@ -425,19 +526,18 @@ function activateDataTable() {
   }
 
   function renderPager(totalPages) {
+    if (!pager) return;
     pager.innerHTML = "";
 
-    pager.appendChild(makeBtn("<<", 1, { disabled: state.page === 1 }));
-    pager.appendChild(
-      makeBtn("<", Math.max(1, state.page - 1), { disabled: state.page === 1 })
-    );
+    pager.appendChild(makeBtn("««", 1, { disabled: state.page === 1 }));
+    pager.appendChild(makeBtn("«", Math.max(1, state.page - 1), { disabled: state.page === 1 }));
 
     const nums = get5Centered(state.page, totalPages, 5);
     if (nums[0] > 1) {
-      const span = document.createElement("span");
-      span.textContent = "...";
-      span.className = "ell";
-      pager.appendChild(span);
+      const ell = document.createElement("span");
+      ell.className = "mx-1";
+      ell.textContent = "...";
+      pager.appendChild(ell);
     }
 
     nums.forEach((p) => {
@@ -445,24 +545,18 @@ function activateDataTable() {
     });
 
     if (nums[nums.length - 1] < totalPages) {
-      const span = document.createElement("span");
-      span.textContent = "...";
-      span.className = "ell";
-      pager.appendChild(span);
+      const ell = document.createElement("span");
+      ell.className = "mx-1";
+      ell.textContent = "...";
+      pager.appendChild(ell);
     }
 
-    pager.appendChild(
-      makeBtn(">", Math.min(totalPages, state.page + 1), {
-        disabled: state.page === totalPages,
-      })
-    );
-    pager.appendChild(
-      makeBtn(">>", totalPages, { disabled: state.page === totalPages })
-    );
+    pager.appendChild(makeBtn("»", Math.min(totalPages, state.page + 1), { disabled: state.page === totalPages }));
+    pager.appendChild(makeBtn("»»", totalPages, { disabled: state.page === totalPages }));
   }
 
   function renderPage() {
-    const prevSelectedId = tbody.querySelector(".selected")?.dataset?.id;
+    const prevSelectedId = tbody.querySelector(".table-primary")?.dataset?.id;
     tbody.innerHTML = "";
 
     const total = state.filteredRows.length;
@@ -477,28 +571,31 @@ function activateDataTable() {
 
     if (prevSelectedId) {
       const row = tbody.querySelector(`tr[data-id="${prevSelectedId}"]`);
-      if (row) row.classList.add("selected");
+      if (row) row.classList.add("table-primary");
     }
 
-    infoBox.textContent =
-      total === 0 ? "No entries" : `Showing ${start + 1}–${end} of ${total}`;
+    if (infoBox) {
+      infoBox.textContent = total === 0 ? "No entries" : `Showing ${start + 1}–${end} of ${total}`;
+    }
     renderPager(totalPages);
   }
 
-  state.filteredRows = rows.slice();
+  // initialize
+  state.filteredRows = originalRows.slice();
   renderPage();
 }
 
-/* CLICK EVENTS (preserve selection & update charts) */
+/* CLICK EVENTS (selection & chart updates) */
 function addRowClickEvents() {
   const tbody = qs("#data-table tbody");
   if (!tbody) return;
+
   tbody.addEventListener("click", (e) => {
     const row = e.target.closest("tr");
     if (!row) return;
 
-    tbody.querySelector(".selected")?.classList.remove("selected");
-    row.classList.add("selected");
+    tbody.querySelector(".table-primary")?.classList.remove("table-primary");
+    row.classList.add("table-primary");
 
     updateCharts(row.dataset.id);
   });
@@ -517,14 +614,29 @@ function renderTotals(rows) {
   ];
 
   defs.forEach(({ label, col }) => {
-    const sum = rows.reduce(
-      (acc, r) => acc + (diffsCache[r[0]]?.[col] || 0),
-      0
-    );
-    const box = document.createElement("div");
-    box.className = "stat-box";
-    box.innerHTML = `<h3>${label}</h3><p>${sum.toLocaleString()}</p>`;
-    container.appendChild(box);
+    const sum = rows.reduce((acc, r) => acc + (diffsCache[r[0]]?.[col] || 0), 0);
+    const colDiv = document.createElement("div");
+    colDiv.className = "col-12 col-md-3";
+
+    const card = document.createElement("div");
+    card.className = "card h-100 shadow-sm";
+
+    const body = document.createElement("div");
+    body.className = "card-body";
+
+    const title = document.createElement("h6");
+    title.className = "card-title mb-1";
+    title.textContent = label;
+
+    const val = document.createElement("p");
+    val.className = "card-text fw-semibold mb-0";
+    val.textContent = sum.toLocaleString();
+
+    body.appendChild(title);
+    body.appendChild(val);
+    card.appendChild(body);
+    colDiv.appendChild(card);
+    container.appendChild(colDiv);
   });
 }
 
@@ -538,6 +650,8 @@ async function loadGoogleSheets() {
   );
 
   const meta = await metaRes.json();
+  if (!meta.sheets) throw new Error("Unable to load spreadsheet metadata");
+
   googleSheetNames = meta.sheets.map((s) => s.properties.title);
   currentSource = "google";
 
@@ -556,65 +670,64 @@ async function loadGoogleSheets() {
   );
 }
 
+/* THEME TOGGLE */
+function applyTheme(isDark) {
+  document.documentElement.setAttribute("data-bs-theme", isDark ? "dark" : "light");
+
+  // Update chart colors
+  const styles = getChartStyles();
+  Object.values(charts).forEach((chart) => {
+    chart.options.plugins.legend.labels.color = styles.text;
+    if (chart.options.scales?.x) chart.options.scales.x.ticks.color = styles.text;
+    if (chart.options.scales?.y) chart.options.scales.y.ticks.color = styles.text;
+    if (chart.data.datasets[0]) {
+      chart.data.datasets[0].borderColor = styles.line;
+      chart.data.datasets[0].backgroundColor = styles.line + "33";
+    }
+    chart.update();
+  });
+}
+
 /* INITIALIZATION */
 document.addEventListener("DOMContentLoaded", async () => {
-  // apply stored theme BEFORE anything else
+  // theme from localStorage
   const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark");
-    qs("#toggle-theme").checked = true;
-  }
+  const isDark = savedTheme === "dark";
+  document.documentElement.setAttribute("data-bs-theme", isDark ? "dark" : "light");
+  const toggle = qs("#toggle-theme");
+  if (toggle) toggle.checked = isDark;
 
   initCharts();
 
-  qs("#loading-overlay").classList.remove("d-none");
+  // Show loading overlay
+  const loading = qs("#loading-overlay");
+  if (loading) loading.style.display = "flex";
 
   try {
     if (CONFIG.source === "google") {
       await loadGoogleSheets();
       const sheet = googleSheetNames.at(-1);
-      renderTable(googleSheetsData[sheet][0], googleSheetsData[sheet].slice(1));
+      if (!sheet) throw new Error("No sheet pages found");
+      const all = googleSheetsData[sheet] || [];
+      const headers = all[0] || [];
+      const rows = all.slice(1);
+      renderTable(headers, rows);
     }
   } catch (e) {
-    alert("Google Sheets load error:\n" + e.message);
-    console.error(e);
+    // Better UX than alert — but keep simple
+    console.error("Google Sheets load error:", e);
+    alert("Google Sheets load error:\n" + (e.message || e));
   } finally {
-    qs("#loading-overlay").classList.add("d-none");
+    if (loading) loading.style.display = "none";
   }
-});
 
-/* THEME TOGGLE */
-/* THEME TOGGLE — Bootstrap 5.3 data-bs-theme */
-const themeToggle = qs("#themeToggle");
-
-document.documentElement.setAttribute(
-  "data-bs-theme",
-  localStorage.getItem("theme") || "light"
-);
-
-themeToggle.checked = localStorage.getItem("theme") === "dark";
-
-themeToggle.addEventListener("change", () => {
-  const newTheme = themeToggle.checked ? "dark" : "light";
-  document.documentElement.setAttribute("data-bs-theme", newTheme);
-  localStorage.setItem("theme", newTheme);
-
-  // Update chart styles
-  const styles = getChartStyles();
-  Object.values(charts).forEach((chart) => {
-    chart.options.plugins.legend.labels.color = styles.text;
-    chart.options.scales.x.ticks.color = styles.text;
-    chart.options.scales.y.ticks.color = styles.text;
-    chart.options.scales.x.grid.color = styles.grid;
-    chart.options.scales.y.grid.color = styles.grid;
-
-    chart.data.datasets[0].borderColor = styles.line;
-    chart.data.datasets[0].backgroundColor = styles.line + "33";
-
-    chart.update();
-  });
-
-  // Toggle sun/moon icons
-  qs(".light-icon").classList.toggle("d-none", newTheme !== "light");
-  qs(".dark-icon").classList.toggle("d-none", newTheme !== "dark");
+  // wire theme toggle
+  const themeToggle = qs("#toggle-theme");
+  if (themeToggle) {
+    themeToggle.addEventListener("change", (ev) => {
+      const dark = !!ev.target.checked;
+      localStorage.setItem("theme", dark ? "dark" : "light");
+      applyTheme(dark);
+    });
+  }
 });
