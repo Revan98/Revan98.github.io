@@ -175,21 +175,19 @@ function renderTopPlayers(players) {
 }
 
 function buildTable(headers, rows) {
-  // Clear any previous DataTable instance placeholder
   const table = qs("#data-table");
   table.innerHTML = "";
 
-  // Build header
+  // HEADER
   const thead = document.createElement("thead");
   const tr = document.createElement("tr");
+
   const indexTh = document.createElement("th");
   indexTh.textContent = "#";
-  // no sort class, no icons
   tr.appendChild(indexTh);
 
   SELECTED_COLS.forEach((i) => {
     const th = document.createElement("th");
-    th.classList.add("dt-sortable");
 
     const label = document.createElement("span");
     label.textContent = headers[i] || "";
@@ -205,7 +203,7 @@ function buildTable(headers, rows) {
 
   thead.appendChild(tr);
 
-  // Build body
+  // BODY
   const tbody = document.createElement("tbody");
   const maxValues = getMaxValues(rows);
 
@@ -227,7 +225,6 @@ function buildTable(headers, rows) {
   table.appendChild(thead);
   table.appendChild(tbody);
 
-  // Activate table features (search/sort/pagination)
   activateDataTable();
   addRowClickEvents();
 }
@@ -293,11 +290,11 @@ function makeCell(row, col, maxVal) {
     bar.style.borderRadius = "4px";
 
     const colors = {
-      12: "#00bcd4", // T4 kills
-      13: "#ffc107", // T5 kills
-      14: "#e91e63", // KP
-      15: "#f44336", // Deads
-      8: "#4caf50", // Power
+      12: "#00bcd4",
+      13: "#ffc107",
+      14: "#e91e63",
+      15: "#f44336",
+      8: "#4caf50",
     };
     bar.style.background = colors[col] || "#2196f3";
     bar.style.width = maxVal > 0 ? `${(numeric / maxVal) * 100}%` : "0%";
@@ -307,33 +304,31 @@ function makeCell(row, col, maxVal) {
   }
 
   td.appendChild(wrapper);
-  // Set clean sortable value
-  if (!isNaN(numeric)) {
-    td.dataset.value = numeric;
-  } else {
-    td.dataset.value = raw || "";
-  }
+
+  td.dataset.value = !isNaN(numeric) ? numeric : raw || "";
 
   return td;
 }
 
+/* INFINITE SCROLL DATA TABLE */
 function activateDataTable() {
   const table = qs("#data-table");
   const tbody = table.querySelector("tbody");
   if (!tbody) return;
 
   const allRows = [...tbody.querySelectorAll("tr")];
+  const scrollContainer = qs(".table-container");
 
-  // State stored on table
   const state = table.__dtState || {
     filteredRows: allRows.slice(),
-    batchSize: 20,
     renderedCount: 0,
+    batchSize: 20,
     currentSort: { col: null, dir: 1 },
   };
   table.__dtState = state;
 
-  const searchInput = qs(".dt-controls input.dt-search");
+  const searchInput = qs(".dt-controls .dt-search");
+  const infoBox = qs(".dt-info");
 
   /* SEARCH */
   searchInput.oninput = () => {
@@ -342,12 +337,14 @@ function activateDataTable() {
       r.textContent.toLowerCase().includes(q)
     );
     state.renderedCount = 0;
-    renderNext();
+    renderNextBatch();
+    updateInfo();
   };
 
   /* SORT */
   table.querySelectorAll("thead th").forEach((th, colIndex) => {
     if (colIndex === 0) return;
+
     th.style.cursor = "pointer";
 
     th.onclick = () => {
@@ -371,52 +368,59 @@ function activateDataTable() {
       });
 
       state.renderedCount = 0;
-      renderNext();
+      renderNextBatch();
+      updateInfo();
     };
   });
 
-  /* RENDER NEXT BATCH (20 rows) */
-  function renderNext() {
-    tbody.innerHTML = "";
-
+  /* RENDER BATCH */
+  function renderNextBatch() {
     const end = Math.min(
       state.filteredRows.length,
       state.renderedCount + state.batchSize
     );
 
-    const slice = state.filteredRows.slice(0, end);
+    if (state.renderedCount === 0) tbody.innerHTML = "";
+
+    const slice = state.filteredRows.slice(state.renderedCount, end);
     slice.forEach((r) => tbody.appendChild(r));
 
     state.renderedCount = end;
   }
 
-  /* INFINITE SCROLL HANDLER */
-  const container = qs("#table-container"); // You must wrap the table in a scrollable div
+  /* INFINITE SCROLL */
+  if (!scrollContainer.__scrollBound) {
+    scrollContainer.__scrollBound = true;
 
-  if (!container.__scrollBound) {
-    container.__scrollBound = true;
-    container.addEventListener("scroll", () => {
+    scrollContainer.addEventListener("scroll", () => {
       if (
-        container.scrollTop + container.clientHeight >=
-        container.scrollHeight - 10
+        scrollContainer.scrollTop + scrollContainer.clientHeight >=
+        scrollContainer.scrollHeight - 10
       ) {
         if (state.renderedCount < state.filteredRows.length) {
-          renderNext();
+          renderNextBatch();
+          updateInfo();
         }
       }
     });
   }
 
-  /* INITIAL LOAD */
+  function updateInfo() {
+    const total = state.filteredRows.length;
+    const shown = state.renderedCount;
+    infoBox.textContent = `${shown} / ${total} loaded`;
+  }
+
   state.renderedCount = 0;
-  renderNext();
+  renderNextBatch();
+  updateInfo();
 }
 
-
-/* CLICK EVENTS (preserve selection & update charts) */
+/* CLICK EVENTS */
 function addRowClickEvents() {
   const tbody = qs("#data-table tbody");
   if (!tbody) return;
+
   tbody.addEventListener("click", (e) => {
     const row = e.target.closest("tr");
     if (!row) return;
@@ -482,7 +486,6 @@ async function loadGoogleSheets() {
 
 /* INITIALIZATION */
 document.addEventListener("DOMContentLoaded", async () => {
-  // apply stored theme BEFORE anything else
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme === "dark") {
     document.body.classList.add("dark");
