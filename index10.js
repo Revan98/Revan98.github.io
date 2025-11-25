@@ -443,39 +443,59 @@ function activateDataTable() {
 
   function renderPager(totalPages) {
     pager.innerHTML = "";
-
+  
+    // Navigation buttons
     pager.appendChild(makeBtn("<<", 1, { disabled: state.page === 1 }));
-    pager.appendChild(
-      makeBtn("<", Math.max(1, state.page - 1), { disabled: state.page === 1 })
-    );
-
-    const nums = get5Centered(state.page, totalPages, 5);
-    if (nums[0] > 1) {
-      const span = document.createElement("span");
-      span.textContent = "...";
-      span.className = "ell";
-      pager.appendChild(span);
+    pager.appendChild(makeBtn("<", Math.max(1, state.page - 1), { disabled: state.page === 1 }));
+  
+    // ALWAYS show page 1
+    pager.appendChild(makeBtn("1", 1, { active: state.page === 1 }));
+  
+    const current = state.page;
+  
+    // Determine 5-page window around current
+    const windowSize = 5;
+    let start = current - Math.floor(windowSize / 2);
+    let end = current + Math.floor(windowSize / 2);
+  
+    if (start < 2) {
+      start = 2;
+      end = Math.min(windowSize, totalPages - 1);
     }
-
-    nums.forEach((p) => {
-      pager.appendChild(makeBtn(p, p, { active: p === state.page }));
-    });
-
-    if (nums[nums.length - 1] < totalPages) {
-      const span = document.createElement("span");
-      span.textContent = "...";
-      span.className = "ell";
-      pager.appendChild(span);
+    if (end > totalPages - 1) {
+      end = totalPages - 1;
+      start = Math.max(2, totalPages - windowSize + 1);
     }
-
-    pager.appendChild(
-      makeBtn(">", Math.min(totalPages, state.page + 1), {
-        disabled: state.page === totalPages,
-      })
-    );
-    pager.appendChild(
-      makeBtn(">>", totalPages, { disabled: state.page === totalPages })
-    );
+  
+    // Insert "..." after 1 if needed
+    if (start > 2) {
+      const ell = document.createElement("span");
+      ell.textContent = "...";
+      ell.className = "ell";
+      pager.appendChild(ell);
+    }
+  
+    // Window page numbers
+    for (let p = start; p <= end; p++) {
+      pager.appendChild(makeBtn(p, p, { active: p === current }));
+    }
+  
+    // Insert "..." before last page if needed
+    if (end < totalPages - 1) {
+      const ell = document.createElement("span");
+      ell.textContent = "...";
+      ell.className = "ell";
+      pager.appendChild(ell);
+    }
+  
+    // ALWAYS show last page
+    if (totalPages > 1) {
+      pager.appendChild(makeBtn(totalPages, totalPages, { active: current === totalPages }));
+    }
+  
+    // Next / Last
+    pager.appendChild(makeBtn(">", Math.min(totalPages, current + 1), { disabled: current === totalPages }));
+    pager.appendChild(makeBtn(">>", totalPages, { disabled: current === totalPages }));
   }
 
   function renderPage() {
