@@ -271,7 +271,8 @@ body.dark .hamburger {
 
 /* 9. TABLE: container, sticky header, scroll */
 .table-container {
-    max-height: 50vh;
+    max-height: 50%;
+    min-height: 0;
     overflow-y: auto;
     width: 100%;
     border: 1px solid var(--table-border);
