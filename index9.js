@@ -391,7 +391,7 @@ function activateDataTable() {
   }
 
   /* INFINITE SCROLL HANDLER */
-  const container = qs("#table-scroll-container"); // You must wrap the table in a scrollable div
+  const container = qs("#table-container"); // You must wrap the table in a scrollable div
 
   if (!container.__scrollBound) {
     container.__scrollBound = true;
