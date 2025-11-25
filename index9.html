@@ -1,124 +1,74 @@
 <!doctype html>
-<html lang="en" data-bs-theme="light">
+<html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DKP Stats</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DKP stats</title>
 
-  <!-- Bootstrap 5.3.8 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
-
+  <link rel="stylesheet" href="dashboard.css">
 </head>
 
-<body class="bg-body">
-
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg bg-body-secondary shadow-sm">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="#">DKP Stats</a>
-
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navMenu"></div>
-
-      <!-- Theme toggle -->
-      <div class="form-check form-switch ms-auto">
-        <input class="form-check-input" type="checkbox" id="toggle-theme">
-        <label class="form-check-label" for="toggle-theme">Dark mode</label>
-      </div>
+<body>
+  <header class="navbar">
+    <div class="nav-container">
+      <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links"></div>
+      <label class="theme-toggle">
+        🌞
+        <input type="checkbox" id="toggle-theme">
+        <span class="toggle-slider"></span>
+        🌙
+      </label>
     </div>
-  </nav>
+  </header>
 
-  <!-- MAIN LAYOUT -->
-  <div class="container-fluid py-3">
-    <div class="row">
+  <main class="row">
+    <aside class="left"></aside>
 
-      <!-- LEFT EMPTY -->
-      <div class="col-lg-2 d-none d-lg-block"></div>
-
-      <!-- MAIN CONTENT -->
-      <div class="col-lg-8 col-12">
-
-        <!-- LOADING OVERLAY -->
-        <div id="loading-overlay" class="d-flex justify-content-center align-items-center py-5">
-          <div class="spinner-border me-3"></div>
-          <span class="fw-semibold">Loading data…</span>
-        </div>
-
-        <!-- TOP PLAYERS -->
-        <div id="top-players" class="row g-3 mb-4"></div>
-
-        <!-- TOTALS -->
-        <div id="bottom-totals" class="row g-3 mb-4"></div>
-
-        <!-- DATA TABLE -->
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-
-            <div class="row g-3 mb-3 align-items-center">
-              <div class="col-auto">
-                <label class="col-form-label">Rows per page</label>
-              </div>
-              <div class="col-auto">
-                <select class="form-select dt-size">
-                  <option value="20">20</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </select>
-              </div>
-
-              <div class="col ms-auto">
-                <input type="search" class="form-control dt-search" placeholder="Search…">
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table id="data-table" class="table table-striped table-hover"></table>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center pt-2">
-              <div class="dt-info small text-secondary"></div>
-              <div class="dt-pager"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CHARTS -->
-        <div class="row g-4 charts-container mb-5">
-          <div class="col-12">
-            <canvas id="chart4" height="120"></canvas>
-          </div>
-          <div class="col-12">
-            <canvas id="chart5" height="120"></canvas>
-          </div>
-          <div class="col-12">
-            <canvas id="chart6" height="120"></canvas>
-          </div>
-          <div class="col-12">
-            <canvas id="chart7" height="120"></canvas>
-          </div>
-        </div>
-
+    <aside class="middle">
+      <div id="loading-overlay">
+        <div class="spinner"></div>
+        Loading data...
       </div>
 
-      <!-- RIGHT EMPTY -->
-      <div class="col-lg-2 d-none d-lg-block"></div>
+      <div id="top-players"></div>
+      <div id="bottom-totals"></div>
 
-    </div>
-  </div>
+      <div class="card">
+        <div class="dt-controls">
+          <label for="dt-size">Rows per page</label>
+          <select class="dt-size">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <input class="dt-search" placeholder="Search…" />
+        </div>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+        <div class="table-container">
+          <table id="data-table" class="dataTable"></table>
+        </div>
 
-  <!-- Your Main Script -->
+        <div class="bottom-table-row">
+          <div class="dt-info"></div>
+          <div class="dt-pager"></div>
+        </div>
+      </div>
+
+      <div class="charts-container">
+        <canvas id="chart4"></canvas>
+        <canvas id="chart5"></canvas>
+        <canvas id="chart6"></canvas>
+        <canvas id="chart7"></canvas>
+      </div>
+    </aside>
+
+    <aside class="right"></aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
   <script src="dashboard.js"></script>
-
 </body>
 
 </html>
