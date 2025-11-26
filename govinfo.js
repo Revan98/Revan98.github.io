@@ -160,36 +160,77 @@ function activateDataTable() {
     renderPage();
   };
 
+  // SORTING - attach to headers (ASC → DESC → NONE)
   table.querySelectorAll("thead th").forEach((th, colIndex) => {
-    if (colIndex === 0) return;
+    if (colIndex === 0) return; // skip index column
+
     th.style.cursor = "pointer";
+
     th.onclick = () => {
-      if (state.currentSort.col === colIndex) state.currentSort.dir *= -1;
-      else state.currentSort = { col: colIndex, dir: 1 };
+      const sort = state.currentSort;
+
+      // --- TRI-STATE LOGIC ---
+      if (sort.col !== colIndex) {
+        // First click on new column → ASC
+        sort.col = colIndex;
+        sort.dir = 1;
+      } else if (sort.dir === 1) {
+        // Second click → DESC
+        sort.dir = -1;
+      } else {
+        // Third click → RESET (no sorting)
+        sort.col = null;
+        sort.dir = 1;
+      }
+
       updateSortIcons();
-      state.filteredRows.sort((a, b) => {
-        const Atext = a.children[colIndex].innerText.replace(/,/g, "").trim();
-        const Btext = b.children[colIndex].innerText.replace(/,/g, "").trim();
-        const An = Number(Atext);
-        const Bn = Number(Btext);
-        const cmp =
-          isFinite(An) && isFinite(Bn) ? An - Bn : Atext.localeCompare(Btext);
-        return cmp * state.currentSort.dir;
-      });
-      function updateSortIcons() {
-        table.querySelectorAll("thead th").forEach((th, idx) => {
-          th.classList.remove("sorted-asc", "sorted-desc");
-          if (idx === state.currentSort.col) {
-            th.classList.add(
-              state.currentSort.dir === 1 ? "sorted-asc" : "sorted-desc"
-            );
+
+      // --- APPLY SORT OR RESET ---
+      if (sort.col === null) {
+        // RESET sorting → restore original order
+        state.filteredRows = rows
+          .slice()
+          .filter((r) =>
+            r.textContent
+              .toLowerCase()
+              .includes(searchInput.value.toLowerCase())
+          );
+      } else {
+        // NORMAL sorting
+        const col = sort.col;
+        const dir = sort.dir;
+
+        state.filteredRows.sort((a, b) => {
+          const A = a.children[col].dataset.value;
+          const B = b.children[col].dataset.value;
+
+          const An = Number(A);
+          const Bn = Number(B);
+
+          if (!isNaN(An) && !isNaN(Bn)) {
+            return (An - Bn) * dir;
           }
+          return String(A).localeCompare(String(B)) * dir;
         });
       }
+
       state.page = 1;
       renderPage();
     };
   });
+
+  // update sort icons (ASC / DESC / neutral)
+  function updateSortIcons() {
+    table.querySelectorAll("thead th").forEach((th, idx) => {
+      th.classList.remove("sorted-asc", "sorted-desc");
+
+      if (idx === state.currentSort.col) {
+        th.classList.add(
+          state.currentSort.dir === 1 ? "sorted-asc" : "sorted-desc"
+        );
+      }
+    });
+  }
 
   function makeBtn(label, page, opts = {}) {
     const b = document.createElement("button");
