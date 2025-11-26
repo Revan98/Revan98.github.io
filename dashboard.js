@@ -362,46 +362,57 @@ function activateDataTable() {
     renderPage();
   };
 
-  // SORTING - attach to headers
+  // SORTING - attach to headers (ASC → DESC → NONE)
   table.querySelectorAll("thead th").forEach((th, colIndex) => {
     if (colIndex === 0) return; // skip index column
+
     th.style.cursor = "pointer";
+
     th.onclick = () => {
-      // toggle sort on this column
-      if (state.currentSort.col === colIndex) {
-        state.currentSort.dir *= -1;
+      const sort = state.currentSort;
+
+      // --- TRI-STATE LOGIC ---
+      if (sort.col !== colIndex) {
+        // First click on new column → ASC
+        sort.col = colIndex;
+        sort.dir = 1;
+      } else if (sort.dir === 1) {
+        // Second click → DESC
+        sort.dir = -1;
       } else {
-        state.currentSort = { col: colIndex, dir: 1 };
+        // Third click → RESET (no sorting)
+        sort.col = null;
+        sort.dir = 1;
       }
 
       updateSortIcons();
 
-      // sort filteredRows - numeric when possible
-      state.filteredRows.sort((a, b) => {
-        const A = a.children[colIndex].dataset.value;
-        const B = b.children[colIndex].dataset.value;
+      // --- APPLY SORT OR RESET ---
+      if (sort.col === null) {
+        // RESET sorting → restore original order
+        state.filteredRows = rows
+          .slice()
+          .filter((r) =>
+            r.textContent
+              .toLowerCase()
+              .includes(searchInput.value.toLowerCase())
+          );
+      } else {
+        // NORMAL sorting
+        const col = sort.col;
+        const dir = sort.dir;
 
-        const An = Number(A);
-        const Bn = Number(B);
+        state.filteredRows.sort((a, b) => {
+          const A = a.children[col].dataset.value;
+          const B = b.children[col].dataset.value;
 
-        // numeric sort if both are valid numbers
-        if (!isNaN(An) && !isNaN(Bn)) {
-          return (An - Bn) * state.currentSort.dir;
-        }
+          const An = Number(A);
+          const Bn = Number(B);
 
-        // fallback: text sort
-        return String(A).localeCompare(String(B)) * state.currentSort.dir;
-      });
-
-      function updateSortIcons() {
-        table.querySelectorAll("thead th").forEach((th, idx) => {
-          th.classList.remove("sorted-asc", "sorted-desc");
-
-          if (idx === state.currentSort.col) {
-            th.classList.add(
-              state.currentSort.dir === 1 ? "sorted-asc" : "sorted-desc"
-            );
+          if (!isNaN(An) && !isNaN(Bn)) {
+            return (An - Bn) * dir;
           }
+          return String(A).localeCompare(String(B)) * dir;
         });
       }
 
@@ -409,6 +420,19 @@ function activateDataTable() {
       renderPage();
     };
   });
+
+  // update sort icons (ASC / DESC / neutral)
+  function updateSortIcons() {
+    table.querySelectorAll("thead th").forEach((th, idx) => {
+      th.classList.remove("sorted-asc", "sorted-desc");
+
+      if (idx === state.currentSort.col) {
+        th.classList.add(
+          state.currentSort.dir === 1 ? "sorted-asc" : "sorted-desc"
+        );
+      }
+    });
+  }
 
   // RENDER helpers
   function makeBtn(label, page, opts = {}) {
