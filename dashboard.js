@@ -424,78 +424,87 @@ function activateDataTable() {
     return b;
   }
 
-  function get5Centered(current, total, size = 5) {
-    if (total <= size) return Array.from({ length: total }, (_, i) => i + 1);
-    const half = Math.floor(size / 2);
+  function getCenteredPages(current, total, windowSize) {
+    if (total <= windowSize) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const half = Math.floor(windowSize / 2);
     let start = current - half;
     let end = current + half;
-    if (start < 1) {
-      start = 1;
-      end = size;
+
+    if (start < 2) {
+      start = 2;
+      end = windowSize;
     }
-    if (end > total) {
-      end = total - size + 1;
+
+    if (end > total - 1) {
+      end = total - 1;
+      start = total - windowSize + 1;
     }
-    const arr = [];
-    for (let i = start; i <= end; i++) arr.push(i);
-    return arr;
+
+    const pages = [];
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
   }
 
   function renderPager(totalPages) {
     pager.innerHTML = "";
-  
+
     // Navigation buttons
     pager.appendChild(makeBtn("<<", 1, { disabled: state.page === 1 }));
-    pager.appendChild(makeBtn("<", Math.max(1, state.page - 1), { disabled: state.page === 1 }));
-  
-    // ALWAYS show page 1
-    pager.appendChild(makeBtn("1", 1, { active: state.page === 1 }));
-  
+    pager.appendChild(
+      makeBtn("<", Math.max(1, state.page - 1), { disabled: state.page === 1 })
+    );
+
     const current = state.page;
-  
+
     // Determine 5-page window around current
-    const windowSize = 5;
-    let start = current - Math.floor(windowSize / 2);
-    let end = current + Math.floor(windowSize / 2);
-  
-    if (start < 2) {
-      start = 2;
-      end = Math.min(windowSize, totalPages - 1);
-    }
-    if (end > totalPages - 1) {
-      end = totalPages - 1;
-      start = Math.max(2, totalPages - windowSize + 1);
-    }
-  
-    // Insert "..." after 1 if needed
-    if (start > 2) {
+    const windowSize = 3; // change this to adjust button count
+
+    // Always show page 1
+    pager.appendChild(makeBtn("1", 1, { active: current === 1 }));
+
+    // Ellipsis after 1
+    if (current > Math.ceil(windowSize / 2) + 1) {
       const ell = document.createElement("span");
       ell.textContent = "...";
       ell.className = "ell";
       pager.appendChild(ell);
     }
-  
-    // Window page numbers
-    for (let p = start; p <= end; p++) {
-      pager.appendChild(makeBtn(p, p, { active: p === current }));
-    }
-  
-    // Insert "..." before last page if needed
-    if (end < totalPages - 1) {
+
+    // Centered page window
+    const pages = getCenteredPages(current, totalPages, windowSize);
+    pages.forEach((p) => {
+      if (p !== 1 && p !== totalPages) {
+        pager.appendChild(makeBtn(p, p, { active: current === p }));
+      }
+    });
+
+    // Ellipsis before last page
+    if (current < totalPages - Math.ceil(windowSize / 2)) {
       const ell = document.createElement("span");
       ell.textContent = "...";
       ell.className = "ell";
       pager.appendChild(ell);
     }
-  
-    // ALWAYS show last page
+
+    // Always show last page
     if (totalPages > 1) {
-      pager.appendChild(makeBtn(totalPages, totalPages, { active: current === totalPages }));
+      pager.appendChild(
+        makeBtn(totalPages, totalPages, { active: current === totalPages })
+      );
     }
-  
+
     // Next / Last
-    pager.appendChild(makeBtn(">", Math.min(totalPages, current + 1), { disabled: current === totalPages }));
-    pager.appendChild(makeBtn(">>", totalPages, { disabled: current === totalPages }));
+    pager.appendChild(
+      makeBtn(">", Math.min(totalPages, current + 1), {
+        disabled: current === totalPages,
+      })
+    );
+    pager.appendChild(
+      makeBtn(">>", totalPages, { disabled: current === totalPages })
+    );
   }
 
   function renderPage() {
