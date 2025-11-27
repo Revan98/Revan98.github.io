@@ -98,27 +98,24 @@ function getMaxValues(rows) {
 
 function makeCell(row, col, maxVal) {
   const td = document.createElement("td");
-  const wrapper = document.createElement("div");
-  wrapper.style.display = "flex";
-  wrapper.style.flexDirection = "column";
-  wrapper.style.alignItems = "center";
-  wrapper.style.gap = "4px";
 
   const raw = row[col];
-  const numeric = +raw;
-  const text = document.createElement("div");
-  text.style.fontWeight = "500";
-  text.style.fontSize = "13px";
+  const numeric = parseFloat(String(raw).replace("%", "")); // supports percent too
 
-  // Format numeric except first two columns
+  // --- SORTING VALUE ---
+  td.dataset.value = !isNaN(numeric) ? numeric : (raw ?? "");
+
+  // --- CELL STRUCTURE ---
+  const valueDiv = document.createElement("div");
+  valueDiv.className = "cell-value";
+
+  // Use your existing short-format rule
   if (col > 1 && !isNaN(numeric)) {
-    text.textContent = formatNumber(numeric);
+    valueDiv.textContent = formatNumber(numeric);
   } else {
-    text.textContent = raw;
+    valueDiv.textContent = raw;
   }
-
-  wrapper.appendChild(text);
-  td.appendChild(wrapper);
+  td.appendChild(valueDiv);
   return td;
 }
 
