@@ -257,7 +257,7 @@ body.dark .hamburger {
 
 .cell-diff {
   margin-top: 2px;
-  font-size: 11px;
+  font-size: 12px;
   padding: 1px 4px;
   border-radius: 4px;
   color: white;
@@ -597,3 +597,4 @@ body.dark .dt-controls input.dt-search {
         padding: 6px;
     }
 }
+
