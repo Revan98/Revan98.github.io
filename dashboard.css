@@ -250,23 +250,42 @@ body.dark .hamburger {
 }
 
 /* 8. Diff boxes */
-.diff-box {
-    padding: 2px 6px;
-    margin-top: 2px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
+.cell-value {
+  font-weight: 600;
+  font-size: 13px;
 }
 
-.diff-positive {
-    color: var(--diff-positive-text);
-    background: var(--diff-positive-bg);
+.cell-diff {
+  margin-top: 2px;
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  color: white;
 }
 
-.diff-negative {
-    color: var(--diff-negative-text);
-    background: var(--diff-negative-bg);
+.cell-diff.positive {
+  background: #4caf50;
+}
+
+.cell-diff.negative {
+  background: #f44336;
+}
+
+.cell-progress {
+  width: 80%;
+  height: 6px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 4px;
+  margin-top: 3px;
+}
+
+body.dark .cell-progress {
+  background: rgba(255,255,255,0.08);
+}
+
+.cell-progress-bar {
+  height: 100%;
+  border-radius: 4px;
 }
 
 /* 9. TABLE: container, sticky header, scroll */
