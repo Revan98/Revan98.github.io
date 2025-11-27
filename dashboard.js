@@ -243,75 +243,57 @@ function getMaxValues(rows) {
 function makeCell(row, col, maxVal) {
   const td = document.createElement("td");
   const id = row[0];
-
-  const wrapper = document.createElement("div");
-  wrapper.style.display = "flex";
-  wrapper.style.flexDirection = "column";
-  wrapper.style.alignItems = "center";
-  wrapper.style.gap = "4px";
-
   const raw = row[col];
   const numeric = +raw;
 
-  const text = document.createElement("div");
-  text.style.fontWeight = "500";
-  text.style.fontSize = "13px";
-  text.textContent =
+  td.classList.add("cell");
+
+  // Set clean sortable numeric value
+  td.dataset.value = !isNaN(numeric) ? numeric : raw || "";
+
+  // ---- VALUE ----
+  const valueDiv = document.createElement("div");
+  valueDiv.className = "cell-value";
+  valueDiv.textContent =
     col === 0
       ? raw
       : SHORT_NUMBER_COLS.includes(col)
       ? formatNumber(numeric)
       : raw;
-  wrapper.appendChild(text);
+  td.appendChild(valueDiv);
 
+  // ---- DIFF ----
   if (DIFF_COLS.includes(col)) {
     const diff = getDiff(id, col);
     if (diff !== 0) {
-      const diffBox = document.createElement("div");
-      diffBox.className = `diff-box ${
-        diff > 0 ? "diff-positive" : "diff-negative"
-      }`;
-      diffBox.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
-      wrapper.appendChild(diffBox);
+      const diffDiv = document.createElement("div");
+      diffDiv.className = "cell-diff " + (diff > 0 ? "positive" : "negative");
+      diffDiv.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
+      td.appendChild(diffDiv);
     }
   }
 
+  // ---- PROGRESS BAR ----
   if (PROGRESS_COLS.includes(col)) {
-    const barContainer = document.createElement("div");
-    barContainer.style.width = "80%";
-    barContainer.style.height = "6px";
-    barContainer.style.borderRadius = "4px";
-    barContainer.style.marginTop = "3px";
-
-    const isDark = document.body.classList.contains("dark");
-    barContainer.style.background = isDark
-      ? "rgba(255,255,255,0.08)"
-      : "rgba(0,0,0,0.06)";
+    const progress = document.createElement("div");
+    progress.className = "cell-progress";
 
     const bar = document.createElement("div");
-    bar.style.height = "100%";
-    bar.style.borderRadius = "4px";
+    bar.className = "cell-progress-bar";
 
     const colors = {
-      12: "#00bcd4", // T4 kills
-      13: "#ffc107", // T5 kills
+      12: "#00bcd4", // T4
+      13: "#ffc107", // T5
       14: "#e91e63", // KP
       15: "#f44336", // Deads
       8: "#4caf50", // Power
     };
+
     bar.style.background = colors[col] || "#2196f3";
     bar.style.width = maxVal > 0 ? `${(numeric / maxVal) * 100}%` : "0%";
 
-    barContainer.appendChild(bar);
-    wrapper.appendChild(barContainer);
-  }
-
-  td.appendChild(wrapper);
-  // Set clean sortable value
-  if (!isNaN(numeric)) {
-    td.dataset.value = numeric;
-  } else {
-    td.dataset.value = raw || "";
+    progress.appendChild(bar);
+    td.appendChild(progress);
   }
 
   return td;
@@ -403,16 +385,20 @@ function activateDataTable() {
         const dir = sort.dir;
 
         state.filteredRows.sort((a, b) => {
-          const A = a.children[col].dataset.value;
-          const B = b.children[col].dataset.value;
+          const A = parseSortableValue(a.children[col].dataset.value);
+          const B = parseSortableValue(b.children[col].dataset.value);
 
-          const An = Number(A);
-          const Bn = Number(B);
-
-          if (!isNaN(An) && !isNaN(Bn)) {
-            return (An - Bn) * dir;
+          // If both are numbers → numeric sort
+          if (!isNaN(A.num) && !isNaN(B.num)) {
+            return (A.num - B.num) * dir;
           }
-          return String(A).localeCompare(String(B)) * dir;
+
+          // If only one is numeric → numeric always comes first
+          if (!isNaN(A.num) && isNaN(B.num)) return -1 * dir;
+          if (isNaN(A.num) && !isNaN(B.num)) return 1 * dir;
+
+          // Else compare text
+          return A.text.localeCompare(B.text) * dir;
         });
       }
 
@@ -432,6 +418,27 @@ function activateDataTable() {
         );
       }
     });
+  }
+  function parseSortableValue(v) {
+    if (v == null) return { num: NaN, text: "" };
+
+    let s = String(v).trim();
+
+    // Remove commas commonly used in large numbers
+    s = s.replace(/,/g, "");
+
+    // Percentage?
+    if (/^\d+(\.\d+)?%$/.test(s)) {
+      const num = parseFloat(s.replace("%", ""));
+      return { num, text: s };
+    }
+
+    // Pure number?
+    const n = Number(s);
+    if (!isNaN(n)) return { num: n, text: s };
+
+    // Fallback → treat as text only
+    return { num: NaN, text: s.toLowerCase() };
   }
 
   // RENDER helpers
