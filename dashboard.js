@@ -1,10 +1,3 @@
-/* ==========================================================
-   dashboard.js — cleaned (Option A)
-   - preserved behavior, improved structure & readability
-   - small bugfixes: avoid duplicate click listeners,
-     defined missing `currentMetric`, guarded DOM access
-   ========================================================== */
-
 /* CONFIGURATION */
 const CONFIG = {
   sources: [
