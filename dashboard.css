@@ -3,7 +3,7 @@
     box-sizing: border-box;
 }
 
-:root {
+body.light {
     --accent: #fff;
     --bg-color: #e5e5e5;
     --text-color: #333;
@@ -14,8 +14,6 @@
     --chart-text: #333;
     --chart-grid: rgba(0, 0, 0, 0.1);
     --chart-line: #007bff;
-    --row-selected-bg: #cce5ff;
-    --row-selected-text: #000;
     --diff-positive-bg: rgba(0, 200, 83, 0.15);
     --diff-negative-bg: rgba(244, 67, 54, 0.15);
     --diff-positive-text: #0a6025;
@@ -32,8 +30,6 @@ body.dark {
     --chart-text: #eee;
     --chart-grid: rgba(255, 255, 255, 0.2);
     --chart-line: #ff9800;
-    --row-selected-bg: #004085;
-    --row-selected-text: #fff;
     --diff-positive-bg: rgba(0, 60, 0, 0.7);
     --diff-negative-bg: rgba(80, 0, 0, 0.7);
     --diff-positive-text: #b8ffba;
@@ -218,7 +214,7 @@ body.dark .hamburger {
 .player-box p,
 .stat-box p {
     margin: 5px 0 0;
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-color);
 }
 
@@ -299,7 +295,7 @@ body.dark .cell-progress {
 .table-container table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: auto;
+    table-layout: fixed;
     min-width: 600px;
 }
 
@@ -319,11 +315,6 @@ body.dark .cell-progress {
     top: 0;
     background: var(--table-bg);
     z-index: 10;
-}
-
-.table-container tbody>tr.selected>* {
-    box-shadow: inset 0 0 0 9999px var(--row-hover-bg);
-    color: var(--row-selected-text);
 }
 
 .table-container tbody tr:hover {
@@ -370,6 +361,96 @@ body.dark .table-container::-webkit-scrollbar-thumb:hover {
 
 body.dark .table-container {
     scrollbar-color: rgba(255, 255, 255, 0.25) #2a2a2a;
+}
+
+/* Fixed widths for 18 columns */
+.table-container th:nth-child(1) {
+    width: 50px;
+}
+
+/* Index column */
+.table-container th:nth-child(2) {
+    width: 150px;
+}
+
+/* Column 1 */
+.table-container th:nth-child(3) {
+    width: 200px;
+}
+
+/* Column 2 */
+.table-container th:nth-child(4) {
+    width: 120px;
+}
+
+/* Column 3 */
+.table-container th:nth-child(5) {
+    width: 120px;
+}
+
+/* Column 4 */
+.table-container th:nth-child(6) {
+    width: 120px;
+}
+
+/* Column 5 */
+.table-container th:nth-child(7) {
+    width: 120px;
+}
+
+/* Column 6 */
+.table-container th:nth-child(8) {
+    width: 120px;
+}
+
+/* Column 7 */
+.table-container th:nth-child(9) {
+    width: 120px;
+}
+
+/* Column 8 */
+.table-container th:nth-child(10) {
+    width: 120px;
+}
+
+/* Column 9 */
+.table-container th:nth-child(11) {
+    width: 120px;
+}
+
+/* Column 10 */
+.table-container th:nth-child(12) {
+    width: 180px;
+}
+
+/* Column 11 */
+.table-container th:nth-child(13) {
+    width: 180px;
+}
+
+/* Column 12 */
+.table-container th:nth-child(14) {
+    width: 120px;
+}
+
+/* Column 13 */
+.table-container th:nth-child(15) {
+    width: 220px;
+}
+
+/* Column 14 */
+.table-container th:nth-child(16) {
+    width: 120px;
+}
+
+/* Column 15 */
+.table-container th:nth-child(17) {
+    width: 120px;
+}
+
+/* Column 16 */
+.table-container th:nth-child(18) {
+    width: 50px;
 }
 
 /* Sorting arrows on table headers */
@@ -454,7 +535,7 @@ body.dark .dt-controls input.dt-search {
     border: 1px solid #666;
 }
 
-.dt-controls select.dt-size {
+.dt-controls select.dt-size,.source-select {
     padding: 6px;
     border-radius: 6px;
     background: var(--table-bg);
@@ -598,3 +679,118 @@ body.dark .dt-controls input.dt-search {
     }
 }
 
+/* Dark mode via prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --accent: #2a2a2a;
+        --bg-color: #1c1c1c;
+        --text-color: #eee;
+        --table-bg: #2a2a2a;
+        --table-border: #444;
+        --chart-text: #eee;
+        --chart-grid: rgba(255, 255, 255, 0.2);
+        --chart-line: #ff9800;
+        --diff-positive-bg: rgba(0, 60, 0, 0.7);
+        --diff-negative-bg: rgba(80, 0, 0, 0.7);
+        --diff-positive-text: #b8ffba;
+        --diff-negative-text: #ffbaba;
+        --row-hover-bg: rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* Light mode via prefers-color-scheme */
+@media (prefers-color-scheme: light) {
+    :root {
+        --accent: #fff;
+        --bg-color: #e5e5e5;
+        --text-color: #333;
+        --table-bg: #fff;
+        --table-border: #ccc;
+        --accent: #fff;
+        --scrollbar-bg: rgba(0, 0, 0, 0.3);
+        --chart-text: #333;
+        --chart-grid: rgba(0, 0, 0, 0.1);
+        --chart-line: #007bff;
+        --diff-positive-bg: rgba(0, 200, 83, 0.15);
+        --diff-negative-bg: rgba(244, 67, 54, 0.15);
+        --diff-positive-text: #0a6025;
+        --diff-negative-text: #7a0e0e;
+        --row-hover-bg: rgba(0, 0, 0, 0.06);
+    }
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: var(--table-bg);
+  padding: 20px;
+  border-radius: 12px;
+  width: 80%;
+  max-width: 900px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+.close-btn {
+  float: right;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+.chart-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.chart-buttons button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  cursor: pointer;
+  background: #007bff;
+  color: var(--text-color);
+}
+.gov-link {
+  position: relative;
+  cursor: pointer;
+  color: var(--text-color);
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gov-icon {
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.gov-link:hover .gov-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#modal-title {
+  text-align: center;
+  width: 100%;
+  margin: 0 auto 12px auto;
+  font-weight: bold;
+}
