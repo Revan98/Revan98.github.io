@@ -3,6 +3,52 @@
     box-sizing: border-box;
 }
 
+/* Dark mode via prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --accent: #2a2a2a;
+        --bg-color: #1c1c1c;
+        --text-color: #eee;
+        --table-bg: #2a2a2a;
+        --table-border: #444;
+        --chart-text: #eee;
+        --chart-grid: rgba(255, 255, 255, 0.2);
+        --chart-line: #ff9800;
+        --diff-positive-bg: rgba(0, 60, 0, 0.7);
+        --diff-negative-bg: rgba(80, 0, 0, 0.7);
+        --diff-positive-text: #b8ffba;
+        --diff-negative-text: #ffbaba;
+        --row-hover-bg: rgba(255, 255, 255, 0.08);
+        --nav-bg:rgba(255, 255, 255, 0.8);
+        --nav-border: none;
+        --nav-box: rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* Light mode via prefers-color-scheme */
+@media (prefers-color-scheme: light) {
+    :root {
+        --accent: #fff;
+        --bg-color: #e5e5e5;
+        --text-color: #333;
+        --table-bg: #fff;
+        --table-border: #ccc;
+        --accent: #fff;
+        --scrollbar-bg: rgba(0, 0, 0, 0.3);
+        --chart-text: #333;
+        --chart-grid: rgba(0, 0, 0, 0.1);
+        --chart-line: #007bff;
+        --diff-positive-bg: rgba(0, 200, 83, 0.15);
+        --diff-negative-bg: rgba(244, 67, 54, 0.15);
+        --diff-positive-text: #0a6025;
+        --diff-negative-text: #7a0e0e;
+        --row-hover-bg: rgba(0, 0, 0, 0.06);
+        --nav-bg:rgba(255, 255, 255, 0.8);
+        --nav-border: none;
+        --nav-box: rgba(0, 0, 0, 0.08);
+    }
+}
+
 body.light {
     --accent: #fff;
     --bg-color: #e5e5e5;
@@ -19,6 +65,9 @@ body.light {
     --diff-positive-text: #0a6025;
     --diff-negative-text: #7a0e0e;
     --row-hover-bg: rgba(0, 0, 0, 0.06);
+    --nav-bg:rgba(255, 255, 255, 0.8);
+    --nav-border: none;
+    --nav-box: rgba(0, 0, 0, 0.08);
 }
 
 body.dark {
@@ -35,6 +84,9 @@ body.dark {
     --diff-positive-text: #b8ffba;
     --diff-negative-text: #ffbaba;
     --row-hover-bg: rgba(255, 255, 255, 0.08);
+    --nav-bg:rgba(255, 255, 255, 0.8);
+    --nav-border: none;
+    --nav-box: rgba(0, 0, 0, 0.08);
 }
 
 /* 2. GLOBAL */
@@ -52,11 +104,11 @@ body {
     z-index: 999;
     width: 75%;
     margin: 0 auto;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--nav-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 20px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 20px var(--nav-box);
     padding: 10px 24px;
     transition: all 0.3s ease;
 }
@@ -86,9 +138,9 @@ body {
 }
 
 body.dark .navbar {
-    background: rgba(26, 26, 26, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+    background: var(--nav-bg);
+    border: 1px solid var(--nav-border);
+    box-shadow: 0 4px 18px var(--nav-box);
 }
 
 body.dark .nav-links a {
@@ -676,46 +728,6 @@ body.dark .dt-controls input.dt-search {
 
     .dt-controls input.dt-search {
         padding: 6px;
-    }
-}
-
-/* Dark mode via prefers-color-scheme */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --accent: #2a2a2a;
-        --bg-color: #1c1c1c;
-        --text-color: #eee;
-        --table-bg: #2a2a2a;
-        --table-border: #444;
-        --chart-text: #eee;
-        --chart-grid: rgba(255, 255, 255, 0.2);
-        --chart-line: #ff9800;
-        --diff-positive-bg: rgba(0, 60, 0, 0.7);
-        --diff-negative-bg: rgba(80, 0, 0, 0.7);
-        --diff-positive-text: #b8ffba;
-        --diff-negative-text: #ffbaba;
-        --row-hover-bg: rgba(255, 255, 255, 0.08);
-    }
-}
-
-/* Light mode via prefers-color-scheme */
-@media (prefers-color-scheme: light) {
-    :root {
-        --accent: #fff;
-        --bg-color: #e5e5e5;
-        --text-color: #333;
-        --table-bg: #fff;
-        --table-border: #ccc;
-        --accent: #fff;
-        --scrollbar-bg: rgba(0, 0, 0, 0.3);
-        --chart-text: #333;
-        --chart-grid: rgba(0, 0, 0, 0.1);
-        --chart-line: #007bff;
-        --diff-positive-bg: rgba(0, 200, 83, 0.15);
-        --diff-negative-bg: rgba(244, 67, 54, 0.15);
-        --diff-positive-text: #0a6025;
-        --diff-negative-text: #7a0e0e;
-        --row-hover-bg: rgba(0, 0, 0, 0.06);
     }
 }
 
