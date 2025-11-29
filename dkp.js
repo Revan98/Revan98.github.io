@@ -41,6 +41,10 @@
   const importSettingsFile = document.getElementById("import-settings-file");
   const clearMinBtn = document.getElementById("clear-min-dkp");
 
+  /* Simple query helper */
+  const qs = (sel) => document.querySelector(sel);
+  const themeToggle = qs("#toggle-theme");
+
   // In-memory caches
   let powerRanges = []; // [{min_power, max_power|null, percentage}]
   let multipliers = { t4: 0.0, t5: 0.0, deads: 0.0 };
@@ -568,27 +572,6 @@
   // Init wiring
   async function init() {
     await loadAllFromStorage();
-    // --- Dark mode toggle ---
-    const toggleTheme = document.getElementById("toggle-theme");
-    function applyTheme(isDark) {
-      document.body.classList.toggle("dark", isDark);
-      localStorage.setItem("dkp_darkmode", isDark ? "1" : "0");
-      toggleTheme.checked = isDark;
-    }
-    toggleTheme.addEventListener("change", (e) => applyTheme(e.target.checked));
-    applyTheme(localStorage.getItem("dkp_darkmode") === "1");
-
-    // --- Hamburger menu ---
-    const hamburger = document.getElementById("hamburger");
-    const navLinks = document.getElementById("nav-links");
-
-    hamburger.addEventListener("click", () => {
-      navLinks.classList.toggle("show");
-    });
-
-    // restore saved preference
-    const savedDark = localStorage.getItem("dkp_darkmode") === "1";
-    applyTheme(savedDark);
 
     populateUIFromMemory();
     renderPowerRanges();
@@ -633,4 +616,44 @@
 
   // initial load
   init().catch((err) => console.error("Init error", err));
+
+  /* -------------------------
+   THEME HANDLING
+   ------------------------- */
+  function setTheme(mode) {
+    document.body.classList.remove("dark", "light");
+    if (mode === "dark") document.body.classList.add("dark");
+    if (mode === "light") document.body.classList.add("light");
+    localStorage.setItem("theme", mode);
+  }
+
+  function initializeTheme(toggleEl) {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+      setTheme("dark");
+      if (toggleEl) toggleEl.checked = true;
+      return;
+    }
+    if (saved === "light") {
+      setTheme("light");
+      if (toggleEl) toggleEl.checked = false;
+      return;
+    }
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(prefersDark ? "dark" : "light");
+    if (toggleEl) toggleEl.checked = prefersDark;
+  }
+  // Theme init & toggle
+  initializeTheme(themeToggle);
+  if (themeToggle) {
+    themeToggle.addEventListener("change", (e) => {
+      setTheme(e.target.checked ? "dark" : "light");
+    });
+  }
+
+  const hamburger = document.getElementById("hamburger");
+  const navLinks = document.getElementById("nav-links");
+  hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
 })();
