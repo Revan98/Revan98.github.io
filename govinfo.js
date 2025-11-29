@@ -1,7 +1,10 @@
-const API_KEY = "AIzaSyAZoyI5MbKsUJBe71jcn8AgU5ejFzdrteI";
+/* ============================================
+   1. CONSTANTS & UTILITIES
+================================================ */
 
-let SELECTED_COLS = []; // will be set based on header length
+const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
+let SELECTED_COLS = [];
 const SHORT_NUMBER_COLS = [2, 12, 13, 14, 15, 8];
 
 let charts = {};
@@ -14,6 +17,10 @@ function formatNumber(num) {
   return isNaN(n) ? "" : n.toLocaleString("en-US");
 }
 
+/* ============================================
+   2. DATA CLEANING & EXTRACTION
+================================================ */
+
 function cleanRows(rows) {
   return rows.filter((r) => r.some((c) => c && `${c}`.trim() !== ""));
 }
@@ -23,7 +30,6 @@ function extractSheetId(url) {
   return match ? match[1] : null;
 }
 
-// Multi-source cache
 const SOURCE_LIST = [
   {
     name: "KD3202",
@@ -37,12 +43,17 @@ const SOURCE_LIST = [
 
 const SourcesCache = new Map();
 
-// Table render
+/* ============================================
+   3. TABLE BUILDING & RENDERING
+================================================ */
+
 function renderTable(headers, rawRows) {
   let rows = cleanRows(rawRows);
   rows = rows.filter((r) => String(r[11]).trim().toUpperCase() !== "YES");
+
   SELECTED_COLS = headers.map((_, idx) => idx);
   rows.sort((a, b) => (+b[8] || 0) - (+a[8] || 0));
+
   buildTable(headers, rows);
 }
 
@@ -50,8 +61,10 @@ function buildTable(headers, rows) {
   const table = qs("#data-table");
   table.innerHTML = "";
 
+  // ---- HEADER ----
   const thead = document.createElement("thead");
   const tr = document.createElement("tr");
+
   const indexTh = document.createElement("th");
   indexTh.textContent = "#";
   tr.appendChild(indexTh);
@@ -59,32 +72,43 @@ function buildTable(headers, rows) {
   SELECTED_COLS.forEach((i) => {
     const th = document.createElement("th");
     th.classList.add("dt-sortable");
+
     const label = document.createElement("span");
     label.textContent = headers[i] || "";
+
     const icons = document.createElement("span");
     icons.className = "sort-icons";
     icons.innerHTML = `<span class="up">▲</span><span class="down">▼</span>`;
+
     th.appendChild(label);
     th.appendChild(icons);
     tr.appendChild(th);
   });
+
   thead.appendChild(tr);
 
+  // ---- BODY ----
   const tbody = document.createElement("tbody");
   const maxValues = getMaxValues(rows);
+
   rows.forEach((row, idx) => {
     const tr = document.createElement("tr");
     tr.dataset.id = row[0];
+
     const idxCell = document.createElement("td");
     idxCell.textContent = idx + 1;
     tr.appendChild(idxCell);
+
     SELECTED_COLS.forEach((col) =>
       tr.appendChild(makeCell(row, col, maxValues[col]))
     );
+
     tbody.appendChild(tr);
   });
+
   table.appendChild(thead);
   table.appendChild(tbody);
+
   activateDataTable();
 }
 
@@ -96,41 +120,41 @@ function getMaxValues(rows) {
   return max;
 }
 
-function makeCell(row, col, maxVal) {
+function makeCell(row, col) {
   const td = document.createElement("td");
-
   const raw = row[col];
-  const numeric = parseFloat(String(raw).replace("%", "")); // supports percent too
+  const numeric = parseFloat(String(raw).replace("%", ""));
 
-  // --- SORTING VALUE ---
   td.dataset.value = !isNaN(numeric) ? numeric : raw ?? "";
 
-  // --- CELL STRUCTURE ---
   const valueDiv = document.createElement("div");
   valueDiv.className = "cell-value";
 
-  // Use your existing short-format rule
-  if (col > 1 && !isNaN(numeric)) {
-    valueDiv.textContent = formatNumber(numeric);
-  } else {
-    valueDiv.textContent = raw;
-  }
+  valueDiv.textContent =
+    col > 1 && !isNaN(numeric) ? formatNumber(numeric) : raw;
+
   td.appendChild(valueDiv);
   return td;
 }
 
-// Table
+/* ============================================
+   4. DATATABLE: SEARCH, SORT, PAGINATION
+================================================ */
+
 function activateDataTable() {
   const table = qs("#data-table");
   const tbody = table.querySelector("tbody");
   if (!tbody) return;
+
   const rows = [...tbody.querySelectorAll("tr")];
+
   const state = table.__dtState || {
     filteredRows: rows.slice(),
     page: 1,
     pageSize: 20,
     currentSort: { col: null, dir: 1 },
   };
+
   table.__dtState = state;
 
   const controlBar = qs(".dt-controls");
@@ -142,6 +166,7 @@ function activateDataTable() {
   sizeSelect.value = state.pageSize;
   searchInput.value = "";
 
+  /* ---------- SEARCH ---------- */
   searchInput.oninput = () => {
     const q = searchInput.value.toLowerCase().trim();
     state.filteredRows = rows.filter((r) =>
@@ -151,40 +176,35 @@ function activateDataTable() {
     renderPage();
   };
 
+  /* ---------- PAGE SIZE ---------- */
   sizeSelect.onchange = () => {
     state.pageSize = +sizeSelect.value;
     state.page = 1;
     renderPage();
   };
 
-  // SORTING - attach to headers (ASC → DESC → NONE)
+  /* ---------- SORTING ---------- */
   table.querySelectorAll("thead th").forEach((th, colIndex) => {
-    if (colIndex === 0) return; // skip index column
+    if (colIndex === 0) return;
 
     th.style.cursor = "pointer";
 
     th.onclick = () => {
       const sort = state.currentSort;
 
-      // --- TRI-STATE LOGIC ---
       if (sort.col !== colIndex) {
-        // First click on new column → ASC
         sort.col = colIndex;
         sort.dir = 1;
       } else if (sort.dir === 1) {
-        // Second click → DESC
         sort.dir = -1;
       } else {
-        // Third click → RESET (no sorting)
         sort.col = null;
         sort.dir = 1;
       }
 
       updateSortIcons();
 
-      // --- APPLY SORT OR RESET ---
       if (sort.col === null) {
-        // RESET sorting → restore original order
         state.filteredRows = rows
           .slice()
           .filter((r) =>
@@ -193,7 +213,6 @@ function activateDataTable() {
               .includes(searchInput.value.toLowerCase())
           );
       } else {
-        // NORMAL sorting
         const col = sort.col;
         const dir = sort.dir;
 
@@ -216,7 +235,6 @@ function activateDataTable() {
     };
   });
 
-  // update sort icons (ASC / DESC / neutral)
   function updateSortIcons() {
     table.querySelectorAll("thead th").forEach((th, idx) => {
       th.classList.remove("sorted-asc", "sorted-desc");
@@ -229,16 +247,22 @@ function activateDataTable() {
     });
   }
 
+  /* ---------- PAGINATION ---------- */
+
   function makeBtn(label, page, opts = {}) {
     const b = document.createElement("button");
     b.textContent = label;
+
     if (opts.disabled) b.disabled = true;
     if (opts.active) b.classList.add("active");
+
     b.onclick = () => {
-      if (opts.disabled) return;
-      state.page = page;
-      renderPage();
+      if (!opts.disabled) {
+        state.page = page;
+        renderPage();
+      }
     };
+
     return b;
   }
 
@@ -269,21 +293,18 @@ function activateDataTable() {
   function renderPager(totalPages) {
     pager.innerHTML = "";
 
-    // Navigation buttons
     pager.appendChild(makeBtn("<<", 1, { disabled: state.page === 1 }));
     pager.appendChild(
-      makeBtn("<", Math.max(1, state.page - 1), { disabled: state.page === 1 })
+      makeBtn("<", Math.max(1, state.page - 1), {
+        disabled: state.page === 1,
+      })
     );
 
     const current = state.page;
+    const windowSize = 3;
 
-    // Determine 5-page window around current
-    const windowSize = 3; // change this to adjust button count
-
-    // Always show page 1
     pager.appendChild(makeBtn("1", 1, { active: current === 1 }));
 
-    // Ellipsis after 1
     if (current > Math.ceil(windowSize / 2) + 1) {
       const ell = document.createElement("span");
       ell.textContent = "...";
@@ -291,7 +312,6 @@ function activateDataTable() {
       pager.appendChild(ell);
     }
 
-    // Centered page window
     const pages = getCenteredPages(current, totalPages, windowSize);
     pages.forEach((p) => {
       if (p !== 1 && p !== totalPages) {
@@ -299,7 +319,6 @@ function activateDataTable() {
       }
     });
 
-    // Ellipsis before last page
     if (current < totalPages - Math.ceil(windowSize / 2)) {
       const ell = document.createElement("span");
       ell.textContent = "...";
@@ -307,14 +326,14 @@ function activateDataTable() {
       pager.appendChild(ell);
     }
 
-    // Always show last page
     if (totalPages > 1) {
       pager.appendChild(
-        makeBtn(totalPages, totalPages, { active: current === totalPages })
+        makeBtn(totalPages, totalPages, {
+          active: current === totalPages,
+        })
       );
     }
 
-    // Next / Last
     pager.appendChild(
       makeBtn(">", Math.min(totalPages, current + 1), {
         disabled: current === totalPages,
@@ -325,22 +344,32 @@ function activateDataTable() {
     );
   }
 
+  /* ---------- FINAL PAGE RENDER ---------- */
+
   function renderPage() {
     const prevSelectedId = tbody.querySelector(".selected")?.dataset?.id;
+
     tbody.innerHTML = "";
+
     const total = state.filteredRows.length;
     const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+
     if (state.page > totalPages) state.page = totalPages;
+
     const start = (state.page - 1) * state.pageSize;
     const end = Math.min(start + state.pageSize, total);
+
     const slice = state.filteredRows.slice(start, end);
     slice.forEach((r) => tbody.appendChild(r));
+
     if (prevSelectedId) {
       const row = tbody.querySelector(`tr[data-id="${prevSelectedId}"]`);
       if (row) row.classList.add("selected");
     }
+
     infoBox.textContent =
       total === 0 ? "No entries" : `Showing ${start + 1}–${end} of ${total}`;
+
     renderPager(totalPages);
   }
 
@@ -348,17 +377,24 @@ function activateDataTable() {
   renderPage();
 }
 
-// Multi-source loader
+/* ============================================
+   5. GOOGLE SHEETS LOADING (MULTI-SOURCE)
+================================================ */
+
 async function loadSourceSheet(url) {
   if (SourcesCache.has(url)) return SourcesCache.get(url);
+
   const sheetId = extractSheetId(url);
   if (!sheetId) throw new Error("Invalid Google Sheets URL: " + url);
+
   const metaRes = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${API_KEY}`
   );
   const meta = await metaRes.json();
+
   const sheetNames = meta.sheets.map((s) => s.properties.title);
   const entry = { sheetId, sheetNames, data: {} };
+
   SourcesCache.set(url, entry);
   return entry;
 }
@@ -366,20 +402,28 @@ async function loadSourceSheet(url) {
 async function loadWorksheetData(url, sheetName) {
   const entry = SourcesCache.get(url);
   if (!entry) throw new Error("Source not in cache");
+
   if (entry.data[sheetName]) return entry.data[sheetName];
+
   const res = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${
       entry.sheetId
     }/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`
   );
+
   const json = await res.json();
   entry.data[sheetName] = json.values || [];
+
   return entry.data[sheetName];
 }
 
-// Init
+/* ============================================
+   6. INITIALIZATION
+================================================ */
+
 document.addEventListener("DOMContentLoaded", async () => {
   const savedTheme = localStorage.getItem("theme");
+
   if (savedTheme === "dark") {
     document.body.classList.add("dark");
     qs("#toggle-theme").checked = true;
@@ -390,8 +434,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   SOURCE_LIST.forEach((src) => {
     const opt = document.createElement("option");
-    opt.value = src.url; // URL still used internally
-    opt.textContent = src.name; // Friendly name shown to user
+    opt.value = src.url;
+    opt.textContent = src.name;
     sourceSelect.appendChild(opt);
   });
 
@@ -399,7 +443,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const url = sourceSelect.value;
     worksheetSelect.innerHTML = `<option value="">Select Worksheet…</option>`;
     if (!url) return;
+
     qs("#loading-overlay").style.display = "flex";
+
     try {
       const entry = await loadSourceSheet(url);
       entry.sheetNames.forEach((name) => {
@@ -419,7 +465,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const url = sourceSelect.value;
     const sheetName = worksheetSelect.value;
     if (!url || !sheetName) return;
+
     qs("#loading-overlay").style.display = "flex";
+
     try {
       const rows = await loadWorksheetData(url, sheetName);
       const headers = rows[0] || [];
@@ -433,10 +481,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-/* -------------------------
-   THEME HANDLING
-   ------------------------- */
+/* ============================================
+   7. THEME HANDLING
+================================================ */
+
 const themeToggle = qs("#toggle-theme");
+
 function setTheme(mode) {
   document.body.classList.remove("dark", "light");
   if (mode === "dark") document.body.classList.add("dark");
@@ -446,25 +496,29 @@ function setTheme(mode) {
 
 function initializeTheme(toggleEl) {
   const saved = localStorage.getItem("theme");
+
   if (saved === "dark") {
     setTheme("dark");
     if (toggleEl) toggleEl.checked = true;
     return;
   }
+
   if (saved === "light") {
     setTheme("light");
     if (toggleEl) toggleEl.checked = false;
     return;
   }
+
   const prefersDark =
     window.matchMedia &&
     window.matchMedia("(prefers-color-scheme: dark)").matches;
+
   setTheme(prefersDark ? "dark" : "light");
   if (toggleEl) toggleEl.checked = prefersDark;
 }
 
-// Theme init & toggle
 initializeTheme(themeToggle);
+
 if (themeToggle) {
   themeToggle.addEventListener("change", (e) => {
     setTheme(e.target.checked ? "dark" : "light");
