@@ -14,6 +14,7 @@
         --nav-bg: rgba(26, 26, 26, 0.85);;
         --nav-border: rgba(255, 255, 255, 0.05);
         --nav-box: rgba(0, 0, 0, 0.5);
+        --button-primary-bg: #0b74d1;
     }
 }
 
@@ -32,6 +33,7 @@
         --nav-bg:rgba(255, 255, 255, 0.8);
         --nav-border: none;
         --nav-box: rgba(0, 0, 0, 0.08);
+        --button-primary-bg: #0b74d1;
     }
 }
 body.light {
@@ -46,6 +48,7 @@ body.light {
     --nav-border: none;
     --nav-box: rgba(0, 0, 0, 0.08);
     --text-color: #333;
+    --button-primary-bg: #0b74d1;
 }
 
 body.dark {
@@ -58,6 +61,7 @@ body.dark {
     --nav-bg: rgba(26, 26, 26, 0.85);;
     --nav-border: rgba(255, 255, 255, 0.05);
     --nav-box: rgba(0, 0, 0, 0.5);
+    --button-primary-bg: #0b74d1;
 }
 
 body {
@@ -242,8 +246,8 @@ button {
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    background: #e6eef9;
-    color: #053b6b;
+    background: var(--button-primary-bg);
+    color: white;
 }
 
 ::file-selector-button {
@@ -251,14 +255,8 @@ button {
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    background: #e6eef9;
-    color: #053b6b;
-}
-
-button.primary {
-    background: var(--accent);
+    background: var(--button-primary-bg);
     color: white;
-    box-shadow: 0 6px 14px rgba(11, 74, 209, 0.12);
 }
 
 table {
@@ -278,7 +276,6 @@ tbody td {
     padding: 8px;
     border-bottom: 1px solid #f3f6fb;
 }
-
 
 #compare-results-wrap {
     overflow: auto;
@@ -309,21 +306,6 @@ body.dark thead th {
 
 body.dark tbody td {
     border-bottom: 1px solid #222;
-}
-
-body.dark button {
-    background: #333;
-    color: #eee;
-}
-
-body.dark button.primary {
-    background: #0b74d1;
-    color: #fff;
-}
-
-body.dark ::file-selector-button {
-    background: #333;
-    color: #eee;
 }
 
 /* --- Scrollbar styling for Results table --- */
