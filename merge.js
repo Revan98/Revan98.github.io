@@ -5,6 +5,10 @@ const progressEl = document.getElementById("progress");
 const resultsWrap = document.getElementById("merge-results-wrap");
 const resultsInfo = document.getElementById("merge-results-info");
 
+/* Simple query helper */
+const qs = (sel) => document.querySelector(sel);
+const themeToggle = qs("#toggle-theme");
+
 // Utility: read spreadsheet file (.xlsx or .csv) with header normalization
 async function readExcel(file) {
   if (!file) throw new Error("No file provided");
@@ -206,24 +210,45 @@ async function doMerge() {
   resultsInfo.textContent = `Merged ${merged.length} rows using ID "${idColumn}" and column "${mergeColumn}" from File 2.`;
 }
 
-// Theme toggle
-const toggleTheme = document.getElementById("toggle-theme");
-function applyTheme(isDark) {
-  document.body.classList.toggle("dark", isDark);
-  localStorage.setItem("dkp_darkmode", isDark ? "1" : "0");
-  toggleTheme.checked = isDark;
+/* -------------------------
+   THEME HANDLING
+   ------------------------- */
+function setTheme(mode) {
+  document.body.classList.remove("dark", "light");
+  if (mode === "dark") document.body.classList.add("dark");
+  if (mode === "light") document.body.classList.add("light");
+  localStorage.setItem("theme", mode);
 }
-toggleTheme.addEventListener("change", (e) => applyTheme(e.target.checked));
-applyTheme(localStorage.getItem("dkp_darkmode") === "1");
 
-// Hamburger menu
+function initializeTheme(toggleEl) {
+  const saved = localStorage.getItem("theme");
+  if (saved === "dark") {
+    setTheme("dark");
+    if (toggleEl) toggleEl.checked = true;
+    return;
+  }
+  if (saved === "light") {
+    setTheme("light");
+    if (toggleEl) toggleEl.checked = false;
+    return;
+  }
+  const prefersDark =
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+  setTheme(prefersDark ? "dark" : "light");
+  if (toggleEl) toggleEl.checked = prefersDark;
+}
+// Theme init & toggle
+initializeTheme(themeToggle);
+if (themeToggle) {
+  themeToggle.addEventListener("change", (e) => {
+    setTheme(e.target.checked ? "dark" : "light");
+  });
+}
+
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
-
-document.getElementById("file1").addEventListener("change", handleFiles);
-document.getElementById("file2").addEventListener("change", handleFiles);
-document.getElementById("mergeBtn").addEventListener("click", doMerge);
 
 document
   .getElementById("export-xlsx")
