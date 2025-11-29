@@ -608,11 +608,12 @@ function addRowClickEventsOnce() {
 
   document.addEventListener("click", (e) => {
     // looks for element with data-id (gov link)
-    const target = e.target.closest("[data-id]");
-    if (!target) return;
-    const id = target.dataset?.id;
+    const link = e.target.closest(".gov-link");
+    if (!link) return;
+    
+    const id = link.dataset?.id;
     if (!id) return;
-
+    
     openChartModal(id);
   });
 }
