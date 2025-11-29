@@ -731,6 +731,67 @@ body.dark .dt-controls input.dt-search {
     }
 }
 
+@media (max-width: 1366px) {
+    .navbar {
+        width: 95%;
+        padding: 10px 14px;
+    }
+
+    .row {
+        flex-wrap: wrap;
+    }
+
+    .left,
+    .middle,
+    .right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .dt-controls input.dt-search {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .table-container table {
+        min-width: 520px;
+    }
+
+    .bottom-table-row {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .dt-info {
+        text-align: center;
+    }
+
+    .dt-pager {
+        justify-content: center;
+    }
+
+    #top-players,
+    #bottom-totals {
+        display: flex;
+        justify-content: center;
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+
+    .player-box,
+    .stat-box {
+        width: 100%;
+        max-width: 260px;
+    }
+    .card {
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+}
+
 .modal {
   position: fixed;
   inset: 0;
@@ -806,4 +867,5 @@ body.dark .dt-controls input.dt-search {
   margin: 0 auto 12px auto;
   font-weight: bold;
 }
+
 
