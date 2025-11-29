@@ -3,6 +3,10 @@ const progressEl = document.getElementById("progressBar");
 const resultsWrap = document.getElementById("compare-results-wrap");
 const resultsInfo = document.getElementById("compare-results-info");
 
+/* Simple query helper */
+const qs = (sel) => document.querySelector(sel);
+const themeToggle = qs("#toggle-theme");
+
 // Read Excel/CSV/JSON
 async function readFile(file) {
   const name = file.name.toLowerCase();
@@ -211,14 +215,41 @@ document.getElementById("export-json").addEventListener("click", () => {
 });
 
 // Theme + hamburger menu
-const toggleTheme = document.getElementById("toggle-theme");
-function applyTheme(isDark) {
-  document.body.classList.toggle("dark", isDark);
-  localStorage.setItem("dkp_darkmode", isDark ? "1" : "0");
-  toggleTheme.checked = isDark;
+/* -------------------------
+   THEME HANDLING
+   ------------------------- */
+function setTheme(mode) {
+  document.body.classList.remove("dark", "light");
+  if (mode === "dark") document.body.classList.add("dark");
+  if (mode === "light") document.body.classList.add("light");
+  localStorage.setItem("theme", mode);
 }
-toggleTheme.addEventListener("change", (e) => applyTheme(e.target.checked));
-applyTheme(localStorage.getItem("dkp_darkmode") === "1");
+
+function initializeTheme(toggleEl) {
+  const saved = localStorage.getItem("theme");
+  if (saved === "dark") {
+    setTheme("dark");
+    if (toggleEl) toggleEl.checked = true;
+    return;
+  }
+  if (saved === "light") {
+    setTheme("light");
+    if (toggleEl) toggleEl.checked = false;
+    return;
+  }
+  const prefersDark =
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+  setTheme(prefersDark ? "dark" : "light");
+  if (toggleEl) toggleEl.checked = prefersDark;
+}
+// Theme init & toggle
+initializeTheme(themeToggle);
+if (themeToggle) {
+  themeToggle.addEventListener("change", (e) => {
+    setTheme(e.target.checked ? "dark" : "light");
+  });
+}
 
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
