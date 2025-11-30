@@ -15,6 +15,8 @@
         --nav-bg: rgba(26, 26, 26, 0.85);;
         --nav-border: rgba(255, 255, 255, 0.05);
         --nav-box: rgba(0, 0, 0, 0.5);
+        --table-stripe-odd: rgba(255,255,255,0.01);
+        --table-stripe-even: rgba(255,255,255,0.03);
     }
 }
 
@@ -33,6 +35,8 @@
         --nav-bg:rgba(255, 255, 255, 0.8);
         --nav-border: none;
         --nav-box: rgba(0, 0, 0, 0.08);
+        --table-stripe-odd: #ffffff;
+        --table-stripe-even: #f7f9fb;
     }
 }
 
@@ -49,6 +53,8 @@ body.light {
     --nav-bg:rgba(255, 255, 255, 0.8);
     --nav-border: none;
     --nav-box: rgba(0, 0, 0, 0.08);
+    --table-stripe-odd: #ffffff;
+    --table-stripe-even: #f7f9fb;
 }
 
 body.dark {
@@ -62,6 +68,8 @@ body.dark {
     --nav-bg: rgba(26, 26, 26, 0.85);;
     --nav-border: rgba(255, 255, 255, 0.05);
     --nav-box: rgba(0, 0, 0, 0.5);
+    --table-stripe-odd: rgba(255,255,255,0.01);
+    --table-stripe-even: rgba(255,255,255,0.03);
 }
 
 body {
@@ -265,6 +273,14 @@ body.dark .hamburger {
 .table-container tbody tr:hover {
     background-color: var(--row-hover-bg);
     transition: background-color 0.15s ease;
+}
+
+.table-container tbody tr:nth-child(odd) {
+  background-color: var(--table-stripe-odd);
+}
+
+.table-container tbody tr:nth-child(even) {
+  background-color: var(--table-stripe-even);
 }
 
 /* Scrollbars */
