@@ -110,7 +110,9 @@ body {
   position: sticky;
   top: 0;
   left: 0;
-  height: 72px; /* you can change to 12px if really needed */
+  height: 72px;
+  min-height: 72px;
+  flex: 0 0 auto;
   backdrop-filter: blur(12px);
   background: rgba(255, 255, 255, 0.35);
   display: flex;
@@ -242,6 +244,32 @@ body.dark .hamburger {
 
 /* === MOBILE MENU === */
 @media (max-width: 768px) {
+  .nav-links {
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: center;
+    width: 60%;
+    margin: 0 auto;
+    padding: 16px 0;
+    gap: 18px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 14px;
+
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.25s ease;
+  }
+
+  body.dark .nav-links {
+    background: rgba(26, 26, 26, 0.90);
+  }
+
+  .nav-links.show {
+    transform: scaleY(1);
+  }
 
   .hamburger {
     display: block;
@@ -688,7 +716,12 @@ body.dark .dt-controls input.dt-search {
 }
 /* Responsive adjustments */
 @media (max-width: 991px) {
-
+    .left,
+    .middle,
+    .right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
 
     .dt-controls input.dt-search {
         width: 100%;
@@ -739,7 +772,12 @@ body.dark .dt-controls input.dt-search {
 }
 
 @media (max-width: 1366px) {
-
+    .left,
+    .middle,
+    .right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
 
     .dt-controls input.dt-search {
         width: 100%;
