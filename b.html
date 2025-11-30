@@ -243,33 +243,6 @@ body.dark .hamburger {
 /* === MOBILE MENU === */
 @media (max-width: 768px) {
 
-  .nav-links {
-    position: absolute;
-    top: 72px;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    align-items: center;
-    width: 60%;
-    margin: 0 auto;
-    padding: 16px 0;
-    gap: 18px;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 14px;
-
-    transform: scaleY(0);
-    transform-origin: top;
-    transition: transform 0.25s ease;
-  }
-
-  body.dark .nav-links {
-    background: rgba(26, 26, 26, 0.90);
-  }
-
-  .nav-links.show {
-    transform: scaleY(1);
-  }
-
   .hamburger {
     display: block;
   }
