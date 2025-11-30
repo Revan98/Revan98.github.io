@@ -790,6 +790,137 @@ body.dark .dt-controls input.dt-search {
   margin: 0 auto 12px auto;
   font-weight: bold;
 }
+/* Small phones */
+@media (max-width: 600px) {
+
+  /* Reduce body padding & general spacing */
+  body {
+    font-size: 14px;
+  }
+
+  .player-box,
+  .stat-box {
+    width: 100%;
+    max-width: 260px;
+    margin: 0 auto;
+  }
+
+  #top-players,
+  #bottom-totals {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Card responsiveness */
+  .card {
+    padding: 10px;
+    margin: 10px auto;
+    width: 95%;
+  }
+
+  /* Table container */
+  .table-container {
+    max-height: 40vh;
+    overflow-x: auto;
+  }
+
+  /* Table text size */
+  .table-container th,
+  .table-container td {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  /* Controls collapse */
+  .dt-controls {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dt-controls input.dt-search {
+    width: 100%;
+  }
+
+  .bottom-table-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* Charts */
+  .charts-container canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Modal */
+  .modal-content {
+    width: 90%;
+    padding: 12px;
+  }
+
+  #modal-title {
+    font-size: 16px;
+  }
+}
+@media (max-width: 768px) {
+
+  /* Player & stat boxes */
+  .player-box,
+  .stat-box {
+    width: 45%;
+  }
+
+  #top-players,
+  #bottom-totals {
+    flex-wrap: wrap;
+  }
+
+  /* Table controls */
+  .dt-controls {
+    flex-wrap: wrap;
+  }
+
+  .dt-controls input.dt-search {
+    width: 70%;
+  }
+
+  /* Pagination buttons smaller */
+  .dt-pager button {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+
+  /* Charts */
+  .charts-container canvas {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  /* Modal */
+  .modal-content {
+    width: 85%;
+  }
+}
+@media (max-width: 992px) {
+
+  /* Table columns loosen */
+  .table-container th,
+  .table-container td {
+    padding: 6px;
+    font-size: 13px;
+  }
+
+  /* Shrink fixed column widths slightly */
+  .table-container th:nth-child(n) {
+    width: auto;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+}
+
 </style>
 </head>
 <body>
