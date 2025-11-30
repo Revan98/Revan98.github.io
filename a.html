@@ -9,109 +9,139 @@
 
 
 </head>
-<body>
+<body class="bg-light">
 
-  <header class="header" id="header">
-    <nav class="nav-container">
-      <button class="hamburger" id="hamburger" aria-label="Menu">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
-          <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-        </svg>
-      </button>
-      
-      <div class="nav-menu" id="nav-menu">
-        <ul class="nav-links" id="nav-links">
-          <li class="nav-item"><a class="nav-link" href="">Test</a></li>
-          <li class="nav-item"><a class="nav-link" href="">Test</a></li>
-          <li class="nav-item"><a class="nav-link" href="">Test</a></li>
-          <li class="nav-item"><a class="nav-link" href="">Test</a></li>
-          <li class="nav-item"><a class="nav-link" href="">Test</a></li>
-          <li class="nav-item"><a class="nav-link" href="">Test</a></li>
-          <li class="nav-item"><a class="nav-link" href="">Test</a></li>
-        </ul>
-        
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <a class="navbar-brand ms-2" href="#">MySite</a>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link active" href="#">Test</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Test</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Test</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Test</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Test</a></li>
+      </ul>
+
+      <!-- Theme Toggle -->
+      <div class="form-check form-switch text-white">
+        <input class="form-check-input" type="checkbox" id="toggle-theme">
+        <label class="form-check-label" for="toggle-theme">Dark Mode</label>
       </div>
-      
-      <label class="theme-toggle">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun" viewBox="0 0 16 16">
-          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
-        </svg>
-        <input type="checkbox" id="toggle-theme">
-        <span class="toggle-slider"></span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
-          <path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278M4.858 1.311A7.27 7.27 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.32 7.32 0 0 0 5.205-2.162q-.506.063-1.029.063c-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286"/>
-        </svg>
-      </label>
-    </nav>
-  </header>
+    </div>
+  </nav>
 
-<div class="row">
-  <div class="column side">Column</div>
-  <div class="column middle">
-      <div id="loading-overlay">
-        <div class="spinner"></div>
-        Loading data...
+
+  <!-- MAIN LAYOUT -->
+  <div class="container-fluid mt-4">
+    <div class="row">
+
+      <!-- LEFT SIDEBAR -->
+      <div class="col-lg-2 d-none d-lg-block">
+        <div class="p-3 bg-white rounded shadow-sm">Column</div>
       </div>
 
-      <div id="top-players"></div>
-      <div id="bottom-totals"></div>
+      <!-- CONTENT -->
+      <div class="col-lg-8">
 
-      <div class="card">
-        <div class="dt-controls">
-
-          <label for="dt-size">Rows per page</label>
-          <select class="dt-size">
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-          <label for="source-select">Source</label>
-          <select id="source-select" class="source-select">
-            <option>Select source</option>
-          </select>
-
-          <input class="dt-search" placeholder="Search…" />
+        <!-- Loading overlay -->
+        <div id="loading-overlay" class="d-flex justify-content-center align-items-center flex-column p-5">
+          <div class="spinner-border text-primary mb-3"></div>
+          <div class="fw-bold">Loading data...</div>
         </div>
 
-        <div class="table-responsive">
-          
-          <table id="data-table"  class="table table-striped table-sm"></table>
-       
-        </div>
+        <div id="top-players" class="mt-3"></div>
+        <div id="bottom-totals" class="mt-3"></div>
 
-        <div class="bottom-table-row">
-          <div class="dt-info"></div>
-          <div class="dt-pager"></div>
+        <!-- DATA TABLE CARD -->
+        <div class="card shadow-sm mt-4">
+          <div class="card-body">
+
+            <!-- Controls row -->
+            <div class="row g-3 mb-3 align-items-center">
+              <div class="col-auto">
+                <label class="col-form-label">Rows</label>
+              </div>
+              <div class="col-auto">
+                <select class="form-select dt-size">
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+
+              <div class="col-auto">
+                <label class="col-form-label">Source</label>
+              </div>
+              <div class="col-auto">
+                <select id="source-select" class="form-select source-select">
+                  <option>Select source</option>
+                </select>
+              </div>
+
+              <div class="col-auto ms-auto">
+                <input class="form-control dt-search" placeholder="Search…" />
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+              <table id="data-table" class="table table-striped table-hover table-bordered table-sm"></table>
+            </div>
+
+            <!-- Bottom row -->
+            <div class="d-flex justify-content-between align-items-center pt-2">
+              <div class="dt-info small text-muted"></div>
+              <nav>
+                <ul class="pagination pagination-sm mb-0 dt-pager"></ul>
+              </nav>
+            </div>
+
+          </div>
         </div>
       </div>
-    
+
+      <!-- RIGHT SIDEBAR -->
+      <div class="col-lg-2 d-none d-lg-block">
+        <div class="p-3 bg-white rounded shadow-sm">Column</div>
+      </div>
+
+    </div>
   </div>
-  <div class="column side">Column</div>
-</div>
-
-<div class="footer">
-  <p>Footer</p>
-</div>
 
 
-  <div id="chart-modal" class="modal hidden">
-    <div class="modal-content">
-      <button id="close-modal" class="close-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-        </svg>
-      </button>
+  <!-- FOOTER -->
+  <footer class="bg-dark text-white text-center py-3 mt-5">
+    <p class="mb-0 small">Footer</p>
+  </footer>
 
-      <h2 id="modal-title"></h2>
 
-      <canvas id="modal-chart"></canvas>
+  <!-- MODAL -->
+  <div class="modal fade" id="chart-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content p-3">
+        
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
 
-      <div class="chart-buttons">
-        <button data-col="16">Power Diff</button>
-        <button data-col="3">T4 Kills</button>
-        <button data-col="4">T5 Kills</button>
-        <button data-col="5">Kill Points</button>
-        <button data-col="6">Deads</button>
+        <h4 id="modal-title" class="text-center mb-3"></h4>
+
+        <canvas id="modal-chart" height="120"></canvas>
+
+        <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+          <button class="btn btn-outline-primary btn-sm" data-col="16">Power Diff</button>
+          <button class="btn btn-outline-primary btn-sm" data-col="3">T4 Kills</button>
+          <button class="btn btn-outline-primary btn-sm" data-col="4">T5 Kills</button>
+          <button class="btn btn-outline-primary btn-sm" data-col="5">Kill Points</button>
+          <button class="btn btn-outline-danger btn-sm" data-col="6">Deads</button>
+        </div>
+
       </div>
     </div>
   </div>
