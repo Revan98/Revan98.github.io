@@ -389,18 +389,47 @@ function activateDataTable() {
 }
 
 function syncColumnWidths() {
-  const headCols = document.querySelectorAll(".header-table thead tr th");
-  const bodyRow = document.querySelector(".body-table tbody tr");
-  if (!bodyRow) return;
+  const headerTable = document.querySelector(".header-table");
+  const bodyTable = document.querySelector(".body-table");
+  if (!headerTable || !bodyTable) return;
 
-  const bodyCols = bodyRow.children;
-  if (headCols.length !== bodyCols.length) return;
+  const headerCols = headerTable.querySelectorAll("th");
+  const firstBodyRow = bodyTable.querySelector("tr");
 
-  for (let i = 0; i < headCols.length; i++) {
-    const width = bodyCols[i].getBoundingClientRect().width + "px";
-    headCols[i].style.width = width;
-  }
+  if (!firstBodyRow) return;
+
+  const bodyCols = firstBodyRow.children;
+  if (headerCols.length !== bodyCols.length) return;
+
+  // Step 1: Reset widths so natural sizing kicks in
+  headerCols.forEach(c => c.style.width = "auto");
+  bodyCols.forEach(c => c.style.width = "auto");
+
+  // Step 2: Calculate max width for each column from *all rows + header*
+  const colCount = headerCols.length;
+  const maxWidths = new Array(colCount).fill(0);
+
+  // Scan header
+  headerCols.forEach((col, i) => {
+    maxWidths[i] = Math.max(maxWidths[i], col.scrollWidth);
+  });
+
+  // Scan every body row
+  bodyTable.querySelectorAll("tr").forEach(row => {
+    row.querySelectorAll("td").forEach((cell, i) => {
+      maxWidths[i] = Math.max(maxWidths[i], cell.scrollWidth);
+    });
+  });
+
+  // Step 3: Apply these exact widths to both header + body
+  maxWidths.forEach((w, i) => {
+    headerCols[i].style.width = w + "px";
+    bodyTable.querySelectorAll("tr").forEach(row => {
+      row.children[i].style.width = w + "px";
+    });
+  });
 }
+
 
 /* -------------------------
    GOOGLE SHEETS LOADING (per-source)
