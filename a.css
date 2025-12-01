@@ -347,7 +347,7 @@ body.dark .hamburger {
 /* HEADER TABLE */
 .header-table {
     width: 100%;
-    table-layout: auto;
+    table-layout: fixed;
     border-collapse: collapse;
     background: var(--table-bg);
 }
@@ -398,7 +398,7 @@ body.dark .hamburger {
 
 .body-table {
     width: 100%;
-    table-layout: auto;
+    table-layout: fixed;
     border-collapse: collapse;
 }
 
