@@ -17,10 +17,8 @@ const CONFIG = {
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
 /* COLUMNS / BEHAVIOR CONFIG */
-const SELECTED_COLS = [0, 1, 2, 12, 13, 14, 15, 8, 9];
-const SHORT_NUMBER_COLS = [2, 12, 13, 14, 15, 8];
-const PROGRESS_COLS = [2, 12, 13, 14, 15];
-const DIFF_COLS = [2, 12, 13, 14, 15];
+const SELECTED_COLS = [];
+const SHORT_NUMBER_COLS = [];
 
 /* STATE */
 let googleSheetId = null;
@@ -28,10 +26,7 @@ let googleSheetNames = [];
 let googleSheetsData = {};
 let currentSource = null;
 let sourcesCache = {};
-let diffsCache = {};
-let modalChart = null;
 let selectedGovernorId = null;
-let currentMetric = 16; // default metric for modal chart
 let _documentClickListenerAdded = false;
 
 /* Simple query helper */
@@ -58,38 +53,6 @@ function extractSheetId(url) {
 }
 
 /* -------------------------
-   DIFF CALCULATIONS (cached)
-   ------------------------- */
-function computeDiffs() {
-  diffsCache = {};
-
-  const lastSheet = googleSheetNames.at(-1);
-  const rows = (googleSheetsData[lastSheet] || []).slice(1);
-
-  rows.forEach((row) => {
-    const id = String(row[0] ?? "").trim();
-    if (!id) return;
-
-    // Keep the original mapping but coerce to numbers with fallback 0
-    diffsCache[id] = {
-      3: Number(row[3]) || 0,
-      4: Number(row[4]) || 0,
-      5: Number(row[5]) || 0,
-      6: Number(row[6]) || 0,
-      2: Number(row[16]) || 0, // original used col 16 for Power diff
-      12: Number(row[4]) || 0,
-      13: Number(row[5]) || 0,
-      14: Number(row[3]) || 0,
-      15: Number(row[6]) || 0,
-    };
-  });
-}
-
-function getDiff(id, col) {
-  return diffsCache[id]?.[col] ?? 0;
-}
-
-/* -------------------------
    GOVERNOR / NAME HELPERS
    ------------------------- */
 function getGovernorName(id) {
@@ -101,124 +64,15 @@ function getGovernorName(id) {
 }
 
 /* -------------------------
-   CHARTS (modal)
-   ------------------------- */
-function getChartStyles() {
-  const css = (v) => getComputedStyle(document.body).getPropertyValue(v).trim();
-  const line = css("--chart-line") || "#007bff";
-  return {
-    text: css("--chart-text") || "#333",
-    grid: css("--chart-grid") || "rgba(0,0,0,0.1)",
-    line,
-    dataset: {
-      borderColor: line,
-      backgroundColor: line + "33",
-      tension: 0.3,
-    },
-  };
-}
-
-function openChartModal(governorId) {
-  selectedGovernorId = governorId;
-  const modal = qs("#chart-modal");
-  const title = qs("#modal-title");
-  const name = getGovernorName(governorId);
-  title.textContent = `${name} (ID: ${governorId})`;
-
-  modal.classList.remove("hidden");
-
-  if (modalChart) {
-    modalChart.destroy();
-    modalChart = null;
-  }
-
-  const ctx = qs("#modal-chart").getContext("2d");
-  modalChart = new Chart(ctx, {
-    type: "line",
-    data: { labels: [], datasets: [{ label: "", data: [] }] },
-    options: {
-      responsive: true,
-      plugins: { legend: { labels: { color: getChartStyles().text } } },
-      scales: {
-        x: { ticks: { color: getChartStyles().text } },
-        y: { ticks: { color: getChartStyles().text } },
-      },
-    },
-  });
-
-  updateModalChart(currentMetric);
-}
-
-function updateModalChart(colIndex) {
-  if (!modalChart) return;
-  currentMetric = colIndex;
-
-  const sheets = googleSheetNames || [];
-  const values = sheets.map((sheet) => {
-    const row = (googleSheetsData[sheet] || [])
-      .slice(1)
-      .find((r) => `${r[0]}` === `${selectedGovernorId}`);
-    return row ? Number(row[colIndex] || 0) : 0;
-  });
-
-  modalChart.data.labels = sheets;
-  modalChart.data.datasets[0].data = values;
-
-  const labelMap = {
-    16: "Power Diff",
-    3: "T4 Kills",
-    4: "T5 Kills",
-    5: "Kill Points",
-    6: "Deads",
-  };
-  modalChart.data.datasets[0].label = labelMap[colIndex] || `Col ${colIndex}`;
-
-  modalChart.update();
-}
-
-/* -------------------------
    TABLE / UI RENDERING
    ------------------------- */
 function renderTable(headers, rawRows) {
   let rows = cleanRows(rawRows);
-  // filter out rows where col 11 (index 11) equals "YES"
-  rows = rows.filter(
-    (r) =>
-      String(r[11] ?? "")
-        .trim()
-        .toUpperCase() !== "YES"
-  );
-
-  computeDiffs();
 
   // sort by power (col 8) desc
-  rows.sort((a, b) => (Number(b[8]) || 0) - (Number(a[8]) || 0));
+  rows.sort((a, b) => (Number(b[2]) || 0) - (Number(a[2]) || 0));
 
-  renderTopPlayers(rows.slice(0, 3));
   buildTable(headers, rows);
-  renderTotals(rows);
-}
-
-function renderTopPlayers(players) {
-  const box = qs("#top-players");
-  if (!box) return;
-  box.innerHTML = "";
-
-  players.forEach((p, i) => {
-    const el = document.createElement("div");
-    el.className = "player-box";
-    el.innerHTML = `
-      <div class="player-rank">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-trophy-fill" viewBox="0 0 16 16">
-          <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5q0 .807-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5m.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935m10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935"/>
-        </svg>
-        TOP${i + 1}
-      </div>
-      <h3>${escapeHtml(p[1] ?? "")}</h3>
-      <p>ID: ${escapeHtml(p[0] ?? "")}</p>
-    `;
-    box.appendChild(el);
-  });
 }
 
 function buildTable(headers = [], rows = []) {
@@ -313,60 +167,12 @@ function makeCell(row, col, maxVal = 0) {
   const valueDiv = document.createElement("div");
   valueDiv.className = "cell-value";
 
-  if (col === 0) {
-    // governor ID clickable
-    valueDiv.innerHTML = `
-      <span class="gov-link" data-id="${escapeHtml(raw ?? "")}">
-        ${escapeHtml(raw ?? "")}
-        <span class="gov-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
-            <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
-          </svg>
-        </span>
-      </span>`;
-  } else {
-    valueDiv.textContent = SHORT_NUMBER_COLS.includes(col)
-      ? formatNumber(numeric)
-      : raw ?? "";
-  }
+
+  valueDiv.textContent = SHORT_NUMBER_COLS.includes(col)
+    ? formatNumber(numeric)
+    : raw ?? "";
 
   td.appendChild(valueDiv);
-
-  // diff
-  if (DIFF_COLS.includes(col)) {
-    const diff = getDiff(id, col);
-    if (diff !== 0) {
-      const diffDiv = document.createElement("div");
-      diffDiv.className = `cell-diff ${diff > 0 ? "positive" : "negative"}`;
-      diffDiv.textContent = `${diff > 0 ? "+" : ""}${formatNumber(diff)}`;
-      td.appendChild(diffDiv);
-    }
-  }
-
-  // progress bar
-  if (PROGRESS_COLS.includes(col)) {
-    const progress = document.createElement("div");
-    progress.className = "cell-progress";
-
-    const bar = document.createElement("div");
-    bar.className = "cell-progress-bar";
-
-    const colors = {
-      12: "#00bcd4", // T4
-      13: "#ffc107", // T5
-      14: "#e91e63", // KP
-      15: "#f44336", // Deads
-      8: "#4caf50", // Power
-    };
-
-    bar.style.background = colors[col] || "#2196f3";
-    bar.style.width =
-      maxVal > 0 ? `${((Number(row[col]) || 0) / maxVal) * 100}%` : "0%";
-
-    progress.appendChild(bar);
-    td.appendChild(progress);
-  }
 
   return td;
 }
@@ -601,57 +407,6 @@ function syncColumnWidths() {
 }
 
 /* -------------------------
-   CLICK EVENTS
-   - single document-level listener used for gov-link clicks
-   ------------------------- */
-function addRowClickEventsOnce() {
-  if (_documentClickListenerAdded) return;
-  _documentClickListenerAdded = true;
-
-  document.addEventListener("click", (e) => {
-    // looks for element with data-id (gov link)
-    const link = e.target.closest(".gov-link");
-    if (!link) return;
-
-    const id = link.dataset?.id;
-    if (!id) return;
-
-    openChartModal(id);
-  });
-}
-
-/* -------------------------
-   TOTALS (bottom)
-   ------------------------- */
-function renderTotals(rows = []) {
-  const container = qs("#bottom-totals");
-  if (!container) return;
-  container.innerHTML = "";
-
-  const defs = [
-    { label: "Total T4 kills", col: 4 },
-    { label: "Total T5 kills", col: 5 },
-    { label: "Total Deads", col: 6 },
-    { label: "Total KP", col: 3 },
-  ];
-
-  defs.forEach(({ label, col }) => {
-    const sum = rows.reduce(
-      (acc, r) => acc + (diffsCache[r[0]]?.[col] || 0),
-      0
-    );
-    const box = document.createElement("div");
-    box.className = "stat-box";
-    box.innerHTML = `<h3>
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sticky-fill" viewBox="0 0 16 16">
-        <path d="M2.5 1A1.5 1.5 0 0 0 1 2.5v11A1.5 1.5 0 0 0 2.5 15h6.086a1.5 1.5 0 0 0 1.06-.44l4.915-4.914A1.5 1.5 0 0 0 15 8.586V2.5A1.5 1.5 0 0 0 13.5 1zm6 8.5a1 1 0 0 1 1-1h4.396a.25.25 0 0 1 .177.427l-5.146 5.146a.25.25 0 0 1-.427-.177z"/>
-      </svg>
-      ${escapeHtml(label)}</h3><p>${Number(sum).toLocaleString()}</p>`;
-    container.appendChild(box);
-  });
-}
-
-/* -------------------------
    GOOGLE SHEETS LOADING (per-source)
    ------------------------- */
 async function loadSource(sourceId) {
@@ -720,11 +475,6 @@ function applySourceData(sourceId) {
   const rows = (googleSheetsData[lastSheet] || []).slice(1);
 
   renderTable(headers, rows);
-
-  // update modal if open
-  if (selectedGovernorId) {
-    updateModalChart(currentMetric);
-  }
 }
 
 /* -------------------------
@@ -776,8 +526,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // UI refs
   const sourceSelect = qs("#source-select");
   const loadingOverlay = qs("#loading-overlay");
-  const closeModalBtn = qs("#close-modal");
-  const chartButtons = qs(".chart-buttons");
   const themeToggle = qs("#toggle-theme");
 
   // populate source selector
@@ -816,21 +564,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // call it after tables are rendered
   requestAnimationFrame(syncHeaderScroll);
-
-  // Modal close
-  if (closeModalBtn) {
-    closeModalBtn.addEventListener("click", () =>
-      qs("#chart-modal")?.classList.add("hidden")
-    );
-  }
-
-  // Chart buttons (switch metric)
-  if (chartButtons) {
-    chartButtons.addEventListener("click", (e) => {
-      const col = Number(e.target.dataset?.col);
-      if (!isNaN(col)) updateModalChart(col);
-    });
-  }
 
   // Hide loading initially
   if (loadingOverlay) loadingOverlay.style.display = "none";
