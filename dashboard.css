@@ -268,21 +268,17 @@ body.dark .hamburger {
         right: 0;
         flex-direction: column;
         align-items: center;
-        background: rgba(255, 255, 255);
+        background: var(--table-bg);
         border-radius: 16px;
         margin: 0 auto;
         width: 50%;
         gap: 16px;
         padding: 12px 0;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         transform: scaleY(0);
         transform-origin: top;
         transition: transform 0.25s ease;
         justify-content: center; 
-    }
-
-    body.dark .nav-links {
-        background: rgba(26, 26, 26);
     }
 
     .nav-links.show {
