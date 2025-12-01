@@ -1,74 +1,99 @@
-/* ============================================
-   1. CONSTANTS & UTILITIES
-================================================ */
+/* CONFIGURATION */
+const CONFIG = {
+  sources: [
+    {
+      id: "main",
+      name: "KD2247",
+      url: "https://docs.google.com/spreadsheets/d/1Cdzv5wgPdczAvQwgpyO0CqjPbkzAjLDd8Uu4HHcoiFU/edit?usp=sharing",
+    },
+    {
+      id: "backup",
+      name: "a",
+      url: "https://docs.google.com/spreadsheets/d/1v9mdsOKtcypKClOvxIyrslXvGUsvVg_C6x7tHyv7N38/edit?usp=sharing",
+    },
+  ],
+};
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
-let SELECTED_COLS = [];
-const SHORT_NUMBER_COLS = [2, 12, 13, 14, 15, 8];
+/* STATE */
+let googleSheetId = null;
+let googleSheetNames = [];
+let googleSheetsData = {};
+let currentSource = null;
+let sourcesCache = {};
+let selectedGovernorId = null;
+let _documentClickListenerAdded = false;
 
-let charts = {};
-let diffsCache = {};
-
+/* Simple query helper */
 const qs = (sel) => document.querySelector(sel);
 
+/* -------------------------
+   UTILS
+   ------------------------- */
 function formatNumber(num) {
   const n = Number(num);
   return isNaN(n) ? "" : n.toLocaleString("en-US");
 }
 
-/* ============================================
-   2. DATA CLEANING & EXTRACTION
-================================================ */
-
-function cleanRows(rows) {
-  return rows.filter((r) => r.some((c) => c && `${c}`.trim() !== ""));
+function cleanRows(rows = []) {
+  return rows.filter(
+    (r) =>
+      Array.isArray(r) && r.some((c) => c !== undefined && `${c}`.trim() !== "")
+  );
 }
 
 function extractSheetId(url) {
-  const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const match = (url || "").match(/\/d\/([a-zA-Z0-9-_]+)/);
   return match ? match[1] : null;
 }
 
-const SOURCE_LIST = [
-  {
-    name: "KD3202",
-    url: "https://docs.google.com/spreadsheets/d/1v9mdsOKtcypKClOvxIyrslXvGUsvVg_C6x7tHyv7N38/edit?usp=sharing",
-  },
-  {
-    name: "KD2247",
-    url: "https://docs.google.com/spreadsheets/d/1Cdzv5wgPdczAvQwgpyO0CqjPbkzAjLDd8Uu4HHcoiFU/edit?usp=sharing",
-  },
-];
+/* -------------------------
+   GOVERNOR / NAME HELPERS
+   ------------------------- */
+function getGovernorName(id) {
+  const sheet = googleSheetNames.at(-1);
+  const rows = googleSheetsData[sheet];
+  if (!rows) return id;
+  const found = rows.find((r) => `${r[0]}` === `${id}`);
+  return found ? found[1] : id;
+}
 
-const SourcesCache = new Map();
-
-/* ============================================
-   3. TABLE BUILDING & RENDERING
-================================================ */
-
+/* -------------------------
+   TABLE / UI RENDERING
+   ------------------------- */
 function renderTable(headers, rawRows) {
-  let rows = cleanRows(rawRows);
-  rows = rows.filter((r) => String(r[11]).trim().toUpperCase() !== "YES");
+  const rows = cleanRows(rawRows);
 
-  SELECTED_COLS = headers.map((_, idx) => idx);
-  rows.sort((a, b) => (+b[8] || 0) - (+a[8] || 0));
+  // dynamically select ALL columns
+  window.SELECTED_COLS = headers.map((_, i) => i);
+
+  // sort by column 3
+  rows.sort((a, b) => (Number(b[3]) || 0) - (Number(a[3]) || 0));
 
   buildTable(headers, rows);
 }
 
-function buildTable(headers, rows) {
-  const table = qs("#data-table");
-  table.innerHTML = "";
+function buildTable(headers = [], rows = []) {
+  const thead = document.querySelector(".header-table thead");
+  const tbody = document.querySelector(".body-table tbody");
 
-  // ---- HEADER ----
-  const thead = document.createElement("thead");
-  const tr = document.createElement("tr");
+  if (!thead || !tbody) return;
 
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  /* -------------------------
+      BUILD HEADER
+     ------------------------- */
+  const trHead = document.createElement("tr");
+
+  // # column
   const indexTh = document.createElement("th");
   indexTh.textContent = "#";
-  tr.appendChild(indexTh);
+  trHead.appendChild(indexTh);
 
+  // data columns
   SELECTED_COLS.forEach((i) => {
     const th = document.createElement("th");
     th.classList.add("dt-sortable");
@@ -82,70 +107,83 @@ function buildTable(headers, rows) {
 
     th.appendChild(label);
     th.appendChild(icons);
-    tr.appendChild(th);
+
+    trHead.appendChild(th);
   });
 
-  thead.appendChild(tr);
+  thead.appendChild(trHead);
 
-  // ---- BODY ----
-  const tbody = document.createElement("tbody");
+  /* -------------------------
+      BUILD BODY
+     ------------------------- */
   const maxValues = getMaxValues(rows);
 
   rows.forEach((row, idx) => {
     const tr = document.createElement("tr");
     tr.dataset.id = row[0];
 
+    // row index
     const idxCell = document.createElement("td");
     idxCell.textContent = idx + 1;
     tr.appendChild(idxCell);
 
-    SELECTED_COLS.forEach((col) =>
-      tr.appendChild(makeCell(row, col, maxValues[col]))
-    );
+    // data cells
+    SELECTED_COLS.forEach((col) => {
+      tr.appendChild(makeCell(row, col, maxValues[col]));
+    });
 
     tbody.appendChild(tr);
   });
 
-  table.appendChild(thead);
-  table.appendChild(tbody);
+  // Sync column widths after rows are in DOM
+  requestAnimationFrame(syncColumnWidths);
 
+  // re-activate datatable (sorting, pagination, etc.)
   activateDataTable();
+  addRowClickEventsOnce();
 }
 
 function getMaxValues(rows) {
   const max = {};
-  SELECTED_COLS.forEach(
-    (c) => (max[c] = Math.max(...rows.map((r) => +r[c] || 0)))
-  );
+  SELECTED_COLS.forEach((c) => {
+    max[c] = Math.max(...rows.map((r) => Number(r[c]) || 0), 0);
+  });
   return max;
 }
 
-function makeCell(row, col) {
+function makeCell(row, col, maxVal = 0) {
   const td = document.createElement("td");
   const raw = row[col];
-  const numeric = parseFloat(String(raw).replace("%", ""));
+  const numeric = Number(raw);
 
+  td.classList.add("cell");
   td.dataset.value = !isNaN(numeric) ? numeric : raw ?? "";
 
   const valueDiv = document.createElement("div");
   valueDiv.className = "cell-value";
 
-  valueDiv.textContent =
-    col > 1 && !isNaN(numeric) ? formatNumber(numeric) : raw;
+  // shorten all numeric except column index 1
+  if (!isNaN(numeric) && col !== 0) {
+    valueDiv.textContent = formatNumber(numeric);
+  } else {
+    valueDiv.textContent = raw ?? "";
+  }
 
   td.appendChild(valueDiv);
   return td;
 }
 
-/* ============================================
-   4. DATATABLE: SEARCH, SORT, PAGINATION
-================================================ */
-
+/* -------------------------
+   SIMPLE DATATABLE: search / sort / pagination
+   ------------------------- */
 function activateDataTable() {
-  const table = qs("#data-table");
+  const table = document.querySelector(".body-table");
+  if (!table) return;
+
   const tbody = table.querySelector("tbody");
   if (!tbody) return;
 
+  // Snapshot rows
   const rows = [...tbody.querySelectorAll("tr")];
 
   const state = table.__dtState || {
@@ -158,87 +196,91 @@ function activateDataTable() {
   table.__dtState = state;
 
   const controlBar = qs(".dt-controls");
-  const searchInput = controlBar.querySelector("input.dt-search");
-  const sizeSelect = controlBar.querySelector("select.dt-size");
+  const searchInput = controlBar?.querySelector("input.dt-search");
+  const sizeSelect = controlBar?.querySelector("select.dt-size");
   const infoBox = qs(".bottom-table-row .dt-info");
   const pager = qs(".bottom-table-row .dt-pager");
 
-  sizeSelect.value = state.pageSize;
-  searchInput.value = "";
+  // reset inputs
+  if (sizeSelect) sizeSelect.value = state.pageSize;
+  if (searchInput) searchInput.value = "";
 
-  /* ---------- SEARCH ---------- */
-  searchInput.oninput = () => {
-    const q = searchInput.value.toLowerCase().trim();
-    state.filteredRows = rows.filter((r) =>
-      r.textContent.toLowerCase().includes(q)
-    );
-    state.page = 1;
-    renderPage();
-  };
-
-  /* ---------- PAGE SIZE ---------- */
-  sizeSelect.onchange = () => {
-    state.pageSize = +sizeSelect.value;
-    state.page = 1;
-    renderPage();
-  };
-
-  /* ---------- SORTING ---------- */
-  table.querySelectorAll("thead th").forEach((th, colIndex) => {
-    if (colIndex === 0) return;
-
-    th.style.cursor = "pointer";
-
-    th.onclick = () => {
-      const sort = state.currentSort;
-
-      if (sort.col !== colIndex) {
-        sort.col = colIndex;
-        sort.dir = 1;
-      } else if (sort.dir === 1) {
-        sort.dir = -1;
-      } else {
-        sort.col = null;
-        sort.dir = 1;
-      }
-
-      updateSortIcons();
-
-      if (sort.col === null) {
-        state.filteredRows = rows
-          .slice()
-          .filter((r) =>
-            r.textContent
-              .toLowerCase()
-              .includes(searchInput.value.toLowerCase())
-          );
-      } else {
-        const col = sort.col;
-        const dir = sort.dir;
-
-        state.filteredRows.sort((a, b) => {
-          const A = a.children[col].dataset.value;
-          const B = b.children[col].dataset.value;
-
-          const An = Number(A);
-          const Bn = Number(B);
-
-          if (!isNaN(An) && !isNaN(Bn)) {
-            return (An - Bn) * dir;
-          }
-          return String(A).localeCompare(String(B)) * dir;
-        });
-      }
-
+  /* -------------------------
+      SEARCH
+     ------------------------- */
+  if (searchInput) {
+    searchInput.oninput = () => {
+      const q = searchInput.value.toLowerCase().trim();
+      state.filteredRows = rows.filter((r) =>
+        r.textContent.toLowerCase().includes(q)
+      );
       state.page = 1;
       renderPage();
     };
-  });
+  }
+
+  /* -------------------------
+      PAGE SIZE
+     ------------------------- */
+  if (sizeSelect) {
+    sizeSelect.onchange = () => {
+      state.pageSize = Number(sizeSelect.value) || 20;
+      state.page = 1;
+      renderPage();
+    };
+  }
+
+  /* -------------------------
+      SORTING (on header table)
+     ------------------------- */
+  document
+    .querySelectorAll(".header-table thead th")
+    .forEach((th, colIndex) => {
+      if (colIndex === 0) return;
+
+      th.style.cursor = "pointer";
+
+      th.onclick = () => {
+        const sort = state.currentSort;
+
+        if (sort.col !== colIndex) {
+          sort.col = colIndex;
+          sort.dir = 1;
+        } else if (sort.dir === 1) {
+          sort.dir = -1;
+        } else {
+          sort.col = null;
+          sort.dir = 1;
+        }
+
+        updateSortIcons();
+
+        if (sort.col === null) {
+          const q = (searchInput?.value || "").toLowerCase();
+          state.filteredRows = rows.filter((r) =>
+            r.textContent.toLowerCase().includes(q)
+          );
+        } else {
+          const col = sort.col;
+          const dir = sort.dir;
+          state.filteredRows.sort((a, b) => {
+            const A = parseSortableValue(a.children[col].dataset.value);
+            const B = parseSortableValue(b.children[col].dataset.value);
+            if (!isNaN(A.num) && !isNaN(B.num)) return (A.num - B.num) * dir;
+            if (!isNaN(A.num) && isNaN(B.num)) return -1 * dir;
+            if (isNaN(A.num) && !isNaN(B.num)) return 1 * dir;
+            return A.text.localeCompare(B.text) * dir;
+          });
+        }
+
+        state.page = 1;
+        renderPage();
+      };
+    });
 
   function updateSortIcons() {
-    table.querySelectorAll("thead th").forEach((th, idx) => {
+    document.querySelectorAll(".header-table thead th").forEach((th, idx) => {
       th.classList.remove("sorted-asc", "sorted-desc");
-
       if (idx === state.currentSort.col) {
         th.classList.add(
           state.currentSort.dir === 1 ? "sorted-asc" : "sorted-desc"
@@ -247,108 +289,25 @@ function activateDataTable() {
     });
   }
 
-  /* ---------- PAGINATION ---------- */
-
-  function makeBtn(label, page, opts = {}) {
-    const b = document.createElement("button");
-    b.textContent = label;
-
-    if (opts.disabled) b.disabled = true;
-    if (opts.active) b.classList.add("active");
-
-    b.onclick = () => {
-      if (!opts.disabled) {
-        state.page = page;
-        renderPage();
-      }
-    };
-
-    return b;
+  function parseSortableValue(v) {
+    if (v == null) return { num: NaN, text: "" };
+    let s = String(v).trim();
+    s = s.replace(/,/g, ""); // remove thousands separator
+    // handle percentages
+    if (/^\d+(\.\d+)?%$/.test(s)) {
+      const num = parseFloat(s.replace("%", ""));
+      return { num, text: s };
+    }
+    const n = Number(s);
+    if (!isNaN(n)) return { num: n, text: s };
+    return { num: NaN, text: s.toLowerCase() };
   }
 
-  function getCenteredPages(current, total, windowSize) {
-    if (total <= windowSize) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    const half = Math.floor(windowSize / 2);
-    let start = current - half;
-    let end = current + half;
-
-    if (start < 2) {
-      start = 2;
-      end = windowSize;
-    }
-
-    if (end > total - 1) {
-      end = total - 1;
-      start = total - windowSize + 1;
-    }
-
-    const pages = [];
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  }
-
-  function renderPager(totalPages) {
-    pager.innerHTML = "";
-
-    pager.appendChild(makeBtn("<<", 1, { disabled: state.page === 1 }));
-    pager.appendChild(
-      makeBtn("<", Math.max(1, state.page - 1), {
-        disabled: state.page === 1,
-      })
-    );
-
-    const current = state.page;
-    const windowSize = 3;
-
-    pager.appendChild(makeBtn("1", 1, { active: current === 1 }));
-
-    if (current > Math.ceil(windowSize / 2) + 1) {
-      const ell = document.createElement("span");
-      ell.textContent = "...";
-      ell.className = "ell";
-      pager.appendChild(ell);
-    }
-
-    const pages = getCenteredPages(current, totalPages, windowSize);
-    pages.forEach((p) => {
-      if (p !== 1 && p !== totalPages) {
-        pager.appendChild(makeBtn(p, p, { active: current === p }));
-      }
-    });
-
-    if (current < totalPages - Math.ceil(windowSize / 2)) {
-      const ell = document.createElement("span");
-      ell.textContent = "...";
-      ell.className = "ell";
-      pager.appendChild(ell);
-    }
-
-    if (totalPages > 1) {
-      pager.appendChild(
-        makeBtn(totalPages, totalPages, {
-          active: current === totalPages,
-        })
-      );
-    }
-
-    pager.appendChild(
-      makeBtn(">", Math.min(totalPages, current + 1), {
-        disabled: current === totalPages,
-      })
-    );
-    pager.appendChild(
-      makeBtn(">>", totalPages, { disabled: current === totalPages })
-    );
-  }
-
-  /* ---------- FINAL PAGE RENDER ---------- */
+  /* -------------------------
+      PAGINATION
+     ------------------------- */
 
   function renderPage() {
-    const prevSelectedId = tbody.querySelector(".selected")?.dataset?.id;
-
     tbody.innerHTML = "";
 
     const total = state.filteredRows.length;
@@ -362,129 +321,161 @@ function activateDataTable() {
     const slice = state.filteredRows.slice(start, end);
     slice.forEach((r) => tbody.appendChild(r));
 
-    if (prevSelectedId) {
-      const row = tbody.querySelector(`tr[data-id="${prevSelectedId}"]`);
-      if (row) row.classList.add("selected");
-    }
-
     infoBox.textContent =
       total === 0 ? "No entries" : `Showing ${start + 1}–${end} of ${total}`;
 
     renderPager(totalPages);
+
+    // resync column widths after re-render
+    syncColumnWidths();
+  }
+
+  function renderPager(totalPages) {
+    pager.innerHTML = "";
+
+    const makeBtn = (label, page, disabled = false, active = false) => {
+      const btn = document.createElement("button");
+      btn.textContent = label;
+      if (disabled) btn.disabled = true;
+      if (active) btn.classList.add("active");
+      btn.onclick = () => {
+        if (!disabled) {
+          state.page = page;
+          renderPage();
+        }
+      };
+      return btn;
+    };
+
+    const cur = state.page;
+
+    pager.appendChild(makeBtn("<<", 1, cur === 1));
+    pager.appendChild(makeBtn("<", Math.max(1, cur - 1), cur === 1));
+
+    pager.appendChild(makeBtn("1", 1, false, cur === 1));
+
+    const total = totalPages;
+    const windowSize = 3;
+    const half = Math.floor(windowSize / 2);
+
+    if (cur > half + 2) {
+      const ell = document.createElement("span");
+      ell.textContent = "...";
+      pager.appendChild(ell);
+    }
+
+    const start = Math.max(2, cur - half);
+    const end = Math.min(total - 1, cur + half);
+
+    for (let p = start; p <= end; p++) {
+      pager.appendChild(makeBtn(p, p, false, p === cur));
+    }
+
+    if (cur < total - (half + 1)) {
+      const ell = document.createElement("span");
+      ell.textContent = "...";
+      pager.appendChild(ell);
+    }
+
+    if (total > 1)
+      pager.appendChild(makeBtn(total, total, false, cur === total));
+
+    pager.appendChild(makeBtn(">", Math.min(total, cur + 1), cur === total));
+    pager.appendChild(makeBtn(">>", total, cur === total));
   }
 
   state.filteredRows = rows.slice();
   renderPage();
 }
 
-/* ============================================
-   5. GOOGLE SHEETS LOADING (MULTI-SOURCE)
-================================================ */
+function syncColumnWidths() {
+  const headCols = document.querySelectorAll(".header-table thead tr th");
+  const bodyRow = document.querySelector(".body-table tbody tr");
+  if (!bodyRow) return;
 
-async function loadSourceSheet(url) {
-  if (SourcesCache.has(url)) return SourcesCache.get(url);
+  const bodyCols = bodyRow.children;
+  if (headCols.length !== bodyCols.length) return;
 
-  const sheetId = extractSheetId(url);
-  if (!sheetId) throw new Error("Invalid Google Sheets URL: " + url);
+  for (let i = 0; i < headCols.length; i++) {
+    const width = bodyCols[i].getBoundingClientRect().width + "px";
+    headCols[i].style.width = width;
+  }
+}
+
+/* -------------------------
+   GOOGLE SHEETS LOADING (per-source)
+   ------------------------- */
+async function loadSource(sourceId) {
+  const select = qs("#source-select");
+  if (select) select.disabled = true;
+
+  const source = CONFIG.sources.find((s) => s.id === sourceId);
+  if (!source) {
+    if (select) select.disabled = false;
+    return;
+  }
+
+  qs("#loading-overlay").style.display = "flex";
+
+  // if cached, just enable controls and return
+  if (sourcesCache[sourceId]) {
+    qs("#loading-overlay").style.display = "none";
+    if (select) select.disabled = false;
+    return;
+  }
+
+  const sheetId = extractSheetId(source.url);
+  if (!sheetId) {
+    qs("#loading-overlay").style.display = "none";
+    if (select) select.disabled = false;
+    throw new Error("Invalid Google Sheets URL for source: " + sourceId);
+  }
 
   const metaRes = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${API_KEY}`
   );
   const meta = await metaRes.json();
+  const sheetNames = (meta.sheets || []).map((s) => s.properties.title);
+  const sheetData = {};
 
-  const sheetNames = meta.sheets.map((s) => s.properties.title);
-  const entry = { sheetId, sheetNames, data: {} };
-
-  SourcesCache.set(url, entry);
-  return entry;
-}
-
-async function loadWorksheetData(url, sheetName) {
-  const entry = SourcesCache.get(url);
-  if (!entry) throw new Error("Source not in cache");
-
-  if (entry.data[sheetName]) return entry.data[sheetName];
-
-  const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${
-      entry.sheetId
-    }/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`
+  await Promise.all(
+    sheetNames.map(async (name) => {
+      const r = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(
+          name
+        )}?key=${API_KEY}`
+      );
+      const json = await r.json();
+      sheetData[name] = json.values || [];
+    })
   );
 
-  const json = await res.json();
-  entry.data[sheetName] = json.values || [];
+  sourcesCache[sourceId] = {
+    sheetNames,
+    sheetData,
+  };
 
-  return entry.data[sheetName];
+  qs("#loading-overlay").style.display = "none";
+  if (select) select.disabled = false;
 }
 
-/* ============================================
-   6. INITIALIZATION
-================================================ */
+function applySourceData(sourceId) {
+  const cached = sourcesCache[sourceId];
+  if (!cached) return;
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const savedTheme = localStorage.getItem("theme");
+  googleSheetNames = cached.sheetNames;
+  googleSheetsData = cached.sheetData;
 
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark");
-    qs("#toggle-theme").checked = true;
-  }
+  const lastSheet = googleSheetNames.at(-1);
+  const headers = (googleSheetsData[lastSheet] || [])[0] || [];
+  const rows = (googleSheetsData[lastSheet] || []).slice(1);
 
-  const sourceSelect = qs("#source-select");
-  const worksheetSelect = qs("#worksheet-select");
+  renderTable(headers, rows);
+}
 
-  SOURCE_LIST.forEach((src) => {
-    const opt = document.createElement("option");
-    opt.value = src.url;
-    opt.textContent = src.name;
-    sourceSelect.appendChild(opt);
-  });
-
-  sourceSelect.addEventListener("change", async () => {
-    const url = sourceSelect.value;
-    worksheetSelect.innerHTML = `<option value="">Select Worksheet…</option>`;
-    if (!url) return;
-
-    qs("#loading-overlay").style.display = "flex";
-
-    try {
-      const entry = await loadSourceSheet(url);
-      entry.sheetNames.forEach((name) => {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        worksheetSelect.appendChild(opt);
-      });
-    } catch (e) {
-      alert("Sheet load error:\n" + e.message);
-    } finally {
-      qs("#loading-overlay").style.display = "none";
-    }
-  });
-
-  worksheetSelect.addEventListener("change", async () => {
-    const url = sourceSelect.value;
-    const sheetName = worksheetSelect.value;
-    if (!url || !sheetName) return;
-
-    qs("#loading-overlay").style.display = "flex";
-
-    try {
-      const rows = await loadWorksheetData(url, sheetName);
-      const headers = rows[0] || [];
-      const bodyRows = rows.slice(1);
-      renderTable(headers, bodyRows);
-    } catch (e) {
-      alert("Worksheet load error:\n" + e.message);
-    } finally {
-      qs("#loading-overlay").style.display = "none";
-    }
-  });
-});
-
-/* ============================================
-   7. THEME HANDLING
-================================================ */
-
+/* -------------------------
+   THEME HANDLING
+   ------------------------- */
 const themeToggle = qs("#toggle-theme");
 
 function setTheme(mode) {
@@ -496,31 +487,108 @@ function setTheme(mode) {
 
 function initializeTheme(toggleEl) {
   const saved = localStorage.getItem("theme");
-
   if (saved === "dark") {
     setTheme("dark");
     if (toggleEl) toggleEl.checked = true;
     return;
   }
-
   if (saved === "light") {
     setTheme("light");
     if (toggleEl) toggleEl.checked = false;
     return;
   }
-
   const prefersDark =
     window.matchMedia &&
     window.matchMedia("(prefers-color-scheme: dark)").matches;
-
   setTheme(prefersDark ? "dark" : "light");
   if (toggleEl) toggleEl.checked = prefersDark;
 }
-
+// Theme init & toggle
 initializeTheme(themeToggle);
-
 if (themeToggle) {
   themeToggle.addEventListener("change", (e) => {
     setTheme(e.target.checked ? "dark" : "light");
   });
 }
+
+const hamburger = document.getElementById("hamburger");
+const navLinks = document.getElementById("nav-links");
+hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+
+/* -------------------------
+   BOOTSTRAP / EVENT BINDING
+   ------------------------- */
+document.addEventListener("DOMContentLoaded", async () => {
+  // UI refs
+  const sourceSelect = qs("#source-select");
+  const loadingOverlay = qs("#loading-overlay");
+
+  // populate source selector
+  if (sourceSelect) {
+    CONFIG.sources.forEach((src) => {
+      const opt = document.createElement("option");
+      opt.value = src.id;
+      opt.textContent = src.name;
+      sourceSelect.appendChild(opt);
+    });
+
+    sourceSelect.addEventListener("change", async () => {
+      const sourceId = sourceSelect.value;
+      selectedGovernorId = null;
+
+      if (loadingOverlay) loadingOverlay.style.display = "flex";
+
+      await loadSource(sourceId);
+      applySourceData(sourceId);
+
+      const card = qs(".card");
+      if (card) card.style.display = "block";
+      if (loadingOverlay) loadingOverlay.style.display = "none";
+    });
+  }
+  function syncHeaderScroll() {
+    const bodyScroll = document.querySelector(".table-scroll-body");
+    const headerTable = document.querySelector(".header-table");
+
+    if (!bodyScroll || !headerTable) return;
+
+    bodyScroll.addEventListener("scroll", () => {
+      headerTable.style.transform = `translateX(-${bodyScroll.scrollLeft}px)`;
+    });
+  }
+
+  // call it after tables are rendered
+  requestAnimationFrame(syncHeaderScroll);
+
+  // Hide loading initially
+  if (loadingOverlay) loadingOverlay.style.display = "none";
+});
+
+/* -------------------------
+   SMALL SAFETY HELPERS
+   ------------------------- */
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str).replace(/[&<>"'`=\/]/g, function (s) {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+      "/": "&#x2F;",
+      "`": "&#x60;",
+      "=": "&#x3D;",
+    }[s];
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const current = location.pathname.split("/").pop(); // e.g. "index.html"
+
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    if (link.getAttribute("href") === current) {
+      link.classList.add("active");
+    }
+  });
+});
