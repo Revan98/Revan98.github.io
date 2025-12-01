@@ -16,10 +16,6 @@ const CONFIG = {
 
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
-/* COLUMNS / BEHAVIOR CONFIG */
-const SELECTED_COLS = [];
-const SHORT_NUMBER_COLS = [];
-
 /* STATE */
 let googleSheetId = null;
 let googleSheetNames = [];
@@ -67,10 +63,13 @@ function getGovernorName(id) {
    TABLE / UI RENDERING
    ------------------------- */
 function renderTable(headers, rawRows) {
-  let rows = cleanRows(rawRows);
+  const rows = cleanRows(rawRows);
 
-  // sort by power (col 8) desc
-  rows.sort((a, b) => (Number(b[2]) || 0) - (Number(a[2]) || 0));
+  // dynamically select ALL columns
+  window.SELECTED_COLS = headers.map((_, i) => i);
+
+  // sort by column 3
+  rows.sort((a, b) => (Number(b[3]) || 0) - (Number(a[3]) || 0));
 
   buildTable(headers, rows);
 }
@@ -154,26 +153,23 @@ function getMaxValues(rows) {
 
 function makeCell(row, col, maxVal = 0) {
   const td = document.createElement("td");
-  const id = row[0];
   const raw = row[col];
   const numeric = Number(raw);
 
   td.classList.add("cell");
-
-  // sortable value
   td.dataset.value = !isNaN(numeric) ? numeric : raw ?? "";
 
-  // value area
   const valueDiv = document.createElement("div");
   valueDiv.className = "cell-value";
 
-
-  valueDiv.textContent = SHORT_NUMBER_COLS.includes(col)
-    ? formatNumber(numeric)
-    : raw ?? "";
+  // shorten all numeric except column index 1
+  if (!isNaN(numeric) && col !== 1) {
+    valueDiv.textContent = formatNumber(numeric);
+  } else {
+    valueDiv.textContent = raw ?? "";
+  }
 
   td.appendChild(valueDiv);
-
   return td;
 }
 
