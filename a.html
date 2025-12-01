@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DKP stats</title>
+  <title>Governor Info</title>
 
   <link rel="stylesheet" href="dashboard.css">
 </head>
@@ -43,9 +43,6 @@
         <div class="spinner"></div>
         Loading data...
       </div>
-
-      <div id="top-players"></div>
-      <div id="bottom-totals"></div>
 
       <div class="card">
         <div class="dt-controls">
@@ -89,32 +86,10 @@
     <div class="right"></div>
   </div>
 <div class="footer">
-  <p>Dashboard</p>
+  <p>Governor Info</p>
 </div>
-  <div id="chart-modal" class="modal hidden">
-    <div class="modal-content">
-      <button id="close-modal" class="close-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-        </svg>
-      </button>
 
-      <h2 id="modal-title"></h2>
-
-      <canvas id="modal-chart"></canvas>
-
-      <div class="chart-buttons">
-        <button data-col="16">Power Diff</button>
-        <button data-col="3">T4 Kills</button>
-        <button data-col="4">T5 Kills</button>
-        <button data-col="5">Kill Points</button>
-        <button data-col="6">Deads</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
-  <script src="dashboard.js"></script>
+<script src="a.js"></script>
 </body>
 
 </html>
