@@ -23,6 +23,27 @@ https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
 <body>
 
 <table id="myTable"></table>
+
+<div id="stats-modal" class="modal hidden">
+  <div class="modal-content">
+    <button id="modal-close" class="close-btn">✖</button>
+    <h2 id="modal-title"></h2>
+
+    <div class="chart-buttons">
+      <button data-metric="power">Power Diff</button>
+      <button data-metric="kp">KP Gained</button>
+      <button data-metric="t4">T4 Gained</button>
+      <button data-metric="t5">T5 Gained</button>
+      <button data-metric="dead">Deads Gained</button>
+    </div>
+
+    <canvas id="stats-chart" style="margin-top:25px;"></canvas>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 const API_KEY = "AIzaSyAZoyI5MbKsUJBe71jcn8AgU5ejFzdrteI";
 const SPREADSHEET_ID = "1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg";
@@ -125,6 +146,17 @@ async function loadSheetData() {
             render: function (data, type, row) {
                 return `${data}<br><span style="color:#888;">(${row[6]})</span>`;
             }
+        },
+        {
+            targets: 0,   // ID column
+            render: function (data, type, row) {
+                return `
+                    <span class="gov-link" data-id="${data}">
+                        ${data}
+                        <span class="gov-icon">📊</span>
+                    </span>
+                `;
+            }
         }
 
     ]
@@ -133,7 +165,112 @@ async function loadSheetData() {
 }
 
 loadSheetData();
-  
+
+// Modal elements
+const modal = document.getElementById("stats-modal");
+const closeModalBtn = document.getElementById("modal-close");
+const modalTitle = document.getElementById("modal-title");
+
+// Chart.js instance
+let statsChart = null;
+
+// Click to open modal
+document.addEventListener("click", function (e) {
+    const target = e.target.closest(".gov-link");
+    if (!target) return;
+
+    const playerID = target.dataset.id;
+    openStatsModal(playerID);
+});
+
+// Close modal
+closeModalBtn.addEventListener("click", () => modal.classList.add("hidden"));
+
+function openStatsModal(id) {
+    modalTitle.textContent = `Stats for: ${id}`;
+    modal.classList.remove("hidden");
+    loadAllSheetsForID(id);
+}
+
+
+async function getSheetNames() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    return json.sheets.map(s => s.properties.title);
+}
+
+async function loadAllSheetsForID(playerID) {
+    const sheetNames = await getSheetNames();
+
+    let allData = [];
+
+    for (const sheet of sheetNames) {
+        const url =
+            `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheet}?key=${API_KEY}`;
+
+        const res = await fetch(url);
+        const json = await res.json();
+
+        if (!json.values || json.values.length < 2) continue;
+
+        const headers = json.values[0];
+        const rows = json.values.slice(1);
+
+        for (const row of rows) {
+            if (row[0] === playerID) {
+                allData.push({
+                    sheet,
+                    row
+                });
+            }
+        }
+    }
+
+    window.playerSheets = allData;
+    drawMetric("power");
+}
+
+
+function drawMetric(metric) {
+    if (!window.playerSheets) return;
+
+    const labels = window.playerSheets.map(x => x.sheet);
+    let values = [];
+
+    switch (metric) {
+        case "power": values = window.playerSheets.map(x => Number(x.row[16])); break;
+        case "kp":    values = window.playerSheets.map(x => Number(x.row[3]));  break;
+        case "t4":    values = window.playerSheets.map(x => Number(x.row[4]));  break;
+        case "t5":    values = window.playerSheets.map(x => Number(x.row[45])); break;
+        case "dead":  values = window.playerSheets.map(x => Number(x.row[6]));  break;
+    }
+
+    if (statsChart) statsChart.destroy();
+
+    const ctx = document.getElementById("stats-chart");
+    statsChart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: metric,
+                    data: values,
+                    borderWidth: 2,
+                    pointRadius: 5,
+                }
+            ]
+        }
+    });
+}
+document.querySelectorAll(".chart-buttons button").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const metric = btn.dataset.metric;
+        drawMetric(metric);
+    });
+});
+
 </script>
 
 </body>
