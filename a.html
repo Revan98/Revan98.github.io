@@ -8,9 +8,9 @@
   <script src="
 https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
 "></script>
-    <!-- SheetJS for Excel read & write -->
+
     <script src="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.min.css"></script>
-    <!-- localForage (IndexedDB wrapper) -->
+
     <script src="https://cdn.datatables.net/2.3.5/js/dataTables.min.js"></script>
   <style>
     div.dt-container {
@@ -24,15 +24,47 @@ https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
 
 <table id="myTable"></table>
 <script>
-  let table = new DataTable('#myTable', {
-    order: [],
-    info: true,
-    pagination: true,
-    scrollCollapse: true,
-    scrollX: true,
-    scrollY: '200px'
-});
+const API_KEY = "AIzaSyAZoyI5MbKsUJBe71jcn8AgU5ejFzdrteI";
+const SPREADSHEET_ID = "1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg";
+const SHEET_NAME = "19_10_2025";   // change if necessary
+
+async function loadSheetData() {
+    const url =
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+
+    const res = await fetch(url);
+    const json = await res.json();
+
+    if (!json.values) {
+        console.error("No data returned from Google Sheets");
+        return;
+    }
+
+    // First row is column headers
+    const headers = json.values[0];
+
+    // Remaining rows are table data
+    const rows = json.values.slice(1);
+
+    // Build Datatables column structure
+    const dtColumns = headers.map(h => ({ title: h }));
+
+    // Initialize DataTables
+    let table = new DataTable('#myTable', {
+        data: rows,
+        columns: dtColumns,
+        order: [],
+        info: true,
+        paging: true,
+        scrollCollapse: true,
+        scrollX: true,
+        scrollY: "200px"
+    });
+}
+
+loadSheetData();
 </script>
+
 </body>
 
 </html>
