@@ -973,3 +973,7 @@ body.dark .dt-controls input.dt-search {
   margin: 0 auto 12px auto;
   font-weight: bold;
 }
+
+.dt-controls .dt-search label{
+    margin-left: auto;
+}
