@@ -48,6 +48,9 @@ async function loadSheetData() {
 
     // Build Datatables column structure
     const dtColumns = headers.map(h => ({ title: h }));
+    let diff = row[11];
+    let color = diff.startsWith('-') ? 'red' : 'green';
+    return `${data}<br><span style="color:${color};">(${diff})</span>`;
 
     // Initialize DataTables
    let table = new DataTable('#myTable', {
@@ -109,6 +112,7 @@ async function loadSheetData() {
 }
 
 loadSheetData();
+  
 </script>
 
 </body>
