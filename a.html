@@ -5,54 +5,145 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DKP stats</title>
-  <script src="
-https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
-"></script>
 
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.css" />
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.css" />
+  <script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
 
-<script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
-  <style>
-    div.dt-container {
-        width: 800px;
-        margin: 0 auto;
-    }
-  </style>
+<style>
+/* (your style unchanged) */
+div.dt-container { width: 800px; margin: 0 auto;}
+
+.modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 2000;
+}
+.modal.hidden { display: none; }
+
+.modal-content {
+  background: var(--table-bg);
+  padding: 20px; border-radius: 12px;
+  width: 80%; max-width: 900px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+.close-btn {
+  float: right; background: none; border: none;
+  cursor: pointer; color: var(--text-color);
+}
+
+.chart-buttons {
+  margin-top: 20px;
+  display: flex; justify-content: center;
+  gap: 10px;
+}
+
+.chart-buttons button {
+  padding: 8px 14px; border-radius: 6px;
+  border: 1px solid var(--table-border);
+  cursor: pointer; background: #007bff;
+  color: var(--text-color);
+}
+
+.gov-link {
+  cursor: pointer; font-weight: bold;
+  display: inline-flex; gap: 4px; align-items: center;
+}
+.gov-icon {
+  opacity: 0; transform: translateX(-3px);
+  transition: opacity .2s, transform .2s;
+}
+.gov-link:hover .gov-icon { opacity: 1; transform: translateX(0); }
+
+#modal-title { text-align: center; margin-bottom: 12px; }
+</style>
+
 </head>
 
 <body>
 
 <table id="myTable"></table>
+
+<!-- MODAL -->
+<div id="chart-modal" class="modal hidden">
+  <div class="modal-content">
+    <button id="close-modal" class="close-btn">X</button>
+
+    <h2 id="modal-title"></h2>
+
+    <canvas id="modal-chart"></canvas>
+
+    <div class="chart-buttons">
+      <button data-col="16">Power Diff</button>
+      <button data-col="3">T4 Kills</button>
+      <button data-col="4">T5 Kills</button>
+      <button data-col="5">Kill Points</button>
+      <button data-col="6">Deads</button>
+    </div>
+  </div>
+</div>
+
 <script>
+/* ---------------------------------------------
+   GLOBAL HELPERS
+--------------------------------------------- */
+const qs = (s) => document.querySelector(s);
+
 const API_KEY = "AIzaSyAZoyI5MbKsUJBe71jcn8AgU5ejFzdrteI";
 const SPREADSHEET_ID = "1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg";
-const SHEET_NAME = "19_10_2025";   // change if necessary
 
-async function loadSheetData() {
-    const url =
-        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+let googleSheetsData = {};   // full cache: sheetName → values[][]
+let googleSheetNames = [];
+let modalChart = null;
+let selectedGovernorId = null;
+let currentMetric = 16;
 
-    const res = await fetch(url);
-    const json = await res.json();
+/* ---------------------------------------------
+   FETCH ALL SHEETS + CACHE
+--------------------------------------------- */
+async function loadAllSheets() {
+    const metaURL =
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
 
-    if (!json.values) {
-        console.error("No data returned from Google Sheets");
-        return;
+    const metaRes = await fetch(metaURL);
+    const metaJson = await metaRes.json();
+
+    if (!metaJson?.sheets) {
+      console.error("No sheets found");
+      return;
     }
 
-    // First row is column headers
-    const headers = json.values[0];
+    googleSheetNames = metaJson.sheets.map(s => s.properties.title);
 
-    // Remaining rows are table data
-    const rows = json.values.slice(1);
+    // Fetch sheets sequentially
+    for (const sheet of googleSheetNames) {
+      const url =
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheet}?key=${API_KEY}`;
 
-    // Build Datatables column structure
-    const dtColumns = headers.map(h => ({ title: h }));
+      const res = await fetch(url);
+      const json = await res.json();
+      googleSheetsData[sheet] = json.values || [];
+    }
 
-    // Initialize DataTables
-   let table = new DataTable('#myTable', {
-    data: rows,
-    columns: [
+    console.log("All sheets loaded:", googleSheetNames);
+}
+
+/* ---------------------------------------------
+   TABLE (uses last sheet)
+--------------------------------------------- */
+function buildTableFromLastSheet() {
+    const latest = googleSheetNames[googleSheetNames.length - 1];
+    const values = googleSheetsData[latest];
+    if (!values) return;
+
+    const headers = values[0];
+    const rows    = values.slice(1);
+
+    new DataTable("#myTable", {
+      data: rows,
+      columns: [
         { title: "ID", data: 0 },
         { title: "Name", data: 1 },
         { title: "Power", data: 2 },
@@ -67,78 +158,107 @@ async function loadSheetData() {
         { title: "Col 5", data: 5 },
         { title: "Col 6", data: 6 },
         { title: "Col 7", data: 7 },
-
         { title: "Col 10", data: 10 },
         { title: "Col 11", data: 11 },
-
-        { title: "Power2", data: 16 },
+        { title: "Power2", data: 16 }
       ],
-    order: [],
-    info: true,
-    paging: true,
-    scrollCollapse: true,
-    scrollX: true,
-    scrollY: "200px",
-    pageLength: 50,
-    language: {
-        lengthLabels: {
-            '-1': 'Show all'
-        }
-    },
-    lengthMenu: [10, 25, 50, -1],
+      columnDefs: [
+        /* clickable ID column */
+        {
+          targets: 0,
+          render: (data) => `
+            <span class="gov-link" data-id="${data}">
+              ${data} <span class="gov-icon">📊</span>
+            </span>
+          `
+        },
 
-    columnDefs: [
+        /* hide extra columns */
+        { targets: [9,10,11,12,13,14,15,16], visible: false },
 
-              // Hide these columns
+        /* renderers (unchanged) */
         {
-            targets: [9,10,11,12,13,14,15,16],
-            visible: false
+          targets: 2, render: (data,row) => `${data}<br><span style="color:#888;">(${row[16]})</span>`
         },
-        // Column 3 with diff in column 12
-        {
-            targets: 2,
-            render: function (data, type, row) {
-                return `${data}<br><span style="color:#888;">(${row[16]})</span>`;
-            }
-        },
-        // Column 4 with diff in column 13
-        {
-            targets: 5,
-            render: function (data, type, row) {
-                return `${data}<br><span style="color:#888;">(${row[3]})</span>`;
-            }
-        },
-        // Column 5 with diff in column 14
-        {
-            targets: 3,
-            render: function (data, type, row) {
-                return `${data}<br><span style="color:#888;">(${row[4]})</span>`;
-            }
-        },
-        // Column 6 with diff in column 15
-        {
-            targets: 4,
-            render: function (data, type, row) {
-                return `${data}<br><span style="color:#888;">(${row[5]})</span>`;
-            }
-        },
-        // Column 16 with diff in column 15 (adjust if needed)
-        {
-            targets: 6,
-            render: function (data, type, row) {
-                return `${data}<br><span style="color:#888;">(${row[6]})</span>`;
-            }
-        }
-
-    ]
-});
-
+        { targets: 5, render: (data,row) => `${data}<br><span style="color:#888;">(${row[3]})</span>` },
+        { targets: 3, render: (data,row) => `${data}<br><span style="color:#888;">(${row[4]})</span>` },
+        { targets: 4, render: (data,row) => `${data}<br><span style="color:#888;">(${row[5]})</span>` },
+        { targets: 6, render: (data,row) => `${data}<br><span style="color:#888;">(${row[6]})</span>` }
+      ],
+      scrollX: true,
+      paging: true,
+      pageLength: 50
+    });
 }
 
-loadSheetData();
+/* ---------------------------------------------
+   CHART MODAL FUNCTIONS
+--------------------------------------------- */
+function getGovernorName(id) {
+  const latest = googleSheetNames[googleSheetNames.length - 1];
+  const row = googleSheetsData[latest].slice(1).find(r => `${r[0]}` === `${id}`);
+  return row ? row[1] : "Unknown";
+}
 
+function openChartModal(governorId) {
+  selectedGovernorId = governorId;
+
+  qs("#modal-title").textContent =
+    `${getGovernorName(governorId)} (ID: ${governorId})`;
+
+  qs("#chart-modal").classList.remove("hidden");
+
+  if (modalChart) modalChart.destroy();
+
+  const ctx = qs("#modal-chart").getContext("2d");
+  modalChart = new Chart(ctx, {
+    type: "line",
+    data: { labels: [], datasets: [{ label: "", data: [] }] },
+    options: { responsive: true }
+  });
+
+  updateModalChart(currentMetric);
+}
+
+function updateModalChart(colIndex) {
+  currentMetric = colIndex;
+
+  const labels = googleSheetNames;
+  const values = labels.map(sheet => {
+    const row = googleSheetsData[sheet].slice(1)
+      .find(r => `${r[0]}` === `${selectedGovernorId}`);
+    return row ? Number(row[colIndex] || 0) : 0;
+  });
+
+  modalChart.data.labels = labels;
+  modalChart.data.datasets[0].data = values;
+  modalChart.update();
+}
+
+/* ---------------------------------------------
+   EVENT HANDLERS
+--------------------------------------------- */
+$("#close-modal").on("click", () => {
+  qs("#chart-modal").classList.add("hidden");
+});
+
+$(".chart-buttons").on("click", "button", function () {
+  updateModalChart(Number(this.dataset.col));
+});
+
+/* clickable IDs → modal */
+$("#myTable").on("click", ".gov-link", function () {
+  openChartModal(this.dataset.id);
+});
+
+/* ---------------------------------------------
+   BOOTSTRAP EVERYTHING
+--------------------------------------------- */
+(async () => {
+  await loadAllSheets();
+  buildTableFromLastSheet();
+})();
 </script>
 
 </body>
-
 </html>
