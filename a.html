@@ -15,49 +15,81 @@
 div.dt-container { width: 800px; margin: 0 auto;}
 
 .modal {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background: rgba(0,0,0,0.65);
-  display: flex; justify-content: center; align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 2000;
 }
-.modal.hidden { display: none; }
+
+.modal.hidden {
+  display: none;
+}
 
 .modal-content {
   background: var(--table-bg);
-  padding: 20px; border-radius: 12px;
-  width: 80%; max-width: 900px;
+  padding: 20px;
+  border-radius: 12px;
+  width: 80%;
+  max-width: 900px;
   box-shadow: 0 0 20px rgba(0,0,0,0.4);
 }
 
 .close-btn {
-  float: right; background: none; border: none;
-  cursor: pointer; color: var(--text-color);
+  float: right;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color);
 }
 
 .chart-buttons {
   margin-top: 20px;
-  display: flex; justify-content: center;
+  display: flex;
+  justify-content: center;
   gap: 10px;
 }
 
 .chart-buttons button {
-  padding: 8px 14px; border-radius: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
   border: 1px solid var(--table-border);
-  cursor: pointer; background: #007bff;
+  cursor: pointer;
+  background: #007bff;
   color: var(--text-color);
 }
-
 .gov-link {
-  cursor: pointer; font-weight: bold;
-  display: inline-flex; gap: 4px; align-items: center;
+  position: relative;
+  cursor: pointer;
+  color: var(--text-color);
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
-.gov-icon {
-  opacity: 0; transform: translateX(-3px);
-  transition: opacity .2s, transform .2s;
-}
-.gov-link:hover .gov-icon { opacity: 1; transform: translateX(0); }
 
-#modal-title { text-align: center; margin-bottom: 12px; }
+.gov-icon {
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.gov-link:hover .gov-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#modal-title {
+  text-align: center;
+  width: 100%;
+  margin: 0 auto 12px auto;
+  font-weight: bold;
+}
+
 </style>
 
 </head>
@@ -67,23 +99,27 @@ div.dt-container { width: 800px; margin: 0 auto;}
 <table id="myTable"></table>
 
 <!-- MODAL -->
-<div id="chart-modal" class="modal hidden">
-  <div class="modal-content">
-    <button id="close-modal" class="close-btn">X</button>
+  <div id="chart-modal" class="modal hidden">
+    <div class="modal-content">
+      <button id="close-modal" class="close-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+        </svg>
+      </button>
 
-    <h2 id="modal-title"></h2>
+      <h2 id="modal-title"></h2>
 
-    <canvas id="modal-chart"></canvas>
+      <canvas id="modal-chart"></canvas>
 
-    <div class="chart-buttons">
-      <button data-col="16">Power Diff</button>
-      <button data-col="3">T4 Kills</button>
-      <button data-col="4">T5 Kills</button>
-      <button data-col="5">Kill Points</button>
-      <button data-col="6">Deads</button>
+      <div class="chart-buttons">
+        <button data-col="16">Power Diff</button>
+        <button data-col="3">T4 Kills</button>
+        <button data-col="4">T5 Kills</button>
+        <button data-col="5">Kill Points</button>
+        <button data-col="6">Deads</button>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
 /* ---------------------------------------------
@@ -185,9 +221,19 @@ function buildTableFromLastSheet() {
         { targets: 4, render: (data,row) => `${data}<br><span style="color:#888;">(${row[5]})</span>` },
         { targets: 6, render: (data,row) => `${data}<br><span style="color:#888;">(${row[6]})</span>` }
       ],
-      scrollX: true,
+      order: [],
+      info: true,
       paging: true,
-      pageLength: 50
+      scrollCollapse: true,
+      scrollX: true,
+      scrollY: "200px",
+      pageLength: 50,
+      language: {
+          lengthLabels: {
+              '-1': 'Show all'
+          }
+      },
+      lengthMenu: [10, 25, 50, -1],
     });
 }
 
