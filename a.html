@@ -469,7 +469,95 @@ div.dt-container { width: 800px; margin: 0 auto;}
     margin: 20px auto;
     flex-wrap: wrap;
 }
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .header {
+        height: 48px;
+    }
 
+    .row {
+        flex-wrap: wrap;
+    }
+
+    .left,
+    .middle,
+    .right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .table-container .header-table,
+    .table-container .body-table {
+        min-width: 520px;
+        width: 100%;
+    }
+
+    .table-scroll-body {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    #top-players,
+    #bottom-totals {
+        display: flex;
+        justify-content: center;
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+
+    .player-box,
+    .stat-box {
+        width: 100%;
+        max-width: 260px;
+    }
+}
+
+@media (max-width: 1366px) {
+    .header {
+        height: 48px;
+    }
+
+    .row {
+        flex-wrap: wrap;
+    }
+
+    .left,
+    .middle,
+    .right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Ensure both header and body tables resize together */
+    .table-container .header-table,
+    .table-container .body-table {
+        min-width: 520px;
+        width: 100%;
+    }
+
+    .table-scroll-body {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    #top-players,
+    #bottom-totals {
+        display: flex;
+        justify-content: center;
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+
+    .player-box,
+    .stat-box {
+        width: 100%;
+        max-width: 260px;
+    }
+    .card {
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+}
 </style>
 
 </head>
