@@ -67,10 +67,8 @@ async function loadSheetData() {
         { title: "Col 5", data: 5 },
         { title: "Col 6", data: 6 },
         { title: "Col 7", data: 7 },
-
         { title: "Col 10", data: 10 },
         { title: "Col 11", data: 11 },
-
         { title: "Power2", data: 16 },
       ],
     order: [],
@@ -88,7 +86,11 @@ async function loadSheetData() {
     lengthMenu: [10, 25, 50, -1],
 
     columnDefs: [
-
+              // Hide these columns
+        {
+            targets: [9,10,11,12,13,14,15,16],
+            visible: false
+        },
         // Column 3 with diff in column 12
         {
             targets: 2,
