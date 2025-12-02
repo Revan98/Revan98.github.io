@@ -706,52 +706,68 @@ function buildTableFromLastSheet() {
         { title: "Power2", data: 16 }
       ],
       columnDefs: [
-        /* clickable ID column */
-        {
-          targets: 0,
-          render: (data) => `
-            <span class="gov-link" data-id="${data}">
-              ${data} <span class="gov-icon">📊</span>
-            </span>
-          `
-        },
-
-        /* hide extra columns */
-        { targets: [9,10,11,12,13,14,15,16], visible: false },
-
-        /* renderers (unchanged) */
-        {
-          targets: 2, render: (data,row) => `${data}<br><span style="color:#888;">(${row[16]})</span>`
-        },
-        // Column 4 with diff in column 13
-        {
+          /* clickable ID column */
+          {
+            targets: 0,
+            render: function (data, type, row) {
+              if (type === "sort") return Number(data);
+              return `
+                <span class="gov-link" data-id="${data}">
+                  ${data} <span class="gov-icon">📊</span>
+                </span>
+              `;
+            }
+          },
+      
+          /* hide extra columns */
+          { targets: [9,10,11,12,13,14,15,16], visible: false },
+      
+          /* Power column (show Power2 below) */
+          {
+            targets: 2,
+            render: function (data, type, row) {
+              if (type === "sort") return Number(data);
+              return `${data}<br><span style="color:#888;">(${row[16]})</span>`;
+            }
+          },
+      
+          /* KP (col 14) w/ diff in col 3 */
+          {
             targets: 5,
             render: function (data, type, row) {
-                return `${data}<br><span style="color:#888;">(${row[3]})</span>`;
+              if (type === "sort") return Number(data);
+              return `${data}<br><span style="color:#888;">(${row[3]})</span>`;
             }
-        },
-        // Column 5 with diff in column 14
-        {
+          },
+      
+          /* T4 (col 12) diff in col 4 */
+          {
             targets: 3,
             render: function (data, type, row) {
-                return `${data}<br><span style="color:#888;">(${row[4]})</span>`;
+              if (type === "sort") return Number(data);
+              return `${data}<br><span style="color:#888;">(${row[4]})</span>`;
             }
-        },
-        // Column 6 with diff in column 15
-        {
+          },
+      
+          /* T5 (col 13) diff in col 5 */
+          {
             targets: 4,
             render: function (data, type, row) {
-                return `${data}<br><span style="color:#888;">(${row[5]})</span>`;
+              if (type === "sort") return Number(data);
+              return `${data}<br><span style="color:#888;">(${row[5]})</span>`;
             }
-        },
-        // Column 16 with diff in column 15 (adjust if needed)
-        {
+          },
+      
+          /* Deads (col 15) diff in col 6 */
+          {
             targets: 6,
             render: function (data, type, row) {
-                return `${data}<br><span style="color:#888;">(${row[6]})</span>`;
+              if (type === "sort") return Number(data);
+              return `${data}<br><span style="color:#888;">(${row[6]})</span>`;
             }
-        },
+          }
       ],
+
       order: [],
       info: true,
       paging: true,
