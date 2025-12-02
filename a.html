@@ -59,9 +59,14 @@ async function loadSheetData() {
         scrollCollapse: true,
         scrollX: true,
         scrollY: "200px",
-      pageLenght: 50,
-      lenghtmenu: [10,50,100,-1]
-    });
+        pageLength: 50,
+        language: {
+            lengthLabels: {
+                '-1': 'Show all'
+            }
+        },
+        lengthMenu: [10, 25, 50, -1]
+        });
 }
 
 loadSheetData();
