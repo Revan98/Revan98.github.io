@@ -50,23 +50,22 @@ async function loadSheetData() {
     const dtColumns = headers.map(h => ({ title: h }));
 
     // Initialize DataTables
-    let table = new DataTable('#myTable', {
-        data: rows,
-        columns: dtColumns,
-        order: [],
-        info: true,
-        paging: true,
-        scrollCollapse: true,
-        scrollX: true,
-        scrollY: "200px",
-        pageLength: 50,
-        language: {
-            lengthLabels: {
-                '-1': 'Show all'
-            }
-        },
-        lengthMenu: [10, 25, 50, -1]
-        });
+   let table = new DataTable('#myTable', {
+    data: rows,
+    columns: dtColumns,
+    order: [],
+    info: true,
+    paging: true,
+    scrollCollapse: true,
+    scrollX: true,
+    scrollY: "200px",
+    pageLength: 50,
+    language: {
+        lengthLabels: {
+            '-1': 'Show all'
+        }
+    },
+    lengthMenu: [10, 25, 50, -1],
 
     columnDefs: [
         // Column 3 with diff in column 12
@@ -105,6 +104,8 @@ async function loadSheetData() {
             }
         }
     ]
+});
+
 }
 
 loadSheetData();
