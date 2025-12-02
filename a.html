@@ -416,7 +416,17 @@ div.dt-container { width: 800px; margin: 0 auto;}
   margin: 0 auto 12px auto;
   font-weight: bold;
 }
-
+.card {
+    background: var(--table-bg);
+    border: 1px solid var(--table-border);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 14px auto;
+    text-align: center;
+    box-shadow: 0 4px 18px rgba(11, 20, 40, 0.04);
+    max-width: 100%;
+    overflow: visible;
+}
 </style>
 
 </head>
@@ -451,7 +461,9 @@ div.dt-container { width: 800px; margin: 0 auto;}
     <div class="left"></div>
 
     <div class="middle">
-      <table id="myTable"></table>
+      <div class="card">
+        <table id="myTable"></table>
+      </div>
     </div>
 
     <div class="right"></div>
