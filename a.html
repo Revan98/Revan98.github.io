@@ -721,51 +721,68 @@ function buildTableFromLastSheet() {
       
           /* hide extra columns */
           { targets: [9,10,11,12,13,14,15,16], visible: false },
-      
-          /* Power column (show Power2 below) */
           {
-            targets: 2,
-            render: function (data, type, row) {
-              if (type === "sort") return Number(data);
-              return `${data}<br><span style="color:#888;">(${row[16]})</span>`;
-            }
-          },
-      
-          /* KP (col 14) w/ diff in col 3 */
-          {
-            targets: 5,
-            render: function (data, type, row) {
-              if (type === "sort") return Number(data);
-              return `${data}<br><span style="color:#888;">(${row[3]})</span>`;
-            }
-          },
-      
-          /* T4 (col 12) diff in col 4 */
-          {
-            targets: 3,
-            render: function (data, type, row) {
-              if (type === "sort") return Number(data);
-              return `${data}<br><span style="color:#888;">(${row[4]})</span>`;
-            }
-          },
-      
-          /* T5 (col 13) diff in col 5 */
-          {
-            targets: 4,
-            render: function (data, type, row) {
-              if (type === "sort") return Number(data);
-              return `${data}<br><span style="color:#888;">(${row[5]})</span>`;
-            }
-          },
-      
-          /* Deads (col 15) diff in col 6 */
-          {
-            targets: 6,
-            render: function (data, type, row) {
-              if (type === "sort") return Number(data);
-              return `${data}<br><span style="color:#888;">(${row[6]})</span>`;
-            }
+              targets: [2,3,4,5,6],    // the columns where you show diff
+              render: function (data, type, row, meta) {
+          
+                  // data = the REAL numeric base value (clean!)
+                  const base = Number(data);
+          
+                  // diff is inside the hidden column right after the base one
+                  const diffCol = meta.col + 7;  // shifts to the hidden diff column
+                  const diff = Number(row[diffCol] || 0);
+          
+                  if (type === "sort") return base; // SORTING USES ONLY CLEAN VALUE
+          
+                  const sign = diff >= 0 ? "+" : "";
+                  return `${base}<br><span style="color:#888;">(${sign}${diff})</span>`;
+              }
           }
+              {
+                  targets: 2, // Power
+                  render: function(data, type, row) {
+                      if (type === "sort") return Number(data);
+                      const diff = Number(row[16] || 0);
+                      const sign = diff >= 0 ? "+" : "";
+                      return `${data}<br><span style="color:#888;">(${sign}${diff})</span>`;
+                  }
+              },
+              {
+                  targets: 3, // T4
+                  render: function(data, type, row) {
+                      if (type === "sort") return Number(data);
+                      const diff = Number(row[3] || 0);
+                      const sign = diff >= 0 ? "+" : "";
+                      return `${data}<br><span style="color:#888;">(${sign}${diff})</span>`;
+                  }
+              },    
+              {
+                  targets: 4, // T5
+                  render: function(data, type, row) {
+                      if (type === "sort") return Number(data);
+                      const diff = Number(row[4] || 0);
+                      const sign = diff >= 0 ? "+" : "";
+                      return `${data}<br><span style="color:#888;">(${sign}${diff})</span>`;
+                  }
+              },
+              {
+                  targets: 5, // Killpoints
+                  render: function(data, type, row) {
+                      if (type === "sort") return Number(data);
+                      const diff = Number(row[5] || 0);
+                      const sign = diff >= 0 ? "+" : "";
+                      return `${data}<br><span style="color:#888;">(${sign}${diff})</span>`;
+                  }
+              },
+              {
+                  targets: 6, // Deads
+                  render: function(data, type, row) {
+                      if (type === "sort") return Number(data);
+                      const diff = Number(row[6] || 0);
+                      const sign = diff >= 0 ? "+" : "";
+                      return `${data}<br><span style="color:#888;">(${sign}${diff})</span>`;
+                  }
+              }
       ],
 
       order: [],
