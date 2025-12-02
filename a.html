@@ -11,6 +11,333 @@
   <script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 <style>
+* {
+    box-sizing: border-box;
+}
+
+/* Dark mode via prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --accent: #2a2a2a;
+        --bg-color: #1c1c1c;
+        --text-color: #eee;
+        --table-bg: #2a2a2a;
+        --table-border: #444;
+        --chart-text: #eee;
+        --chart-grid: rgba(255, 255, 255, 0.2);
+        --chart-line: #ff9800;
+        --diff-positive-bg: rgba(0, 60, 0, 0.7);
+        --diff-negative-bg: rgba(80, 0, 0, 0.7);
+        --diff-positive-text: #b8ffba;
+        --diff-negative-text: #ffbaba;
+        --row-hover-bg: rgba(255, 255, 255, 0.08);
+        --nav-bg: rgba(26, 26, 26, 0.85);;
+        --nav-border: rgba(255, 255, 255, 0.05);
+        --nav-box: rgba(0, 0, 0, 0.5);
+        --table-stripe-odd: rgba(255,255,255,0.01);
+        --table-stripe-even: rgba(255,255,255,0.03);
+    }
+}
+
+/* Light mode via prefers-color-scheme */
+@media (prefers-color-scheme: light) {
+    :root {
+        --accent: #fff;
+        --bg-color: #e5e5e5;
+        --text-color: #333;
+        --table-bg: #fff;
+        --table-border: #ccc;
+        --accent: #fff;
+        --scrollbar-bg: rgba(0, 0, 0, 0.3);
+        --chart-text: #333;
+        --chart-grid: rgba(0, 0, 0, 0.1);
+        --chart-line: #007bff;
+        --diff-positive-bg: rgba(0, 200, 83, 0.15);
+        --diff-negative-bg: rgba(244, 67, 54, 0.15);
+        --diff-positive-text: #0a6025;
+        --diff-negative-text: #7a0e0e;
+        --row-hover-bg: rgba(0, 0, 0, 0.06);
+        --nav-bg:rgba(255, 255, 255, 0.8);
+        --nav-border: none;
+        --nav-box: rgba(0, 0, 0, 0.08);
+        --table-stripe-odd: #ffffff;
+        --table-stripe-even: #f7f9fb;
+    }
+}
+
+body.light {
+    --accent: #fff;
+    --bg-color: #e5e5e5;
+    --text-color: #333;
+    --table-bg: #fff;
+    --table-border: #ccc;
+    --accent: #fff;
+    --scrollbar-bg: rgba(0, 0, 0, 0.3);
+    --chart-text: #333;
+    --chart-grid: rgba(0, 0, 0, 0.1);
+    --chart-line: #007bff;
+    --diff-positive-bg: rgba(0, 200, 83, 0.15);
+    --diff-negative-bg: rgba(244, 67, 54, 0.15);
+    --diff-positive-text: #0a6025;
+    --diff-negative-text: #7a0e0e;
+    --row-hover-bg: rgba(0, 0, 0, 0.06);
+    --nav-bg:rgba(255, 255, 255, 0.8);
+    --nav-border: none;
+    --nav-box: rgba(0, 0, 0, 0.08);
+    --table-stripe-odd: #ffffff;
+    --table-stripe-even: #f7f9fb; 
+}
+
+body.dark {
+    --accent: #2a2a2a;
+    --bg-color: #1c1c1c;
+    --text-color: #eee;
+    --table-bg: #2a2a2a;
+    --table-border: #444;
+    --chart-text: #eee;
+    --chart-grid: rgba(255, 255, 255, 0.2);
+    --chart-line: #ff9800;
+    --diff-positive-bg: rgba(0, 60, 0, 0.7);
+    --diff-negative-bg: rgba(80, 0, 0, 0.7);
+    --diff-positive-text: #b8ffba;
+    --diff-negative-text: #ffbaba;
+    --row-hover-bg: rgba(255, 255, 255, 0.08);
+    --nav-bg: rgba(26, 26, 26, 0.85);;
+    --nav-border: rgba(255, 255, 255, 0.05);
+    --nav-box: rgba(0, 0, 0, 0.5);
+    --table-stripe-odd: rgba(255,255,255,0.01);
+    --table-stripe-even: rgba(255,255,255,0.03);
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+/* 2. GLOBAL */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: var(--bg-color);
+    color: var(--text-color);
+        display: flex;
+    flex-direction: column;
+}
+
+/* NAVIGATION BAR */
+.navbar {
+    position: sticky;
+    top: 8px;
+    z-index: 999;
+    width: 75%;
+    height: 72px;
+    min-height: 72px;
+    margin: 0 auto;
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px;
+    box-shadow: 0 6px 20px var(--nav-box);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+}
+
+.nav-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* nav links centered in the middle */
+.nav-links {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    gap: 28px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--text-color);
+    transition: color 0.3s;
+}
+
+.nav-links a.active {
+    color: var(--chart-line);
+    font-weight: 600;
+    position: relative;
+}
+
+/* underline indicator */
+.nav-links a.active::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    width: 50%;
+    height: 2px;
+    background: var(--chart-line);
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+body.dark .nav-links a.active {
+    color: #ff9800;
+}
+
+.nav-links a:hover {
+    color: #2b75ff;
+}
+
+body.dark .navbar {
+    background: var(--nav-bg);
+    border: 1px solid var(--nav-border);
+    box-shadow: 0 4px 18px var(--nav-box);
+}
+
+body.dark .nav-links a:hover {
+    color: #ff9800;
+}
+
+/* THEME TOGGLE */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #053b6b;
+    font-size: 16px;
+    margin-left: auto;
+}
+
+.theme-toggle input {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 12px;
+    transition: background-color 0.3s;
+}
+
+.toggle-slider::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.theme-toggle input:checked+.toggle-slider {
+    background-color: #ff9800;
+}
+
+.theme-toggle input:checked+.toggle-slider::before {
+    transform: translateX(26px);
+}
+
+body.dark .theme-toggle {
+    color: #eee;
+}
+
+/* HAMBURGER MENU FOR SMALLER SCREENS*/
+.hamburger {
+    display: none;
+    font-size: 22px;
+    background: none;
+    border: none;
+    color: #053b6b;
+    cursor: pointer;
+    margin-right: auto; 
+}
+
+body.dark .hamburger {
+    color: #eee;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        width: 90%;
+        padding: 10px 18px;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 80px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: center;
+        background: var(--table-bg);
+        border-radius: 16px;
+        margin: 0 auto;
+        width: 50%;
+        gap: 16px;
+        padding: 12px 0;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.25s ease;
+        justify-content: center; 
+    }
+
+    .nav-links.show {
+        transform: scaleY(1);
+    }
+
+    .hamburger {
+        display: block;
+    }
+
+    .theme-toggle {
+        margin-left: 12px;
+    }
+}
+
+/* 5. LAYOUT */
+.row {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.left {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+
+.middle {
+    flex: 0 0 60%;
+    max-width: 60%;
+    margin-top: 40px;
+}
+
+.right {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+
+.footer {
+  padding: 10px;
+  text-align: right;
+  height: 5%;
+  margin-top: auto; 
+  background:var(--table-bg);
+  width: 100%;
+}
+  
 /* (your style unchanged) */
 div.dt-container { width: 800px; margin: 0 auto;}
 
@@ -95,9 +422,43 @@ div.dt-container { width: 800px; margin: 0 auto;}
 </head>
 
 <body>
+    <header class="navbar">
+        <div class="nav-container">
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+            </svg>
+        </button>
 
-<table id="myTable"></table>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Dashboard</a>
+            </div>
 
+        <label class="theme-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun" viewBox="0 0 16 16">
+            <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
+            </svg>
+            <input type="checkbox" id="toggle-theme">
+            <span class="toggle-slider"></span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
+            <path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278M4.858 1.311A7.27 7.27 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.32 7.32 0 0 0 5.205-2.162q-.506.063-1.029.063c-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286"/>
+            </svg>
+        </label>
+        </div>
+    </header>
+
+  <div class="row">
+    <div class="left"></div>
+
+    <div class="middle">
+      <table id="myTable"></table>
+    </div>
+
+    <div class="right"></div>
+  </div>
+<div class="footer">
+  <p>Dashboard</p>
+</div>
 <!-- MODAL -->
   <div id="chart-modal" class="modal hidden">
     <div class="modal-content">
