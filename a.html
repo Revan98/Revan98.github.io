@@ -427,6 +427,49 @@ div.dt-container { width: 800px; margin: 0 auto;}
     max-width: 100%;
     overflow: visible;
 }
+
+/* 6. TOP PLAYER / STATS boxes */
+.player-box,
+.stat-box {
+    background: var(--table-bg);
+    border: 1px solid var(--table-border);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    width: 180px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.player-rank {
+    font-weight: bold;
+    font-size: 14px;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+.player-box h3,
+.stat-box h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-color);
+}
+
+.player-box p,
+.stat-box p {
+    margin: 5px 0 0;
+    font-size: 15px;
+    color: var(--text-color);
+}
+
+#top-players,
+#bottom-totals {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px auto;
+    flex-wrap: wrap;
+}
+
 </style>
 
 </head>
@@ -461,6 +504,9 @@ div.dt-container { width: 800px; margin: 0 auto;}
     <div class="left"></div>
 
     <div class="middle">
+      <div id="top-players"></div>
+      <div id="bottom-totals"></div>
+
       <div class="card">
         <table id="myTable"></table>
       </div>
@@ -609,6 +655,63 @@ function buildTableFromLastSheet() {
       lengthMenu: [10, 25, 50, -1],
     });
 }
+function escapeHtml(text) {
+  return text?.replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[m])
+  );
+}
+
+/* ---- TOP 3 players by DKP ---- */
+function renderTopPlayers() {
+  const latest = googleSheetNames[googleSheetNames.length - 1];
+  const rows = googleSheetsData[latest].slice(1);
+
+  // Sort by DKP column (index 8)
+  const sorted = [...rows].sort((a, b) => Number(b[8]) - Number(a[8]));
+  const top3 = sorted.slice(0, 3);
+
+  const container = qs("#top-players");
+  container.innerHTML = "";
+
+  top3.forEach((p, i) => {
+    const box = document.createElement("div");
+    box.className = "player-box";
+    box.innerHTML = `
+      <div class="player-rank">TOP ${i + 1}</div>
+      <h3>${escapeHtml(p[1])}</h3>
+      <p>ID: ${escapeHtml(p[0])}</p>
+    `;
+    container.appendChild(box);
+  });
+}
+
+/* ---- TOTALS for T4/T5/Deads/KP ---- */
+function renderTotals() {
+  const latest = googleSheetNames[googleSheetNames.length - 1];
+  const rows = googleSheetsData[latest].slice(1);
+
+  const fields = [
+    { label: "Total T4 kills", col: 12 },
+    { label: "Total T5 kills", col: 13 },
+    { label: "Total Deads", col: 15 },
+    { label: "Total Killpoints", col: 14 }
+  ];
+
+  const container = qs("#bottom-totals");
+  container.innerHTML = "";
+
+  fields.forEach(({ label, col }) => {
+    const total = rows.reduce((sum, r) => sum + Number(r[col] || 0), 0);
+
+    const box = document.createElement("div");
+    box.className = "stat-box";
+    box.innerHTML = `
+      <h3>${escapeHtml(label)}</h3>
+      <p>${total.toLocaleString()}</p>
+    `;
+    container.appendChild(box);
+  });
+}
 
 /* ---------------------------------------------
    CHART MODAL FUNCTIONS
@@ -676,6 +779,8 @@ $("#myTable").on("click", ".gov-link", function () {
 (async () => {
   await loadAllSheets();
   buildTableFromLastSheet();
+  renderTopPlayers();
+  renderTotals();
 })();
 
 /* -------------------------
