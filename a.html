@@ -10,116 +10,19 @@ https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
 "></script>
 
 <link rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.css" />
-  
+
 <script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
   <style>
     div.dt-container {
         width: 800px;
         margin: 0 auto;
     }
-
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.modal.hidden {
-  display: none;
-}
-
-.modal-content {
-  background: var(--table-bg);
-  padding: 20px;
-  border-radius: 12px;
-  width: 80%;
-  max-width: 900px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.4);
-}
-
-.close-btn {
-  float: right;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-color);
-}
-
-.chart-buttons {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.chart-buttons button {
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--table-border);
-  cursor: pointer;
-  background: #007bff;
-  color: var(--text-color);
-}
-.gov-link {
-  position: relative;
-  cursor: pointer;
-  color: var(--text-color);
-  font-weight: bold;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.gov-icon {
-  opacity: 0;
-  transform: translateX(-3px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-}
-
-.gov-link:hover .gov-icon {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-#modal-title {
-  text-align: center;
-  width: 100%;
-  margin: 0 auto 12px auto;
-  font-weight: bold;
-}
   </style>
 </head>
 
 <body>
 
 <table id="myTable"></table>
-
-<div id="stats-modal" class="modal hidden">
-  <div class="modal-content">
-    <button id="modal-close" class="close-btn">✖</button>
-    <h2 id="modal-title"></h2>
-
-    <div class="chart-buttons">
-      <button data-metric="power">Power Diff</button>
-      <button data-metric="kp">KP Gained</button>
-      <button data-metric="t4">T4 Gained</button>
-      <button data-metric="t5">T5 Gained</button>
-      <button data-metric="dead">Deads Gained</button>
-    </div>
-
-    <canvas id="stats-chart" style="margin-top:25px;"></canvas>
-  </div>
-</div>
-
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
 const API_KEY = "AIzaSyAZoyI5MbKsUJBe71jcn8AgU5ejFzdrteI";
 const SPREADSHEET_ID = "1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg";
@@ -164,8 +67,10 @@ async function loadSheetData() {
         { title: "Col 5", data: 5 },
         { title: "Col 6", data: 6 },
         { title: "Col 7", data: 7 },
+
         { title: "Col 10", data: 10 },
         { title: "Col 11", data: 11 },
+
         { title: "Power2", data: 16 },
       ],
     order: [],
@@ -183,6 +88,7 @@ async function loadSheetData() {
     lengthMenu: [10, 25, 50, -1],
 
     columnDefs: [
+
               // Hide these columns
         {
             targets: [9,10,11,12,13,14,15,16],
@@ -197,41 +103,30 @@ async function loadSheetData() {
         },
         // Column 4 with diff in column 13
         {
-            targets: 14,
+            targets: 5,
             render: function (data, type, row) {
                 return `${data}<br><span style="color:#888;">(${row[3]})</span>`;
             }
         },
         // Column 5 with diff in column 14
         {
-            targets: 12,
+            targets: 3,
             render: function (data, type, row) {
                 return `${data}<br><span style="color:#888;">(${row[4]})</span>`;
             }
         },
         // Column 6 with diff in column 15
         {
-            targets: 13,
+            targets: 4,
             render: function (data, type, row) {
                 return `${data}<br><span style="color:#888;">(${row[5]})</span>`;
             }
         },
         // Column 16 with diff in column 15 (adjust if needed)
         {
-            targets: 15,
+            targets: 6,
             render: function (data, type, row) {
                 return `${data}<br><span style="color:#888;">(${row[6]})</span>`;
-            }
-        },
-        {
-            targets: 0,   // ID column
-            render: function (data, type, row) {
-                return `
-                    <span class="gov-link" data-id="${data}">
-                        ${data}
-                        <span class="gov-icon">📊</span>
-                    </span>
-                `;
             }
         }
 
@@ -241,111 +136,6 @@ async function loadSheetData() {
 }
 
 loadSheetData();
-
-// Modal elements
-const modal = document.getElementById("stats-modal");
-const closeModalBtn = document.getElementById("modal-close");
-const modalTitle = document.getElementById("modal-title");
-
-// Chart.js instance
-let statsChart = null;
-
-// Click to open modal
-document.addEventListener("click", function (e) {
-    const target = e.target.closest(".gov-link");
-    if (!target) return;
-
-    const playerID = target.dataset.id;
-    openStatsModal(playerID);
-});
-
-// Close modal
-closeModalBtn.addEventListener("click", () => modal.classList.add("hidden"));
-
-function openStatsModal(id) {
-    modalTitle.textContent = `Stats for: ${id}`;
-    modal.classList.remove("hidden");
-    loadAllSheetsForID(id);
-}
-
-
-async function getSheetNames() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
-    const res = await fetch(url);
-    const json = await res.json();
-    return json.sheets.map(s => s.properties.title);
-}
-
-async function loadAllSheetsForID(playerID) {
-    const sheetNames = await getSheetNames();
-
-    let allData = [];
-
-    for (const sheet of sheetNames) {
-        const url =
-            `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheet}?key=${API_KEY}`;
-
-        const res = await fetch(url);
-        const json = await res.json();
-
-        if (!json.values || json.values.length < 2) continue;
-
-        const headers = json.values[0];
-        const rows = json.values.slice(1);
-
-        for (const row of rows) {
-            if (row[0] === playerID) {
-                allData.push({
-                    sheet,
-                    row
-                });
-            }
-        }
-    }
-
-    window.playerSheets = allData;
-    drawMetric("power");
-}
-
-
-function drawMetric(metric) {
-    if (!window.playerSheets) return;
-
-    const labels = window.playerSheets.map(x => x.sheet);
-    let values = [];
-
-    switch (metric) {
-        case "power": values = window.playerSheets.map(x => Number(x.row[16])); break;
-        case "kp":    values = window.playerSheets.map(x => Number(x.row[3]));  break;
-        case "t4":    values = window.playerSheets.map(x => Number(x.row[4]));  break;
-        case "t5":    values = window.playerSheets.map(x => Number(x.row[45])); break;
-        case "dead":  values = window.playerSheets.map(x => Number(x.row[6]));  break;
-    }
-
-    if (statsChart) statsChart.destroy();
-
-    const ctx = document.getElementById("stats-chart");
-    statsChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: metric,
-                    data: values,
-                    borderWidth: 2,
-                    pointRadius: 5,
-                }
-            ]
-        }
-    });
-}
-document.querySelectorAll(".chart-buttons button").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const metric = btn.dataset.metric;
-        drawMetric(metric);
-    });
-});
 
 </script>
 
