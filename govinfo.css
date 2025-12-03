@@ -477,6 +477,18 @@ th.sorted-desc .sort-icons .down {
     font-weight: bold;
 }
 
+/* Controls (search, size, info)*/
+.dt-row,
+.bottom-table-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding-bottom: 16px;
+    flex-wrap: wrap; /* allows clean wrapping */
+}
+
 /* 3 flexible zones */
 .dt-row > div,
 .bottom-table-row > div {
