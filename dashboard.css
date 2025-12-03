@@ -322,6 +322,7 @@ body.dark .hamburger {
   height: 5%;
   margin-top: auto; 
   background:var(--table-bg);
+  width: 100%;
 }
 
 /* 6. TOP PLAYER / STATS boxes */
@@ -1005,4 +1006,5 @@ th.sorted-desc .sort-icons .down {
   margin: 0 auto 12px auto;
   font-weight: bold;
 }
+
 
