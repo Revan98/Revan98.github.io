@@ -808,3 +808,6 @@ th.sorted-desc .sort-icons .down {
 
 .header-table th:nth-child(18),
 .body-table td:nth-child(18) { width: 120px; }
+
+.header-table th:nth-child(19),
+.body-table td:nth-child(19) { width: 60px; }
