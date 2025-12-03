@@ -712,13 +712,6 @@ th.sorted-desc .sort-icons .down {
     align-items: center;
 }
 
-.dt-pager {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-}
-
 .search-wrapper {
     position: relative;
     display: flex;
@@ -1006,5 +999,6 @@ th.sorted-desc .sort-icons .down {
   margin: 0 auto 12px auto;
   font-weight: bold;
 }
+
 
 
