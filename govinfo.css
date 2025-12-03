@@ -526,13 +526,6 @@ th.sorted-desc .sort-icons .down {
     align-items: center;
 }
 
-.dt-pager {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-}
-
 .search-wrapper {
     position: relative;
     display: flex;
