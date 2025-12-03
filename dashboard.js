@@ -13,8 +13,18 @@ const CONFIG = {
     },
   ],
 };
+function getKDFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("kd");
+}
 
-const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
+function mapKDToSourceId(kd) {
+  if (kd === "2552") return "backup"; // KD2552
+  if (kd === "2247") return "main"; // KD2247
+  return null;
+}
+
+const API_KEY = "AIzaSyAZoyI5MbKsUJBe71jcn8AgU5ejFzdrteI";
 
 /* COLUMNS / BEHAVIOR CONFIG */
 const SELECTED_COLS = [0, 1, 2, 12, 13, 14, 15, 8, 9];
@@ -779,7 +789,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   const closeModalBtn = qs("#close-modal");
   const chartButtons = qs(".chart-buttons");
   const themeToggle = qs("#toggle-theme");
+  // AUTO LOAD KINGDOM BASED ON URL
+  const kd = getKDFromURL();
+  const autoSource = mapKDToSourceId(kd);
 
+  if (autoSource) {
+    // Hide selector so user can’t switch sources
+    const selector = qs("#source-select");
+    if (selector) selector.style.display = "none";
+    // hide the label
+    const label = document.querySelector("label[for='source-select']");
+    if (label) label.style.display = "none";
+
+    qs("#loading-overlay").style.display = "flex";
+    await loadSource(autoSource);
+    applySourceData(autoSource);
+
+    const card = qs(".card");
+    if (card) card.style.display = "block";
+    qs("#loading-overlay").style.display = "none";
+  }
   // populate source selector
   if (sourceSelect) {
     CONFIG.sources.forEach((src) => {
