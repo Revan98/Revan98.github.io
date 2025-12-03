@@ -140,7 +140,6 @@ function buildTable(headers = [], rows = []) {
 
   // re-activate datatable (sorting, pagination, etc.)
   activateDataTable();
-  addRowClickEventsOnce();
 }
 
 function getMaxValues(rows) {
