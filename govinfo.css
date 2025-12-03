@@ -477,7 +477,15 @@ th.sorted-desc .sort-icons .down {
     font-weight: bold;
 }
 
-/* Controls (search, size, info)*/
+/* 3 flexible zones */
+.dt-row > div,
+.bottom-table-row > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Let sections naturally grow */
 .dt-left,
 .bt-left {
     flex: 1;
