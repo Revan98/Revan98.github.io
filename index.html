@@ -6,15 +6,11 @@
     <title>Select Kingdom</title>
     <link rel="stylesheet" href="dashboard.css">
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
         .kingdom-container {
             display: flex;
-            gap: 40px;
+            flex-direction: column;
+            gap: 35px;
+            align-items: center;
         }
         .kingdom-box {
             background: var(--table-bg);
@@ -25,12 +21,11 @@
             font-size: 24px;
             font-weight: bold;
             color: var(--text-color);
-            width: 220px;
+            width: 520px;
             text-align: center;
-            transition: 0.2s;
         }
         .kingdom-box:hover {
-            background: rgb(211, 211, 211);
+            background: rgba(211, 211, 211,0.20);
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
     </style>
@@ -63,11 +58,10 @@
     <div class="left"></div>
 
     <div class="middle">
-<div class="kingdom-container">
-    <div class="kingdom-box" onclick="selectKingdom('2552')">Kingdom 2552</div>
-    <div class="kingdom-box" onclick="selectKingdom('2247')">Kingdom 2247</div>
-</div>
-
+        <div class="kingdom-container">
+            <div class="kingdom-box" onclick="selectKingdom('2552')">Kingdom 2552</div>
+            <div class="kingdom-box" onclick="selectKingdom('2247')">Kingdom 2247</div>
+        </div>
     </div>
 
     <div class="right"></div>
