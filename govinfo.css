@@ -478,56 +478,110 @@ th.sorted-desc .sort-icons .down {
 }
 
 /* Controls (search, size, info)*/
-.dt-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    gap: 12px;
+.dt-left,
+.bt-left {
+    flex: 1;
+    min-width: 180px;
 }
 
-.dt-controls .dt-search {
-    margin-left: auto;
+.dt-center,
+.bt-center {
+    flex: 1;
+    justify-content: center;
+    min-width: 180px;
 }
 
-.bottom-table-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 8px;
+.dt-right,
+.bt-right {
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 180px;
 }
 
-.bottom-table-row .dt-info {
-    font-size: 14px;
-}
-
-.dt-controls input.dt-search {
-    width: 220px;
-    max-width: 100%;
+/* SEARCH INPUT */
+.dt-search {
+    width: 100%;
+    max-width: 280px;
     padding: 9px 12px;
     border-radius: 8px;
-    border: 1px solid #ccc;
-    background: transparent;
-    color: #333;
-    font-size: 14px;
-}
-
-.dt-controls input.dt-search::placeholder {
+    border: 1px solid var(--table-border);
+    background: var(--table-bg);
     color: var(--text-color);
-    opacity: 0.8;
 }
 
-body.dark .dt-controls input.dt-search {
-    background: transparent;
-    color: #eee;
-    border: 1px solid #666;
-}
-
-.dt-controls select.dt-size,.source-select {
-    padding: 6px;
+/* Select dropdowns */
+.dt-size,
+.source-select {
+    padding: 6px 8px;
     border-radius: 6px;
     background: var(--table-bg);
-    color: inherit;
+    border: 1px solid var(--table-border);
+    color: var(--text-color);
+}
+
+/* Bottom table styling */
+.bt-left,
+.bt-right {
+    display: flex;
+    align-items: center;
+}
+
+.dt-pager {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+}
+
+.search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+}
+
+.search-wrapper svg {
+    position: absolute;
+    left: 10px;
+    width: 16px;
+    height: 16px;
+    fill: var(--text-color);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.search-wrapper .dt-search {
+    width: 100%;
+    padding: 9px 12px 9px 34px;
+    border-radius: 8px;
+    border: 1px solid var(--table-border);
+    background: var(--table-bg);
+    color: var(--text-color);
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .dt-row,
+    .bottom-table-row {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .dt-left,
+    .dt-center,
+    .dt-right,
+    .bt-left,
+    .bt-center,
+    .bt-right {
+        justify-content: center !important;
+        width: 100%;
+    }
+
+    .dt-search {
+        max-width: 100%;
+    }
 }
 
 /* Pagination */
