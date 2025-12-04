@@ -1,0 +1,120 @@
+/* 8. Diff boxes */
+.cell-value {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.cell-diff {
+  margin-top: 2px;
+  font-size: 12px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  color: white;
+}
+
+.cell-diff.positive {
+  background: #4caf50;
+}
+
+.cell-diff.negative {
+  background: #f44336;
+}
+
+.cell-progress {
+  width: 80%;
+  height: 6px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 4px;
+  margin-top: 3px;
+}
+
+body.dark .cell-progress {
+  background: rgba(255,255,255,0.08);
+}
+
+.cell-progress-bar {
+  height: 100%;
+  border-radius: 4px;
+}
+
+/* charts spacing */
+.charts-container canvas {
+    margin-top: 18px;
+    margin-bottom: 18px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: var(--table-bg);
+  padding: 20px;
+  border-radius: 12px;
+  width: 80%;
+  max-width: 900px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+.close-btn {
+  float: right;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+.chart-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.chart-buttons button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  cursor: pointer;
+  background: #007bff;
+  color: var(--text-color);
+}
+.gov-link {
+  position: relative;
+  cursor: pointer;
+  color: var(--text-color);
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gov-icon {
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.gov-link:hover .gov-icon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#modal-title {
+  text-align: center;
+  width: 100%;
+  margin: 0 auto 12px auto;
+  font-weight: bold;
+}
