@@ -14,7 +14,7 @@ const CONFIG = {
   ],
 };
 
-const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
+const API_KEY = "AIzaSyAZoyI5MbKsUJBe71jcn8AgU5ejFzdrteI";
 
 /* STATE */
 let googleSheetId = null;
