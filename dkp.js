@@ -14,7 +14,8 @@
   const deadsEl = document.getElementById("deads");
   const saveMultBtn = document.getElementById("save-multipliers");
 
-  const prTableBody = document.querySelector("#power-ranges-table tbody");
+  const prTableBody = document.getElementById("table-body");
+
   const prMin = document.getElementById("pr-min");
   const prMax = document.getElementById("pr-max");
   const prPercent = document.getElementById("pr-percent");
@@ -116,37 +117,56 @@
 
   // UI: power ranges table
   function renderPowerRanges() {
-    prTableBody.innerHTML = "";
+    const tbody = document.getElementById("table-body2");
+    tbody.innerHTML = "";
+
     powerRanges.forEach((r, idx) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${r.min_power}</td><td>${
-        r.max_power === null ? "" : r.max_power
-      }</td><td>${r.percentage}</td>
+
+      tr.innerHTML = `
+            <td>${r.min_power}</td>
+            <td>${r.max_power === null ? "" : r.max_power}</td>
+            <td>${r.percentage}</td>
             <td>
-              <button class="pr-edit" data-idx="${idx}">Edit</button>
-              <button class="pr-delete" data-idx="${idx}">Delete</button>
-            </td>`;
-      prTableBody.appendChild(tr);
+                <button class="pr-edit primary" data-idx="${idx}">Edit</button>
+                <button class="pr-delete primary" data-idx="${idx}">Delete</button>
+            </td>
+        `;
+
+      tbody.appendChild(tr);
     });
-    prTableBody.querySelectorAll(".pr-edit").forEach((btn) => {
+
+    // Attach events
+    tbody.querySelectorAll(".pr-edit").forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        const i = Number(e.currentTarget.dataset.idx);
-        const r = powerRanges[i];
+        const idx = Number(e.currentTarget.dataset.idx);
+        const r = powerRanges[idx];
+
         prMin.value = r.min_power;
         prMax.value = r.max_power === null ? "" : r.max_power;
         prPercent.value = r.percentage;
-        prAddBtn.dataset.editIdx = i;
+
+        prAddBtn.dataset.editIdx = idx;
         prAddBtn.textContent = "Update";
       });
     });
-    prTableBody.querySelectorAll(".pr-delete").forEach((btn) => {
+
+    tbody.querySelectorAll(".pr-delete").forEach((btn) => {
       btn.addEventListener("click", async (e) => {
-        const i = Number(e.currentTarget.dataset.idx);
+        const idx = Number(e.currentTarget.dataset.idx);
         if (!confirm("Delete this range?")) return;
-        powerRanges.splice(i, 1);
+
+        powerRanges.splice(idx, 1);
         await savePowerRangesToStorage();
         renderPowerRanges();
       });
+    });
+
+    // Sync column widths like DKP results table
+    requestAnimationFrame(() => {
+      syncColumnWidthsAll();
+
+      syncHeaderScrollAll();
     });
   }
 
@@ -427,29 +447,33 @@
 
   // Render results (table)
   function renderResultsTable(rows) {
-    resultsWrap.innerHTML = "";
+    const head = document.getElementById("table-head");
+    const body = document.getElementById("table-body");
+
+    head.innerHTML = "";
+    body.innerHTML = "";
+
     if (!rows || rows.length === 0) {
       resultsInfo.textContent = "No results.";
       return;
     }
-    const max = Math.min(rows.length, 15);
-    const table = document.createElement("table");
-    const thead = document.createElement("thead");
+
     const columns = Object.keys(rows[0]);
-    thead.innerHTML =
+    head.innerHTML =
       "<tr>" + columns.map((c) => `<th>${c}</th>`).join("") + "</tr>";
-    table.appendChild(thead);
-    const tbody = document.createElement("tbody");
-    for (let i = 0; i < max; i++) {
-      const r = rows[i];
+
+    rows.forEach((r) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = columns
-        .map((c) => `<td>${String(r[c] ?? "")}</td>`)
-        .join("");
-      tbody.appendChild(tr);
-    }
-    table.appendChild(tbody);
-    resultsWrap.appendChild(table);
+      tr.innerHTML = columns.map((c) => `<td>${r[c] ?? ""}</td>`).join("");
+      body.appendChild(tr);
+    });
+
+    // sync after rendering
+    requestAnimationFrame(() => {
+      syncColumnWidthsAll();
+
+      syncHeaderScrollAll();
+    });
   }
 
   // Export: XLSX / CSV / JSON
@@ -480,7 +504,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `merge_output_${new Date()
+    a.download = `dkp_output_${new Date()
       .toISOString()
       .replace(/[:.]/g, "-")}.csv`;
     document.body.appendChild(a);
@@ -499,7 +523,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `merge_output_${new Date()
+    a.download = `dkp_output_${new Date()
       .toISOString()
       .replace(/[:.]/g, "-")}.json`;
     document.body.appendChild(a);
@@ -616,6 +640,37 @@
 
   // initial load
   init().catch((err) => console.error("Init error", err));
+  function syncHeaderScrollAll() {
+    document.querySelectorAll(".table-container").forEach((container) => {
+      const bodyScroll = container.querySelector(".table-scroll-body");
+      const headerTable = container.querySelector(".header-table");
+
+      if (!bodyScroll || !headerTable) return;
+
+      bodyScroll.addEventListener("scroll", () => {
+        headerTable.style.transform = `translateX(-${bodyScroll.scrollLeft}px)`;
+      });
+    });
+  }
+
+  function syncColumnWidthsAll() {
+    document.querySelectorAll(".table-container").forEach((container) => {
+      const header = container.querySelector(".header-table");
+      const body = container.querySelector(".body-table");
+
+      if (!header || !body) return;
+
+      const headerCols = header.querySelectorAll("th");
+      const bodyCols = body.querySelector("tr")?.querySelectorAll("td");
+
+      if (!headerCols.length || !bodyCols?.length) return;
+
+      headerCols.forEach((th, i) => {
+        const width = bodyCols[i]?.offsetWidth || 100;
+        th.style.width = width + "px";
+      });
+    });
+  }
 
   /* -------------------------
    THEME HANDLING
