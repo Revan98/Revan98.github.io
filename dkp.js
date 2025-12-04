@@ -45,6 +45,7 @@
   /* Simple query helper */
   const qs = (sel) => document.querySelector(sel);
   const themeToggle = qs("#toggle-theme");
+  const ignoreChEl = document.getElementById("ignore-ch");
 
   // In-memory caches
   let powerRanges = []; // [{min_power, max_power|null, percentage}]
@@ -301,20 +302,25 @@
     const allIds = Array.from(allIdsSet);
 
     // Filter IDs based on CH: skip if CH < 25 in both files (or missing in both)
-    const filteredIds = allIds.filter((id) => {
-      const ch1 = getChFromRow(map1[id]);
-      const ch2 = getChFromRow(map2[id]);
-      // If either CH is >= 25 -> include
-      if ((ch1 !== null && ch1 >= 25) || (ch2 !== null && ch2 >= 25))
-        return true;
-      // otherwise skip
-      return false;
-    });
-
-    const skippedCount = allIds.length - filteredIds.length;
-    if (skippedCount > 0) {
-      console.info(`Skipped ${skippedCount} IDs due to CH < 25 (or missing).`);
+    let filteredIds;
+    
+    if (ignoreChEl.checked) {
+      // User disabled filtering
+      filteredIds = allIds;
+      skippedCount = 0;
+    } else {
+      // Original CH filtering
+      filteredIds = allIds.filter((id) => {
+        const ch1 = getChFromRow(map1[id]);
+        const ch2 = getChFromRow(map2[id]);
+        if ((ch1 !== null && ch1 >= 25) || (ch2 !== null && ch2 >= 25))
+          return true;
+        return false;
+      });
+    
+      skippedCount = allIds.length - filteredIds.length;
     }
+
 
     // Ensure min_dkp exists for filtered IDs
     await ensureMinDkpForIds(filteredIds, df1Raw, df2Raw, map1, map2);
