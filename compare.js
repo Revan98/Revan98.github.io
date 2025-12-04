@@ -72,41 +72,58 @@ function compareData(df1, df2, keyColumn, option) {
 
 // Render tables
 function renderResultsTables(matchRows, nonMatchRows) {
-  resultsWrap.innerHTML = "";
-
-  const makeTable = (rows, title) => {
-    const section = document.createElement("div");
-    section.innerHTML = `<h3>${title}</h3>`;
-    const table = document.createElement("table");
-
-    if (!rows.length) {
-      section.innerHTML += `<div class="muted">No ${title.toLowerCase()} rows.</div>`;
-      return section;
-    }
-
-    const columns = Object.keys(rows[0]);
-    const thead = document.createElement("thead");
-    thead.innerHTML =
-      "<tr>" + columns.map((c) => `<th>${c}</th>`).join("") + "</tr>";
-    table.appendChild(thead);
-
-    const tbody = document.createElement("tbody");
-    const max = Math.min(rows.length, 10);
-    for (let i = 0; i < max; i++) {
-      const r = rows[i];
-      const tr = document.createElement("tr");
-      tr.innerHTML = columns.map((c) => `<td>${r[c] ?? ""}</td>`).join("");
-      tbody.appendChild(tr);
-    }
-    table.appendChild(tbody);
-    section.appendChild(table);
-    return section;
-  };
-
-  resultsWrap.appendChild(makeTable(matchRows, "Matching Rows (Top 10)"));
-  resultsWrap.appendChild(
-    makeTable(nonMatchRows, "Non-Matching Rows (Top 10)")
+  renderSingleTable(
+    matchRows,
+    "table-head-matching",
+    "table-body-matching",
+    "Matching Rows"
   );
+
+  renderSingleTable(
+    nonMatchRows,
+    "table-head-nonmatching",
+    "table-body-nonmatching",
+    "Non-Matching Rows"
+  );
+
+  // Sync widths + headers after rendering
+  setTimeout(() => {
+    syncColumnWidthsAll();
+    syncHeaderScrollAll();
+  }, 50);
+}
+function renderSingleTable(rows, headId, bodyId, label) {
+  const head = document.getElementById(headId);
+  const body = document.getElementById(bodyId);
+
+  head.innerHTML = "";
+  body.innerHTML = "";
+
+  if (!rows || rows.length === 0) {
+    head.innerHTML = "";
+    body.innerHTML = `<tr><td class="muted">No ${label.toLowerCase()}.</td></tr>`;
+    return;
+  }
+
+  // Columns based on first row
+  const columns = Object.keys(rows[0]);
+
+  // Header
+  head.innerHTML =
+    "<tr>" + columns.map((col) => `<th>${col}</th>`).join("") + "</tr>";
+
+  // LIMIT TO FIRST 10 ROWS
+  const max = Math.min(rows.length, 10);
+
+  const out = [];
+
+  for (let i = 0; i < max; i++) {
+    const r = rows[i];
+    const tds = columns.map((col) => `<td>${r[col] ?? ""}</td>`).join("");
+    out.push(`<tr>${tds}</tr>`);
+  }
+
+  body.innerHTML = out.join("");
 }
 
 // Export helpers
@@ -214,7 +231,38 @@ document.getElementById("export-json").addEventListener("click", () => {
     exportToJson(comparedResults.nonMatching, "compare_nonmatching");
 });
 
-// Theme + hamburger menu
+function syncHeaderScrollAll() {
+  document.querySelectorAll(".table-container").forEach((container) => {
+    const bodyScroll = container.querySelector(".table-scroll-body");
+    const headerTable = container.querySelector(".header-table");
+
+    if (!bodyScroll || !headerTable) return;
+
+    bodyScroll.addEventListener("scroll", () => {
+      headerTable.style.transform = `translateX(-${bodyScroll.scrollLeft}px)`;
+    });
+  });
+}
+
+function syncColumnWidthsAll() {
+  document.querySelectorAll(".table-container").forEach((container) => {
+    const header = container.querySelector(".header-table");
+    const body = container.querySelector(".body-table");
+
+    if (!header || !body) return;
+
+    const headerCols = header.querySelectorAll("th");
+    const bodyCols = body.querySelector("tr")?.querySelectorAll("td");
+
+    if (!headerCols.length || !bodyCols?.length) return;
+
+    headerCols.forEach((th, i) => {
+      const width = bodyCols[i]?.offsetWidth || 100;
+      th.style.width = width + "px";
+    });
+  });
+}
+
 /* -------------------------
    THEME HANDLING
    ------------------------- */
