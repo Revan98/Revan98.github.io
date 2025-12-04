@@ -89,33 +89,42 @@ function mergeData(file1Data, file2Data, idColumn, mergeColumn) {
 
 // Rendering results
 function renderResultsTable(rows) {
-  resultsWrap.innerHTML = "";
+  const head = document.getElementById("table-head");
+  const body = document.getElementById("table-body");
+
+  // Clear previous
+  head.innerHTML = "";
+  body.innerHTML = "";
+
   if (!rows || rows.length === 0) {
     resultsInfo.textContent = "No results.";
     return;
   }
 
-  const max = Math.min(rows.length, 15);
-  const table = document.createElement("table");
   const columns = Object.keys(rows[0]);
 
-  const thead = document.createElement("thead");
-  thead.innerHTML =
-    "<tr>" + columns.map((c) => `<th>${c}</th>`).join("") + "</tr>";
-  table.appendChild(thead);
+  // Header
+  head.innerHTML = `
+        <tr>${columns.map((col) => `<th>${col}</th>`).join("")}</tr>
+    `;
 
-  const tbody = document.createElement("tbody");
+  // Body rows (first 15)
+  const max = Math.min(rows.length, 15);
+
   for (let i = 0; i < max; i++) {
-    const r = rows[i];
+    const row = rows[i];
     const tr = document.createElement("tr");
-    tr.innerHTML = columns
-      .map((c) => `<td>${String(r[c] ?? "")}</td>`)
-      .join("");
-    tbody.appendChild(tr);
-  }
 
-  table.appendChild(tbody);
-  resultsWrap.appendChild(table);
+    tr.innerHTML = columns.map((col) => `<td>${row[col] ?? ""}</td>`).join("");
+
+    body.appendChild(tr);
+  }
+  requestAnimationFrame(() => {
+    syncColumnWidths();
+    syncHeaderScroll();
+  });
+
+  resultsInfo.textContent = `Showing ${max} of ${rows.length} merged rows.`;
 }
 
 // Export: XLSX / CSV / JSON
@@ -209,6 +218,33 @@ async function doMerge() {
   progressEl.value = 100;
   resultsInfo.textContent = `Merged ${merged.length} rows using ID "${idColumn}" and column "${mergeColumn}" from File 2.`;
 }
+function syncHeaderScroll() {
+  const bodyScroll = document.querySelector(".table-scroll-body");
+  const headerTable = document.querySelector(".header-table");
+
+  if (!bodyScroll || !headerTable) return;
+
+  bodyScroll.addEventListener("scroll", () => {
+    headerTable.style.transform = `translateX(-${bodyScroll.scrollLeft}px)`;
+  });
+}
+
+function syncColumnWidths() {
+  const header = document.querySelector(".header-table");
+  const body = document.querySelector(".body-table");
+
+  if (!header || !body) return;
+
+  const headerCols = header.querySelectorAll("th");
+  const bodyCols = body.querySelector("tr")?.querySelectorAll("td");
+
+  if (!headerCols.length || !bodyCols?.length) return;
+
+  headerCols.forEach((th, i) => {
+    const width = bodyCols[i]?.offsetWidth || 100;
+    th.style.width = width + "px";
+  });
+}
 
 /* -------------------------
    THEME HANDLING
@@ -259,3 +295,6 @@ document
 document
   .getElementById("export-json")
   .addEventListener("click", () => exportToJson(mergedResults));
+document.getElementById("file1").addEventListener("change", handleFiles);
+document.getElementById("file2").addEventListener("change", handleFiles);
+document.getElementById("mergeBtn").addEventListener("click", doMerge);
