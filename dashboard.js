@@ -24,7 +24,7 @@ function mapKDToSourceId(kd) {
   return null;
 }
 
-const API_KEY = "AIzaSyAZoyI5MbKsUJBe71jcn8AgU5ejFzdrteI";
+const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
 /* COLUMNS / BEHAVIOR CONFIG */
 const SELECTED_COLS = [0, 1, 2, 12, 13, 14, 15, 8, 9];
