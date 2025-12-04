@@ -5,7 +5,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Excel Merge Tool</title>
-    <link rel="stylesheet" href="merge.css">
+    <link rel="stylesheet" href="a/layout.css">
+    <link rel="stylesheet" href="a/navbar.css">
+    <link rel="stylesheet" href="a/buttons.css">
+    <link rel="stylesheet" href="a/table.css">
+    <link rel="stylesheet" href="a/fixedheaders.css">
+    <link rel="stylesheet" href="a/merge.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 
@@ -39,46 +44,67 @@
         </div>
     </header>
 
-    <div class="container">
+
+  <div class="row">
+    <div class="left"></div>
+
+    <div class="middle">
         <section class="card">
-            <div class="row">
+            <div class="a">
                 <label>File 1 (Base):</label>
-                <input type="file" id="file1" accept=".xlsx" />
+                <input type="file" id="file1" class="file" accept=".xlsx" />
             </div>
 
-            <div class="row">
+            <div class="a">
                 <label>File 2 (Merge Source):</label>
-                <input type="file" id="file2" accept=".xlsx" />
+                <input type="file" id="file2" class="file" accept=".xlsx" />
             </div>
 
             <div id="columnSelectors" style="display:none;">
-                <div class="row">
+                <div class="a">
                     <label for="idColumn">Select ID column:</label>
-                    <select id="idColumn"></select>
+                    <select id="idColumn"  class="source-select"></select>
                 </div>
 
-                <div class="row">
+                <div class="a">
                     <label for="mergeColumn">Select column to merge from File 2:</label>
-                    <select id="mergeColumn"></select>
+                    <select id="mergeColumn" class="source-select"></select>
                 </div>
             </div>
 
-            <div class="row">
+            <div class="a">
                 <button id="mergeBtn" class="primary" disabled>Merge</button>
                 <progress id="progress" max="100" value="0"></progress>
             </div>
 
-            <div class="row">
-                <button id="export-xlsx">Export XLSX</button>
-                <button id="export-csv">Export CSV</button>
-                <button id="export-json">Export JSON</button>
+            <div class="a">
+                <button id="export-xlsx" class="primary">Export XLSX</button>
+                <button id="export-csv" class="primary">Export CSV</button>
+                <button id="export-json" class="primary">Export JSON</button>
             </div>
 
-            <div id="merge-results-info" class="muted">No merged data yet.</div>
-            <div id="merge-results-wrap"></div>
+            <div id="merge-results-info">No merged data yet.</div>
+            <div class="table-container">
+                <table class="header-table">
+                    <thead id="table-head"></thead>
+                </table>
+
+                <div class="table-scroll-body">
+                    <table class="body-table">
+                        <tbody id="table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
         </section>
     </div>
 
+    <div class="right"></div>
+  </div>
+
+<div class="footer">
+  <p>Merge</p>
+</div>
     <script src="merge.js"> </script>
 </body>
 
