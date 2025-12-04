@@ -5,7 +5,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>File Comparator</title>
-    <link rel="stylesheet" href="compare.css">
+    <link rel="stylesheet" href="a/layout.css">
+    <link rel="stylesheet" href="a/navbar.css">
+    <link rel="stylesheet" href="a/buttons.css">
+    <link rel="stylesheet" href="a/table.css">
+    <link rel="stylesheet" href="a/fixedheaders.css">
+    <link rel="stylesheet" href="a/merge.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 
@@ -39,49 +44,86 @@
         </div>
     </header>
 
-    <div class="container">
+  <div class="row">
+    <div class="left"></div>
+
+    <div class="middle">
         <section class="card">
             <h1>Compare Two Files</h1>
 
-            <div class="row">
+            <div class="a">
                 <label>File 1:</label>
-                <input type="file" id="file1" accept=".xlsx,.csv,.json" />
+                <input type="file" id="file1" class="file" accept=".xlsx,.csv,.json" />
             </div>
 
-            <div class="row">
+            <div class="a">
                 <label>File 2:</label>
-                <input type="file" id="file2" accept=".xlsx,.csv,.json" />
+                <input type="file" id="file2" class="file" accept=".xlsx,.csv,.json" />
             </div>
 
-            <div class="row">
+            <div class="a">
                 <label>Key Column:</label>
-                <input type="text" id="keyColumn" placeholder="Enter column name" />
+                <input type="text" id="keyColumn" class="source-select" placeholder="Enter column name" />
             </div>
 
-            <div class="row">
+            <div class="a">
                 <label>Comparison Option:</label>
-                <select id="compareOption">
+                <select id="compareOption" class="source-select">
                     <option value="both">Both</option>
                     <option value="pierwszy">First Only</option>
                     <option value="drugi">Second Only</option>
                 </select>
             </div>
 
-            <div class="row">
+            <div class="a">
                 <button id="compareBtn" class="primary">Compare</button>
                 <progress id="progressBar" value="0" max="100"></progress>
             </div>
 
-            <div class="row">
-                <button id="export-xlsx">Export XLSX</button>
-                <button id="export-csv">Export CSV</button>
-                <button id="export-json">Export JSON</button>
+            <div class="a">
+                <button id="export-xlsx" class="primary">Export XLSX</button>
+                <button id="export-csv" class="primary">Export CSV</button>
+                <button id="export-json" class="primary">Export JSON</button>
             </div>
 
             <div id="compare-results-info" class="muted">No compared data yet.</div>
-            <div id="compare-results-wrap"></div>
+            <!-- MATCHING TABLE -->
+            <div class="table-container" id="table-matching">
+                <h3>Matching Rows</h3>
+                <table class="header-table">
+                    <thead id="table-head-matching"></thead>
+                </table>
+
+                <div class="table-scroll-body">
+                    <table class="body-table">
+                        <tbody id="table-body-matching"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- NON-MATCHING TABLE -->
+            <div class="table-container" id="table-nonmatching">
+                <h3>Non-Matching Rows</h3>
+                <table class="header-table">
+                    <thead id="table-head-nonmatching"></thead>
+                </table>
+
+                <div class="table-scroll-body">
+                    <table class="body-table">
+                        <tbody id="table-body-nonmatching"></tbody>
+                    </table>
+                </div>
+            </div>
         </section>
     </div>
+
+    <div class="right"></div>
+  </div>
+
+<div class="footer">
+<p>Comparsion</p>
+</div>
+
     <script src="compare.js"></script>
 </body>
 
