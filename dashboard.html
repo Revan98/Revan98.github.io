@@ -2,19 +2,19 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DKP stats</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DKP stats</title>
 
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.css" />
 <link rel="stylesheet" href="a/layout.css">
 <link rel="stylesheet" href="a/navbar.css">
 <link rel="stylesheet" href="a/box_top_total.css">
-<link rel="stylesheet" href="a/table.css">
-<link rel="stylesheet" href="a/fixedheaders.css">
-<link rel="stylesheet" href="a/loading_overlay.css">
-<link rel="stylesheet" href="a/misc.css">
-</head>
+<link rel="stylesheet" href="a/table_dt.css">
+<link rel="stylesheet" href="a/loading.css">
+<link rel="stylesheet" href="a/modal_chart.css">
 
+</head>
 <body>
     <header class="navbar">
         <div class="nav-container">
@@ -45,105 +45,49 @@
     <div class="left"></div>
 
     <div class="middle">
-      <div id="loading-overlay">
-        <div class="spinner"></div>
-        Loading data...
-      </div>
-
-      <div id="top-players"></div>
-      <div id="bottom-totals"></div>
-
-      <div class="card">
-        <div class="dt-row">
-            <div class="dt-left">
-                <label for="dt-size">Rows per page</label>
-                <select class="dt-size">
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                </select>
+        <div id="top-players"></div>
+        <div id="bottom-totals"></div>
+        <div class="card">
+            <div id="loading-spinner" class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading data...</p>
             </div>
-
-            <div class="dt-center">
-                <label for="source-select">Source</label>
-                <select id="source-select" class="source-select">
-                    <option>Select source</option>
-                </select>
-            </div>
-
-            <div class="dt-right">
-              <div class="search-wrapper">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                      fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                      <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                  </svg>
-                  <input class="dt-search" placeholder="Search by ID or Name" />
-              </div>
-
-            </div>
+            <table id="myTable"></table>
         </div>
-
-
-        <div class="table-container">
-            <table class="header-table">
-                <thead>
-                </thead>
-            </table>
-
-            <div class="table-scroll-body">
-                <table class="body-table">
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="bottom-table-row">
-            <div class="bt-left">
-                <div class="dt-info"></div>
-            </div>
-
-            <div class="bt-center"></div>
-
-            <div class="bt-right">
-                <div class="dt-pager"></div>
-            </div>
-        </div>
-
-      </div>
-
     </div>
 
     <div class="right"></div>
   </div>
-<div class="footer">
-  <p>Dashboard</p>
-</div>
-  <div id="chart-modal" class="modal hidden">
-    <div class="modal-content">
-      <button id="close-modal" class="close-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-        </svg>
-      </button>
 
-      <h2 id="modal-title"></h2>
-
-      <canvas id="modal-chart"></canvas>
-
-      <div class="chart-buttons">
-        <button data-col="16">Power Diff</button>
-        <button data-col="3">T4 Kills</button>
-        <button data-col="4">T5 Kills</button>
-        <button data-col="5">Kill Points</button>
-        <button data-col="6">Deads</button>
-      </div>
+    <div class="footer">
+    <p>Dashboard</p>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
-  <script src="dashboard.js"></script>
+    <div id="chart-modal" class="modal hidden">
+        <div class="modal-content">
+        <button id="close-modal" class="close-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+            </svg>
+        </button>
+
+        <h2 id="modal-title"></h2>
+
+        <canvas id="modal-chart"></canvas>
+
+        <div class="chart-buttons">
+            <button data-col="16">Power Diff</button>
+            <button data-col="4">T4 Kills</button>
+            <button data-col="5">T5 Kills</button>
+            <button data-col="3">Kill Points</button>
+            <button data-col="6">Deads</button>
+        </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="dashboard.js"></script>
 </body>
-
 </html>
-
