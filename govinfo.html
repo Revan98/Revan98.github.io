@@ -2,19 +2,17 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Governor Info</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DKP stats</title>
 
-  <link rel="stylesheet" href="a/layout.css">
-  <link rel="stylesheet" href="a/navbar.css">
-  <link rel="stylesheet" href="a/box_top_total.css">
-  <link rel="stylesheet" href="a/table.css">
-  <link rel="stylesheet" href="a/fixedheaders.css">
-  <link rel="stylesheet" href="a/loading_overlay.css">
-  <link rel="stylesheet" href="a/misc.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.css" />
+<link rel="stylesheet" href="a/layout.css">
+<link rel="stylesheet" href="a/navbar.css">
+<link rel="stylesheet" href="a/table_dt.css">
+<link rel="stylesheet" href="a/loading.css">
+
 </head>
-
 <body>
     <header class="navbar">
         <div class="nav-container">
@@ -25,7 +23,7 @@
         </button>
 
             <div class="nav-links" id="nav-links">
-                <a href="govinfo.html">Governor info</a>
+                <a href="dashboard.html">Governor Info</a>
             </div>
 
         <label class="theme-toggle">
@@ -45,70 +43,25 @@
     <div class="left"></div>
 
     <div class="middle">
-      <div id="loading-overlay">
-        <div class="spinner"></div>
-        Loading data...
-      </div>
-
-      <div class="card">
-        <div class="dt-row">
-            <div class="dt-left">
-                <label for="dt-size">Rows per page</label>
-                <select class="dt-size">
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                </select>
+        <div class="card">
+            <select id="source-selector" class="source-selector"></select>
+            <div id="loading-spinner" class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading data...</p>
             </div>
-
-            <div class="dt-center">
-                <label for="source-select">Source</label>
-                <select id="source-select" class="source-select">
-                    <option>Select source</option>
-                </select>
-            </div>
-
-            <div class="dt-right">
-              <div class="search-wrapper">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                      fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                      <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                  </svg>
-                  <input class="dt-search" placeholder="Search by ID or Name" />
-              </div>
-
-            </div>
+            <table id="myTable"></table>
         </div>
-
-        <div class="table-container">
-            <table class="header-table">
-                <thead>
-                </thead>
-            </table>
-
-            <div class="table-scroll-body">
-                <table class="body-table">
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="bottom-table-row">
-          <div class="dt-info"></div>
-          <div class="dt-pager"></div>
-        </div>
-      </div>
-
     </div>
 
     <div class="right"></div>
   </div>
-<div class="footer">
-  <p>Governor Info</p>
-</div>
 
-<script src="govinfo.js"></script>
+    <div class="footer">
+    <p>Governor Info</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
+    <script src="govinfo.js"></script>
 </body>
-
 </html>
