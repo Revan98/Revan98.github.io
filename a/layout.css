@@ -18,7 +18,7 @@
         --diff-positive-text: #b8ffba;
         --diff-negative-text: #ffbaba;
         --row-hover-bg: rgba(255, 255, 255, 0.08);
-        --nav-bg: rgba(26, 26, 26, 0.85);;
+        --nav-bg: rgb(26, 26, 26);
         --nav-border: rgba(255, 255, 255, 0.05);
         --nav-box: rgba(0, 0, 0, 0.5);
         --table-stripe-odd: rgba(255,255,255,0.01);
@@ -45,7 +45,7 @@
         --diff-positive-text: #0a6025;
         --diff-negative-text: #7a0e0e;
         --row-hover-bg: rgba(0, 0, 0, 0.06);
-        --nav-bg:rgba(255, 255, 255, 0.8);
+        --nav-bg:rgb(255, 255, 255);
         --nav-border: none;
         --nav-box: rgba(0, 0, 0, 0.08);
         --table-stripe-odd: #ffffff;
@@ -70,7 +70,7 @@ body.light {
     --diff-positive-text: #0a6025;
     --diff-negative-text: #7a0e0e;
     --row-hover-bg: rgba(0, 0, 0, 0.06);
-    --nav-bg:rgba(255, 255, 255, 0.8);
+    --nav-bg:rgb(255, 255, 255);
     --nav-border: none;
     --nav-box: rgba(0, 0, 0, 0.08);
     --table-stripe-odd: #ffffff;
@@ -92,7 +92,7 @@ body.dark {
     --diff-positive-text: #b8ffba;
     --diff-negative-text: #ffbaba;
     --row-hover-bg: rgba(255, 255, 255, 0.08);
-    --nav-bg: rgba(26, 26, 26, 0.85);;
+    --nav-bg: rgb(26, 26, 26);
     --nav-border: rgba(255, 255, 255, 0.05);
     --nav-box: rgba(0, 0, 0, 0.5);
     --table-stripe-odd: rgba(255,255,255,0.01);
@@ -194,4 +194,5 @@ body {
         margin-left: 3px;
         margin-right: 3px;
     }
+
 }
