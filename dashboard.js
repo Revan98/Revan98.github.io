@@ -6,7 +6,7 @@ const CONFIG = {
       kd: "2247",
       name: "KD2247",
       sheetUrl:
-        "https://docs.google.com/spreadsheets/d/1LHAa5r_coFO5XGCuqmZe6BrMmfanlq7Ds9TVIX_ekps/edit?usp=sharing",
+        "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
     },
     {
       id: "backup",
@@ -56,7 +56,6 @@ async function loadAllSheetsCache() {
   }
 
   const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
-  const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
   
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
   const res = await fetch(url);
