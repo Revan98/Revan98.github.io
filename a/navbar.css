@@ -2,14 +2,12 @@
     position: sticky;
     top: 8px;
     z-index: 999;
-    width: 75%;
+    width: 60%;
     height: 72px;
     min-height: 72px;
     margin: 0 auto;
     background: var(--nav-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 20px;
+    border-radius: 10px;
     box-shadow: 0 6px 20px var(--nav-box);
     padding: 0 24px;
     display: flex;
@@ -179,3 +177,4 @@ body.dark .hamburger {
         margin-left: 12px;
     }
 }
+
