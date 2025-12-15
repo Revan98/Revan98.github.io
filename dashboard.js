@@ -56,7 +56,8 @@ async function loadAllSheetsCache() {
   }
 
   const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
-
+  const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
+  
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
   const res = await fetch(url);
   const json = await res.json();
