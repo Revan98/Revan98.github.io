@@ -13,7 +13,21 @@
 <link rel="stylesheet" href="a/table_dt.css">
 <link rel="stylesheet" href="a/loading.css">
 <link rel="stylesheet" href="a/modal_chart.css">
-
+<style>
+.info{
+  display: flex;
+  margin-top: 15px;
+  width:100%;
+  background: var(--table-bg);
+  font-size:15px;
+  color: inherit;
+  height:40px;
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  padding:10px;
+  align-items: center;
+}
+</style>
 </head>
 <body>
     <header class="navbar">
@@ -47,6 +61,9 @@
     <div class="middle">
         <div id="top-players"></div>
         <div id="bottom-totals"></div>
+        <div class="info">
+          <p>Multiplers T4 - 5 points, T5 - 10 points, Deads - 15 points</p>
+        </div>
         <div class="card">
             <div id="loading-spinner" class="loading-spinner">
                 <div class="spinner"></div>
@@ -91,3 +108,4 @@
     <script src="dashboard.js"></script>
 </body>
 </html>
+
