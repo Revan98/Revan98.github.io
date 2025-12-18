@@ -3,8 +3,8 @@
     top: 8px;
     z-index: 999;
     width: 60%;
-    height: 72px;
-    min-height: 72px;
+    height: 61px;
+    min-height: 61px;
     margin: 0 auto;
     background: var(--nav-bg);
     border-radius: 10px;
@@ -177,4 +177,5 @@ body.dark .hamburger {
         margin-left: 12px;
     }
 }
+
 
