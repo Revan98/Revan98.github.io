@@ -156,6 +156,16 @@ body {
     max-width: 100%;
     overflow: visible;
 }
+
+.put-in-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 991px) {
     .header {
