@@ -1,24 +1,73 @@
 let file1Data = [];
 let file2Data = [];
 let mergedResults = null;
+
+
 const progressEl = document.getElementById("progress");
-const resultsWrap = document.getElementById("merge-results-wrap");
-const resultsInfo = document.getElementById("merge-results-info");
+const themeToggle = document.querySelector("#toggle-theme");
 
-/* Simple query helper */
-const qs = (sel) => document.querySelector(sel);
-const themeToggle = qs("#toggle-theme");
+// -------------------------
+// AG Grid Setup
+// -------------------------
+function buildColumnDefs(rows) {
+  if (!rows || !rows.length) return [];
 
-// Utility: read spreadsheet file (.xlsx or .csv) with header normalization
+  return Object.keys(rows[0]).map((key) => {
+    return {
+      headerName: key,
+      field: key,
+      sortable: true,
+      filter: false,
+      resizable: true,
+      // Optional: you could add your diff renderers here
+      cellRenderer: (params) => {
+        if (key.endsWith("Diff")) {
+          const val = params.value;
+          return `<span style="color:${val >= 0 ? "green" : "red"}">${val}</span>`;
+        }
+        return params.value ?? "";
+      },
+    };
+  });
+}
+let gridApi = null;
+
+function renderResultsAgGrid(rows) {
+  const gridDiv = document.querySelector("#myGrid");
+
+  const gridOptions = {
+    columnDefs: buildColumnDefs(rows),
+    rowData: rows,
+    rowHeight: 40,
+    defaultColDef: {
+      sortable: true,
+      filter: false,
+      resizable: true,
+    },
+    pagination: true,
+    paginationPageSize: 50,
+    animateRows: true,
+  };
+
+  // Destroy previous grid if exists
+  if (gridApi) {
+    gridApi.destroy();
+  }
+
+  gridApi = agGrid.createGrid(gridDiv, gridOptions);
+}
+
+// -------------------------
+// File Handling
+// -------------------------
 async function readExcel(file) {
   if (!file) throw new Error("No file provided");
   const arrBuf = await file.arrayBuffer();
   const wb = XLSX.read(arrBuf, { type: "array" });
-  const first = wb.SheetNames[0];
-  const sheet = wb.Sheets[first];
+  const firstSheet = wb.SheetNames[0];
+  const sheet = wb.Sheets[firstSheet];
   const json = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
-  // Normalize header keys: lowercase & trimmed & mapping to expected columns
   return json.map((row) => {
     const normalized = {};
     Object.keys(row).forEach((k) => {
@@ -36,13 +85,12 @@ async function readExcel(file) {
         normalized["T5 Kills"] = val;
       else if (["ch", "city hall", "cityhall", "city hall level"].includes(key))
         normalized.CH = val;
-      else normalized[k] = val; // keep other columns
+      else normalized[k] = val;
     });
     return normalized;
   });
 }
 
-// File handling
 async function handleFiles() {
   const file1 = document.getElementById("file1").files[0];
   const file2 = document.getElementById("file2").files[0];
@@ -71,61 +119,42 @@ async function handleFiles() {
   document.getElementById("mergeBtn").disabled = false;
 }
 
-// Merge logic
-function mergeData(file1Data, file2Data, idColumn, mergeColumn) {
+// -------------------------
+// Merge Data & Render in AG Grid
+// -------------------------
+async function doMerge() {
+  const idColumn = document.getElementById("idColumn").value;
+  const mergeColumn = document.getElementById("mergeColumn").value;
+
+  if (!idColumn || !mergeColumn)
+    return alert("Please select columns first.");
+
+  progressEl.value = 10;
+
   const map = {};
   for (const row of file2Data) {
     map[row[idColumn]] = row[mergeColumn];
   }
 
-  return file1Data.map((row) => {
+  progressEl.value = 40;
+
+  mergedResults = file1Data.map((row) => {
     const id = row[idColumn];
-    if (map[id] !== undefined) {
-      return { ...row, [mergeColumn]: map[id] };
+    const newVal = map[id];
+    if (newVal !== undefined) {
+      return { ...row, [mergeColumn]: newVal };
     }
     return row;
   });
+
+  progressEl.value = 80;
+
+  renderResultsAgGrid(mergedResults);
+
+  progressEl.value = 100;
+  resultsInfo.textContent = `Merged ${mergedResults.length} rows using ID "${idColumn}" and column "${mergeColumn}" from File 2.`;
 }
 
-// Rendering results
-function renderResultsTable(rows) {
-  const head = document.getElementById("table-head");
-  const body = document.getElementById("table-body");
-
-  // Clear previous
-  head.innerHTML = "";
-  body.innerHTML = "";
-
-  if (!rows || rows.length === 0) {
-    resultsInfo.textContent = "No results.";
-    return;
-  }
-
-  const columns = Object.keys(rows[0]);
-
-  // Header
-  head.innerHTML = `
-        <tr>${columns.map((col) => `<th>${col}</th>`).join("")}</tr>
-    `;
-
-  // Body rows (first 15)
-  const max = Math.min(rows.length, 15);
-
-  for (let i = 0; i < max; i++) {
-    const row = rows[i];
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = columns.map((col) => `<td>${row[col] ?? ""}</td>`).join("");
-
-    body.appendChild(tr);
-  }
-  requestAnimationFrame(() => {
-    syncColumnWidths();
-    syncHeaderScroll();
-  });
-
-  resultsInfo.textContent = `Showing ${max} of ${rows.length} merged rows.`;
-}
 
 // Export: XLSX / CSV / JSON
 function exportToXlsx(rows) {
@@ -184,77 +213,20 @@ function exportToJson(rows) {
   URL.revokeObjectURL(url);
 }
 
-// Main merge execution
-async function doMerge() {
-  const idColumn = document.getElementById("idColumn").value;
-  const mergeColumn = document.getElementById("mergeColumn").value;
-
-  if (!idColumn || !mergeColumn) return alert("Please select columns first.");
-
-  progressEl.value = 10;
-
-  // Build a lookup map from file2
-  const map = {};
-  for (const row of file2Data) {
-    map[row[idColumn]] = row[mergeColumn];
-  }
-
-  progressEl.value = 40;
-
-  // Merge into file1Data
-  const merged = file1Data.map((row) => {
-    const id = row[idColumn];
-    const newVal = map[id];
-    if (newVal !== undefined) {
-      return { ...row, [mergeColumn]: newVal };
-    }
-    return row;
-  });
-
-  progressEl.value = 80;
-
-  mergedResults = merged;
-  renderResultsTable(merged);
-  progressEl.value = 100;
-  resultsInfo.textContent = `Merged ${merged.length} rows using ID "${idColumn}" and column "${mergeColumn}" from File 2.`;
-}
-function syncHeaderScroll() {
-  const bodyScroll = document.querySelector(".table-scroll-body");
-  const headerTable = document.querySelector(".header-table");
-
-  if (!bodyScroll || !headerTable) return;
-
-  bodyScroll.addEventListener("scroll", () => {
-    headerTable.style.transform = `translateX(-${bodyScroll.scrollLeft}px)`;
-  });
-}
-
-function syncColumnWidths() {
-  const header = document.querySelector(".header-table");
-  const body = document.querySelector(".body-table");
-
-  if (!header || !body) return;
-
-  const headerCols = header.querySelectorAll("th");
-  const bodyCols = body.querySelector("tr")?.querySelectorAll("td");
-
-  if (!headerCols.length || !bodyCols?.length) return;
-
-  headerCols.forEach((th, i) => {
-    const width = bodyCols[i]?.offsetWidth || 100;
-    th.style.width = width + "px";
-  });
-}
 
 /* -------------------------
    THEME HANDLING
    ------------------------- */
 function setTheme(mode) {
   document.body.classList.remove("dark", "light");
-  if (mode === "dark") document.body.classList.add("dark");
-  if (mode === "light") document.body.classList.add("light");
+  document.body.classList.add(mode);
+
+  // 👇 THIS is the AG Grid integration
+  document.body.setAttribute("data-ag-theme-mode", mode);
+
   localStorage.setItem("theme", mode);
 }
+
 
 function initializeTheme(toggleEl) {
   const saved = localStorage.getItem("theme");
@@ -286,15 +258,31 @@ const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
 
-document
-  .getElementById("export-xlsx")
-  .addEventListener("click", () => exportToXlsx(mergedResults));
-document
-  .getElementById("export-csv")
-  .addEventListener("click", () => exportToCsv(mergedResults));
-document
-  .getElementById("export-json")
-  .addEventListener("click", () => exportToJson(mergedResults));
+document.addEventListener("DOMContentLoaded", () => {
+  const current = location.pathname.split("/").pop(); // e.g. "index.html"
+
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    if (link.getAttribute("href") === current) {
+      link.classList.add("active");
+    }
+  });
+});
+
+// -------------------------
+// Event Listeners
+// -------------------------
 document.getElementById("file1").addEventListener("change", handleFiles);
 document.getElementById("file2").addEventListener("change", handleFiles);
 document.getElementById("mergeBtn").addEventListener("click", doMerge);
+document
+  .getElementById("export-xlsx")
+  .addEventListener("click", () => exportToXlsx(mergedResults));
+
+document
+  .getElementById("export-csv")
+  .addEventListener("click", () => exportToCsv(mergedResults));
+
+document
+  .getElementById("export-json")
+  .addEventListener("click", () => exportToJson(mergedResults));
+
