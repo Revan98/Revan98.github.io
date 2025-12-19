@@ -6,7 +6,7 @@ const CONFIG = {
       kd: "2247",
       name: "KD2247",
       sheetUrl:
-        "https://docs.google.com/spreadsheets/d/1LHAa5r_coFO5XGCuqmZe6BrMmfanlq7Ds9TVIX_ekps/edit?usp=sharing",
+        "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
     },
     {
       id: "backup",
@@ -18,7 +18,7 @@ const CONFIG = {
   ],
 };
 
-const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
+const API_KEY = "AIzaSyD6wv6LHcn1y4pXlN5RFsLCioTBjDep1K4";
 
 // RAM cache
 const SheetCache = {
@@ -85,164 +85,134 @@ function formatNumber(val) {
   if (isNaN(val)) return val;
   return Number(val).toLocaleString("en-US", { minimumFractionDigits: 0 });
 }
+function valueWithDiffRenderer(diffField) {
+  return (params) => {
+    const value = Number(params.value) || 0;
+    const diff = Number(params.data?.[diffField]) || 0;
+    const diffClass = diff >= 0 ? "positive" : "negative";
 
-// Initialize DataTable from last sheet
-function loadDataTableFromCache() {
-  const rows = SheetCache.lastSheetData.rows.filter(
-    (r) => String(r[10]).trim().toUpperCase() !== "YES"
-  );
+    return `
+      <div class="cell-value">${formatNumber(value)}</div>
+      <div class="cell-diff ${diffClass}">
+        ${diff >= 0 ? "+" : ""}${formatNumber(diff)}
+      </div>
+    `;
+  };
+}
 
-  new DataTable("#myTable", {
-    data: rows,
-    columns: [
-      { title: "ID", data: 0 },
-      { title: "Name", data: 1 },
-      { title: "Power", data: 2 },
-      { title: "Killpoints", data: 14 },
-      { title: "T4", data: 12 },
-      { title: "T5", data: 13 },
-      { title: "Deads", data: 15 },
-      { title: "Min DKP", data: 7 },
-      { title: "DKP", data: 8 },
-      { title: "DKP%", data: 9 },
-      { title: "KP gained", data: 3 },
-      { title: "T4 gained", data: 4 },
-      { title: "T5 gained", data: 5 },
-      { title: "Deads gained", data: 6 },
-      { title: "Vacation", data: 10 },
-      { title: "Status", data: 11 },
-      { title: "Power diff", data: 16 },
-    ],
-    order: [],
-    info: true,
-    paging: true,
-    scrollCollapse: true,
-    scrollX: true,
-    scrollY: "550px",
-    pageLength: 50,
-    language: {
-      lengthLabels: { "-1": "Show all" },
+const columnDefs = [
+  {
+    headerName: "ID",
+    field: "id",
+    cellRenderer: (params) => `
+      <span class="gov-link" data-id="${params.value}">
+        ${params.value}
+        <span class="gov-icon">
+			<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+				<path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
+				<path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
+			</svg>
+		</span>
+      </span>
+    `,
+	sortable: false,
+  },
+  { headerName: "Name", field: "name" },
 
-      // REMOVE "Search:" label
-      search: "",
+  {
+    headerName: "Power",
+    field: "power",
+    cellRenderer: valueWithDiffRenderer("powerDiff"),
+    comparator: (a, b) => a - b,
+	getQuickFilterText: () => "",
+  },
+  {
+    headerName: "Kill Points",
+    field: "killPoints",
+    cellRenderer: valueWithDiffRenderer("killPointsDiff"),
+	getQuickFilterText: () => "",
+  },
+  {
+    headerName: "T4",
+    field: "t4",
+    cellRenderer: valueWithDiffRenderer("t4Diff"),
+	getQuickFilterText: () => "",
+  },
+  {
+    headerName: "T5",
+    field: "t5",
+    cellRenderer: valueWithDiffRenderer("t5Diff"),
+	getQuickFilterText: () => "",
+  },
+  {
+    headerName: "Deads",
+    field: "deads",
+    cellRenderer: valueWithDiffRenderer("deadsDiff"),
+	getQuickFilterText: () => "",
+  },
 
-      // ADD PLACEHOLDER INSIDE SEARCH BOX
-      searchPlaceholder: "Search players...",
+  { headerName: "DKP", 
+  field: "dkp" ,
+  getQuickFilterText: () => "",
+  },
+  { 
+	headerName: "DKP %",
+	field: "dkpPercent",
+	getQuickFilterText: () => "",
+  },
+  { headerName: "Status", field: "status", hide: true },
+];
+
+function buildRowDataFromSheet(rows) {
+  return rows
+    .filter(r => String(r[10]).trim().toUpperCase() !== "YES")
+    .map(r => ({
+      id: r[0],
+      name: r[1],
+      power: Number(r[2]) || 0,
+      powerDiff: Number(r[16]) || 0,
+
+      killPoints: Number(r[14]) || 0,
+      killPointsDiff: Number(r[3]) || 0,
+
+      t4: Number(r[12]) || 0,
+      t4Diff: Number(r[4]) || 0,
+
+      t5: Number(r[13]) || 0,
+      t5Diff: Number(r[5]) || 0,
+
+      deads: Number(r[15]) || 0,
+      deadsDiff: Number(r[6]) || 0,
+
+      dkp: Number(r[8]) || 0,
+      dkpPercent: r[9],
+      status: r[11],
+    }));
+}
+let gridApi = null;
+
+function createAgGrid(rowData) {
+  const gridOptions = {
+    columnDefs,
+    rowData,
+	rowHeight: 50,
+    defaultColDef: {
+      sortable: true,
+      filter: false,
+      resizable: true,
     },
-    lengthMenu: [10, 25, 50, -1],
-    columnDefs: [
-      { targets: [10, 11, 12, 13, 14, 15, 16], visible: false },
-      {
-        targets: 2,
-        render: {
-          display: (data, type, row) => {
-            const value = Number(data) || 0;
-            const diff = Number(row[16]) || 0;
-            const diffClass = diff >= 0 ? "positive" : "negative";
+    pagination: true,
+    paginationPageSize: 50,
+    animateRows: true,
+  };
 
-            return `
-				<div class="cell-value">${formatNumber(value)}</div>
-				<div class="cell-diff ${diffClass}">
-					${diff >= 0 ? "+" : ""}${formatNumber(diff)}
-				</div>
-			`;
-          },
-          sort: (data) => Number(data),
-        },
-      },
-      {
-        targets: 3,
-        render: {
-          display: (data, type, row) => {
-            const value = Number(data) || 0;
-            const diff = Number(row[3]) || 0;
-            const diffClass = diff >= 0 ? "positive" : "negative";
+  const gridDiv = document.querySelector("#myGrid");
+  gridApi = agGrid.createGrid(gridDiv, gridOptions);
+}
 
-            return `
-				<div class="cell-value">${formatNumber(value)}</div>
-				<div class="cell-diff ${diffClass}">
-					${diff >= 0 ? "+" : ""}${formatNumber(diff)}
-				</div>
-			`;
-          },
-          sort: (data) => Number(data),
-        },
-      },
-      {
-        targets: 4,
-        render: {
-          display: (data, type, row) => {
-            const value = Number(data) || 0;
-            const diff = Number(row[4]) || 0;
-            const diffClass = diff >= 0 ? "positive" : "negative";
-
-            return `
-				<div class="cell-value">${formatNumber(value)}</div>
-				<div class="cell-diff ${diffClass}">
-					${diff >= 0 ? "+" : ""}${formatNumber(diff)}
-				</div>
-			`;
-          },
-          sort: (data) => Number(data),
-        },
-      },
-      {
-        targets: 5,
-        render: {
-          display: (data, type, row) => {
-            const value = Number(data) || 0;
-            const diff = Number(row[5]) || 0;
-            const diffClass = diff >= 0 ? "positive" : "negative";
-
-            return `
-				<div class="cell-value">${formatNumber(value)}</div>
-				<div class="cell-diff ${diffClass}">
-					${diff >= 0 ? "+" : ""}${formatNumber(diff)}
-				</div>
-			`;
-          },
-          sort: (data) => Number(data),
-        },
-      },
-      {
-        targets: 6,
-        render: {
-          display: (data, type, row) => {
-            const value = Number(data) || 0;
-            const diff = Number(row[6]) || 0;
-            const diffClass = diff >= 0 ? "positive" : "negative";
-
-            return `
-				<div class="cell-value">${formatNumber(value)}</div>
-				<div class="cell-diff ${diffClass}">
-					${diff >= 0 ? "+" : ""}${formatNumber(diff)}
-				</div>
-			`;
-          },
-          sort: (data) => Number(data),
-        },
-      },
-      {
-        targets: 0,
-        render: (data, type, row) => `
-		<span class="gov-link" data-id="${data}">
-			${data}
-			<span class="gov-icon">
-				<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-					<path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
-					<path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
-				</svg>
-			</span>
-		</span>`,
-      },
-
-      // Generic numeric columns — except index 0
-      {
-        targets: [3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16],
-        render: (data) => formatNumber(data),
-      },
-    ],
-  });
+function onFilterTextBoxChanged() {
+  const input = document.getElementById("quickFilter");
+  gridApi.setGridOption("quickFilterText", input.value);
 }
 
 /* ----------------
@@ -388,22 +358,19 @@ document.querySelectorAll(".chart-buttons button").forEach((btn) => {
 loadAllSheetsCache().then(() => {
   // Show spinner
   const spinner = document.getElementById("loading-spinner");
-  loadDataTableFromCache();
 
-  // Filter out rows where column 10 == "YES"
-  const rows = SheetCache.lastSheetData.rows.filter(
-    (r) => String(r[10]).trim().toUpperCase() !== "YES"
-  );
+  const rows = SheetCache.lastSheetData.rows;
+  const rowData = buildRowDataFromSheet(rows);
 
-  // Top 3 players by DKP (Column 8)
+  createAgGrid(rowData);
+
   const sortedByDKP = [...rows]
-    .sort((a, b) => Number(b[8]) - Number(a[8])) // Sort by DKP column
-    .slice(0, 3); // Top 3
+    .sort((a, b) => Number(b[8]) - Number(a[8]))
+    .slice(0, 3);
 
-  renderTopPlayers(sortedByDKP); // Render top players
+  renderTopPlayers(sortedByDKP);
+  renderTotals(rows);
 
-  renderTotals(rows); // Render total statistics
-  // Hide spinner
   spinner.style.display = "none";
 });
 
@@ -483,10 +450,14 @@ function escapeHtml(str) {
    ------------------------- */
 function setTheme(mode) {
   document.body.classList.remove("dark", "light");
-  if (mode === "dark") document.body.classList.add("dark");
-  if (mode === "light") document.body.classList.add("light");
+  document.body.classList.add(mode);
+
+  // 👇 THIS is the AG Grid integration
+  document.body.setAttribute("data-ag-theme-mode", mode);
+
   localStorage.setItem("theme", mode);
 }
+
 
 function initializeTheme(toggleEl) {
   const saved = localStorage.getItem("theme");
