@@ -30,7 +30,6 @@
   const file2El = document.getElementById("file2");
   const runBtn = document.getElementById("run-dkp");
   const progressEl = document.getElementById("progress");
-  const resultsWrap = document.getElementById("results-table-wrap");
   const resultsInfo = document.getElementById("results-info");
 
   const exportX = document.getElementById("export-xlsx");
@@ -53,6 +52,8 @@
   let vacationList = []; // array of ids (strings)
   let minDkpMap = {}; // id -> min_dkp (number)
   let lastResults = null; // array of result objects
+	let powerGridApi = null;
+	let resultsGridApi = null;
 
   // Helpers: persistence
   async function loadAllFromStorage() {
@@ -117,59 +118,63 @@
   }
 
   // UI: power ranges table
-  function renderPowerRanges() {
-    const tbody = document.getElementById("table-body2");
-    tbody.innerHTML = "";
+	const powerRangeColumnDefs = [
+	  { headerName: "Min Power", field: "min_power", sortable: true },
+	  { headerName: "Max Power", field: "max_power", sortable: true },
+	  { headerName: "%", field: "percentage" },
 
-    powerRanges.forEach((r, idx) => {
-      const tr = document.createElement("tr");
+	  {
+		headerName: "Actions",
+		cellRenderer: (params) => {
+		  return `
+			<button class="primary pr-edit">Edit</button>
+			<button class="secondary pr-delete">Delete</button>
+		  `;
+		},
 
-      tr.innerHTML = `
-            <td>${r.min_power}</td>
-            <td>${r.max_power === null ? "" : r.max_power}</td>
-            <td>${r.percentage}</td>
-            <td>
-                <button class="pr-edit primary" data-idx="${idx}">Edit</button>
-                <button class="pr-delete primary" data-idx="${idx}">Delete</button>
-            </td>
-        `;
+		sortable: false,
+		filter: false,
+	  },
+	];
+	function createPowerRangesGrid() {
+	  const gridOptions = {
+		columnDefs: powerRangeColumnDefs,
+		rowData: powerRanges,
+		rowHeight: 42,
+		autoSizeStrategy: {
+			type: 'fitGridWidth',
+			defaultMinWidth: 100,
+		},
+		defaultColDef: {
+		  resizable: true,
+		  sortable: true,
+		},
+		onCellClicked: async (event) => {
+		  const row = event.data;
+		  const idx = powerRanges.indexOf(row);
 
-      tbody.appendChild(tr);
-    });
+		  if (event.event.target.classList.contains("pr-edit")) {
+			prMin.value = row.min_power;
+			prMax.value = row.max_power ?? "";
+			prPercent.value = row.percentage;
+			prAddBtn.dataset.editIdx = idx;
+			prAddBtn.textContent = "Update";
+		  }
 
-    // Attach events
-    tbody.querySelectorAll(".pr-edit").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const idx = Number(e.currentTarget.dataset.idx);
-        const r = powerRanges[idx];
+		  if (event.event.target.classList.contains("pr-delete")) {
+			if (!confirm("Delete this range?")) return;
+			powerRanges.splice(idx, 1);
+			await savePowerRangesToStorage();
+			powerGridApi.setGridOption("rowData", powerRanges);
+		  }
+		},
+	  };
 
-        prMin.value = r.min_power;
-        prMax.value = r.max_power === null ? "" : r.max_power;
-        prPercent.value = r.percentage;
-
-        prAddBtn.dataset.editIdx = idx;
-        prAddBtn.textContent = "Update";
-      });
-    });
-
-    tbody.querySelectorAll(".pr-delete").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        const idx = Number(e.currentTarget.dataset.idx);
-        if (!confirm("Delete this range?")) return;
-
-        powerRanges.splice(idx, 1);
-        await savePowerRangesToStorage();
-        renderPowerRanges();
-      });
-    });
-
-    // Sync column widths like DKP results table
-    requestAnimationFrame(() => {
-      syncColumnWidthsAll();
-
-      syncHeaderScrollAll();
-    });
-  }
+	  powerGridApi = agGrid.createGrid(
+		document.querySelector("#power-table"),
+		gridOptions
+	  );
+	}
 
   prAddBtn.addEventListener("click", async () => {
     const minv = parseInt(prMin.value, 10);
@@ -195,13 +200,15 @@
       powerRanges.push(item);
     }
     await savePowerRangesToStorage();
-    renderPowerRanges();
+    powerGridApi?.setGridOption("rowData", powerRanges);
+;
     prMin.value = prMax.value = prPercent.value = "";
   });
 
   prSaveBtn.addEventListener("click", async () => {
     await savePowerRangesToStorage();
-    renderPowerRanges();
+    powerGridApi?.setGridOption("rowData", powerRanges);
+;
   });
 
   // Utility: read spreadsheet file (.xlsx or .csv)
@@ -408,8 +415,8 @@
 
     results.sort((x, y) => y.DKP - x.DKP);
 
-    lastResults = results;
-    renderResultsTable(results);
+	lastResults = results;
+	createResultsGrid(results);
     progressEl.value = 100;
     resultsInfo.textContent = `Calculated ${results.length} rows (skipped ${skippedCount} due to CH<25).`;
   }
@@ -452,35 +459,47 @@
   }
 
   // Render results (table)
-  function renderResultsTable(rows) {
-    const head = document.getElementById("table-head");
-    const body = document.getElementById("table-body");
+	function buildDynamicColumnDefs(rows) {
+	  if (!rows?.length) return [];
 
-    head.innerHTML = "";
-    body.innerHTML = "";
+	  return Object.keys(rows[0]).map((key) => ({
+		headerName: key,
+		field: key,
+		sortable: true,
+		resizable: true,
+		filter: false,
+		getQuickFilterText: () => "",
+	  }));
+	}
+	function createResultsGrid(rows) {
+	  if (!rows || !rows.length) return;
 
-    if (!rows || rows.length === 0) {
-      resultsInfo.textContent = "No results.";
-      return;
-    }
+	  const columnDefs = buildDynamicColumnDefs(rows);
+	  const gridDiv = document.querySelector("#result-table");
 
-    const columns = Object.keys(rows[0]);
-    head.innerHTML =
-      "<tr>" + columns.map((c) => `<th>${c}</th>`).join("") + "</tr>";
+	  // 🔥 Destroy old grid if exists
+	  if (resultsGridApi) {
+		resultsGridApi.destroy();
+		resultsGridApi = null;
+		gridDiv.innerHTML = "";
+	  }
 
-    rows.forEach((r) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = columns.map((c) => `<td>${r[c] ?? ""}</td>`).join("");
-      body.appendChild(tr);
-    });
+	  const gridOptions = {
+		columnDefs,
+		rowData: rows,
+		rowHeight: 42,
+		animateRows: true,
+		pagination: true,
+		paginationPageSize: 50,
+		defaultColDef: {
+		  sortable: true,
+		  resizable: true,
+		},
+	  };
 
-    // sync after rendering
-    requestAnimationFrame(() => {
-      syncColumnWidthsAll();
+	  resultsGridApi = agGrid.createGrid(gridDiv, gridOptions);
+	}
 
-      syncHeaderScrollAll();
-    });
-  }
 
   // Export: XLSX / CSV / JSON
   function exportToXlsx(rows) {
@@ -603,8 +622,10 @@
   async function init() {
     await loadAllFromStorage();
 
-    populateUIFromMemory();
-    renderPowerRanges();
+	populateUIFromMemory();
+	createPowerRangesGrid(); // 🔥 REQUIRED
+	progressEl.value = 0;
+
     progressEl.value = 0;
     resultsInfo.textContent = "Ready.";
   }
@@ -646,75 +667,58 @@
 
   // initial load
   init().catch((err) => console.error("Init error", err));
-  function syncHeaderScrollAll() {
-    document.querySelectorAll(".table-container").forEach((container) => {
-      const bodyScroll = container.querySelector(".table-scroll-body");
-      const headerTable = container.querySelector(".header-table");
 
-      if (!bodyScroll || !headerTable) return;
+	/* -------------------------
+	   THEME HANDLING
+	   ------------------------- */
+	function setTheme(mode) {
+	  document.body.classList.remove("dark", "light");
+	  document.body.classList.add(mode);
 
-      bodyScroll.addEventListener("scroll", () => {
-        headerTable.style.transform = `translateX(-${bodyScroll.scrollLeft}px)`;
-      });
-    });
-  }
+	  // 👇 THIS is the AG Grid integration
+	  document.body.setAttribute("data-ag-theme-mode", mode);
 
-  function syncColumnWidthsAll() {
-    document.querySelectorAll(".table-container").forEach((container) => {
-      const header = container.querySelector(".header-table");
-      const body = container.querySelector(".body-table");
+	  localStorage.setItem("theme", mode);
+	}
 
-      if (!header || !body) return;
 
-      const headerCols = header.querySelectorAll("th");
-      const bodyCols = body.querySelector("tr")?.querySelectorAll("td");
+	function initializeTheme(toggleEl) {
+	  const saved = localStorage.getItem("theme");
+	  if (saved === "dark") {
+		setTheme("dark");
+		if (toggleEl) toggleEl.checked = true;
+		return;
+	  }
+	  if (saved === "light") {
+		setTheme("light");
+		if (toggleEl) toggleEl.checked = false;
+		return;
+	  }
+	  const prefersDark =
+		window.matchMedia &&
+		window.matchMedia("(prefers-color-scheme: dark)").matches;
+	  setTheme(prefersDark ? "dark" : "light");
+	  if (toggleEl) toggleEl.checked = prefersDark;
+	}
+	// Theme init & toggle
+	initializeTheme(themeToggle);
+	if (themeToggle) {
+	  themeToggle.addEventListener("change", (e) => {
+		setTheme(e.target.checked ? "dark" : "light");
+	  });
+	}
 
-      if (!headerCols.length || !bodyCols?.length) return;
+	const hamburger = document.getElementById("hamburger");
+	const navLinks = document.getElementById("nav-links");
+	hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
 
-      headerCols.forEach((th, i) => {
-        const width = bodyCols[i]?.offsetWidth || 100;
-        th.style.width = width + "px";
-      });
-    });
-  }
+	document.addEventListener("DOMContentLoaded", () => {
+	  const current = location.pathname.split("/").pop(); // e.g. "index.html"
 
-  /* -------------------------
-   THEME HANDLING
-   ------------------------- */
-  function setTheme(mode) {
-    document.body.classList.remove("dark", "light");
-    if (mode === "dark") document.body.classList.add("dark");
-    if (mode === "light") document.body.classList.add("light");
-    localStorage.setItem("theme", mode);
-  }
-
-  function initializeTheme(toggleEl) {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
-      setTheme("dark");
-      if (toggleEl) toggleEl.checked = true;
-      return;
-    }
-    if (saved === "light") {
-      setTheme("light");
-      if (toggleEl) toggleEl.checked = false;
-      return;
-    }
-    const prefersDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setTheme(prefersDark ? "dark" : "light");
-    if (toggleEl) toggleEl.checked = prefersDark;
-  }
-  // Theme init & toggle
-  initializeTheme(themeToggle);
-  if (themeToggle) {
-    themeToggle.addEventListener("change", (e) => {
-      setTheme(e.target.checked ? "dark" : "light");
-    });
-  }
-
-  const hamburger = document.getElementById("hamburger");
-  const navLinks = document.getElementById("nav-links");
-  hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+	  document.querySelectorAll(".nav-links a").forEach((link) => {
+		if (link.getAttribute("href") === current) {
+		  link.classList.add("active");
+		}
+	  });
+	});
 })();
