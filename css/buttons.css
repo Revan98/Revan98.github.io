@@ -59,3 +59,12 @@ progress {
     width: 200px;
     height: 14px;
 }
+
+.source-selector {
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: var(--table-bg);
+    border: 1px solid var(--table-border);
+    color: var(--text-color);
+	margin-bottom: 6px;
+}
