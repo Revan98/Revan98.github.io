@@ -70,28 +70,72 @@ function compareData(df1, df2, keyColumn, option) {
   return { matching, nonMatching };
 }
 
-// Render tables
-function renderResultsTables(matchRows, nonMatchRows) {
-  renderSingleTable(
-    matchRows,
-    "table-head-matching",
-    "table-body-matching",
-    "Matching Rows"
-  );
+let matchingGridApi = null;
+let nonMatchingGridApi = null;
+function buildDynamicColumnDefs(rows) {
+  if (!rows || !rows.length) return [];
 
-  renderSingleTable(
-    nonMatchRows,
-    "table-head-nonmatching",
-    "table-body-nonmatching",
-    "Non-Matching Rows"
-  );
-
-  // Sync widths + headers after rendering
-  setTimeout(() => {
-    syncColumnWidthsAll();
-    syncHeaderScrollAll();
-  }, 50);
+  return Object.keys(rows[0]).map((key) => ({
+    headerName: key,
+    field: key,
+    sortable: true,
+    filter: false,
+    resizable: true,
+    minWidth: 120,
+  }));
 }
+function createCompareGrid(containerId, rowData) {
+  const columnDefs = buildDynamicColumnDefs(rowData);
+
+  const gridOptions = {
+    columnDefs,
+    rowData,
+    defaultColDef: {
+      sortable: true,
+      filter: false,
+      resizable: true,
+    },
+    animateRows: true,
+    pagination: true,
+    paginationPageSize: 50,
+  };
+
+  const gridDiv = document.getElementById(containerId);
+
+  // destroy old grid if re-running compare
+  if (gridDiv.__agGridInstance) {
+    gridDiv.__agGridInstance.destroy();
+  }
+
+  const api = agGrid.createGrid(gridDiv, gridOptions);
+  gridDiv.__agGridInstance = api;
+
+  return api;
+}
+
+// Render tables
+function renderResultsGrids(matchingRows, nonMatchingRows) {
+  if (matchingRows.length) {
+    matchingGridApi = createCompareGrid(
+      "matching-table",
+      matchingRows
+    );
+  } else {
+    document.getElementById("matching-table").innerHTML =
+      `<div class="muted">No matching rows.</div>`;
+  }
+
+  if (nonMatchingRows.length) {
+    nonMatchingGridApi = createCompareGrid(
+      "nonmatching-table",
+      nonMatchingRows
+    );
+  } else {
+    document.getElementById("nonmatching-table").innerHTML =
+      `<div class="muted">No non-matching rows.</div>`;
+  }
+}
+
 function renderSingleTable(rows, headId, bodyId, label) {
   const head = document.getElementById(headId);
   const body = document.getElementById(bodyId);
@@ -197,7 +241,7 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
 
     const { matching, nonMatching } = compareData(df1, df2, keyCol, option);
     comparedResults = { matching, nonMatching };
-    renderResultsTables(matching, nonMatching);
+    renderResultsGrids(matching, nonMatching);
     progressEl.value = 100;
     resultsInfo.textContent = `Comparison complete: ${matching.length} matching, ${nonMatching.length} non-matching rows.`;
   } catch (err) {
@@ -263,42 +307,57 @@ function syncColumnWidthsAll() {
   });
 }
 
-/* -------------------------
-   THEME HANDLING
-   ------------------------- */
-function setTheme(mode) {
-  document.body.classList.remove("dark", "light");
-  if (mode === "dark") document.body.classList.add("dark");
-  if (mode === "light") document.body.classList.add("light");
-  localStorage.setItem("theme", mode);
-}
 
-function initializeTheme(toggleEl) {
-  const saved = localStorage.getItem("theme");
-  if (saved === "dark") {
-    setTheme("dark");
-    if (toggleEl) toggleEl.checked = true;
-    return;
-  }
-  if (saved === "light") {
-    setTheme("light");
-    if (toggleEl) toggleEl.checked = false;
-    return;
-  }
-  const prefersDark =
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
-  setTheme(prefersDark ? "dark" : "light");
-  if (toggleEl) toggleEl.checked = prefersDark;
-}
-// Theme init & toggle
-initializeTheme(themeToggle);
-if (themeToggle) {
-  themeToggle.addEventListener("change", (e) => {
-    setTheme(e.target.checked ? "dark" : "light");
-  });
-}
+	/* -------------------------
+	   THEME HANDLING
+	   ------------------------- */
+	function setTheme(mode) {
+	  document.body.classList.remove("dark", "light");
+	  document.body.classList.add(mode);
 
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.getElementById("nav-links");
-hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+	  // 👇 THIS is the AG Grid integration
+	  document.body.setAttribute("data-ag-theme-mode", mode);
+
+	  localStorage.setItem("theme", mode);
+	}
+
+
+	function initializeTheme(toggleEl) {
+	  const saved = localStorage.getItem("theme");
+	  if (saved === "dark") {
+		setTheme("dark");
+		if (toggleEl) toggleEl.checked = true;
+		return;
+	  }
+	  if (saved === "light") {
+		setTheme("light");
+		if (toggleEl) toggleEl.checked = false;
+		return;
+	  }
+	  const prefersDark =
+		window.matchMedia &&
+		window.matchMedia("(prefers-color-scheme: dark)").matches;
+	  setTheme(prefersDark ? "dark" : "light");
+	  if (toggleEl) toggleEl.checked = prefersDark;
+	}
+	// Theme init & toggle
+	initializeTheme(themeToggle);
+	if (themeToggle) {
+	  themeToggle.addEventListener("change", (e) => {
+		setTheme(e.target.checked ? "dark" : "light");
+	  });
+	}
+
+	const hamburger = document.getElementById("hamburger");
+	const navLinks = document.getElementById("nav-links");
+	hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+
+	document.addEventListener("DOMContentLoaded", () => {
+	  const current = location.pathname.split("/").pop(); // e.g. "index.html"
+
+	  document.querySelectorAll(".nav-links a").forEach((link) => {
+		if (link.getAttribute("href") === current) {
+		  link.classList.add("active");
+		}
+	  });
+	});
