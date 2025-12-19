@@ -2,16 +2,30 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>File Comparator</title>
-    <link rel="stylesheet" href="a/layout.css">
-    <link rel="stylesheet" href="a/navbar.css">
-    <link rel="stylesheet" href="a/buttons.css">
-    <link rel="stylesheet" href="a/table.css">
-    <link rel="stylesheet" href="a/fixedheaders.css">
-    <link rel="stylesheet" href="a/merge.css">
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>File Comparator</title>
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/navbar.css">
+<link rel="stylesheet" href="css/buttons.css">
+<style>
+.ag-header-cell-label {
+  justify-content: center;
+}
+.ag-theme-alpine .ag-row-odd {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.ag-theme-alpine .ag-row-even {
+  background-color: transparent;
+}
+
+body.light .ag-theme-alpine .ag-row-odd {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+body.dark .ag-theme-alpine .ag-row-odd {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+</style>
 </head>
 
 <body>
@@ -51,36 +65,36 @@
         <section class="card">
             <h1>Compare Two Files</h1>
 
-            <div class="a">
+            <div class="put-in-row">
                 <label>File 1:</label>
                 <input type="file" id="file1" class="file" accept=".xlsx,.csv,.json" />
             </div>
 
-            <div class="a">
+            <div class="put-in-row">
                 <label>File 2:</label>
                 <input type="file" id="file2" class="file" accept=".xlsx,.csv,.json" />
             </div>
 
-            <div class="a">
+            <div class="put-in-row">
                 <label>Key Column:</label>
-                <input type="text" id="keyColumn" class="source-select" placeholder="Enter column name" />
+                <input type="text" id="keyColumn" class="file" placeholder="Enter column name" />
             </div>
 
-            <div class="a">
+            <div class="put-in-row">
                 <label>Comparison Option:</label>
-                <select id="compareOption" class="source-select">
+                <select id="compareOption" class="file">
                     <option value="both">Both</option>
                     <option value="pierwszy">First Only</option>
                     <option value="drugi">Second Only</option>
                 </select>
             </div>
 
-            <div class="a">
+            <div class="put-in-row">
                 <button id="compareBtn" class="primary">Compare</button>
                 <progress id="progressBar" value="0" max="100"></progress>
             </div>
 
-            <div class="a">
+            <div class="put-in-row">
                 <button id="export-xlsx" class="primary">Export XLSX</button>
                 <button id="export-csv" class="primary">Export CSV</button>
                 <button id="export-json" class="primary">Export JSON</button>
@@ -88,32 +102,10 @@
 
             <div id="compare-results-info" class="muted">No compared data yet.</div>
             <!-- MATCHING TABLE -->
-            <div class="table-container" id="table-matching">
-                <h3>Matching Rows</h3>
-                <table class="header-table">
-                    <thead id="table-head-matching"></thead>
-                </table>
-
-                <div class="table-scroll-body">
-                    <table class="body-table">
-                        <tbody id="table-body-matching"></tbody>
-                    </table>
-                </div>
-            </div>
+			<div id="matching-table" class="ag-theme-alpine" style="height: 500px"></div>
 
             <!-- NON-MATCHING TABLE -->
-            <div class="table-container" id="table-nonmatching">
-                <h3>Non-Matching Rows</h3>
-                <table class="header-table">
-                    <thead id="table-head-nonmatching"></thead>
-                </table>
-
-                <div class="table-scroll-body">
-                    <table class="body-table">
-                        <tbody id="table-body-nonmatching"></tbody>
-                    </table>
-                </div>
-            </div>
+			<div id="nonmatching-table" class="ag-theme-alpine" style="height: 500px"></div>
         </section>
     </div>
 
@@ -123,8 +115,9 @@
 <div class="footer">
 <p>Comparsion</p>
 </div>
-
-    <script src="compare.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="js/compare.js"></script>
 </body>
 
 </html>
