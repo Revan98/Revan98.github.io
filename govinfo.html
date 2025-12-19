@@ -6,14 +6,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Governor Info</title>
 
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.css" />
-<link rel="stylesheet" href="a/layout.css">
-<link rel="stylesheet" href="a/navbar.css">
-<link rel="stylesheet" href="a/table_dt.css">
-<link rel="stylesheet" href="a/loading.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/navbar.css">
+<link rel="stylesheet" href="css/buttons.css">
+<link rel="stylesheet" href="css/loading.css">
+<style>
+.quick-filter-wrapper {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+}
 
+.source-wrapper {
+  grid-column: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.quick-filter {
+  grid-column: 3;
+  justify-self: end;
+  max-width: 280px;
+  width: 100%;
+}
+
+.quick-filter {
+    width: 100% !important;
+    max-width: 280px !important;
+    padding: 9px 12px !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--table-border) !important;
+    background: var(--table-bg) !important;
+    color: var(--text-color) !important;
+    padding-left: 28px !important;
+    background-color: transparent !important;
+    background-repeat: no-repeat !important;
+    background-position: 8px center !important;
+    background-size: 16px 16px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E") !important;
+	margin-bottom: 6px;
+}
+.ag-header-cell-label {
+  justify-content: center;
+}
+.ag-theme-alpine .ag-row-odd {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.ag-theme-alpine .ag-row-even {
+  background-color: transparent;
+}
+
+body.light .ag-theme-alpine .ag-row-odd {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+body.dark .ag-theme-alpine .ag-row-odd {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+</style>
 </head>
-<body>
+<body data-ag-theme-mode="light">
     <header class="navbar">
         <div class="nav-container">
         <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -44,12 +97,17 @@
 
     <div class="middle">
         <div class="card">
-            <select id="source-selector" class="source-selector"></select>
+			<div class="quick-filter-wrapper">
+				<div class="source-wrapper">
+				<select id="source-selector" class="source-selector"></select>
+				</div>
+				<input type="text" id="quickFilter" placeholder="Search..." class="quick-filter" oninput="onFilterTextBoxChanged()"/>
+			</div>
             <div id="loading-spinner" class="loading-spinner">
                 <div class="spinner"></div>
                 <p>Loading data...</p>
             </div>
-            <table id="myTable"></table>
+            <div id="myGrid" class="ag-theme-alpine" style="height: 700px"></div>
         </div>
     </div>
 
@@ -60,8 +118,7 @@
     <p>Governor Info</p>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.5/js/dataTables.js"></script>
-    <script src="govinfo.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
+    <script src="js/govinfo.js"></script>
 </body>
 </html>
