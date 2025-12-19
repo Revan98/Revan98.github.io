@@ -18,7 +18,7 @@ const CONFIG = {
   ],
 };
 
-const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
+const API_KEY = "AIzaSyD6wv6LHcn1y4pXlN5RFsLCioTBjDep1K4";
 
 // RAM cache
 const SheetCache = {
@@ -97,53 +97,99 @@ function formatNumber(val) {
 }
 
 /* Load DataTable from cache */
-let tableInstance = null;
+/* -------------------------
+   AG GRID STATE
+   ------------------------- */
+let gridApi = null;
 
-function loadDataTableFromCache() {
-  if (tableInstance) {
-    tableInstance.destroy();
-    document.querySelector("#myTable").innerHTML = "";
-  }
+/* -------------------------
+   AG GRID HELPERS
+   ------------------------- */
+function formatNumber(val) {
+  const n = Number(val);
+  return Number.isFinite(n) ? n.toLocaleString("en-US") : val;
+}
 
-  const rows = SheetCache.lastSheetData.rows.filter(
-    (r) => String(r[10]).trim().toUpperCase() !== "YES"
+function buildColumnDefs(headers) {
+  return headers.map((h, idx) => ({
+    headerName: h,
+    field: h,
+    sortable: true,
+    filter: false,
+    resizable: true,
+    valueFormatter:
+      [3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16].includes(idx)
+        ? (p) => formatNumber(p.value)
+        : undefined,
+  }));
+}
+
+/* -------------------------
+   LOAD GRID FROM CACHE
+   ------------------------- */
+function loadAgGridFromCache() {
+  const gridDiv = document.querySelector("#myGrid");
+
+  if (!SheetCache.lastSheetData) return;
+
+  // Filter rows (Vacation = YES in column index 10)
+  const rows = SheetCache.lastSheetData.rows
+    .map((r) => {
+      const obj = {};
+      SheetCache.lastSheetData.headers.forEach((h, i) => {
+        obj[h] = r[i] ?? "";
+      });
+      return obj;
+    });
+
+  const columnDefs = buildColumnDefs(
+    SheetCache.lastSheetData.headers
   );
 
-  tableInstance = new DataTable("#myTable", {
-    data: rows,
-    columns: SheetCache.lastSheetData.headers.map(h => ({ title: h })),
-    order: [],
-    paging: true,
-    scrollCollapse: true,
-    scrollX: true,
-    scrollY: "550px",
-    pageLength: 50,
-    language: {
-      search: "",
-      searchPlaceholder: "Search players...",
+  if (gridApi) {
+    gridApi.destroy();
+    gridApi = null;
+    gridDiv.innerHTML = "";
+  }
+
+  const gridOptions = {
+    columnDefs,
+    rowData: rows,
+
+    rowHeight: 42,
+    animateRows: true,
+
+    pagination: true,
+    paginationPageSize: 50,
+
+    defaultColDef: {
+      sortable: true,
+      filter: false,
+      resizable: true,
+      minWidth: 100,
     },
-    lengthMenu: [10, 25, 50, -1],
-    columnDefs: [
-      {
-        targets: [3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16],
-        render: (data) => formatNumber(data),
-      },
-    ],
-  });
+
+    // Modern AG Grid sizing (v35)
+    autoSizeStrategy: {
+      type: "fitCellContents",
+    },
+  };
+
+  gridApi = agGrid.createGrid(gridDiv, gridOptions);
 }
+function onFilterTextBoxChanged() {
+  const input = document.getElementById("quickFilter");
+  gridApi.setGridOption("quickFilterText", input.value);
+}
+
 function showLoading() {
   document.getElementById("loading-spinner").style.display = "flex";
-
-  const wrapper = document.querySelector(".dt-container");
-  if (wrapper) wrapper.style.display = "none";
 }
 
 function hideLoading() {
   document.getElementById("loading-spinner").style.display = "none";
-
-  const wrapper = document.querySelector(".dt-container");
-  if (wrapper) wrapper.style.display = "block";
 }
+
 
 /* -------------------------
    INITIALIZATION
@@ -154,8 +200,8 @@ populateSourceSelector();
 async function init() {
   showLoading();
 
-  await loadAllSheetsCache();
-  loadDataTableFromCache();
+	await loadAllSheetsCache();
+	loadAgGridFromCache();
 
   hideLoading();
 }
@@ -167,44 +213,56 @@ sourceSelector.addEventListener("change", () => {
   init();
 });
 
-/* -------------------------
-   THEME HANDLING (unchanged)
-   ------------------------- */
-function setTheme(mode) {
-  document.body.classList.remove("dark", "light");
-  document.body.classList.add(mode);
-  localStorage.setItem("theme", mode);
-}
+	/* -------------------------
+	   THEME HANDLING
+	   ------------------------- */
+	function setTheme(mode) {
+	  document.body.classList.remove("dark", "light");
+	  document.body.classList.add(mode);
 
-function initializeTheme(toggleEl) {
-  const saved = localStorage.getItem("theme");
-  if (saved) setTheme(saved);
-  else {
-    const prefersDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setTheme(prefersDark ? "dark" : "light");
-  }
-  if (toggleEl) toggleEl.checked = document.body.classList.contains("dark");
-}
+	  // 👇 THIS is the AG Grid integration
+	  document.body.setAttribute("data-ag-theme-mode", mode);
 
-initializeTheme(themeToggle);
+	  localStorage.setItem("theme", mode);
+	}
 
-themeToggle?.addEventListener("change", (e) =>
-  setTheme(e.target.checked ? "dark" : "light")
-);
 
-/* Navigation */
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.getElementById("nav-links");
+	function initializeTheme(toggleEl) {
+	  const saved = localStorage.getItem("theme");
+	  if (saved === "dark") {
+		setTheme("dark");
+		if (toggleEl) toggleEl.checked = true;
+		return;
+	  }
+	  if (saved === "light") {
+		setTheme("light");
+		if (toggleEl) toggleEl.checked = false;
+		return;
+	  }
+	  const prefersDark =
+		window.matchMedia &&
+		window.matchMedia("(prefers-color-scheme: dark)").matches;
+	  setTheme(prefersDark ? "dark" : "light");
+	  if (toggleEl) toggleEl.checked = prefersDark;
+	}
+	// Theme init & toggle
+	initializeTheme(themeToggle);
+	if (themeToggle) {
+	  themeToggle.addEventListener("change", (e) => {
+		setTheme(e.target.checked ? "dark" : "light");
+	  });
+	}
 
-hamburger?.addEventListener("click", () => navLinks.classList.toggle("show"));
+	const hamburger = document.getElementById("hamburger");
+	const navLinks = document.getElementById("nav-links");
+	hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
 
-document.addEventListener("DOMContentLoaded", () => {
-  const current = location.pathname.split("/").pop();
-  document.querySelectorAll(".nav-links a").forEach((link) => {
-    if (link.getAttribute("href") === current) {
-      link.classList.add("active");
-    }
-  });
-});
+	document.addEventListener("DOMContentLoaded", () => {
+	  const current = location.pathname.split("/").pop(); // e.g. "index.html"
+
+	  document.querySelectorAll(".nav-links a").forEach((link) => {
+		if (link.getAttribute("href") === current) {
+		  link.classList.add("active");
+		}
+	  });
+	});
