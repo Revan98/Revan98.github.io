@@ -6,7 +6,7 @@ const CONFIG = {
       kd: "2247",
       name: "KD2247",
       sheetUrl:
-        "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
+        "https://docs.google.com/spreadsheets/d/1LHAa5r_coFO5XGCuqmZe6BrMmfanlq7Ds9TVIX_ekps/edit?usp=sharing",
     },
     {
       id: "backup",
@@ -18,7 +18,7 @@ const CONFIG = {
   ],
 };
 
-const API_KEY = "AIzaSyD6wv6LHcn1y4pXlN5RFsLCioTBjDep1K4";
+const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
 // RAM cache
 const SheetCache = {
