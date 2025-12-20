@@ -18,7 +18,7 @@ const CONFIG = {
   ],
 };
 
-const API_KEY = "AIzaSyD6wv6LHcn1y4pXlN5RFsLCioTBjDep1K4";
+const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
 // RAM cache
 const SheetCache = {
