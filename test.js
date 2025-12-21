@@ -278,7 +278,6 @@ function renderAgChart(colIndex) {
 
   const options = {
     container,
-    background: { fill: "transparent" },
 
     title: {
       text: metricLabels[colIndex] || `Column ${colIndex}`,
@@ -292,6 +291,8 @@ function renderAgChart(colIndex) {
         type: "line",
         xKey: "sheet",
         yKey: "value",
+        yName: metricLabels[colIndex],
+        yKeyAxis: "valueAxis",
         strokeWidth: 2,
         marker: {
           enabled: true,
@@ -300,15 +301,25 @@ function renderAgChart(colIndex) {
       },
     ],
 
-    // ✅ v13-compliant axes object
     axes: {
-      category: {
+      // X axis (categories / sheet names)
+      xAxis: {
+        type: "category",
         position: "bottom",
-        label: { color: isDark ? "#ccc" : "#333" },
+        label: {
+          color: isDark ? "#ccc" : "#333",
+        },
       },
-      number: {
+
+      // Y axis (metric values)
+      valueAxis: {
+        type: "number",
         position: "left",
-        label: { color: isDark ? "#ccc" : "#333" },
+        label: {
+          color: isDark ? "#ccc" : "#333",
+          formatter: (params) =>
+            Number(params.value).toLocaleString(),
+        },
       },
     },
 
@@ -317,6 +328,7 @@ function renderAgChart(colIndex) {
 
   agChart = agCharts.AgCharts.create(options);
 }
+
 
 
 
