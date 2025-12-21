@@ -363,7 +363,11 @@ loadAllSheetsCache().then(() => {
   renderTotals(rows);
 
   spinner.style.display = "none";
-  document.getElementById("myGrid").style.display = "block";
+const gridEl = document.getElementById("myGrid");
+gridEl.style.display = "block";
+
+requestAnimationFrame(() => {
+  gridEl.classList.add("visible");
 });
 
 function renderTopPlayers(players) {
