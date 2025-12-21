@@ -225,6 +225,12 @@ let _documentClickListenerAdded = false;
 /* ----------------
    AG CHARTS MODAL
 ------------------- */
+// Get governor name from last sheet
+function getGovernorName(id) {
+  const rows = SheetCache.lastSheetData?.rows || [];
+  const found = rows.find((r) => `${r[0]}` === `${id}`);
+  return found ? found[1] : id;
+}
 
 function openChartModal(governorId) {
   selectedGovernorId = governorId;
