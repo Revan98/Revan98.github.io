@@ -6,7 +6,7 @@ const CONFIG = {
       kd: "2247",
       name: "KD2247",
       sheetUrl:
-        "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
+        "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg",
     },
     {
       id: "backup",
@@ -18,7 +18,7 @@ const CONFIG = {
   ],
 };
 
-const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
+const API_KEY = "AIzaSyC09e_0HGEqMuNQvZUviUxREXGl-GcdufQ";
 
 // RAM cache
 const SheetCache = {
@@ -56,7 +56,7 @@ async function loadAllSheetsCache() {
   }
 
   const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
-  
+
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
   const res = await fetch(url);
   const json = await res.json();
@@ -100,73 +100,13 @@ function valueWithDiffRenderer(diffField) {
   };
 }
 
-const columnDefs = [
-  {
-    headerName: "ID",
-    field: "id",
-    cellRenderer: (params) => `
-      <span class="gov-link" data-id="${params.value}">
-        ${params.value}
-        <span class="gov-icon">
-			<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-				<path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
-				<path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
-			</svg>
-		</span>
-      </span>
-    `,
-	sortable: false,
-  },
-  { headerName: "Name", field: "name" },
-
-  {
-    headerName: "Power",
-    field: "power",
-    cellRenderer: valueWithDiffRenderer("powerDiff"),
-    comparator: (a, b) => a - b,
-	getQuickFilterText: () => "",
-  },
-  {
-    headerName: "Kill Points",
-    field: "killPoints",
-    cellRenderer: valueWithDiffRenderer("killPointsDiff"),
-	getQuickFilterText: () => "",
-  },
-  {
-    headerName: "T4",
-    field: "t4",
-    cellRenderer: valueWithDiffRenderer("t4Diff"),
-	getQuickFilterText: () => "",
-  },
-  {
-    headerName: "T5",
-    field: "t5",
-    cellRenderer: valueWithDiffRenderer("t5Diff"),
-	getQuickFilterText: () => "",
-  },
-  {
-    headerName: "Deads",
-    field: "deads",
-    cellRenderer: valueWithDiffRenderer("deadsDiff"),
-	getQuickFilterText: () => "",
-  },
-
-  { headerName: "DKP", 
-  field: "dkp" ,
-  getQuickFilterText: () => "",
-  },
-  { 
-	headerName: "DKP %",
-	field: "dkpPercent",
-	getQuickFilterText: () => "",
-  },
-  { headerName: "Status", field: "status", hide: true },
-];
+// Grid API: Access to Grid API methods
+let gridApi;
 
 function buildRowDataFromSheet(rows) {
   return rows
-    .filter(r => String(r[10]).trim().toUpperCase() !== "YES")
-    .map(r => ({
+    .filter((r) => String(r[10]).trim().toUpperCase() !== "YES")
+    .map((r) => ({
       id: r[0],
       name: r[1],
       power: Number(r[2]) || 0,
@@ -189,42 +129,96 @@ function buildRowDataFromSheet(rows) {
       status: r[11],
     }));
 }
-let gridApi = null;
+// Row Data Interface
 
-function createAgGrid(rowData) {
-  const gridOptions = {
-    columnDefs,
-    rowData,
-	rowHeight: 50,
-    defaultColDef: {
-      sortable: true,
-      filter: false,
-      resizable: true,
+const gridOptions = {
+  // Data to be displayed
+  rowData: [],
+  // Columns to be displayed (Should match rowData properties)
+  columnDefs: [
+    {
+      headerName: "ID",
+      field: "id",
+      sortable: false,
     },
-    pagination: true,
-    paginationPageSize: 50,
-    animateRows: true,
-  };
+    { headerName: "Name", field: "name" },
 
-  const gridDiv = document.querySelector("#myGrid");
-  gridApi = agGrid.createGrid(gridDiv, gridOptions);
-}
+    {
+      headerName: "Power",
+      field: "power",
+      cellRenderer: valueWithDiffRenderer("powerDiff"),
+      comparator: (a, b) => a - b,
+      getQuickFilterText: () => "",
+    },
+    {
+      headerName: "Kill Points",
+      field: "killPoints",
+      cellRenderer: valueWithDiffRenderer("killPointsDiff"),
+      getQuickFilterText: () => "",
+    },
+    {
+      headerName: "T4",
+      field: "t4",
+      cellRenderer: valueWithDiffRenderer("t4Diff"),
+      getQuickFilterText: () => "",
+    },
+    {
+      headerName: "T5",
+      field: "t5",
+      cellRenderer: valueWithDiffRenderer("t5Diff"),
+      getQuickFilterText: () => "",
+    },
+    {
+      headerName: "Deads",
+      field: "deads",
+      cellRenderer: valueWithDiffRenderer("deadsDiff"),
+      getQuickFilterText: () => "",
+    },
 
-function onFilterTextBoxChanged() {
-  const input = document.getElementById("quickFilter");
-  gridApi.setGridOption("quickFilterText", input.value);
-}
+    { headerName: "DKP", field: "dkp", getQuickFilterText: () => "" },
+    {
+      headerName: "DKP %",
+      field: "dkpPercent",
+      getQuickFilterText: () => "",
+    },
+    { headerName: "Status", field: "status", hide: true },
+  ],
+  // Configurations applied to all columns
+  defaultColDef: {
+    sortable: true,
+    filter: false,
+    resizable: true,
+  },
+  rowHeight: 50,
+  pagination: true,
+  paginationPageSize: 50,
+  animateRows: true,
+  onRowClicked: (event) => {
+    selectedGovernorId = event.data.id;
+
+    const chartSection = document.getElementById("table-chart");
+    chartSection.style.display = "block";
+
+    document.getElementById(
+      "chart-title"
+    ).textContent = `${event.data.name} (ID: ${event.data.id})`;
+
+    renderTableChart(currentColIndex);
+  },
+};
+
+// Create Grid: Create new grid within the #myGrid div, using the Grid Options object
+gridApi = agGrid.createGrid(document.querySelector("#myGrid"), gridOptions);
 
 /* ----------------
    MODAL CHART
 ------------------- */
-let agChart = null;
+const { AgCharts } = agCharts;
+let tableChart = null;
 let selectedGovernorId = null;
 let currentColIndex = 16;
 let _documentClickListenerAdded = false;
-/* ----------------
-   AG CHARTS MODAL
-------------------- */
+
 // Get governor name from last sheet
 function getGovernorName(id) {
   const rows = SheetCache.lastSheetData?.rows || [];
@@ -232,26 +226,10 @@ function getGovernorName(id) {
   return found ? found[1] : id;
 }
 
-function openChartModal(governorId) {
-  selectedGovernorId = governorId;
-
-  const modal = document.querySelector("#chart-modal");
-  const title = document.querySelector("#modal-title");
-
-  title.textContent = `${getGovernorName(governorId)} (ID: ${governorId})`;
-  modal.classList.remove("hidden");
-
-  // Reset so first render creates a new chart
-  agChart = null;
-
-  renderAgChart(currentColIndex);
-}
-
-
 function buildChartData(colIndex) {
-  return SheetCache.sheetsList.map(sheetName => {
+  return SheetCache.sheetsList.map((sheetName) => {
     const sheet = SheetCache.sheetsData[sheetName];
-    const row = sheet?.rows.find(r => `${r[0]}` === `${selectedGovernorId}`);
+    const row = sheet?.rows.find((r) => `${r[0]}` === `${selectedGovernorId}`);
     return {
       sheet: sheetName,
       value: row ? Number(row[colIndex] || 0) : 0,
@@ -266,19 +244,19 @@ const metricLabels = {
   3: "Kill Points",
   6: "Deads",
 };
+function renderTableChart(colIndex) {
+  if (!selectedGovernorId) return;
 
-function renderAgChart(colIndex) {
   currentColIndex = colIndex;
 
-  const container = document.getElementById("modal-chart");
+  const container = document.getElementById("table-chart");
   const data = buildChartData(colIndex);
-  const isDark = document.body.classList.contains("dark");
 
   const options = {
     container,
+    theme: getChartTheme(),
     title: {
       text: metricLabels[colIndex],
-      color: isDark ? "#fff" : "#000",
     },
     data,
     series: [
@@ -287,71 +265,85 @@ function renderAgChart(colIndex) {
         xKey: "sheet",
         yKey: "value",
         yName: metricLabels[colIndex],
-        yKeyAxis: "valueAxis",
         marker: { enabled: true },
       },
     ],
     axes: {
-      xAxis: { type: "category", position: "bottom" },
-      valueAxis: { type: "number", position: "left" },
+      x: { type: "category", position: "bottom" },
+      y: { type: "number", position: "left" },
     },
     legend: { enabled: false },
   };
 
-  if (!agChart) {
-    agChart = agCharts.AgCharts.create(options);
+  if (!tableChart) {
+    tableChart = AgCharts.create(options);
   } else {
-    agCharts.AgCharts.update(agChart, options);
+    tableChart.updateDelta(options);
   }
 }
 
+const materialChartThemes = {
+  light: {
+    baseTheme: "ag-material",
+    overrides: {
+      common: {
+        background: {
+          fill: "#ffffff", // modal light background
+        },
+        title: {
+          color: "#333333",
+        },
+      },
+      line: {
+        series: {
+          stroke: "#007bff",
+          marker: {
+            fill: "#007bff",
+            stroke: "#007bff",
+          },
+        },
+      },
+    },
+  },
 
-/* ------------------------------------------------------
-   CLICK EVENTS (open modal when clicking ID)
---------------------------------------------------------- */
-function addRowClickEventsOnce() {
-  if (_documentClickListenerAdded) return;
-  _documentClickListenerAdded = true;
+  dark: {
+    baseTheme: "ag-material-dark",
+    overrides: {
+      common: {
+        background: {
+          fill: "#2a2a2a", // modal dark background
+        },
+        title: {
+          color: "#eeeeee",
+        },
+      },
+      line: {
+        series: {
+          stroke: "#ff9800",
+          marker: {
+            fill: "#ff9800",
+            stroke: "#ff9800",
+          },
+        },
+      },
+    },
+  },
+};
 
-  document.addEventListener("click", (e) => {
-    const link = e.target.closest(".gov-link");
-    if (!link) return;
-
-    const id = link.dataset.id;
-    if (id) openChartModal(id);
-  });
+function getChartTheme() {
+  return document.body.classList.contains("dark")
+    ? materialChartThemes.dark
+    : materialChartThemes.light;
 }
-
-// Initialize after table loads
-setTimeout(addRowClickEventsOnce, 500);
-
 /* ------------------------------------------------------
    CLOSE MODAL + SWITCH METRIC BUTTONS
 --------------------------------------------------------- */
-const closeModalBtn = document.querySelector("#close-modal");
-if (closeModalBtn) {
-  closeModalBtn.addEventListener("click", () => {
-    document.querySelector("#chart-modal").classList.add("hidden");
-
-    if (agChart) {
-      agCharts.AgCharts.destroy(agChart);
-      agChart = null;
-    }
-  });
-}
-
-
-
 document.querySelectorAll(".chart-buttons button").forEach((btn) => {
   btn.addEventListener("click", () => {
     const col = Number(btn.dataset.col);
-    if (!isNaN(col)) {
-      renderAgChart(col); // updates only
-    }
+    renderTableChart(col);
   });
 });
-
-
 
 // Initialize everything
 loadAllSheetsCache().then(() => {
@@ -361,7 +353,7 @@ loadAllSheetsCache().then(() => {
   const rows = SheetCache.lastSheetData.rows;
   const rowData = buildRowDataFromSheet(rows);
 
-  createAgGrid(rowData);
+  gridApi.setGridOption("rowData", rowData);
 
   const sortedByDKP = [...rows]
     .sort((a, b) => Number(b[8]) - Number(a[8]))
@@ -371,6 +363,7 @@ loadAllSheetsCache().then(() => {
   renderTotals(rows);
 
   spinner.style.display = "none";
+  document.getElementById("myGrid").style.display = "block";
 });
 
 function renderTopPlayers(players) {
@@ -450,15 +443,17 @@ function escapeHtml(str) {
 function setTheme(mode) {
   document.body.classList.remove("dark", "light");
   document.body.classList.add(mode);
+
+  // 👇 THIS is the AG Grid integration
   document.body.setAttribute("data-ag-theme-mode", mode);
-  localStorage.setItem("theme", mode);
-
-  if (agChart && selectedGovernorId) {
-    renderAgChart(currentColIndex);
+  if (tableChart) {
+    tableChart.updateDelta({
+      theme: getChartTheme(),
+    });
   }
+
+  localStorage.setItem("theme", mode);
 }
-
-
 
 function initializeTheme(toggleEl) {
   const saved = localStorage.getItem("theme");
