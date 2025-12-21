@@ -241,8 +241,12 @@ function openChartModal(governorId) {
   title.textContent = `${getGovernorName(governorId)} (ID: ${governorId})`;
   modal.classList.remove("hidden");
 
+  // Reset so first render creates a new chart
+  agChart = null;
+
   renderAgChart(currentColIndex);
 }
+
 
 function buildChartData(colIndex) {
   return SheetCache.sheetsList.map(sheetName => {
@@ -267,12 +271,6 @@ function renderAgChart(colIndex) {
   currentColIndex = colIndex;
 
   const container = document.getElementById("modal-chart");
-
-  if (agChart) {
-    agCharts.AgCharts.destroy(agChart);
-    agChart = null;
-  }
-
   const data = buildChartData(colIndex);
   const isDark = document.body.classList.contains("dark");
 
@@ -302,23 +300,17 @@ function renderAgChart(colIndex) {
     ],
 
     axes: {
-      // X axis (categories / sheet names)
       xAxis: {
         type: "category",
         position: "bottom",
-        label: {
-          color: isDark ? "#ccc" : "#333",
-        },
+        label: { color: isDark ? "#ccc" : "#333" },
       },
-
-      // Y axis (metric values)
       valueAxis: {
         type: "number",
         position: "left",
         label: {
           color: isDark ? "#ccc" : "#333",
-          formatter: (params) =>
-            Number(params.value).toLocaleString(),
+          formatter: (p) => Number(p.value).toLocaleString(),
         },
       },
     },
@@ -326,11 +318,13 @@ function renderAgChart(colIndex) {
     legend: { enabled: false },
   };
 
-  agChart = agCharts.AgCharts.create(options);
+  // 🔑 IMPORTANT PART
+  if (!agChart) {
+    agChart = agCharts.AgCharts.create(options);
+  } else {
+    agCharts.AgCharts.update(agChart, options);
+  }
 }
-
-
-
 
 /* ------------------------------------------------------
    CLICK EVENTS (open modal when clicking ID)
@@ -356,23 +350,25 @@ setTimeout(addRowClickEventsOnce, 500);
 --------------------------------------------------------- */
 const closeModalBtn = document.querySelector("#close-modal");
 if (closeModalBtn) {
-  closeModalBtn.addEventListener("click", () => {
-    document.querySelector("#chart-modal").classList.add("hidden");
-
-    if (agChart) {
-      agCharts.AgCharts.destroy(agChart);
-      agChart = null;
-    }
-  });
-}
+	closeModalBtn.addEventListener("click", () => {
+	  document.querySelector("#chart-modal").classList.add("hidden");
+	
+	  if (agChart) {
+	    agCharts.AgCharts.destroy(agChart);
+	    agChart = null;
+	  }
+	});
 
 
 document.querySelectorAll(".chart-buttons button").forEach((btn) => {
   btn.addEventListener("click", () => {
     const col = Number(btn.dataset.col);
-    if (!isNaN(col)) renderAgChart(col);
+    if (!isNaN(col)) {
+      renderAgChart(col); // updates only
+    }
   });
 });
+
 
 
 // Initialize everything
