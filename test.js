@@ -204,6 +204,8 @@ const gridOptions = {
     ).textContent = `${event.data.name} (ID: ${event.data.id})`;
 
     renderTableChart(currentColIndex);
+    const chart = document.getElementById("table-chart");
+    chart.classList.add("visible");
   },
 };
 
