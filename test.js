@@ -206,8 +206,8 @@ const gridOptions = {
     renderTableChart(currentColIndex);
     const chart = document.getElementById("table-chart");
     chart.classList.add("visible");
-  },
-};
+  });
+}); 
 
 // Create Grid: Create new grid within the #myGrid div, using the Grid Options object
 gridApi = agGrid.createGrid(document.querySelector("#myGrid"), gridOptions);
