@@ -330,14 +330,16 @@ setTimeout(addRowClickEventsOnce, 500);
 --------------------------------------------------------- */
 const closeModalBtn = document.querySelector("#close-modal");
 if (closeModalBtn) {
-	closeModalBtn.addEventListener("click", () => {
-	  document.querySelector("#chart-modal").classList.add("hidden");
-	
-	  if (agChart) {
-	    agCharts.AgCharts.destroy(agChart);
-	    agChart = null;
-	  }
-	});
+  closeModalBtn.addEventListener("click", () => {
+    document.querySelector("#chart-modal").classList.add("hidden");
+
+    if (agChart) {
+      agCharts.AgCharts.destroy(agChart);
+      agChart = null;
+    }
+  });
+}
+
 
 
 document.querySelectorAll(".chart-buttons button").forEach((btn) => {
