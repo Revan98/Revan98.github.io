@@ -222,7 +222,7 @@ function onFilterTextBoxChanged() {
 let agChart = null;
 let selectedGovernorId = null;
 let currentColIndex = 16; // default metric
-
+let _documentClickListenerAdded = false;
 // Governor name from last sheet
 function getGovernorName(id) {
   const rows = SheetCache.lastSheetData?.rows || [];
