@@ -276,14 +276,11 @@ function renderAgChart(colIndex) {
 
   const options = {
     container,
-
     title: {
-      text: metricLabels[colIndex] || `Column ${colIndex}`,
+      text: metricLabels[colIndex],
       color: isDark ? "#fff" : "#000",
     },
-
     data,
-
     series: [
       {
         type: "line",
@@ -291,40 +288,23 @@ function renderAgChart(colIndex) {
         yKey: "value",
         yName: metricLabels[colIndex],
         yKeyAxis: "valueAxis",
-        strokeWidth: 2,
-        marker: {
-          enabled: true,
-          size: 6,
-        },
+        marker: { enabled: true },
       },
     ],
-
     axes: {
-      xAxis: {
-        type: "category",
-        position: "bottom",
-        label: { color: isDark ? "#ccc" : "#333" },
-      },
-      valueAxis: {
-        type: "number",
-        position: "left",
-        label: {
-          color: isDark ? "#ccc" : "#333",
-          formatter: (p) => Number(p.value).toLocaleString(),
-        },
-      },
+      xAxis: { type: "category", position: "bottom" },
+      valueAxis: { type: "number", position: "left" },
     },
-
     legend: { enabled: false },
   };
 
-  // 🔑 IMPORTANT PART
   if (!agChart) {
     agChart = agCharts.AgCharts.create(options);
   } else {
     agCharts.AgCharts.update(agChart, options);
   }
 }
+
 
 /* ------------------------------------------------------
    CLICK EVENTS (open modal when clicking ID)
