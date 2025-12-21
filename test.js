@@ -278,39 +278,46 @@ function renderAgChart(colIndex) {
 
   const options = {
     container,
-    autoSize: true,
     background: { fill: "transparent" },
+
     title: {
       text: metricLabels[colIndex] || `Column ${colIndex}`,
       color: isDark ? "#fff" : "#000",
     },
+
     data,
+
     series: [
       {
         type: "line",
         xKey: "sheet",
         yKey: "value",
         strokeWidth: 2,
-        marker: { enabled: true, size: 6 },
+        marker: {
+          enabled: true,
+          size: 6,
+        },
       },
     ],
-    axes: [
-      {
-        type: "category",
+
+    // ✅ v13-compliant axes object
+    axes: {
+      category: {
         position: "bottom",
         label: { color: isDark ? "#ccc" : "#333" },
       },
-      {
-        type: "number",
+      number: {
         position: "left",
         label: { color: isDark ? "#ccc" : "#333" },
       },
-    ],
+    },
+
     legend: { enabled: false },
   };
 
   agChart = agCharts.AgCharts.create(options);
 }
+
 
 
 /* ------------------------------------------------------
