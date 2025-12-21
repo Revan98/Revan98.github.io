@@ -216,21 +216,16 @@ function onFilterTextBoxChanged() {
 }
 
 /* ----------------
+   MODAL CHART
+------------------- */
+let agChart = null;
+let selectedGovernorId = null;
+let currentColIndex = 16;
+let _documentClickListenerAdded = false;
+/* ----------------
    AG CHARTS MODAL
 ------------------- */
 
-let agChart = null;
-let selectedGovernorId = null;
-let currentColIndex = 16; // default metric
-let _documentClickListenerAdded = false;
-// Governor name from last sheet
-function getGovernorName(id) {
-  const rows = SheetCache.lastSheetData?.rows || [];
-  const found = rows.find(r => `${r[0]}` === `${id}`);
-  return found ? found[1] : id;
-}
-
-// Open modal + create chart
 function openChartModal(governorId) {
   selectedGovernorId = governorId;
 
@@ -243,7 +238,6 @@ function openChartModal(governorId) {
   renderAgChart(currentColIndex);
 }
 
-// Build chart data from sheets
 function buildChartData(colIndex) {
   return SheetCache.sheetsList.map(sheetName => {
     const sheet = SheetCache.sheetsData[sheetName];
@@ -255,7 +249,6 @@ function buildChartData(colIndex) {
   });
 }
 
-// Metric labels
 const metricLabels = {
   16: "Power Diff",
   4: "T4 Kills",
@@ -264,60 +257,47 @@ const metricLabels = {
   6: "Deads",
 };
 
-// Render / update AG Chart
 function renderAgChart(colIndex) {
   currentColIndex = colIndex;
 
   const container = document.getElementById("modal-chart");
 
-  // Destroy old chart
   if (agChart) {
     agCharts.AgCharts.destroy(agChart);
     agChart = null;
   }
 
   const data = buildChartData(colIndex);
-  const label = metricLabels[colIndex] || `Column ${colIndex}`;
-
   const isDark = document.body.classList.contains("dark");
 
   const options = {
     container,
     autoSize: true,
-    background: {
-      fill: "transparent",
-    },
-    data,
+    background: { fill: "transparent" },
     title: {
-      text: label,
+      text: metricLabels[colIndex] || `Column ${colIndex}`,
       color: isDark ? "#fff" : "#000",
     },
+    data,
     series: [
       {
         type: "line",
         xKey: "sheet",
         yKey: "value",
         strokeWidth: 2,
-        marker: {
-          enabled: true,
-          size: 6,
-        },
+        marker: { enabled: true, size: 6 },
       },
     ],
     axes: [
       {
         type: "category",
         position: "bottom",
-        label: {
-          color: isDark ? "#ccc" : "#333",
-        },
+        label: { color: isDark ? "#ccc" : "#333" },
       },
       {
         type: "number",
         position: "left",
-        label: {
-          color: isDark ? "#ccc" : "#333",
-        },
+        label: { color: isDark ? "#ccc" : "#333" },
       },
     ],
     legend: { enabled: false },
@@ -325,6 +305,7 @@ function renderAgChart(colIndex) {
 
   agChart = agCharts.AgCharts.create(options);
 }
+
 
 /* ------------------------------------------------------
    CLICK EVENTS (open modal when clicking ID)
@@ -348,17 +329,20 @@ setTimeout(addRowClickEventsOnce, 500);
 /* ------------------------------------------------------
    CLOSE MODAL + SWITCH METRIC BUTTONS
 --------------------------------------------------------- */
-document.getElementById("close-modal")?.addEventListener("click", () => {
-  document.getElementById("chart-modal").classList.add("hidden");
+const closeModalBtn = document.querySelector("#close-modal");
+if (closeModalBtn) {
+  closeModalBtn.addEventListener("click", () => {
+    document.querySelector("#chart-modal").classList.add("hidden");
 
-  if (agChart) {
-    agCharts.AgCharts.destroy(agChart);
-    agChart = null;
-  }
-});
+    if (agChart) {
+      agCharts.AgCharts.destroy(agChart);
+      agChart = null;
+    }
+  });
+}
 
 
-document.querySelectorAll(".chart-buttons button").forEach(btn => {
+document.querySelectorAll(".chart-buttons button").forEach((btn) => {
   btn.addEventListener("click", () => {
     const col = Number(btn.dataset.col);
     if (!isNaN(col)) renderAgChart(col);
@@ -466,7 +450,6 @@ function setTheme(mode) {
   document.body.setAttribute("data-ag-theme-mode", mode);
   localStorage.setItem("theme", mode);
 
-  // 🔁 Update chart theme live
   if (agChart && selectedGovernorId) {
     renderAgChart(currentColIndex);
   }
