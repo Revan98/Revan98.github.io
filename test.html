@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="css/navbar.css">
 <link rel="stylesheet" href="css/box_top_total.css">
 <link rel="stylesheet" href="css/loading.css">
-<link rel="stylesheet" href="css/modal_chart.css">
 <style>
 .info{
   display: flex;
@@ -90,6 +89,43 @@ body.light .ag-theme-alpine .ag-row-odd {
 body.dark .ag-theme-alpine .ag-row-odd {
   background-color: rgba(255, 255, 255, 0.05);
 }
+
+.chart-buttons {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.chart-buttons button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  cursor: pointer;
+  background: #007bff;
+  color: var(--text-color);
+}
+.chart-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto 12px auto;
+  font-weight: bold;
+}
+.table-chart {
+  margin-bottom: 10px;
+}
+/* Hide grid until data is loaded */
+#myGrid {
+  display: none;
+}
+/* Hide chart section until a row is clicked */
+#table-chart {
+  display: none;
+}
+
 </style>
 </head>
 <body data-ag-theme-mode="light">
@@ -138,40 +174,30 @@ body.dark .ag-theme-alpine .ag-row-odd {
             </div>
             <div id="myGrid" class="ag-theme-alpine" style="height: 700px"></div>
         </div>
+      <div id="chart-section">
+        <h2 id="chart-title" class="chart-title">Select a governor to view stats</h2>
+
+        <div class="chart-buttons">
+          <button data-col="16">Power Diff</button>
+          <button data-col="4">T4 Kills</button>
+          <button data-col="5">T5 Kills</button>
+          <button data-col="3">Kill Points</button>
+          <button data-col="6">Deads</button>
+        </div>
+
+        <div id="table-chart" class="table-chart" style="height: 600px;"></div>
+      </div>
     </div>
 
     <div class="right"></div>
   </div>
 
-    <div class="footer">
-    <p>Dashboard</p>
-    </div>
-
-    <div id="chart-modal" class="modal hidden">
-        <div class="modal-content">
-        <button id="close-modal" class="close-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-            </svg>
-        </button>
-
-        <h2 id="modal-title"></h2>
-
-        <div id="modal-chart"></div>
-
-        <div class="chart-buttons">
-            <button data-col="16">Power Diff</button>
-            <button data-col="4">T4 Kills</button>
-            <button data-col="5">T5 Kills</button>
-            <button data-col="3">Kill Points</button>
-            <button data-col="6">Deads</button>
-        </div>
-        </div>
-    </div>
+  <div class="footer">
+  <p>Dashboard</p>
+  </div>
 
 	<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ag-charts-community@13.0.0/dist/umd/ag-charts-community.js"></script>
-
-    <script src="test.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ag-charts-community@13.0.0/dist/umd/ag-charts-community.js?t=1765358410697"></script>
+  <script src="test.js"></script>
 </body>
 </html>
