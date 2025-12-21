@@ -218,7 +218,6 @@ function onFilterTextBoxChanged() {
 /* ----------------
    MODAL CHART
 ------------------- */
-let modalChart = null;
 let selectedGovernorId = null;
 let currentColIndex = 16; // default is Power Diff
 let _documentClickListenerAdded = false;
@@ -228,21 +227,6 @@ function getGovernorName(id) {
   const rows = SheetCache.lastSheetData?.rows || [];
   const found = rows.find((r) => `${r[0]}` === `${id}`);
   return found ? found[1] : id;
-}
-
-// Chart theme
-function getChartStyles() {
-  const css = (v) => getComputedStyle(document.body).getPropertyValue(v).trim();
-  const line = css("--chart-line") || "#007bff";
-
-  return {
-    text: css("--chart-text") || "#fff",
-    dataset: {
-      borderColor: line,
-      backgroundColor: line + "33",
-      tension: 0.3,
-    },
-  };
 }
 
 // Open modal
@@ -259,28 +243,12 @@ function openChartModal(governorId) {
 
   // Destroy old chart if exists
   if (modalChart) {
-    modalChart.destroy();
+
     modalChart = null;
   }
 
   const ctx = document.querySelector("#modal-chart").getContext("2d");
   const styles = getChartStyles();
-
-  modalChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: [],
-      datasets: [{ label: "", data: [], ...styles.dataset }],
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { labels: { color: styles.text } } },
-      scales: {
-        x: { ticks: { color: styles.text } },
-        y: { ticks: { color: styles.text } },
-      },
-    },
-  });
 
   updateModalChart(currentColIndex);
 }
@@ -312,10 +280,117 @@ function updateModalChart(colIndex) {
     6: "Deads",
   };
 
-  modalChart.data.labels = sheets;
-  modalChart.data.datasets[0].data = values;
-  modalChart.data.datasets[0].label = labelMap[colIndex] || `Col ${colIndex}`;
-  modalChart.update();
+
+}
+/* ----------------
+   AG CHARTS MODAL
+------------------- */
+
+let agChart = null;
+let selectedGovernorId = null;
+let currentColIndex = 16; // default metric
+
+// Governor name from last sheet
+function getGovernorName(id) {
+  const rows = SheetCache.lastSheetData?.rows || [];
+  const found = rows.find(r => `${r[0]}` === `${id}`);
+  return found ? found[1] : id;
+}
+
+// Open modal + create chart
+function openChartModal(governorId) {
+  selectedGovernorId = governorId;
+
+  const modal = document.querySelector("#chart-modal");
+  const title = document.querySelector("#modal-title");
+
+  title.textContent = `${getGovernorName(governorId)} (ID: ${governorId})`;
+  modal.classList.remove("hidden");
+
+  renderAgChart(currentColIndex);
+}
+
+// Build chart data from sheets
+function buildChartData(colIndex) {
+  return SheetCache.sheetsList.map(sheetName => {
+    const sheet = SheetCache.sheetsData[sheetName];
+    const row = sheet?.rows.find(r => `${r[0]}` === `${selectedGovernorId}`);
+    return {
+      sheet: sheetName,
+      value: row ? Number(row[colIndex] || 0) : 0,
+    };
+  });
+}
+
+// Metric labels
+const metricLabels = {
+  16: "Power Diff",
+  4: "T4 Kills",
+  5: "T5 Kills",
+  3: "Kill Points",
+  6: "Deads",
+};
+
+// Render / update AG Chart
+function renderAgChart(colIndex) {
+  currentColIndex = colIndex;
+
+  const container = document.getElementById("modal-chart");
+
+  // Destroy old chart
+  if (agChart) {
+    agCharts.AgCharts.destroy(agChart);
+    agChart = null;
+  }
+
+  const data = buildChartData(colIndex);
+  const label = metricLabels[colIndex] || `Column ${colIndex}`;
+
+  const isDark = document.body.classList.contains("dark");
+
+  const options = {
+    container,
+    autoSize: true,
+    background: {
+      fill: "transparent",
+    },
+    data,
+    title: {
+      text: label,
+      color: isDark ? "#fff" : "#000",
+    },
+    series: [
+      {
+        type: "line",
+        xKey: "sheet",
+        yKey: "value",
+        strokeWidth: 2,
+        marker: {
+          enabled: true,
+          size: 6,
+        },
+      },
+    ],
+    axes: [
+      {
+        type: "category",
+        position: "bottom",
+        label: {
+          color: isDark ? "#ccc" : "#333",
+        },
+      },
+      {
+        type: "number",
+        position: "left",
+        label: {
+          color: isDark ? "#ccc" : "#333",
+        },
+      },
+    ],
+    legend: { enabled: false },
+  };
+
+  agChart = agCharts.AgCharts.create(options);
 }
 
 /* ------------------------------------------------------
@@ -340,19 +415,23 @@ setTimeout(addRowClickEventsOnce, 500);
 /* ------------------------------------------------------
    CLOSE MODAL + SWITCH METRIC BUTTONS
 --------------------------------------------------------- */
-const closeModalBtn = document.querySelector("#close-modal");
-if (closeModalBtn) {
-  closeModalBtn.addEventListener("click", () =>
-    document.querySelector("#chart-modal").classList.add("hidden")
-  );
-}
+document.getElementById("close-modal")?.addEventListener("click", () => {
+  document.getElementById("chart-modal").classList.add("hidden");
 
-document.querySelectorAll(".chart-buttons button").forEach((btn) => {
+  if (agChart) {
+    agCharts.AgCharts.destroy(agChart);
+    agChart = null;
+  }
+});
+
+
+document.querySelectorAll(".chart-buttons button").forEach(btn => {
   btn.addEventListener("click", () => {
     const col = Number(btn.dataset.col);
-    if (!isNaN(col)) updateModalChart(col);
+    if (!isNaN(col)) renderAgChart(col);
   });
 });
+
 
 // Initialize everything
 loadAllSheetsCache().then(() => {
@@ -451,12 +530,15 @@ function escapeHtml(str) {
 function setTheme(mode) {
   document.body.classList.remove("dark", "light");
   document.body.classList.add(mode);
-
-  // 👇 THIS is the AG Grid integration
   document.body.setAttribute("data-ag-theme-mode", mode);
-
   localStorage.setItem("theme", mode);
+
+  // 🔁 Update chart theme live
+  if (agChart && selectedGovernorId) {
+    renderAgChart(currentColIndex);
+  }
 }
+
 
 
 function initializeTheme(toggleEl) {
