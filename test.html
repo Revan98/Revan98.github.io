@@ -125,6 +125,61 @@ body.dark .ag-theme-alpine .ag-row-odd {
 #table-chart {
   display: none;
 }
+/* ---------------------------------
+   THEME TRANSITIONS
+---------------------------------- */
+body,
+.navbar,
+.card,
+.info,
+.stat-box,
+.player-box,
+.footer,
+.ag-theme-alpine,
+#chart-section {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease;
+}
+#myGrid {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+#myGrid.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+#table-chart {
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+#table-chart.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.chart-buttons button {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.chart-buttons button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+.chart-buttons button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
 
 </style>
 </head>
