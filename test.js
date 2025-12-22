@@ -96,12 +96,6 @@ async function loadAllSheetsCache() {
     SheetCache.lastSheetData =
       SheetCache.sheetsData[lastNonEmptySheet];
   }
-
-
-    if (sheetName === lastSheet) {
-      SheetCache.lastSheetData = { headers, rows };
-    }
-  });
 }
 
 
