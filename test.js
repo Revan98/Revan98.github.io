@@ -1,4 +1,3 @@
-/* CONFIGURATION */
 const CONFIG = {
   sources: [
     {
@@ -6,7 +5,7 @@ const CONFIG = {
       kd: "2247",
       name: "KD2247",
       sheetUrl:
-        "https://docs.google.com/spreadsheets/d/1bP7LMwUuN3gjIEWKo0QCStKmrvIzn9rrYedoaUJh5zg/edit?usp=sharing",
+        "https://docs.google.com/spreadsheets/d/1LHAa5r_coFO5XGCuqmZe6BrMmfanlq7Ds9TVIX_ekps/edit?usp=sharing",
     },
     {
       id: "backup",
@@ -20,14 +19,12 @@ const CONFIG = {
 
 const API_KEY = "AIzaSyDIX6tSEresAQCeYE6cGOWEzWQ92HHoPeY";
 
-// RAM cache
 const SheetCache = {
   sheetsList: [],
   sheetsData: {},
   lastSheetData: null,
 };
 
-/* query helper */
 const qs = (sel) => document.querySelector(sel);
 const themeToggle = qs("#toggle-theme");
 
@@ -46,8 +43,7 @@ function getSelectedSource() {
   return CONFIG.sources.find((src) => src.kd === kd) || null;
 }
 
-// Load all sheets into RAM
-/* async function loadAllSheetsCache() {
+async function loadAllSheetsCache() {
   const source = getSelectedSource();
 
   if (!source) {
@@ -78,66 +74,8 @@ function getSelectedSource() {
 
     if (sheetName === lastSheet) SheetCache.lastSheetData = { headers, rows };
   }
-} */
-function normalizeSheetName(rangeStr) {
-  let name = rangeStr.split("!")[0];
-
-  // remove quotes if present
-  if (name.startsWith("'") && name.endsWith("'")) {
-    name = name.slice(1, -1);
-  }
-
-  return name;
 }
-async function loadAllSheetsCache() {
-  const source = getSelectedSource();
 
-  if (!source) {
-    alert("Invalid or missing KD parameter.");
-    return;
-  }
-
-  const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
-
-  /*  Get spreadsheet metadata (sheet names) */
-  const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
-  const metaRes = await fetch(metaUrl);
-  const metaJson = await metaRes.json();
-
-  SheetCache.sheetsList = metaJson.sheets.map((s) => s.properties.title);
-
-  const lastSheet = SheetCache.sheetsList.at(-1);
-
-  /*  Batch-get all sheet values in ONE call */
-  const ranges = SheetCache.sheetsList
-    .map((name) => `ranges=${encodeURIComponent(name)}`)
-    .join("&");
-
-  const batchUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&key=${API_KEY}`;
-
-  const batchRes = await fetch(batchUrl);
-  const batchJson = await batchRes.json();
-
-  /*  Populate RAM cache */
-  let lastNonEmptySheet = null;
-
-  batchJson.valueRanges.forEach((range) => {
-    const sheetName = normalizeSheetName(range.range);
-    const values = range.values;
-
-    if (!values || values.length === 0) return;
-
-    const headers = values[0];
-    const rows = values.slice(1);
-
-    SheetCache.sheetsData[sheetName] = { headers, rows };
-    lastNonEmptySheet = sheetName;
-  });
-
-  if (lastNonEmptySheet) {
-    SheetCache.lastSheetData = SheetCache.sheetsData[lastNonEmptySheet];
-  }
-}
 function formatNumber(val) {
   if (val === undefined || val === null || val === "") return val;
   if (isNaN(val)) return val;
@@ -249,16 +187,16 @@ const gridOptions = {
   onRowClicked: (event) => {
     selectedGovernorId = event.data.id;
 
+    const chartSection = document.getElementById("table-chart");
+    chartSection.style.display = "block";
+
     document.getElementById(
       "chart-title"
     ).textContent = `${event.data.name} (ID: ${event.data.id})`;
 
-    // Lazy initialize chart now
-    updateChart(selectedGovernorId, currentColIndex);
-
-    // Show chart section
-    chartSection.style.display = "block";
-    chartSection.classList.add("visible");
+    renderTableChart(currentColIndex);
+    const chart = document.getElementById("table-chart");
+    chart.classList.add("visible");
   },
 };
 
@@ -269,15 +207,30 @@ function onFilterTextBoxChanged() {
   gridApi.setGridOption("quickFilterText", input.value);
 }
 
-/* ----------------
-   CHART
-------------------- */
-let inlineChart = null; // Chart.js instance
-let selectedGovernorId = null; // Currently selected governor
-let currentColIndex = 16; // Default column for chart (Power Diff)
+const { AgCharts } = agCharts;
+let tableChart = null;
+let selectedGovernorId = null;
+let currentColIndex = 16;
+let _documentClickListenerAdded = false;
 
-// Column labels
-const labelMap = {
+function getGovernorName(id) {
+  const rows = SheetCache.lastSheetData?.rows || [];
+  const found = rows.find((r) => `${r[0]}` === `${id}`);
+  return found ? found[1] : id;
+}
+
+function buildChartData(colIndex) {
+  return SheetCache.sheetsList.map((sheetName) => {
+    const sheet = SheetCache.sheetsData[sheetName];
+    const row = sheet?.rows.find((r) => `${r[0]}` === `${selectedGovernorId}`);
+    return {
+      sheet: sheetName,
+      value: row ? Number(row[colIndex] || 0) : 0,
+    };
+  });
+}
+
+const metricLabels = {
   16: "Power Diff",
   4: "T4 Kills",
   5: "T5 Kills",
@@ -285,164 +238,108 @@ const labelMap = {
   6: "Deads",
 };
 
-// Chart styles for light and dark modes
-const CHART_STYLES = {
-  light: {
-    text: "#333",
-    grid: "rgba(0,0,0,0.1)",
-    line: "#007bff",
-    background: "rgba(255,255,255,0.8)",
-  },
-  dark: {
-    text: "#eee",
-    grid: "rgba(255,255,255,0.2)",
-    line: "#ff9800",
-    background: "rgba(40,40,40,0.8)",
-  },
-};
+function renderTableChart(colIndex) {
+  if (!selectedGovernorId) return;
 
-// Helper to detect current theme
-function getCurrentTheme() {
-  return document.body.classList.contains("dark") ? "dark" : "light";
-}
-
-// Chart.js plugin to draw chart background
-const chartBackgroundPlugin = {
-  id: "chartBackground",
-  beforeDraw(chart, args, options) {
-    const { ctx, chartArea } = chart;
-    ctx.save();
-    ctx.fillStyle = options.color;
-    ctx.fillRect(
-      chartArea.left,
-      chartArea.top,
-      chartArea.right - chartArea.left,
-      chartArea.bottom - chartArea.top
-    );
-    ctx.restore();
-  },
-};
-
-// Lazy chart updater
-function updateChart(governorId, colIndex) {
-  selectedGovernorId = governorId;
   currentColIndex = colIndex;
 
-  if (!SheetCache.lastSheetData) return;
+  const container = document.getElementById("table-chart");
+  const data = buildChartData(colIndex);
 
-  const sheets = SheetCache.sheetsList;
-  const values = sheets.map((sheetName) => {
-    const sheet = SheetCache.sheetsData[sheetName];
-    if (!sheet) return 0;
-    const row = sheet.rows.find((r) => `${r[0]}` === `${selectedGovernorId}`);
-    return row ? Number(row[colIndex] || 0) : 0;
-  });
-
-  const ctx = document.querySelector("#modal-chart").getContext("2d");
-  const theme = getCurrentTheme();
-  const styles = CHART_STYLES[theme];
-
-  if (!inlineChart) {
-    // First time creation
-    inlineChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: sheets,
-        datasets: [
-          {
-            label: labelMap[colIndex] || `Col ${colIndex}`,
-            data: values,
-            borderColor: styles.line,
-            backgroundColor: styles.line + "33",
-            fill: true,
-            tension: 0.3,
-            pointBackgroundColor: styles.line,
-            pointBorderColor: styles.line,
-          },
-        ],
+  const options = {
+    container,
+    theme: getChartTheme(),
+    title: {
+      text: metricLabels[colIndex],
+    },
+    data,
+    series: [
+      {
+        type: "line",
+        xKey: "sheet",
+        yKey: "value",
+        yName: metricLabels[colIndex],
+        marker: { enabled: true },
       },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: styles.text } },
-          tooltip: {
-            backgroundColor: styles.background,
-            titleColor: styles.text,
-            bodyColor: styles.text,
-          },
-          chartBackground: { color: styles.background },
-        },
-        scales: {
-          x: { ticks: { color: styles.text }, grid: { color: styles.grid } },
-          y: { ticks: { color: styles.text }, grid: { color: styles.grid } },
-        },
-      },
-      plugins: [chartBackgroundPlugin],
-    });
+    ],
+    axes: {
+      x: { type: "category", position: "bottom" },
+      y: { type: "number", position: "left" },
+    },
+    legend: { enabled: false },
+        fill: '#badaff', // fill colour
+        fillOpacity: 0.7,
+  };
+
+  if (!tableChart) {
+    tableChart = AgCharts.create(options);
   } else {
-    // Update existing chart
-    const dataset = inlineChart.data.datasets[0];
-    dataset.data = values;
-    dataset.label = labelMap[colIndex] || `Col ${colIndex}`;
-    dataset.borderColor = styles.line;
-    dataset.backgroundColor = styles.line + "33";
-    dataset.pointBackgroundColor = styles.line;
-    dataset.pointBorderColor = styles.line;
-
-    inlineChart.options.plugins.legend.labels.color = styles.text;
-    inlineChart.options.scales.x.ticks.color = styles.text;
-    inlineChart.options.scales.y.ticks.color = styles.text;
-    inlineChart.options.scales.x.grid.color = styles.grid;
-    inlineChart.options.scales.y.grid.color = styles.grid;
-    inlineChart.options.plugins.tooltip.backgroundColor = styles.background;
-    inlineChart.options.plugins.tooltip.titleColor = styles.text;
-    inlineChart.options.plugins.tooltip.bodyColor = styles.text;
-    inlineChart.options.plugins.chartBackground.color = styles.background;
-
-    inlineChart.update();
+    tableChart.updateDelta(options);
   }
 }
 
-// Refresh chart colors on theme change
-function refreshChartTheme() {
-  if (selectedGovernorId && inlineChart) {
-    updateChart(selectedGovernorId, currentColIndex);
-  }
+const materialChartThemes = {
+  light: {
+    baseTheme: "ag-material",
+    overrides: {
+      common: {
+        background: {
+          fill: "#ffffff",
+        },
+        title: {
+          color: "#333333",
+        },
+      },
+      line: {
+        series: {
+          stroke: "#007bff",
+          marker: {
+            fill: "#007bff",
+            stroke: "#007bff",
+          },
+        },
+      },
+    },
+  },
+
+  dark: {
+    baseTheme: "ag-material-dark",
+    overrides: {
+      common: {
+        background: {
+          fill: "#2a2a2a",
+        },
+        title: {
+          color: "#eeeeee",
+        },
+      },
+      line: {
+        series: {
+          stroke: "#ff9800",
+          marker: {
+            fill: "#ff9800",
+            stroke: "#ff9800",
+          },
+        },
+      },
+    },
+  },
+};
+
+function getChartTheme() {
+  return document.body.classList.contains("dark")
+    ? materialChartThemes.dark
+    : materialChartThemes.light;
 }
 
-// Theme toggle listener
-themeToggle.addEventListener("change", () => {
-  refreshChartTheme();
-});
-
-// Chart buttons listener
 document.querySelectorAll(".chart-buttons button").forEach((btn) => {
   btn.addEventListener("click", () => {
     const col = Number(btn.dataset.col);
-    if (!isNaN(col) && selectedGovernorId) {
-      updateChart(selectedGovernorId, col);
-    }
+    renderTableChart(col);
   });
 });
 
-const closeChartBtn = document.getElementById("close-chart");
-
-closeChartBtn.addEventListener("click", () => {
-  if (inlineChart) {
-    inlineChart.destroy(); // Free Chart.js resources
-    inlineChart = null; // Reset instance
-  }
-  selectedGovernorId = null;
-  chartSection.style.display = "none";
-});
-
-// Initially hide chart section
-const chartSection = document.getElementById("modal-chart");
-chartSection.style.display = "none";
-
-// Initialize everything
 loadAllSheetsCache().then(() => {
-  // Show spinner
   const spinner = document.getElementById("loading-spinner");
 
   const rows = SheetCache.lastSheetData.rows;
@@ -487,6 +384,7 @@ function renderTopPlayers(players) {
     box.appendChild(el);
   });
 }
+
 function renderTotals(rows = []) {
   const container = document.querySelector("#bottom-totals");
   if (!container) return;
@@ -519,9 +417,7 @@ function renderTotals(rows = []) {
     container.appendChild(box);
   });
 }
-/* -------------------------
-   SMALL SAFETY HELPERS
-   ------------------------- */
+
 function escapeHtml(str) {
   if (str == null) return "";
   return String(str).replace(/[&<>"'`=\/]/g, function (s) {
@@ -537,14 +433,18 @@ function escapeHtml(str) {
     }[s];
   });
 }
-/* -------------------------
-   THEME HANDLING
-   ------------------------- */
+
 function setTheme(mode) {
   document.body.classList.remove("dark", "light");
   document.body.classList.add(mode);
 
   document.body.setAttribute("data-ag-theme-mode", mode);
+  if (tableChart) {
+    tableChart.updateDelta({
+      theme: getChartTheme(),
+    });
+  }
+
   localStorage.setItem("theme", mode);
 }
 
@@ -566,16 +466,11 @@ function initializeTheme(toggleEl) {
   setTheme(prefersDark ? "dark" : "light");
   if (toggleEl) toggleEl.checked = prefersDark;
 }
-// Theme init & toggle
+
 initializeTheme(themeToggle);
 if (themeToggle) {
   themeToggle.addEventListener("change", (e) => {
     setTheme(e.target.checked ? "dark" : "light");
-
-    // Immediately refresh chart colors if chart exists
-    if (selectedGovernorId && inlineChart) {
-      updateChart(selectedGovernorId, currentColIndex);
-    }
   });
 }
 
@@ -584,7 +479,7 @@ const navLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
 
 document.addEventListener("DOMContentLoaded", () => {
-  const current = location.pathname.split("/").pop(); // e.g. "index.html"
+  const current = location.pathname.split("/").pop();
 
   document.querySelectorAll(".nav-links a").forEach((link) => {
     if (link.getAttribute("href") === current) {
