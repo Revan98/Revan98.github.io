@@ -53,28 +53,47 @@ async function loadAllSheetsCache() {
 
   const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
 
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
-  const res = await fetch(url);
-  const json = await res.json();
+  /*  Get spreadsheet metadata (sheet names) */
+  const metaUrl =
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
+  const metaRes = await fetch(metaUrl);
+  const metaJson = await metaRes.json();
 
-  SheetCache.sheetsList = json.sheets.map((s) => s.properties.title);
+  SheetCache.sheetsList = metaJson.sheets.map(
+    (s) => s.properties.title
+  );
+
   const lastSheet = SheetCache.sheetsList.at(-1);
 
-  for (const sheetName of SheetCache.sheetsList) {
-    const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheetName}?key=${API_KEY}`;
-    const resSheet = await fetch(sheetUrl);
-    const sheetJson = await resSheet.json();
+  /*  Batch-get all sheet values in ONE call */
+  const ranges = SheetCache.sheetsList
+    .map((name) => `ranges=${encodeURIComponent(name)}`)
+    .join("&");
 
-    if (!sheetJson.values) continue;
+  const batchUrl =
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&key=${API_KEY}`;
 
-    const headers = sheetJson.values[0];
-    const rows = sheetJson.values.slice(1);
+  const batchRes = await fetch(batchUrl);
+  const batchJson = await batchRes.json();
+
+  /*  Populate RAM cache */
+  batchJson.valueRanges.forEach((range) => {
+    const sheetName = range.range.split("!")[0];
+    const values = range.values;
+
+    if (!values || values.length === 0) return;
+
+    const headers = values[0];
+    const rows = values.slice(1);
 
     SheetCache.sheetsData[sheetName] = { headers, rows };
 
-    if (sheetName === lastSheet) SheetCache.lastSheetData = { headers, rows };
-  }
+    if (sheetName === lastSheet) {
+      SheetCache.lastSheetData = { headers, rows };
+    }
+  });
 }
+
 
 function formatNumber(val) {
   if (val === undefined || val === null || val === "") return val;
