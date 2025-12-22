@@ -294,12 +294,9 @@ function renderTableChart(colIndex) {
       y: { type: "number", position: "left" },
     },
     legend: { enabled: false },
-    // 🔹 Add animation options here
-    autoSize: true,
-    tooltip: { enabled: true },
-    seriesDefaults: {
-      animation: { enabled: true, duration: 800, easing: 'easeOutCubic' }
-    }
+    animation: {
+      enabled: true,
+    },
   };
 
   if (!tableChart) {
