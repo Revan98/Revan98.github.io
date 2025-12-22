@@ -77,16 +77,26 @@ async function loadAllSheetsCache() {
   const batchJson = await batchRes.json();
 
   /*  Populate RAM cache */
+  let lastNonEmptySheet = null;
+  
   batchJson.valueRanges.forEach((range) => {
     const sheetName = range.range.split("!")[0];
     const values = range.values;
-
+  
     if (!values || values.length === 0) return;
-
+  
     const headers = values[0];
     const rows = values.slice(1);
-
+  
     SheetCache.sheetsData[sheetName] = { headers, rows };
+    lastNonEmptySheet = sheetName;
+  });
+  
+  if (lastNonEmptySheet) {
+    SheetCache.lastSheetData =
+      SheetCache.sheetsData[lastNonEmptySheet];
+  }
+
 
     if (sheetName === lastSheet) {
       SheetCache.lastSheetData = { headers, rows };
