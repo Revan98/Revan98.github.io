@@ -42,7 +42,16 @@ function getSelectedSource() {
 
   return CONFIG.sources.find((src) => src.kd === kd) || null;
 }
+function normalizeSheetName(rangeStr) {
+  let name = rangeStr.split("!")[0];
 
+  // remove quotes if present
+  if (name.startsWith("'") && name.endsWith("'")) {
+    name = name.slice(1, -1);
+  }
+
+  return name;
+}
 async function loadAllSheetsCache() {
   const source = getSelectedSource();
 
@@ -80,7 +89,7 @@ async function loadAllSheetsCache() {
   let lastNonEmptySheet = null;
   
   batchJson.valueRanges.forEach((range) => {
-    const sheetName = range.range.split("!")[0];
+    const sheetName = normalizeSheetName(range.range);
     const values = range.values;
   
     if (!values || values.length === 0) return;
