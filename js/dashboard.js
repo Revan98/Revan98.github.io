@@ -202,6 +202,11 @@ const gridOptions = {
 
 gridApi = agGrid.createGrid(document.querySelector("#myGrid"), gridOptions);
 
+function onFilterTextBoxChanged() {
+  const input = document.getElementById("quickFilter");
+  gridApi.setGridOption("quickFilterText", input.value);
+}
+
 const { AgCharts } = agCharts;
 let tableChart = null;
 let selectedGovernorId = null;
