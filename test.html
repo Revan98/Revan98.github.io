@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="css/navbar.css">
 <link rel="stylesheet" href="css/box_top_total.css">
 <link rel="stylesheet" href="css/loading.css">
-<link rel="stylesheet" href="css/buttons.css">
 <style>
 .info{
   display: flex;
@@ -79,7 +78,6 @@
 .ag-theme-alpine .ag-row-even {
   background-color: transparent;
 }
-
 body.light .ag-theme-alpine .ag-row-odd {
   background-color: rgba(0, 0, 0, 0.04);
 }
@@ -93,6 +91,14 @@ body.dark .ag-theme-alpine .ag-row-odd {
   justify-content: center;
   gap: 10px;
 }
+.chart-buttons button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  cursor: pointer;
+  background: #007bff;
+  color: var(--text-color);
+}
 .chart-title {
   display: flex;
   justify-content: center;
@@ -101,7 +107,7 @@ body.dark .ag-theme-alpine .ag-row-odd {
   margin: 0 auto 12px auto;
   font-weight: bold;
 }
-.modal-chart{
+.table-chart {
   margin-bottom: 10px;
 }
 /* Hide grid until data is loaded */
@@ -131,7 +137,7 @@ body,
   opacity: 1;
   transform: translateY(0);
 }
-#modal-chart {
+#table-chart {
   opacity: 0;
   transform: translateY(20px);
   pointer-events: none;
@@ -142,7 +148,7 @@ body,
     transform 0.45s ease,
     max-height 0.45s ease;
 }
-#modal-chart.visible {
+#table-chart.visible {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
@@ -151,6 +157,7 @@ body,
 </style>
 </head>
 <body data-ag-theme-mode="light">
+
 <header class="navbar">
     <div class="nav-container">
     <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -186,41 +193,39 @@ body,
         <p>Multiplers T4 - 5 points, T5 - 10 points, Deads - 15 points</p>
       </div>
       <div class="card">
-        <div class="quick-filter-wrapper">
-          <input type="text" id="quickFilter" placeholder="Search..." class="quick-filter" oninput="onFilterTextBoxChanged()"/>
-        </div>
-        <div id="loading-spinner" class="loading-spinner">
-            <div class="spinner"></div>
-            <p>Loading data...</p>
-        </div>
-        <div id="myGrid" class="ag-theme-alpine" style="height: 700px"></div>
+    <div class="quick-filter-wrapper">
+      <input type="text" id="quickFilter" placeholder="Search..." class="quick-filter" oninput="onFilterTextBoxChanged()"/>
+    </div>
+          <div id="loading-spinner" class="loading-spinner">
+              <div class="spinner"></div>
+              <p>Loading data...</p>
+          </div>
+          <div id="myGrid" class="ag-theme-alpine" style="height: 700px"></div>
+      </div>
+    <div id="chart-section">
+      <h2 id="chart-title" class="chart-title">Select a governor to view chart.</h2>
+
+      <div class="chart-buttons">
+        <button data-col="16">Power Diff</button>
+        <button data-col="4">T4 Kills</button>
+        <button data-col="5">T5 Kills</button>
+        <button data-col="3">Kill Points</button>
+        <button data-col="6">Deads</button>
       </div>
 
-      <div id="chart-section">
-        <h2 id="chart-title" class="chart-title">Select a governor to view chart.</h2>
-
-        <div class="chart-buttons">
-          <button data-col="16" class="primary">Power Diff</button>
-          <button data-col="4" class="primary">T4 Kills</button>
-          <button data-col="5" class="primary">T5 Kills</button>
-          <button data-col="3" class="primary">Kill Points</button>
-          <button data-col="6" class="primary">Deads</button>
-          <button id="close-chart" class="secondary">Close</button>
-        </div>
-
-        <canvas id="modal-chart" class="modal-chart"></canvas>
-      </div>
+      <div id="table-chart" class="table-chart" style="height: 600px;"></div>
+    </div>
   </div>
 
   <div class="right"></div>
 </div>
 
 <div class="footer">
-  <p>Dashboard</p>
+<p>Dashboard</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ag-charts-community@13.0.0/dist/umd/ag-charts-community.js?t=1765358410697"></script>
 <script src="test.js"></script>
 </body>
 </html>
