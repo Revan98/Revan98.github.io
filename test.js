@@ -267,8 +267,6 @@ function renderTableChart(colIndex) {
       y: { type: "number", position: "left" },
     },
     legend: { enabled: false },
-        fill: '#badaff', // fill colour
-        fillOpacity: 0.7,
   };
 
   if (!tableChart) {
@@ -290,6 +288,13 @@ const materialChartThemes = {
           color: "#333333",
         },
       },
+      series: [
+          {
+              // ...
+            fill: '#badaff', // fill colour
+            fillOpacity: 0.8,
+          },
+      ],
       line: {
         series: {
           stroke: "#007bff",
@@ -313,6 +318,13 @@ const materialChartThemes = {
           color: "#eeeeee",
         },
       },
+      series: [
+          {
+              // ...
+            fill: '#badaff', // fill colour
+            fillOpacity: 0.8,
+          },
+      ],
       line: {
         series: {
           stroke: "#ff9800",
