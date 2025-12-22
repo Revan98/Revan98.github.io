@@ -337,6 +337,18 @@ document.querySelectorAll(".chart-buttons button").forEach((btn) => {
   });
 });
 
+const closeChartBtn = document.getElementById("close-chart");
+
+closeChartBtn.addEventListener("click", () => {
+  if (tableChart) {
+    tableChart.destroy(); // Free Chart.js resources
+    tableChart = null; // Reset instance
+  }
+  selectedGovernorId = null;
+  const chclose = document.getElementById("table-chart");
+  chclose.style.display = "none";
+});
+
 loadAllSheetsCache().then(() => {
   const spinner = document.getElementById("loading-spinner");
 
