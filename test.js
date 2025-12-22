@@ -260,10 +260,6 @@ function renderTableChart(colIndex) {
         yKey: "value",
         yName: metricLabels[colIndex],
         marker: { enabled: true },
-        fillOpacity: 0.35,
-        fill: document.body.classList.contains("dark")
-          ? "#ff9800"
-          : "#007bff",
       },
     ],
     axes: {
