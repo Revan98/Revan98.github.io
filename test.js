@@ -314,6 +314,8 @@ const materialChartThemes = {
       line: {
         series: {
           stroke: "#ff9800",
+          fill: "#ff9800",
+          fillOpacity: 0.25,
           marker: {
             fill: "#ff9800",
             stroke: "#ff9800",
