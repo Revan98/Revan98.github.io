@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="css/navbar.css">
 <link rel="stylesheet" href="css/box_top_total.css">
 <link rel="stylesheet" href="css/loading.css">
+<link rel="stylesheet" href="css/buttons.css">
 <style>
 .info{
   display: flex;
@@ -206,11 +207,12 @@ body,
       <h2 id="chart-title" class="chart-title">Select a governor to view chart.</h2>
 
       <div class="chart-buttons">
-        <button data-col="16">Power Diff</button>
-        <button data-col="4">T4 Kills</button>
-        <button data-col="5">T5 Kills</button>
-        <button data-col="3">Kill Points</button>
-        <button data-col="6">Deads</button>
+          <button data-col="16" class="primary">Power Diff</button>
+          <button data-col="4" class="primary">T4 Kills</button>
+          <button data-col="5" class="primary">T5 Kills</button>
+          <button data-col="3" class="primary">Kill Points</button>
+          <button data-col="6" class="primary">Deads</button>
+          <button id="close-chart" class="secondary">Close</button>
       </div>
 
       <div id="table-chart" class="table-chart" style="height: 600px;"></div>
@@ -229,3 +231,4 @@ body,
 <script src="js/dashboard.js"></script>
 </body>
 </html>
+
