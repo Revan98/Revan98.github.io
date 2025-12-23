@@ -457,10 +457,10 @@ function renderTotals(rows = []) {
   container.innerHTML = "";
 
   const defs = [
-    { label: "Total T4 kills", col: 12 },
-    { label: "Total T5 kills", col: 13 },
-    { label: "Total Deads", col: 15 },
-    { label: "Total KP", col: 14 },
+    { label: "Total T4 kills", col: 4 },
+    { label: "Total T5 kills", col: 5 },
+    { label: "Total Deads", col: 6 },
+    { label: "Total KP", col: 3 },
   ];
 
   defs.forEach(({ label, col }) => {
