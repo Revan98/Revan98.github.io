@@ -19,7 +19,6 @@ const CONFIG = {
 
 const API_KEY = "AIzaSyDIX6tSEresAQCeYE6cGOWEzWQ92HHoPeY";
 
-
 const SheetCache = {
   sheetsList: [],
   sheetsData: {},
@@ -279,7 +278,6 @@ const gridOptions = {
     resizable: true,
   },
   tooltipShowDelay: 300,
-  tooltipHideDelay: 2000,
   rowHeight: 50,
   pagination: false,
   paginationPageSize: 50,
