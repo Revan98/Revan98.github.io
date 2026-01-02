@@ -193,10 +193,21 @@ const gridOptions = {
 
     {
       headerName: "Power",
-      field: "power",
-      cellRenderer: valueWithDiffRenderer("powerDiff"),
+      field: "powerDiff",
       comparator: (a, b) => a - b,
-      getQuickFilterText: () => "",
+    
+      valueFormatter: (params) => {
+        const v = Number(params.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+      },
+    
+      cellClass: (params) =>
+        Number(params.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (params) => {
+        const base = Number(params.data?.power || 0).toLocaleString();
+        return `Starting Power: ${base}`;
+      },
     },
     {
       headerName: "Kill Points",
