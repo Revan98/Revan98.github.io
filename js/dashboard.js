@@ -136,20 +136,6 @@ function formatNumber(val) {
   if (isNaN(val)) return val;
   return Number(val).toLocaleString("en-US", { minimumFractionDigits: 0 });
 }
-function valueWithDiffRenderer(diffField) {
-  return (params) => {
-    const value = Number(params.value) || 0;
-    const diff = Number(params.data?.[diffField]) || 0;
-    const diffClass = diff >= 0 ? "positive" : "negative";
-
-    return `
-      <div class="cell-value">${formatNumber(value)}</div>
-      <div class="cell-diff ${diffClass}">
-        ${diff >= 0 ? "+" : ""}${formatNumber(diff)}
-      </div>
-    `;
-  };
-}
 
 let gridApi;
 
@@ -192,49 +178,116 @@ const gridOptions = {
 
     {
       headerName: "Power",
-      field: "power",
-      cellRenderer: valueWithDiffRenderer("powerDiff"),
+      field: "powerDiff",
       comparator: (a, b) => a - b,
+    
+      valueFormatter: (params) => {
+        const v = Number(params.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
+      },
+    
+      cellClass: (params) =>
+        Number(params.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (params) => {
+        const base = Number(params.data?.power || 0).toLocaleString("en-US");
+        return `Starting Power: ${base}`;
+      },
+
       getQuickFilterText: () => "",
     },
     {
-      headerName: "Kill Points",
-      field: "killPoints",
-      cellRenderer: valueWithDiffRenderer("killPointsDiff"),
+      headerName: "Killpoints",
+      field: "killPointsDiff",
+    
+      valueFormatter: (p) => {
+        const v = Number(p.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
+      },
+    
+      cellClass: (p) =>
+        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (p) =>
+        `Starting KP: ${Number(p.data?.killPoints || 0).toLocaleString("en-US")}`,
+
       getQuickFilterText: () => "",
     },
     {
       headerName: "T4",
-      field: "t4",
-      cellRenderer: valueWithDiffRenderer("t4Diff"),
+      field: "t4Diff",
+    
+      valueFormatter: (p) => {
+        const v = Number(p.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
+      },
+    
+      cellClass: (p) =>
+        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (p) =>
+        `Starting T4: ${Number(p.data?.t4 || 0).toLocaleString("en-US")}`,
+
       getQuickFilterText: () => "",
     },
     {
       headerName: "T5",
-      field: "t5",
-      cellRenderer: valueWithDiffRenderer("t5Diff"),
+      field: "t5Diff",
+    
+      valueFormatter: (p) => {
+        const v = Number(p.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
+      },
+    
+      cellClass: (p) =>
+        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (p) =>
+        `Starting T5: ${Number(p.data?.t5 || 0).toLocaleString("en-US")}`,
+
       getQuickFilterText: () => "",
     },
     {
       headerName: "Deads",
-      field: "deads",
-      cellRenderer: valueWithDiffRenderer("deadsDiff"),
+      field: "deadsDiff",
+    
+      valueFormatter: (p) => {
+        const v = Number(p.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
+      },
+    
+      cellClass: (p) =>
+        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (p) =>
+        `Starting deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}`,
+
       getQuickFilterText: () => "",
     },
-
-    { headerName: "DKP", field: "dkp", getQuickFilterText: () => "" },
+    { 
+      headerName: "DKP", 
+      field: "dkp", 
+      getQuickFilterText: () => "", 
+    
+      valueFormatter: (p) =>
+        Number(p.value || 0).toLocaleString("en-US"),
+    },
     {
       headerName: "DKP %",
       field: "dkpPercent",
       getQuickFilterText: () => "",
     },
-    { headerName: "Status", field: "status", hide: true },
+    { 
+      headerName: "Status", 
+      field: "status", hide: true 
+    },
   ],
   defaultColDef: {
     sortable: true,
     filter: false,
     resizable: true,
   },
+  tooltipShowDelay: 300,
   rowHeight: 50,
   pagination: false,
   paginationPageSize: 50,
