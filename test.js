@@ -183,14 +183,14 @@ const gridOptions = {
     
       valueFormatter: (params) => {
         const v = Number(params.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
       },
     
       cellClass: (params) =>
         Number(params.value) >= 0 ? "diff-positive" : "diff-negative",
     
       tooltipValueGetter: (params) => {
-        const base = Number(params.data?.power || 0).toLocaleString();
+        const base = Number(params.data?.power || 0).toLocaleString("en-US");
         return `Starting Power: ${base}`;
       },
 
@@ -202,14 +202,14 @@ const gridOptions = {
     
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
       },
     
       cellClass: (p) =>
         Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
     
       tooltipValueGetter: (p) =>
-        `Starting Kill Points: ${Number(p.data?.killPoints || 0).toLocaleString()}`,
+        `Starting Kill Points: ${Number(p.data?.killPoints || 0).toLocaleString("en-US")}`,
 
       getQuickFilterText: () => "",
     },
@@ -219,14 +219,14 @@ const gridOptions = {
     
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
       },
     
       cellClass: (p) =>
         Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
     
       tooltipValueGetter: (p) =>
-        `Starting T4: ${Number(p.data?.t4 || 0).toLocaleString()}`,
+        `Starting T4: ${Number(p.data?.t4 || 0).toLocaleString("en-US")}`,
 
       getQuickFilterText: () => "",
     },
@@ -236,14 +236,14 @@ const gridOptions = {
     
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
       },
     
       cellClass: (p) =>
         Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
     
       tooltipValueGetter: (p) =>
-        `Starting T5: ${Number(p.data?.t5 || 0).toLocaleString()}`,
+        `Starting T5: ${Number(p.data?.t5 || 0).toLocaleString("en-US")}`,
 
       getQuickFilterText: () => "",
     },
@@ -253,14 +253,14 @@ const gridOptions = {
     
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
       },
     
       cellClass: (p) =>
         Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
     
       tooltipValueGetter: (p) =>
-        `Starting deads: ${Number(p.data?.deads || 0).toLocaleString()}`,
+        `Starting deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}`,
 
       getQuickFilterText: () => "",
     },
@@ -270,7 +270,7 @@ const gridOptions = {
       getQuickFilterText: () => "", 
     
       valueFormatter: (p) =>
-        Number(p.value || 0).toLocaleString(),
+        Number(p.value || 0).toLocaleString("en-US"),
     },
     {
       headerName: "DKP %",
