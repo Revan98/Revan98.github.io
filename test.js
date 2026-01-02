@@ -286,7 +286,6 @@ const gridOptions = {
     filter: false,
     resizable: true,
   },
-  tooltipShowDelay: 600,
   rowHeight: 50,
   pagination: false,
   paginationPageSize: 50,
