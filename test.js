@@ -454,7 +454,7 @@ closeChartBtn.addEventListener("click", () => {
   chartSection.classList.remove("visible");
 });
 
-const chartSection = document.getElementById("modal-chart");
+const chartSection = document.getElementById("chart-section");
 chartSection.style.display = "none";
 
 loadAllSheetsCache().then(() => {
