@@ -137,20 +137,6 @@ function formatNumber(val) {
   if (isNaN(val)) return val;
   return Number(val).toLocaleString("en-US", { minimumFractionDigits: 0 });
 }
-function valueWithDiffRenderer(diffField) {
-  return (params) => {
-    const value = Number(params.value) || 0;
-    const diff = Number(params.data?.[diffField]) || 0;
-    const diffClass = diff >= 0 ? "positive" : "negative";
-
-    return `
-      <div class="cell-value">${formatNumber(value)}</div>
-      <div class="cell-diff ${diffClass}">
-        ${diff >= 0 ? "+" : ""}${formatNumber(diff)}
-      </div>
-    `;
-  };
-}
 
 let gridApi;
 
@@ -208,6 +194,8 @@ const gridOptions = {
         const base = Number(params.data?.power || 0).toLocaleString();
         return `Starting Power: ${base}`;
       },
+
+      getQuickFilterText: () => "",
     },
     {
       headerName: "Kill Points",
@@ -223,6 +211,8 @@ const gridOptions = {
     
       tooltipValueGetter: (p) =>
         `Starting Kill Points: ${Number(p.data?.killPoints || 0).toLocaleString()}`,
+
+      getQuickFilterText: () => "",
     },
     {
       headerName: "T4",
@@ -238,6 +228,8 @@ const gridOptions = {
     
       tooltipValueGetter: (p) =>
         `Starting T4: ${Number(p.data?.t4 || 0).toLocaleString()}`,
+
+      getQuickFilterText: () => "",
     },
     {
       headerName: "T5",
@@ -253,6 +245,8 @@ const gridOptions = {
     
       tooltipValueGetter: (p) =>
         `Starting T5: ${Number(p.data?.t5 || 0).toLocaleString()}`,
+
+      getQuickFilterText: () => "",
     },
     {
       headerName: "Deads",
@@ -268,6 +262,8 @@ const gridOptions = {
     
       tooltipValueGetter: (p) =>
         `Starting deads: ${Number(p.data?.deads || 0).toLocaleString()}`,
+
+      getQuickFilterText: () => "",
     },
     { headerName: "DKP", field: "dkp", getQuickFilterText: () => "" },
     {
