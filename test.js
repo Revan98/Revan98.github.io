@@ -303,7 +303,6 @@ const gridOptions = {
 
     updateChart(selectedGovernorId, currentColIndex);
 
-    chartSection.style.display = "block";
     chartSection.classList.add("visible");
   },
 };
@@ -452,7 +451,7 @@ closeChartBtn.addEventListener("click", () => {
     inlineChart = null;
   }
   selectedGovernorId = null;
-  chartSection.style.display = "none";
+  chartSection.classList.remove("visible");
 });
 
 const chartSection = document.getElementById("modal-chart");
