@@ -197,7 +197,7 @@ const gridOptions = {
       getQuickFilterText: () => "",
     },
     {
-      headerName: "Kill Points",
+      headerName: "Killpoints",
       field: "killPointsDiff",
     
       valueFormatter: (p) => {
@@ -209,7 +209,7 @@ const gridOptions = {
         Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
     
       tooltipValueGetter: (p) =>
-        `Starting Kill Points: ${Number(p.data?.killPoints || 0).toLocaleString("en-US")}`,
+        `Starting KP: ${Number(p.data?.killPoints || 0).toLocaleString("en-US")}`,
 
       getQuickFilterText: () => "",
     },
