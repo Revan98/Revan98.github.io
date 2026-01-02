@@ -141,7 +141,7 @@ let gridApi;
 
 function buildRowDataFromSheet(rows) {
   return rows
-    .filter((r) => String(r[11]).trim().toUpperCase() !== "YES")
+    .filter((r) => String(r[10]).trim().toUpperCase() !== "YES")
     .map((r) => ({
       id: r[0],
       name: r[1],
