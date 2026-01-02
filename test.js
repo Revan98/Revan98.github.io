@@ -264,13 +264,22 @@ const gridOptions = {
 
       getQuickFilterText: () => "",
     },
-    { headerName: "DKP", field: "dkp", getQuickFilterText: () => "" },
+    { 
+      headerName: "DKP", 
+      field: "dkp", 
+      getQuickFilterText: () => "" },
+    
+      valueFormatter: (p) =>
+        Number(p.value || 0).toLocaleString(),
     {
       headerName: "DKP %",
       field: "dkpPercent",
       getQuickFilterText: () => "",
     },
-    { headerName: "Status", field: "status", hide: true },
+    { 
+      headerName: "Status", 
+      field: "status", hide: true 
+    },
   ],
   defaultColDef: {
     sortable: true,
