@@ -157,6 +157,13 @@ body,
   color: #f44336 !important;
   font-weight: 600 !important;
 }
+#chart-section {
+  display: none;
+  transition: all 0.4s ease;
+}
+#chart-section.visible {
+  display: block;
+}
 
 </style>
 </head>
@@ -193,7 +200,7 @@ body,
       <div id="top-players"></div>
       <div id="bottom-totals"></div>
       <div class="info">
-        <p>Multiplers T4 - 5 points, T5 - 10 points, Deads - 15 points</p>
+        <p>Multiplers T4 - 5 points, T5 - 10 points, Deads - 15 points || To show the chart click on respective governor row in the table.</p>
       </div>
       <div class="card">
         <div class="quick-filter-wrapper">
@@ -205,22 +212,21 @@ body,
         </div>
         <div id="myGrid" class="ag-theme-alpine" style="height: 700px"></div>
       </div>
-      <div class="card">
-        <div id="chart-section">
-          <h2 id="chart-title" class="chart-title">Select a governor to view chart.</h2>
+	<div class="card">
+	  <div id="chart-section" style="display: none;">
+	    <h2 id="chart-title" class="chart-title">Select a governor to view chart.</h2>
+	    <div class="chart-buttons">
+	      <button data-col="16" class="primary">Power Diff</button>
+	      <button data-col="4" class="primary">T4 Kills</button>
+	      <button data-col="5" class="primary">T5 Kills</button>
+	      <button data-col="3" class="primary">Kill Points</button>
+	      <button data-col="6" class="primary">Deads</button>
+	      <button id="close-chart" class="secondary">Close</button>
+	    </div>
+	    <canvas id="modal-chart" class="modal-chart"></canvas>
+	  </div>
+	</div>
 
-          <div class="chart-buttons">
-            <button data-col="16" class="primary">Power Diff</button>
-            <button data-col="4" class="primary">T4 Kills</button>
-            <button data-col="5" class="primary">T5 Kills</button>
-            <button data-col="3" class="primary">Kill Points</button>
-            <button data-col="6" class="primary">Deads</button>
-            <button id="close-chart" class="secondary">Close</button>
-          </div>
-
-          <canvas id="modal-chart" class="modal-chart"></canvas>
-        </div>
-      </div>
   </div>
 
   <div class="right"></div>
