@@ -296,14 +296,13 @@ const gridOptions = {
   suppressRowTransform: true,
   onRowClicked: (event) => {
     selectedGovernorId = event.data.id;
-
+  
     document.getElementById(
       "chart-title"
     ).textContent = `${event.data.name} (ID: ${event.data.id})`;
-
+  
     updateChart(selectedGovernorId, currentColIndex);
-
-    chartSection.style.display = "block";
+  
     chartSection.classList.add("visible");
   },
 };
@@ -451,12 +450,12 @@ closeChartBtn.addEventListener("click", () => {
     inlineChart.destroy();
     inlineChart = null;
   }
+
   selectedGovernorId = null;
-  chartSection.style.display = "none";
+  chartSection.classList.remove("visible");
 });
 
-const chartSection = document.getElementById("modal-chart");
-chartSection.style.display = "none";
+const chartSection = document.getElementById("chart-section");
 
 loadAllSheetsCache().then(() => {
   const spinner = document.getElementById("loading-spinner");
