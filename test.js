@@ -303,6 +303,7 @@ const gridOptions = {
 
     updateChart(selectedGovernorId, currentColIndex);
 
+    chartSection.style.display = "block";
     chartSection.classList.add("visible");
   },
 };
@@ -451,10 +452,10 @@ closeChartBtn.addEventListener("click", () => {
     inlineChart = null;
   }
   selectedGovernorId = null;
-  chartSection.classList.remove("visible");
+  chartSection.style.display = "none";
 });
 
-const chartSection = document.getElementById("chart-section");
+const chartSection = document.getElementById("modal-chart");
 chartSection.style.display = "none";
 
 loadAllSheetsCache().then(() => {
