@@ -211,29 +211,64 @@ const gridOptions = {
     },
     {
       headerName: "Kill Points",
-      field: "killPoints",
-      cellRenderer: valueWithDiffRenderer("killPointsDiff"),
-      getQuickFilterText: () => "",
+      field: "killPointsDiff",
+    
+      valueFormatter: (p) => {
+        const v = Number(p.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+      },
+    
+      cellClass: (p) =>
+        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (p) =>
+        `Starting Kill Points: ${Number(p.data?.killPoints || 0).toLocaleString()}`,
     },
     {
       headerName: "T4",
-      field: "t4",
-      cellRenderer: valueWithDiffRenderer("t4Diff"),
-      getQuickFilterText: () => "",
+      field: "t4Diff",
+    
+      valueFormatter: (p) => {
+        const v = Number(p.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+      },
+    
+      cellClass: (p) =>
+        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (p) =>
+        `Starting T4: ${Number(p.data?.t4 || 0).toLocaleString()}`,
     },
     {
       headerName: "T5",
-      field: "t5",
-      cellRenderer: valueWithDiffRenderer("t5Diff"),
-      getQuickFilterText: () => "",
+      field: "t5Diff",
+    
+      valueFormatter: (p) => {
+        const v = Number(p.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+      },
+    
+      cellClass: (p) =>
+        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (p) =>
+        `Starting T5: ${Number(p.data?.t5 || 0).toLocaleString()}`,
     },
     {
       headerName: "Deads",
-      field: "deads",
-      cellRenderer: valueWithDiffRenderer("deadsDiff"),
-      getQuickFilterText: () => "",
+      field: "deadsDiff",
+    
+      valueFormatter: (p) => {
+        const v = Number(p.value) || 0;
+        return `${v >= 0 ? "+" : ""}${v.toLocaleString()}`;
+      },
+    
+      cellClass: (p) =>
+        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
+    
+      tooltipValueGetter: (p) =>
+        `Starting deads: ${Number(p.data?.deads || 0).toLocaleString()}`,
     },
-
     { headerName: "DKP", field: "dkp", getQuickFilterText: () => "" },
     {
       headerName: "DKP %",
@@ -247,8 +282,8 @@ const gridOptions = {
     filter: false,
     resizable: true,
   },
-  tooltipShowDelay: 100,
-  tooltipHideDelay: 110,
+  tooltipShowDelay: 300,
+  tooltipHideDelay: 2000,
   rowHeight: 50,
   pagination: false,
   paginationPageSize: 50,
