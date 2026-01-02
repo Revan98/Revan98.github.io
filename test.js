@@ -19,6 +19,7 @@ const CONFIG = {
 
 const API_KEY = "AIzaSyDIX6tSEresAQCeYE6cGOWEzWQ92HHoPeY";
 
+
 const SheetCache = {
   sheetsList: [],
   sheetsData: {},
@@ -43,7 +44,8 @@ function getSelectedSource() {
   return CONFIG.sources.find((src) => src.kd === kd) || null;
 }
 
-async function loadAllSheetsCache() {
+// Load all sheets into RAM
+/* async function loadAllSheetsCache() {
   const source = getSelectedSource();
 
   if (!source) {
@@ -74,8 +76,62 @@ async function loadAllSheetsCache() {
 
     if (sheetName === lastSheet) SheetCache.lastSheetData = { headers, rows };
   }
-}
+} */
+function normalizeSheetName(rangeStr) {
+  let name = rangeStr.split("!")[0];
 
+  if (name.startsWith("'") && name.endsWith("'")) {
+    name = name.slice(1, -1);
+  }
+
+  return name;
+}
+async function loadAllSheetsCache() {
+  const source = getSelectedSource();
+
+  if (!source) {
+    alert("Invalid or missing KD parameter.");
+    return;
+  }
+
+  const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
+
+  const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
+  const metaRes = await fetch(metaUrl);
+  const metaJson = await metaRes.json();
+
+  SheetCache.sheetsList = metaJson.sheets.map((s) => s.properties.title);
+
+  const lastSheet = SheetCache.sheetsList.at(-1);
+
+  const ranges = SheetCache.sheetsList
+    .map((name) => `ranges=${encodeURIComponent(name)}`)
+    .join("&");
+
+  const batchUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&key=${API_KEY}`;
+
+  const batchRes = await fetch(batchUrl);
+  const batchJson = await batchRes.json();
+
+  let lastNonEmptySheet = null;
+
+  batchJson.valueRanges.forEach((range) => {
+    const sheetName = normalizeSheetName(range.range);
+    const values = range.values;
+
+    if (!values || values.length === 0) return;
+
+    const headers = values[0];
+    const rows = values.slice(1);
+
+    SheetCache.sheetsData[sheetName] = { headers, rows };
+    lastNonEmptySheet = sheetName;
+  });
+
+  if (lastNonEmptySheet) {
+    SheetCache.lastSheetData = SheetCache.sheetsData[lastNonEmptySheet];
+  }
+}
 function formatNumber(val) {
   if (val === undefined || val === null || val === "") return val;
   if (isNaN(val)) return val;
@@ -181,22 +237,22 @@ const gridOptions = {
     resizable: true,
   },
   rowHeight: 50,
-  pagination: true,
+  pagination: false,
   paginationPageSize: 50,
   animateRows: true,
+  rowBuffer: 20,
+  suppressRowTransform: true,
   onRowClicked: (event) => {
     selectedGovernorId = event.data.id;
-
-    const chartSection = document.getElementById("table-chart");
-    chartSection.style.display = "block";
 
     document.getElementById(
       "chart-title"
     ).textContent = `${event.data.name} (ID: ${event.data.id})`;
 
-    renderTableChart(currentColIndex);
-    const chart = document.getElementById("table-chart");
-    chart.classList.add("visible");
+    updateChart(selectedGovernorId, currentColIndex);
+
+    chartSection.style.display = "block";
+    chartSection.classList.add("visible");
   },
 };
 
@@ -207,30 +263,12 @@ function onFilterTextBoxChanged() {
   gridApi.setGridOption("quickFilterText", input.value);
 }
 
-const { AgCharts } = agCharts;
-let tableChart = null;
+let inlineChart = null;
 let selectedGovernorId = null;
 let currentColIndex = 16;
-let _documentClickListenerAdded = false;
 
-function getGovernorName(id) {
-  const rows = SheetCache.lastSheetData?.rows || [];
-  const found = rows.find((r) => `${r[0]}` === `${id}`);
-  return found ? found[1] : id;
-}
-
-function buildChartData(colIndex) {
-  return SheetCache.sheetsList.map((sheetName) => {
-    const sheet = SheetCache.sheetsData[sheetName];
-    const row = sheet?.rows.find((r) => `${r[0]}` === `${selectedGovernorId}`);
-    return {
-      sheet: sheetName,
-      value: row ? Number(row[colIndex] || 0) : 0,
-    };
-  });
-}
-
-const metricLabels = {
+// Column labels
+const labelMap = {
   16: "Power Diff",
   4: "T4 Kills",
   5: "T5 Kills",
@@ -238,106 +276,135 @@ const metricLabels = {
   6: "Deads",
 };
 
-function renderTableChart(colIndex) {
-  if (!selectedGovernorId) return;
-
-  currentColIndex = colIndex;
-
-  const container = document.getElementById("table-chart");
-  const data = buildChartData(colIndex);
-
-  const options = {
-    container,
-    theme: getChartTheme(),
-    title: {
-      text: metricLabels[colIndex],
-    },
-    data,
-    series: [
-      {
-        type: "line",
-        xKey: "sheet",
-        yKey: "value",
-        yName: metricLabels[colIndex],
-        marker: { enabled: true },
-      },
-    ],
-    axes: {
-      x: { type: "category", position: "bottom" },
-      y: { type: "number", position: "left" },
-    },
-    legend: { enabled: false },
-  };
-
-  if (!tableChart) {
-    tableChart = AgCharts.create(options);
-  } else {
-    tableChart.updateDelta(options);
-  }
-}
-
-const materialChartThemes = {
+const CHART_STYLES = {
   light: {
-    baseTheme: "ag-material",
-    overrides: {
-      common: {
-        background: {
-          fill: "#ffffff",
-        },
-        title: {
-          color: "#333333",
-        },
-      },
-      line: {
-        series: {
-          stroke: "#007bff",
-          marker: {
-            fill: "#007bff",
-            stroke: "#007bff",
-          },
-        },
-      },
-    },
+    text: "#333",
+    grid: "rgba(0,0,0,0.1)",
+    line: "#007bff",
+    background: "rgba(255,255,255,0.8)",
   },
-
   dark: {
-    baseTheme: "ag-material-dark",
-    overrides: {
-      common: {
-        background: {
-          fill: "#2a2a2a",
-        },
-        title: {
-          color: "#eeeeee",
-        },
-      },
-      line: {
-        series: {
-          stroke: "#ff9800",
-          fill: "#ff9800",
-          fillOpacity: 0.25,
-          marker: {
-            fill: "#ff9800",
-            stroke: "#ff9800",
-          },
-        },
-      },
-    },
+    text: "#eee",
+    grid: "rgba(255,255,255,0.2)",
+    line: "#ff9800",
+    background: "rgba(40,40,40,0.8)",
   },
 };
 
-function getChartTheme() {
-  return document.body.classList.contains("dark")
-    ? materialChartThemes.dark
-    : materialChartThemes.light;
+function getCurrentTheme() {
+  return document.body.classList.contains("dark") ? "dark" : "light";
 }
+
+function updateChart(governorId, colIndex) {
+  selectedGovernorId = governorId;
+  currentColIndex = colIndex;
+
+  if (!SheetCache.lastSheetData) return;
+
+  const sheets = SheetCache.sheetsList;
+  const values = sheets.map((sheetName) => {
+    const sheet = SheetCache.sheetsData[sheetName];
+    if (!sheet) return 0;
+    const row = sheet.rows.find((r) => `${r[0]}` === `${selectedGovernorId}`);
+    return row ? Number(row[colIndex] || 0) : 0;
+  });
+
+  const ctx = document.querySelector("#modal-chart").getContext("2d");
+  const theme = getCurrentTheme();
+  const styles = CHART_STYLES[theme];
+
+  if (!inlineChart) {
+
+    inlineChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: sheets,
+        datasets: [
+          {
+            label: labelMap[colIndex] || `Col ${colIndex}`,
+            data: values,
+            borderColor: styles.line,
+            backgroundColor: styles.line + "33",
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: styles.line,
+            pointBorderColor: styles.line,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: styles.text } },
+          tooltip: {
+            backgroundColor: styles.background,
+            titleColor: styles.text,
+            bodyColor: styles.text,
+          },
+          chartBackground: { color: styles.background },
+        },
+        scales: {
+          x: { ticks: { color: styles.text }, grid: { color: styles.grid } },
+          y: { ticks: { color: styles.text }, grid: { color: styles.grid } },
+        },
+      },
+    });
+  } else {
+
+    const dataset = inlineChart.data.datasets[0];
+    dataset.data = values;
+    dataset.label = labelMap[colIndex] || `Col ${colIndex}`;
+    dataset.borderColor = styles.line;
+    dataset.backgroundColor = styles.line + "33";
+    dataset.pointBackgroundColor = styles.line;
+    dataset.pointBorderColor = styles.line;
+
+    inlineChart.options.plugins.legend.labels.color = styles.text;
+    inlineChart.options.scales.x.ticks.color = styles.text;
+    inlineChart.options.scales.y.ticks.color = styles.text;
+    inlineChart.options.scales.x.grid.color = styles.grid;
+    inlineChart.options.scales.y.grid.color = styles.grid;
+    inlineChart.options.plugins.tooltip.backgroundColor = styles.background;
+    inlineChart.options.plugins.tooltip.titleColor = styles.text;
+    inlineChart.options.plugins.tooltip.bodyColor = styles.text;
+    inlineChart.options.plugins.chartBackground.color = styles.background;
+
+    inlineChart.update();
+  }
+}
+
+function refreshChartTheme() {
+  if (selectedGovernorId && inlineChart) {
+    updateChart(selectedGovernorId, currentColIndex);
+  }
+}
+
+themeToggle.addEventListener("change", () => {
+  refreshChartTheme();
+});
 
 document.querySelectorAll(".chart-buttons button").forEach((btn) => {
   btn.addEventListener("click", () => {
     const col = Number(btn.dataset.col);
-    renderTableChart(col);
+    if (!isNaN(col) && selectedGovernorId) {
+      updateChart(selectedGovernorId, col);
+    }
   });
 });
+
+const closeChartBtn = document.getElementById("close-chart");
+
+closeChartBtn.addEventListener("click", () => {
+  if (inlineChart) {
+    inlineChart.destroy();
+    inlineChart = null;
+  }
+  selectedGovernorId = null;
+  chartSection.style.display = "none";
+});
+
+const chartSection = document.getElementById("modal-chart");
+chartSection.style.display = "none";
 
 loadAllSheetsCache().then(() => {
   const spinner = document.getElementById("loading-spinner");
@@ -384,7 +451,6 @@ function renderTopPlayers(players) {
     box.appendChild(el);
   });
 }
-
 function renderTotals(rows = []) {
   const container = document.querySelector("#bottom-totals");
   if (!container) return;
@@ -392,10 +458,10 @@ function renderTotals(rows = []) {
   container.innerHTML = "";
 
   const defs = [
-    { label: "Total T4 kills", col: 12 },
-    { label: "Total T5 kills", col: 13 },
-    { label: "Total Deads", col: 15 },
-    { label: "Total KP", col: 14 },
+    { label: "Total T4 kills", col: 4 },
+    { label: "Total T5 kills", col: 5 },
+    { label: "Total Deads", col: 6 },
+    { label: "Total KP", col: 3 },
   ];
 
   defs.forEach(({ label, col }) => {
@@ -439,12 +505,6 @@ function setTheme(mode) {
   document.body.classList.add(mode);
 
   document.body.setAttribute("data-ag-theme-mode", mode);
-  if (tableChart) {
-    tableChart.updateDelta({
-      theme: getChartTheme(),
-    });
-  }
-
   localStorage.setItem("theme", mode);
 }
 
@@ -471,6 +531,10 @@ initializeTheme(themeToggle);
 if (themeToggle) {
   themeToggle.addEventListener("change", (e) => {
     setTheme(e.target.checked ? "dark" : "light");
+
+    if (selectedGovernorId && inlineChart) {
+      updateChart(selectedGovernorId, currentColIndex);
+    }
   });
 }
 
