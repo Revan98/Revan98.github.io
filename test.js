@@ -267,10 +267,11 @@ const gridOptions = {
     { 
       headerName: "DKP", 
       field: "dkp", 
-      getQuickFilterText: () => "" },
+      getQuickFilterText: () => "", 
     
       valueFormatter: (p) =>
         Number(p.value || 0).toLocaleString(),
+    },
     {
       headerName: "DKP %",
       field: "dkpPercent",
