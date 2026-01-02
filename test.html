@@ -131,7 +131,7 @@ body,
   opacity: 1;
   transform: translateY(0);
 }
-#modal-chart {
+#chart-section {
   opacity: 0;
   transform: translateY(20px);
   pointer-events: none;
@@ -142,12 +142,14 @@ body,
     transform 0.45s ease,
     max-height 0.45s ease;
 }
-#modal-chart.visible {
+
+#chart-section.visible {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
   max-height: 1000px;
 }
+
 .diff-positive {
   color: #4caf50 !important;
   font-weight: 600 !important;
