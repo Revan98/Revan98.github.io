@@ -48,9 +48,9 @@
 @media (max-width: 768px) {
     #top-players,
     #bottom-totals {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+		  display: flex;
+		  flex-direction: row;
+		  flex-wrap: wrap;
         margin-left: 3px;
         margin-right: 3px;
     }
@@ -58,9 +58,8 @@
 @media (max-width: 991px) {
     #top-players,
     #bottom-totals {
-		  display: flex;
-		  flex-direction: row;
-		  flex-wrap: wrap;
+        display: flex;
+        justify-content: center;
         margin-left: 3px;
         margin-right: 3px;
     }
@@ -86,5 +85,6 @@
         max-width: 260px;
     }
 }
+
 
 
