@@ -137,12 +137,15 @@ body {
 }
 
 .footer {
+    display:flex;
   padding: 10px;
   text-align: right;
   height: 5%;
-  margin-top: auto; 
   background:var(--table-bg);
   width: 100%;
+        align-items: center;
+        height: 100%;
+        margin-right: 40px;
 }
 
 .card {
@@ -167,6 +170,29 @@ body {
 }
 
 /* Responsive adjustments */
+@media (max-width: 768px) {
+    .header {
+        height: 48px;
+    }
+
+    .row {
+        flex-wrap: wrap;
+    }
+
+    .left,
+    .middle,
+    .right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .footer {
+        align-items: center;
+        height: 100%;
+        margin-right: 40px;
+    }
+}
+
 @media (max-width: 991px) {
     .header {
         height: 48px;
@@ -206,3 +232,4 @@ body {
     }
 
 }
+
