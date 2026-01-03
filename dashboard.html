@@ -24,6 +24,16 @@
   padding:10px;
   align-items: center;
 }
+@media (max-width: 768px) {
+    .info {
+		display: flex;
+        justify-content: center;
+		align-items: center;
+		height: 60px;
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+}
 .cell-value {
   font-weight: 600;
   font-size: 14px !important;
@@ -93,6 +103,16 @@ body.dark .ag-theme-alpine .ag-row-odd {
   justify-content: center;
   gap: 10px;
 }
+@media (max-width: 768px) {
+    .chart-buttons {
+		  display: flex;
+		  flex-direction: row;
+		  flex-wrap: wrap;
+        justify-content: center;
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+}
 .chart-title {
   display: flex;
   justify-content: center;
@@ -131,7 +151,7 @@ body,
   opacity: 1;
   transform: translateY(0);
 }
-#modal-chart {
+#chart-section {
   opacity: 0;
   transform: translateY(20px);
   pointer-events: none;
@@ -142,12 +162,14 @@ body,
     transform 0.45s ease,
     max-height 0.45s ease;
 }
-#modal-chart.visible {
+
+#chart-section.visible {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
   max-height: 1000px;
 }
+
 .diff-positive {
   color: #4caf50 !important;
   font-weight: 600 !important;
@@ -166,6 +188,17 @@ body,
   color: inherit;
   text-align: center;
   transition: opacity 0.3s ease;
+}
+.footer {
+	display:flex !important;
+	align-items: center !important;
+  padding: 1px !important;
+   justify-content: right !important;
+  height: 100% !important;
+  max-height: 50px !important;
+margin-right: 40px !important;
+  background:var(--table-bg) !important;
+  width: 100% !important;
 }
 </style>
 </head>
@@ -248,5 +281,6 @@ body,
 <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
 
