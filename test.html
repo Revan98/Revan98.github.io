@@ -122,7 +122,7 @@ html, body {
     color: var(--text-color);
 }
 .page {
-  min-height: calc(100vh - 64px); /* navbar height approximation */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -135,12 +135,12 @@ html, body {
 }
 /* Footer */
 .footer {
-  background-color: #ffffff;
-  border-top: 1px solid #e5e7eb;
+  background: var(--nav-bg);
+  border-top: 1px solid var(--table-border);
   padding: 1rem 0;
   text-align: center;
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--text-color);
 }
 /* 2. GLOBAL
 body {
