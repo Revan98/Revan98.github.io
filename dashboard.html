@@ -5,15 +5,249 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DKP stats</title>
 
-<link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/navbar.css">
 <link rel="stylesheet" href="css/box_top_total.css">
 <link rel="stylesheet" href="css/loading.css">
 <link rel="stylesheet" href="css/buttons.css">
 <style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Dark mode via prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --accent: #2a2a2a;
+        --bg-color: #333;
+        --text-color: #eee;
+        --table-bg: #2a2a2a;
+        --table-border: #444;
+        --chart-text: #eee;
+        --chart-grid: rgba(255, 255, 255, 0.2);
+        --chart-line: #ff9800;
+        --diff-positive-bg: rgba(0, 60, 0, 0.7);
+        --diff-negative-bg: rgba(80, 0, 0, 0.7);
+        --diff-positive-text: #b8ffba;
+        --diff-negative-text: #ffbaba;
+        --row-hover-bg: rgba(255, 255, 255, 0.08);
+        --nav-bg: rgb(26, 26, 26);
+        --nav-border: rgba(255, 255, 255, 0.05);
+        --nav-box: rgba(0, 0, 0, 0.5);
+        --table-stripe-odd: rgba(255,255,255,0.01);
+        --table-stripe-even: rgba(255,255,255,0.03);
+        --button-secondary-bg: rgb(211, 47, 47);
+    }
+}
+
+/* Light mode via prefers-color-scheme */
+@media (prefers-color-scheme: light) {
+    :root {
+        --accent: #fff;
+        --bg-color: #e5e5e5;
+        --text-color: #333;
+        --table-bg: #fff;
+        --table-border: #ccc;
+        --accent: #fff;
+        --scrollbar-bg: rgba(0, 0, 0, 0.3);
+        --chart-text: #333;
+        --chart-grid: rgba(0, 0, 0, 0.1);
+        --chart-line: #007bff;
+        --diff-positive-bg: rgba(0, 200, 83, 0.15);
+        --diff-negative-bg: rgba(244, 67, 54, 0.15);
+        --diff-positive-text: #0a6025;
+        --diff-negative-text: #7a0e0e;
+        --row-hover-bg: rgba(0, 0, 0, 0.06);
+        --nav-bg:rgb(255, 255, 255);
+        --nav-border: none;
+        --nav-box: rgba(0, 0, 0, 0.08);
+        --table-stripe-odd: #ffffff;
+        --table-stripe-even: #f7f9fb;
+        --button-secondary-bg: rgb(211, 47, 47);
+    }
+}
+
+body.light {
+    --accent: #fff;
+    --bg-color: #e5e5e5;
+    --text-color: #333;
+    --table-bg: #fff;
+    --table-border: #ccc;
+    --accent: #fff;
+    --scrollbar-bg: rgba(0, 0, 0, 0.3);
+    --chart-text: #333;
+    --chart-grid: rgba(0, 0, 0, 0.1);
+    --chart-line: #007bff;
+    --diff-positive-bg: rgba(0, 200, 83, 0.15);
+    --diff-negative-bg: rgba(244, 67, 54, 0.15);
+    --diff-positive-text: #0a6025;
+    --diff-negative-text: #7a0e0e;
+    --row-hover-bg: rgba(0, 0, 0, 0.06);
+    --nav-bg:rgb(255, 255, 255);
+    --nav-border: none;
+    --nav-box: rgba(0, 0, 0, 0.08);
+    --table-stripe-odd: #ffffff;
+    --table-stripe-even: #f7f9fb; 
+    --button-secondary-bg: rgb(211, 47, 47);
+}
+
+body.dark {
+    --accent: #2a2a2a;
+    --bg-color: #333;
+    --text-color: #eee;
+    --table-bg: #2a2a2a;
+    --table-border: #444;
+    --chart-text: #eee;
+    --chart-grid: rgba(255, 255, 255, 0.2);
+    --chart-line: #ff9800;
+    --diff-positive-bg: rgba(0, 60, 0, 0.7);
+    --diff-negative-bg: rgba(80, 0, 0, 0.7);
+    --diff-positive-text: #b8ffba;
+    --diff-negative-text: #ffbaba;
+    --row-hover-bg: rgba(255, 255, 255, 0.08);
+    --nav-bg: rgb(26, 26, 26);
+    --nav-border: rgba(255, 255, 255, 0.05);
+    --nav-box: rgba(0, 0, 0, 0.5);
+    --table-stripe-odd: rgba(255,255,255,0.01);
+    --table-stripe-even: rgba(255,255,255,0.03);
+    --button-secondary-bg: rgb(211, 47, 47);
+}
+
+body {
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, Ubuntu, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main content */
+.content {
+  min-width: 60%;
+  max-width: 70%;
+  margin: 3rem auto;
+  flex: 1;
+}
+/* Footer */
+.footer {
+  background: var(--nav-bg);
+  border-top: 1px solid var(--table-border);
+  padding: 1rem 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+/* 2. GLOBAL
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: var(--bg-color);
+    color: var(--text-color);
+        display: flex;
+    flex-direction: column;
+}
+
+.row {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.left {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+
+.middle {
+    flex: 0 0 60%;
+    max-width: 60%;
+    margin-top: 40px;
+}
+
+.right {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+
+.card {
+    background: var(--table-bg);
+    border: 1px solid var(--table-border);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 14px auto;
+    text-align: center;
+    box-shadow: 0 4px 18px rgba(11, 20, 40, 0.04);
+    max-width: 100%;
+    overflow: visible;
+}
+ */
+
+/* Responsive adjustments 
+@media (max-width: 768px) {
+    .header {
+        height: 48px;
+    }
+
+    .row {
+        flex-wrap: wrap;
+    }
+
+    .left,
+    .middle,
+    .right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 991px) {
+    .header {
+        height: 48px;
+    }
+
+    .row {
+        flex-wrap: wrap;
+    }
+
+    .left,
+    .middle,
+    .right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 1366px) {
+    .header {
+        height: 48px;
+    }
+
+    .row {
+        flex-wrap: wrap;
+    }
+
+    .left,
+    .middle,
+    .right {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .card {
+        margin-left: 3px;
+        margin-right: 3px;
+    }
+}
+*/
 .info{
   display: flex;
   margin-top: 15px;
+  margin-bottom: 15px;
   width:100%;
   background: var(--table-bg);
   font-size:15px;
@@ -189,17 +423,7 @@ body,
   text-align: center;
   transition: opacity 0.3s ease;
 }
-.footer {
-	display:flex !important;
-	align-items: center !important;
-  padding: 1px !important;
-   justify-content: right !important;
-  height: 100% !important;
-  max-height: 50px !important;
-margin-right: 40px !important;
-  background:var(--table-bg) !important;
-  width: 100% !important;
-}
+
 </style>
 </head>
 <body data-ag-theme-mode="light">
@@ -228,16 +452,17 @@ margin-right: 40px !important;
     </div>
 </header>
 
-<div class="row">
-  <div class="left"></div>
+  <!-- Page wrapper for sticky footer -->
+  <div class="page">
 
-  <div class="middle">
+    <!-- Main content -->
+    <main class="content">
       <div id="top-players"></div>
       <div id="bottom-totals"></div>
       <div class="info">
-        <p>Multiplers T4 - 5 points, T5 - 10 points, Deads - 15 points</p>
+        <p>Multiplers T4 - 5 points, T5 - 10 points, Deads - 15 points || Select a governor to view chart.</p>
       </div>
-      <div class="card">
+
         <div class="quick-filter-wrapper">
           <input type="text" id="quickFilter" placeholder="Search..." class="quick-filter" oninput="onFilterTextBoxChanged()"/>
         </div>
@@ -246,8 +471,8 @@ margin-right: 40px !important;
             <p>Loading data...</p>
         </div>
         <div id="myGrid" class="ag-theme-alpine" style="height: 700px"></div>
-      </div>
-      <div class="card">
+
+
 		  <div id="chart-placeholder" class="chart-placeholder">
 		    Select a governor to view chart.
 		  </div>
@@ -266,21 +491,14 @@ margin-right: 40px !important;
 
           <canvas id="modal-chart" class="modal-chart"></canvas>
         </div>
-      </div>
+    </main>
+
+	<footer class="footer">
+	  <p>Dashboard</p>
+	</footer>
   </div>
-
-  <div class="right"></div>
-</div>
-
-<div class="footer">
-  <p>Dashboard</p>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/dashboard.js"></script>
 </body>
 </html>
-
-
-
