@@ -157,6 +157,16 @@ body,
   color: #f44336 !important;
   font-weight: 600 !important;
 }
+.chart-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 19px;
+  font-weight: 500;
+  color: inherit;
+  text-align: center;
+  transition: opacity 0.3s ease;
+}
 </style>
 </head>
 <body data-ag-theme-mode="light">
@@ -205,9 +215,13 @@ body,
         <div id="myGrid" class="ag-theme-alpine" style="height: 700px"></div>
       </div>
       <div class="card">
-        <div id="chart-section">
-          <h2 id="chart-title" class="chart-title">Select a governor to view chart.</h2>
+		  <div id="chart-placeholder" class="chart-placeholder">
+		    Select a governor to view chart.
+		  </div>
 
+        <div id="chart-section">
+		  <h2 id="chart-title" class="chart-title"></h2>
+			
           <div class="chart-buttons">
             <button data-col="16" class="primary">Power Diff</button>
             <button data-col="4" class="primary">T4 Kills</button>
@@ -234,4 +248,5 @@ body,
 <script src="js/dashboard.js"></script>
 </body>
 </html>
+
 
