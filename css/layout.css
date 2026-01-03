@@ -144,7 +144,7 @@ body {
   background:var(--table-bg);
   width: 100%;
         align-items: center;
-        height: 100%;
+    justify-content: right;
         margin-right: 40px;
 }
 
@@ -188,7 +188,7 @@ body {
 
     .footer {
         align-items: center;
-        height: 100%;
+    justify-content: right;
         margin-right: 40px;
     }
 }
@@ -207,6 +207,11 @@ body {
     .right {
         flex: 0 0 100%;
         max-width: 100%;
+    }
+    .footer {
+        align-items: center;
+    justify-content: right;
+        margin-right: 40px;
     }
 }
 
@@ -230,6 +235,11 @@ body {
         margin-left: 3px;
         margin-right: 3px;
     }
-
+    .footer {
+        align-items: center;
+    justify-content: right;
+        margin-right: 40px;
+    }
 }
+
 
