@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DKP Web App (Baser only)</title>
+
+    <link rel="stylesheet" href="css/dkp.css">
+
+</head>
+
+<body data-ag-theme-mode="light">
+    <header class="navbar">
+        <div class="nav-container">
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list"
+                    viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                </svg>
+            </button>
+
+            <div class="nav-links" id="nav-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="compare.html">Compare</a>
+                <a href="dkp.html">DKP Calculator</a>
+                <a href="merge.html">Merge</a>
+                <a href="govinfo.html">Governor info</a>
+            </div>
+
+            <label class="theme-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708" />
+                </svg>
+                <input type="checkbox" id="toggle-theme">
+                <span class="toggle-slider"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278M4.858 1.311A7.27 7.27 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.32 7.32 0 0 0 5.205-2.162q-.506.063-1.029.063c-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286" />
+                </svg>
+            </label>
+        </div>
+    </header>
+
+    <div class="page">
+        <main class="content">
+            <section class="card">
+                <h2>Settings</h2>
+                <div class="put-in-row">
+                    <button id="export-settings" class="primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                            class="bi bi-save" viewBox="0 0 16 16">
+                            <path
+                                d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1z" />
+                        </svg>
+                        Export Settings (.json)</button>
+                    <button id="import-settings" class="primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                            class="bi bi-folder2" viewBox="0 0 16 16">
+                            <path
+                                d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5zM2.5 3a.5.5 0 0 0-.5.5V6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3zM14 7H2v5.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5z" />
+                        </svg>
+                        Import Settings (.json)</button>
+                    <input id="import-settings-file" type="file" accept=".json" style="display:none" />
+                    <button id="clear-min-dkp" class="secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-trash-fill" viewBox="0 0 16 16">
+                            <path
+                                d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0" />
+                        </svg>
+                        Clear all saved Min DKP</button>
+                    <div class="muted" style="margin-left:10px;">Export/import includes multipliers, power ranges,
+                        vacation
+                        list and min_dkp.</div>
+                </div>
+            </section>
+
+            <main>
+                <section class="card">
+                    <h2>Multipliers</h2>
+                    <div class="put-in-row">
+                        <label>T4: <input id="t4" class="file" type="number" step="0.01"></label>
+                        <label>T5: <input id="t5" class="file" type="number" step="0.01"></label>
+                        <label>Deads: <input id="deads" class="file" type="number" step="0.01"></label>
+                        <button id="save-multipliers" class="primary">Save</button>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Power Ranges (Min → Max optional → %)</h2>
+                    <div id="power-ranges-wrap">
+                        <div id="power-table" class="ag-theme-alpine" style="height: 429px"></div>
+
+                        <div class="put-in-row">
+                            <input id="pr-min" class="file" placeholder="Min power (integer)">
+                            <input id="pr-max" class="file" placeholder="Max power (optional)">
+                            <input id="pr-percent" class="file" placeholder="Percentage (e.g. 0.6)">
+                            <button id="pr-add" class="primary">Add / Update</button>
+                            <button id="pr-save" class="primary">Save ranges</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Vacation List</h2>
+                    <div class="put-in-row">
+                        <input id="vacation-input" class="file" placeholder="IDs, comma separated (e.g. 123,456)">
+                        <button id="vac-save" class="primary">Save Vacation List</button>
+                        <button id="vac-clear" class="secondary">Clear Vacation List</button>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Input Scans</h2>
+                    <div class="put-in-row">
+                        <div class="file-col">
+                            <label>First scan (old): <input id="file1" class="file" type="file"
+                                    accept=".xlsx,.xls,.csv"></label>
+                            <small>Header names supported: ID, Name, Power, Killpoints, Deads, T4 Kills, T5 Kills,
+                                CH</small>
+                        </div>
+                        <div class="file-col">
+                            <label>Latest scan (new): <input id="file2" class="file" type="file"
+                                    accept=".xlsx,.xls,.csv"></label>
+                        </div>
+                    </div>
+
+                    <div class="put-in-row">
+                        <label>DKP Mode:
+                            <label><input name="mode" value="lilithdata" type="radio" checked> Lilith</label>
+                            <label><input name="mode" value="default" type="radio"> Default</label>
+                            <label>
+                                <input type="checkbox" id="ignore-ch">
+                                Ignore CH < 25 filter </label>
+                            </label>
+                    </div>
+
+                    <div class="put-in-row">
+                        <button id="run-dkp" class="primary">Calculate DKP</button>
+                        <progress id="progress" max="100" value="0"></progress>
+                    </div>
+
+                    <div class="put-in-row">
+                        <button id="export-xlsx" class="primary">Export XLSX</button>
+                        <button id="export-csv" class="primary">Export CSV</button>
+                        <button id="export-json" class="primary">Export JSON</button>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>Results (Top as)</h2>
+                    <div id="results-info" class="muted">No results yet.</div>
+                    <div id="result-table" class="ag-theme-alpine" style="height: 500px"></div>
+                </section>
+
+            </main>
+
+            <div class="footer">
+                <p>Data persisted locally with IndexedDB (localForage). Min DKP values are saved and reused across runs.
+                </p>
+            </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="js/dkp.js"></script>
+
+</body>
+
+</html>
