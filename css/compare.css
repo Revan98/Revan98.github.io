@@ -111,7 +111,7 @@ body {
 }
 
 .page {
-    min-height: 100vh;
+    min-height: calc(100vh - 61px);
     display: flex;
     flex-direction: column;
 }
@@ -423,4 +423,5 @@ body.light .ag-theme-alpine .ag-row-odd {
 
 body.dark .ag-theme-alpine .ag-row-odd {
     background-color: rgba(255, 255, 255, 0.05);
+
 }
