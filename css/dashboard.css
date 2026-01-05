@@ -111,7 +111,7 @@ body {
 }
 
 .page {
-  min-height: 100vh;
+  min-height: calc(100vh - 61px);
   display: flex;
   flex-direction: column;
 }
@@ -713,4 +713,5 @@ body,
   color: inherit;
   text-align: center;
   transition: opacity 0.3s ease;
+
 }
