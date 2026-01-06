@@ -668,6 +668,24 @@
   // initial load
   init().catch((err) => console.error("Init error", err));
 
+	// back to the top of the page
+	const backToTopBtn = document.getElementById("backToTop");
+
+	window.addEventListener("scroll", () => {
+	  if (window.scrollY > 300) {
+		backToTopBtn.classList.add("show");
+	  } else {
+		backToTopBtn.classList.remove("show");
+	  }
+	});
+
+	backToTopBtn.addEventListener("click", () => {
+	  window.scrollTo({
+		top: 0,
+		behavior: "smooth",
+	  });
+	});
+
 	/* -------------------------
 	   THEME HANDLING
 	   ------------------------- */
