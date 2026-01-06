@@ -425,3 +425,46 @@ body.dark .ag-theme-alpine .ag-row-odd {
     background-color: rgba(255, 255, 255, 0.05);
 
 }
+#backToTop {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #0b74d1;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    background-color 0.3s ease;
+  z-index: 9999;
+}
+
+#backToTop.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+#backToTop:hover {
+  background: #095bb0;
+}
+
+/* Dark mode support (optional) */
+body.dark #backToTop {
+  background: #ff9800;
+  color: #222;
+}
+
+body.dark #backToTop:hover {
+  background: #e68900;
+}
