@@ -20,7 +20,7 @@
     --diff-positive-text: #b8ffba;
     --diff-negative-text: #ffbaba;
     --row-hover-bg: rgba(255, 255, 255, 0.08);
-    --nav-bg: rgb(26, 26, 26);
+    --nav-bg: rgba(20, 20, 20, 0.8);
     --nav-border: rgba(255, 255, 255, 0.05);
     --nav-box: rgba(0, 0, 0, 0.5);
     --table-stripe-odd: rgba(255, 255, 255, 0.01);
@@ -47,7 +47,7 @@
     --diff-positive-text: #0a6025;
     --diff-negative-text: #7a0e0e;
     --row-hover-bg: rgba(0, 0, 0, 0.06);
-    --nav-bg: rgb(255, 255, 255);
+    --nav-bg: rgba(255, 255, 255, 0.85);
     --nav-border: none;
     --nav-box: rgba(0, 0, 0, 0.08);
     --table-stripe-odd: #ffffff;
@@ -72,7 +72,7 @@ body.light {
   --diff-positive-text: #0a6025;
   --diff-negative-text: #7a0e0e;
   --row-hover-bg: rgba(0, 0, 0, 0.06);
-  --nav-bg: rgb(255, 255, 255);
+  --nav-bg: rgba(255, 255, 255, 0.85);
   --nav-border: none;
   --nav-box: rgba(0, 0, 0, 0.08);
   --table-stripe-odd: #ffffff;
@@ -94,7 +94,7 @@ body.dark {
   --diff-positive-text: #b8ffba;
   --diff-negative-text: #ffbaba;
   --row-hover-bg: rgba(255, 255, 255, 0.08);
-  --nav-bg: rgb(26, 26, 26);
+  --nav-bg: rgba(20, 20, 20, 0.8);
   --nav-border: rgba(255, 255, 255, 0.05);
   --nav-box: rgba(0, 0, 0, 0.5);
   --table-stripe-odd: rgba(255, 255, 255, 0.01);
@@ -144,6 +144,7 @@ body {
   min-height: 61px;
   margin: 0 auto;
   background: var(--nav-bg);
+  backdrop-filter: blur(10px);
   padding: 0 24px;
   display: flex;
   align-items: center;
@@ -715,3 +716,4 @@ body,
   transition: opacity 0.3s ease;
 
 }
+
