@@ -399,6 +399,7 @@
         Deads: safeNum(a.Deads),
 
         "Power diff": Math.round(safeNum(b.Power) - safeNum(a.Power)),
+		Acclaim: safeNum(b["Acclaim"]),
       };
 
       // Zero out all stats if user is missing in either scan
