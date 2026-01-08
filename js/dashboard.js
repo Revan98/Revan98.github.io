@@ -26,7 +26,6 @@ const SheetCache = {
 };
 
 const qs = (sel) => document.querySelector(sel);
-const themeToggle = qs("#toggle-theme");
 
 function extractSheetId(url) {
   const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
@@ -85,84 +84,120 @@ function normalizeSheetName(rangeStr) {
 
   return name;
 }
-async function loadAllSheetsCache() {
-  const source = getSelectedSource();
-
-  if (!source) {
-    alert("Invalid or missing KD parameter.");
-    return;
+async function safeFetch(url) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
   }
+  return res.json();
+}
 
-  const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
+async function loadAllSheetsCache() {
+  try {
+    const source = getSelectedSource();
 
-  const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
-  const metaRes = await fetch(metaUrl);
-  const metaJson = await metaRes.json();
+    if (!source) {
+      alert("Invalid or missing KD parameter.");
+      return;
+    }
 
-  SheetCache.sheetsList = metaJson.sheets.map((s) => s.properties.title);
+    const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
 
-  const lastSheet = SheetCache.sheetsList.at(-1);
+    const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
 
-  const ranges = SheetCache.sheetsList
-    .map((name) => `ranges=${encodeURIComponent(name)}`)
-    .join("&");
+    const metaJson = await safeFetch(metaUrl);
 
-  const batchUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&key=${API_KEY}`;
+    SheetCache.sheetsList = metaJson.sheets.map((s) => s.properties.title);
 
-  const batchRes = await fetch(batchUrl);
-  const batchJson = await batchRes.json();
+    const lastSheet = SheetCache.sheetsList.at(-1);
 
-  let lastNonEmptySheet = null;
+    const ranges = SheetCache.sheetsList
+      .map((name) => `ranges=${encodeURIComponent(`'${name}'`)}`)
+      .join("&");
 
-  batchJson.valueRanges.forEach((range) => {
-    const sheetName = normalizeSheetName(range.range);
-    const values = range.values;
+    const batchUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&key=${API_KEY}`;
 
-    if (!values || values.length === 0) return;
+    const batchRes = await fetch(batchUrl);
+    const batchJson = await batchRes.json();
 
-    const headers = values[0];
-    const rows = values.slice(1);
+    let lastNonEmptySheet = null;
 
-    SheetCache.sheetsData[sheetName] = { headers, rows };
-    lastNonEmptySheet = sheetName;
-  });
+    batchJson.valueRanges.forEach((range) => {
+      const sheetName = normalizeSheetName(range.range);
+      const values = range.values;
 
-  if (lastNonEmptySheet) {
-    SheetCache.lastSheetData = SheetCache.sheetsData[lastNonEmptySheet];
+      if (!values || values.length === 0) return;
+
+      const headers = values[0];
+      const rows = values.slice(1);
+
+      SheetCache.sheetsData[sheetName] = { headers, rows };
+      lastNonEmptySheet = sheetName;
+    });
+
+    if (lastNonEmptySheet) {
+      SheetCache.lastSheetData = SheetCache.sheetsData[lastNonEmptySheet];
+    }
+  } catch (err) {
+    console.error("Sheet load failed:", err);
+    alert("Failed to load spreadsheet data.");
   }
 }
+
 function formatNumber(val) {
   if (val === undefined || val === null || val === "") return val;
   if (isNaN(val)) return val;
   return Number(val).toLocaleString("en-US", { minimumFractionDigits: 0 });
 }
 
+const num = (v) => Number(v) || 0;
+const COL = {
+  ID: 0,
+  NAME: 1,
+  POWER: 2,
+  KP_DIFF: 3,
+  T4_DIFF: 4,
+  T5_DIFF: 5,
+  DEADS_DIFF: 6,
+  DKP: 8,
+  DKP_PERCENT: 9,
+  EXCLUDED: 10,
+  STATUS: 11,
+  T4: 12,
+  T5: 13,
+  KP: 14,
+  DEADS: 15,
+  POWER_DIFF: 16,
+  ACCLAIM: 17,
+};
+
 let gridApi;
 
 function buildRowDataFromSheet(rows) {
   return rows
-    .filter((r) => String(r[10]).trim().toUpperCase() !== "YES")
+    .filter((r) => String(r[COL.EXCLUDED]).trim().toUpperCase() !== "YES")
     .map((r) => ({
-      id: r[0],
-      name: r[1],
-      power: Number(r[2]) || 0,
-      powerDiff: Number(r[16]) || 0,
+      id: r[COL.ID],
+      name: r[COL.NAME],
+      power: num(r[COL.POWER]),
+      powerDiff: num(r[COL.POWER_DIFF]),
 
-      killPoints: Number(r[14]) || 0,
-      killPointsDiff: Number(r[3]) || 0,
+      killPoints: num(r[COL.KP]),
+      killPointsDiff: num(r[COL.KP_DIFF]),
 
-      t4: Number(r[12]) || 0,
-      t4Diff: Number(r[4]) || 0,
+      t4: num(r[COL.T4]),
+      t4Diff: num(r[COL.T4_DIFF]),
 
-      t5: Number(r[13]) || 0,
-      t5Diff: Number(r[5]) || 0,
+      t5: num(r[COL.T5]),
+      t5Diff: num(r[COL.T5_DIFF]),
 
-      deads: Number(r[15]) || 0,
-      deadsDiff: Number(r[6]) || 0,
+      deads: num(r[COL.DEADS]),
+      deadsDiff: num(r[COL.DEADS_DIFF]),
 
-      dkp: Number(r[8]) || 0,
-      dkpPercent: r[9],
-      status: r[11],
+      dkp: num(r[COL.DKP]),
+      dkpPercent: r[COL.DKP_PERCENT],
+      status: r[COL.STATUS],
+      acclaim: r[COL.ACCLAIM],
     }));
 }
 
@@ -283,6 +318,13 @@ const gridOptions = {
       field: "status",
       hide: true,
     },
+    {
+      headerName: "Acclaim",
+      field: "acclaim",
+      getQuickFilterText: () => "",
+
+      valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
+    },
   ],
   defaultColDef: {
     sortable: true,
@@ -376,8 +418,6 @@ function updateChart(governorId, colIndex) {
             data: values,
             borderColor: styles.line,
             backgroundColor: styles.line + "33",
-            fill: true,
-            tension: 0.3,
             pointBackgroundColor: styles.line,
             pointBorderColor: styles.line,
           },
@@ -424,15 +464,23 @@ function updateChart(governorId, colIndex) {
 }
 
 function refreshChartTheme() {
-  if (selectedGovernorId && inlineChart) {
-    updateChart(selectedGovernorId, currentColIndex);
-  }
+  if (!inlineChart) return;
+
+  const styles = CHART_STYLES[getCurrentTheme()];
+  const dataset = inlineChart.data.datasets[0];
+
+  dataset.borderColor = styles.line;
+  dataset.backgroundColor = styles.line + "33";
+  inlineChart.options.plugins.legend.labels.color = styles.text;
+  inlineChart.options.scales.x.ticks.color = styles.text;
+  inlineChart.options.scales.y.ticks.color = styles.text;
+
+  inlineChart.update("none");
 }
-
-themeToggle.addEventListener("change", () => {
-  refreshChartTheme();
-});
-
+const themeToggle = qs("#toggle-theme");
+if (themeToggle) {
+  themeToggle.addEventListener("change", refreshChartTheme);
+}
 document.querySelectorAll(".chart-buttons button").forEach((btn) => {
   btn.addEventListener("click", () => {
     const col = Number(btn.dataset.col);
@@ -592,7 +640,9 @@ if (themeToggle) {
 
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
-hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+if (hamburger && navLinks) {
+  hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const current = location.pathname.split("/").pop();
