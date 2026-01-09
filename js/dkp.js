@@ -355,7 +355,7 @@
       } else {
         t4g = safeNum(b["T4 Kills"]);
         t5g = safeNum(b["T5 Kills"]);
-        deg = safeNum(b.Deads);
+        deg = safeNum(b["T1 Deaths"]) + safeNum(b["T2 Deaths"]) + safeNum(b["T3 Deaths"]) + safeNum(b["T4 Deaths"]) + safeNum(b["T5 Deaths"]);
         kp = safeNum(b.Killpoints);
       }
 
