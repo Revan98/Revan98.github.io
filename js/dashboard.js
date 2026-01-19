@@ -389,20 +389,32 @@ const CHART_STYLES = {
 function getCurrentTheme() {
   return document.body.classList.contains("dark") ? "dark" : "light";
 }
+function formatSheetDate(sheetName) {
+  if (!sheetName || typeof sheetName !== "string") return sheetName;
+  if (/^\d{2}_\d{2}_\d{4}$/.test(sheetName)) {
+    return sheetName.replaceAll("_", ".");
+  }
 
+  return sheetName;
+}
 function updateChart(governorId, colIndex) {
   selectedGovernorId = governorId;
   currentColIndex = colIndex;
 
   if (!SheetCache.lastSheetData) return;
 
-  const sheets = SheetCache.sheetsList;
-  const values = sheets.map((sheetName) => {
+  const rawSheets = SheetCache.sheetsList;
+
+  const values = rawSheets.map((sheetName) => {
     const sheet = SheetCache.sheetsData[sheetName];
     if (!sheet) return 0;
+
     const row = sheet.rows.find((r) => `${r[0]}` === `${selectedGovernorId}`);
+
     return row ? Number(row[colIndex] || 0) : 0;
   });
+
+  const labels = rawSheets.map(formatSheetDate);
 
   const ctx = document.querySelector("#modal-chart").getContext("2d");
   const theme = getCurrentTheme();
@@ -412,7 +424,7 @@ function updateChart(governorId, colIndex) {
     inlineChart = new Chart(ctx, {
       type: "line",
       data: {
-        labels: sheets,
+        labels: labels,
         datasets: [
           {
             label: labelMap[colIndex] || `Col ${colIndex}`,
