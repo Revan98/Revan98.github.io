@@ -42,39 +42,6 @@ function getSelectedSource() {
   return CONFIG.sources.find((src) => src.kd === kd) || null;
 }
 
-// Load all sheets into RAM
-/* async function loadAllSheetsCache() {
-  const source = getSelectedSource();
-
-  if (!source) {
-    alert("Invalid or missing KD parameter.");
-    return;
-  }
-
-  const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
-
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
-  const res = await fetch(url);
-  const json = await res.json();
-
-  SheetCache.sheetsList = json.sheets.map((s) => s.properties.title);
-  const lastSheet = SheetCache.sheetsList.at(-1);
-
-  for (const sheetName of SheetCache.sheetsList) {
-    const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheetName}?key=${API_KEY}`;
-    const resSheet = await fetch(sheetUrl);
-    const sheetJson = await resSheet.json();
-
-    if (!sheetJson.values) continue;
-
-    const headers = sheetJson.values[0];
-    const rows = sheetJson.values.slice(1);
-
-    SheetCache.sheetsData[sheetName] = { headers, rows };
-
-    if (sheetName === lastSheet) SheetCache.lastSheetData = { headers, rows };
-  }
-} */
 function normalizeSheetName(rangeStr) {
   let name = rangeStr.split("!")[0];
 
@@ -324,7 +291,7 @@ const gridOptions = {
       getQuickFilterText: () => "",
 
       valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
-      hide: false,
+      hide: true,
     },
   ],
   defaultColDef: {
@@ -389,111 +356,124 @@ const CHART_STYLES = {
 function getCurrentTheme() {
   return document.body.classList.contains("dark") ? "dark" : "light";
 }
+
 function formatSheetDate(sheetName) {
+  // Expecting DD_MM_YYYY
   if (!sheetName || typeof sheetName !== "string") return sheetName;
+
+  // Only replace if it matches the pattern
   if (/^\d{2}_\d{2}_\d{4}$/.test(sheetName)) {
     return sheetName.replaceAll("_", ".");
   }
 
   return sheetName;
 }
+function createChart(ctx, labels, values, colIndex) {
+  const styles = CHART_STYLES[getCurrentTheme()];
+
+  inlineChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: labelMap[colIndex],
+          data: values,
+          tension: 0.25,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: styles.text } },
+        tooltip: {
+          backgroundColor: styles.background,
+          titleColor: styles.text,
+          bodyColor: styles.text,
+        },
+      },
+      scales: {
+        x: { ticks: { color: styles.text }, grid: { color: styles.grid } },
+        y: { ticks: { color: styles.text }, grid: { color: styles.grid } },
+      },
+    },
+  });
+
+  applyChartTheme();
+}
+
+function updateChartData(values, colIndex) {
+  if (!inlineChart) return;
+
+  const dataset = inlineChart.data.datasets[0];
+
+  dataset.data = values;
+  dataset.label = labelMap[colIndex] || `Col ${colIndex}`;
+
+  inlineChart.update();
+}
+
+function applyChartTheme() {
+  if (!inlineChart) return;
+
+  const styles = CHART_STYLES[getCurrentTheme()];
+  const ds = inlineChart.data.datasets[0];
+
+  ds.borderColor = styles.line;
+  ds.backgroundColor = styles.line + "33";
+  ds.pointBackgroundColor = styles.line;
+  ds.pointBorderColor = styles.line;
+
+  inlineChart.options.plugins.legend.labels.color = styles.text;
+
+  inlineChart.options.scales.x.ticks.color = styles.text;
+  inlineChart.options.scales.y.ticks.color = styles.text;
+  inlineChart.options.scales.x.grid.color = styles.grid;
+  inlineChart.options.scales.y.grid.color = styles.grid;
+
+  inlineChart.options.plugins.tooltip.backgroundColor = styles.background;
+  inlineChart.options.plugins.tooltip.titleColor = styles.text;
+  inlineChart.options.plugins.tooltip.bodyColor = styles.text;
+
+  inlineChart.update("none");
+}
+
 function updateChart(governorId, colIndex) {
   selectedGovernorId = governorId;
   currentColIndex = colIndex;
 
   if (!SheetCache.lastSheetData) return;
 
-  const rawSheets = SheetCache.sheetsList;
-
-  const values = rawSheets.map((sheetName) => {
+  const values = SheetCache.sheetsList.map((sheetName) => {
     const sheet = SheetCache.sheetsData[sheetName];
     if (!sheet) return 0;
 
-    const row = sheet.rows.find((r) => `${r[0]}` === `${selectedGovernorId}`);
-
+    const row = sheet.rows.find((r) => `${r[0]}` === `${governorId}`);
     return row ? Number(row[colIndex] || 0) : 0;
   });
 
-  const labels = rawSheets.map(formatSheetDate);
-
+  const labels = SheetCache.sheetsList.map(formatSheetDate);
   const ctx = document.querySelector("#modal-chart").getContext("2d");
-  const theme = getCurrentTheme();
-  const styles = CHART_STYLES[theme];
 
   if (!inlineChart) {
-    inlineChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: labelMap[colIndex] || `Col ${colIndex}`,
-            data: values,
-            borderColor: styles.line,
-            backgroundColor: styles.line + "33",
-            pointBackgroundColor: styles.line,
-            pointBorderColor: styles.line,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: styles.text } },
-          tooltip: {
-            backgroundColor: styles.background,
-            titleColor: styles.text,
-            bodyColor: styles.text,
-          },
-          chartBackground: { color: styles.background },
-        },
-        scales: {
-          x: { ticks: { color: styles.text }, grid: { color: styles.grid } },
-          y: { ticks: { color: styles.text }, grid: { color: styles.grid } },
-        },
-      },
-    });
+    createChart(ctx, labels, values, colIndex);
   } else {
-    const dataset = inlineChart.data.datasets[0];
-    dataset.data = values;
-    dataset.label = labelMap[colIndex] || `Col ${colIndex}`;
-    dataset.borderColor = styles.line;
-    dataset.backgroundColor = styles.line + "33";
-    dataset.pointBackgroundColor = styles.line;
-    dataset.pointBorderColor = styles.line;
-
-    inlineChart.options.plugins.legend.labels.color = styles.text;
-    inlineChart.options.scales.x.ticks.color = styles.text;
-    inlineChart.options.scales.y.ticks.color = styles.text;
-    inlineChart.options.scales.x.grid.color = styles.grid;
-    inlineChart.options.scales.y.grid.color = styles.grid;
-    inlineChart.options.plugins.tooltip.backgroundColor = styles.background;
-    inlineChart.options.plugins.tooltip.titleColor = styles.text;
-    inlineChart.options.plugins.tooltip.bodyColor = styles.text;
-    inlineChart.options.plugins.chartBackground.color = styles.background;
-
-    inlineChart.update();
+    inlineChart.data.labels = labels;
+    updateChartData(values, colIndex);
   }
 }
 
-function refreshChartTheme() {
-  if (!inlineChart) return;
-
-  const styles = CHART_STYLES[getCurrentTheme()];
-  const dataset = inlineChart.data.datasets[0];
-
-  dataset.borderColor = styles.line;
-  dataset.backgroundColor = styles.line + "33";
-  inlineChart.options.plugins.legend.labels.color = styles.text;
-  inlineChart.options.scales.x.ticks.color = styles.text;
-  inlineChart.options.scales.y.ticks.color = styles.text;
-
-  inlineChart.update("none");
-}
 const themeToggle = qs("#toggle-theme");
 if (themeToggle) {
-  themeToggle.addEventListener("change", refreshChartTheme);
+  themeToggle.addEventListener("change", (e) => {
+    const mode = e.target.checked ? "dark" : "light";
+    setTheme(mode);
+
+    applyChartTheme();
+  });
 }
+
 document.querySelectorAll(".chart-buttons button").forEach((btn) => {
   btn.addEventListener("click", () => {
     const col = Number(btn.dataset.col);
@@ -641,15 +621,6 @@ function initializeTheme(toggleEl) {
 }
 
 initializeTheme(themeToggle);
-if (themeToggle) {
-  themeToggle.addEventListener("change", (e) => {
-    setTheme(e.target.checked ? "dark" : "light");
-
-    if (selectedGovernorId && inlineChart) {
-      updateChart(selectedGovernorId, currentColIndex);
-    }
-  });
-}
 
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
