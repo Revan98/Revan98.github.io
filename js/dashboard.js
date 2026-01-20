@@ -169,6 +169,7 @@ function buildRowDataFromSheet(rows) {
 }
 
 const gridOptions = {
+  theme: agGrid.themeQuartz,
   rowData: [],
   columnDefs: [
     {
@@ -354,7 +355,9 @@ const CHART_STYLES = {
 };
 
 function getCurrentTheme() {
-  return document.body.classList.contains("dark") ? "dark" : "light";
+  if (document.body.classList.contains("dark")) return "dark";
+  if (document.body.classList.contains("light")) return "light";
+  return systemThemeMedia.matches ? "dark" : "light";
 }
 
 function formatSheetDate(sheetName) {
@@ -462,16 +465,6 @@ function updateChart(governorId, colIndex) {
     inlineChart.data.labels = labels;
     updateChartData(values, colIndex);
   }
-}
-
-const themeToggle = qs("#toggle-theme");
-if (themeToggle) {
-  themeToggle.addEventListener("change", (e) => {
-    const mode = e.target.checked ? "dark" : "light";
-    setTheme(mode);
-
-    applyChartTheme();
-  });
 }
 
 document.querySelectorAll(".chart-buttons button").forEach((btn) => {
@@ -593,34 +586,48 @@ function escapeHtml(str) {
   });
 }
 
-function setTheme(mode) {
-  document.body.classList.remove("dark", "light");
-  document.body.classList.add(mode);
+const THEME_KEY = "theme";
+const media = window.matchMedia("(prefers-color-scheme: dark)");
+const themeToggle = document.getElementById("toggle-theme");
 
-  document.body.setAttribute("data-ag-theme-mode", mode);
-  localStorage.setItem("theme", mode);
+function applyTheme(theme) {
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(theme);
+
+  document.body.setAttribute("data-ag-theme-mode", theme);
+
+  localStorage.setItem(THEME_KEY, theme);
+  applyChartTheme();
 }
 
-function initializeTheme(toggleEl) {
-  const saved = localStorage.getItem("theme");
-  if (saved === "dark") {
-    setTheme("dark");
-    if (toggleEl) toggleEl.checked = true;
-    return;
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+
+  let theme;
+  if (saved === "light" || saved === "dark") {
+    theme = saved;
+  } else {
+    theme = media.matches ? "dark" : "light";
   }
-  if (saved === "light") {
-    setTheme("light");
-    if (toggleEl) toggleEl.checked = false;
-    return;
-  }
-  const prefersDark =
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
-  setTheme(prefersDark ? "dark" : "light");
-  if (toggleEl) toggleEl.checked = prefersDark;
+
+  applyTheme(theme);
+  themeToggle.checked = theme === "dark";
 }
 
-initializeTheme(themeToggle);
+themeToggle.addEventListener("change", () => {
+  applyTheme(themeToggle.checked ? "dark" : "light");
+});
+
+// OS theme change only if user never chose manually
+media.addEventListener("change", () => {
+  if (!localStorage.getItem(THEME_KEY)) {
+    const theme = media.matches ? "dark" : "light";
+    applyTheme(theme);
+    themeToggle.checked = theme === "dark";
+  }
+});
+
+initTheme();
 
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
