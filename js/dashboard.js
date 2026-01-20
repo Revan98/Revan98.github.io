@@ -292,7 +292,7 @@ const gridOptions = {
       getQuickFilterText: () => "",
 
       valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
-      hide: true,
+      hide: false,
     },
   ],
   defaultColDef: {
