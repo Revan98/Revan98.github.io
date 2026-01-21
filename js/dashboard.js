@@ -355,9 +355,7 @@ const CHART_STYLES = {
 };
 
 function getCurrentTheme() {
-  if (document.body.classList.contains("dark")) return "dark";
-  if (document.body.classList.contains("light")) return "light";
-  return systemThemeMedia.matches ? "dark" : "light";
+  return document.body.classList.contains("dark") ? "dark" : "light";
 }
 
 function formatSheetDate(sheetName) {
@@ -587,7 +585,6 @@ function escapeHtml(str) {
 }
 
 const THEME_KEY = "theme";
-const media = window.matchMedia("(prefers-color-scheme: dark)");
 const themeToggle = document.getElementById("toggle-theme");
 
 function applyTheme(theme) {
@@ -602,13 +599,7 @@ function applyTheme(theme) {
 
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
-
-  let theme;
-  if (saved === "light" || saved === "dark") {
-    theme = saved;
-  } else {
-    theme = media.matches ? "dark" : "light";
-  }
+  const theme = saved === "dark" ? "dark" : "light";
 
   applyTheme(theme);
   themeToggle.checked = theme === "dark";
@@ -616,15 +607,6 @@ function initTheme() {
 
 themeToggle.addEventListener("change", () => {
   applyTheme(themeToggle.checked ? "dark" : "light");
-});
-
-// OS theme change only if user never chose manually
-media.addEventListener("change", () => {
-  if (!localStorage.getItem(THEME_KEY)) {
-    const theme = media.matches ? "dark" : "light";
-    applyTheme(theme);
-    themeToggle.checked = theme === "dark";
-  }
 });
 
 initTheme();
