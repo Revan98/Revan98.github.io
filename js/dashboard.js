@@ -344,13 +344,19 @@ const CHART_STYLES = {
     text: "#333",
     grid: "rgba(0,0,0,0.1)",
     line: "#007bff",
-    background: "rgba(255,255,255,0.8)",
+    point: "#007bff",
+    pointBorder: "#ffffff",
+    canvas: "#ffffff",
+    tooltipBg: "rgba(255,255,255,0.95)",
   },
   dark: {
     text: "#eee",
     grid: "rgba(255,255,255,0.2)",
     line: "#ff9800",
-    background: "rgba(40,40,40,0.8)",
+    point: "#ff9800",
+    pointBorder: "#1e1e1e",
+    canvas: "#1e1e1e",
+    tooltipBg: "rgba(40,40,40,0.95)",
   },
 };
 
@@ -369,6 +375,7 @@ function formatSheetDate(sheetName) {
 
   return sheetName;
 }
+
 function createChart(ctx, labels, values, colIndex) {
   const styles = CHART_STYLES[getCurrentTheme()];
 
@@ -423,8 +430,8 @@ function applyChartTheme() {
 
   ds.borderColor = styles.line;
   ds.backgroundColor = styles.line + "33";
-  ds.pointBackgroundColor = styles.line;
-  ds.pointBorderColor = styles.line;
+  ds.pointBackgroundColor = styles.point;
+  ds.pointBorderColor = styles.pointBorder;
 
   inlineChart.options.plugins.legend.labels.color = styles.text;
 
@@ -433,11 +440,11 @@ function applyChartTheme() {
   inlineChart.options.scales.x.grid.color = styles.grid;
   inlineChart.options.scales.y.grid.color = styles.grid;
 
-  inlineChart.options.plugins.tooltip.backgroundColor = styles.background;
+  inlineChart.options.plugins.tooltip.backgroundColor = styles.tooltipBg;
   inlineChart.options.plugins.tooltip.titleColor = styles.text;
   inlineChart.options.plugins.tooltip.bodyColor = styles.text;
 
-  inlineChart.update("none");
+  inlineChart.update();
 }
 
 function updateChart(governorId, colIndex) {
