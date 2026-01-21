@@ -402,8 +402,14 @@ function createChart(ctx, labels, values, colIndex) {
         },
       },
       scales: {
-        x: { ticks: { color: styles.text }, grid: { color: styles.grid } },
-        y: { ticks: { color: styles.text }, grid: { color: styles.grid } },
+        x: {
+          ticks: { color: styles.text, maxRotation: 45},
+          grid: { color: styles.grid },
+        },
+        y: { 
+          ticks: { color: styles.text }, 
+          grid: { color: styles.grid },
+        },
       },
     },
   });
