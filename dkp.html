@@ -93,7 +93,7 @@
                 <section class="card">
                     <h2>Power Ranges (Min → Max optional → %)</h2>
                     <div id="power-ranges-wrap">
-                        <div id="power-table" class="ag-theme-alpine" style="height: 429px"></div>
+                        <div id="power-table" class="ag-theme-quartz" style="height: 429px"></div>
 
                         <div class="put-in-row">
                             <input id="pr-min" class="file" placeholder="Min power (integer)">
@@ -113,15 +113,30 @@
                         <button id="vac-clear" class="secondary">Clear Vacation List</button>
                     </div>
                 </section>
-
+                <section class="card">
+                    <h2>Penalty</h2>
+                    <select id="penalty-id" class="file"></select>
+                    <select id="penalty-column" class="file"></select>
+                    <select id="penalty-type" class="file">
+                    <option value="percent">Percentage (%)</option>
+                    <option value="absolute">Absolute value</option>
+                    </select>
+                    <input id="penalty-value" class="file" type="number" step="any" />
+                    <button id="penalty-save" class="primary">Add / Update Penalty</button>
+                    <div
+                    id="penalty-grid"
+                    class="ag-theme-quartz"
+                    style="height: 300px;"
+                    ></div>
+                </section>
                 <section class="card">
                     <h2>Input Scans</h2>
+                    <p>Header names supported: ID, Name, Power, Killpoints, Deads, T4 Kills, T5 Kills,
+                    CH</p>
                     <div class="put-in-row">
                         <div class="file-col">
                             <label>First scan (old): <input id="file1" class="file" type="file"
                                     accept=".xlsx,.xls,.csv"></label>
-                            <small>Header names supported: ID, Name, Power, Killpoints, Deads, T4 Kills, T5 Kills,
-                                CH</small>
                         </div>
                         <div class="file-col">
                             <label>Latest scan (new): <input id="file2" class="file" type="file"
@@ -152,9 +167,9 @@
                 </section>
 
                 <section class="card">
-                    <h2>Results (Top as)</h2>
+                    <h2>Results</h2>
                     <div id="results-info" class="muted">No results yet.</div>
-                    <div id="result-table" class="ag-theme-alpine" style="height: 500px"></div>
+                    <div id="result-table" class="ag-theme-quartz" style="height: 500px"></div>
                 </section>
 
             </main>
