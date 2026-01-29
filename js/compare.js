@@ -4,8 +4,7 @@ const resultsWrap = document.getElementById("compare-results-wrap");
 const resultsInfo = document.getElementById("compare-results-info");
 
 /* Simple query helper */
-const qs = (sel) => document.querySelector(sel);
-const themeToggle = qs("#toggle-theme");
+const themeToggle = document.getElementById("toggle-theme");
 
 // Read Excel/CSV/JSON
 async function readFile(file) {
@@ -63,7 +62,7 @@ function compareData(df1, df2, keyColumn, option) {
     ) {
       // unmatched in one or both files
       nonMatching.push(
-        compareRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null)
+        compareRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null),
       );
     }
   }
@@ -88,6 +87,7 @@ function createCompareGrid(containerId, rowData) {
   const columnDefs = buildDynamicColumnDefs(rowData);
 
   const gridOptions = {
+    theme: agGrid.themeQuartz,
     columnDefs,
     rowData,
     defaultColDef: {
@@ -116,10 +116,7 @@ function createCompareGrid(containerId, rowData) {
 // Render tables
 function renderResultsGrids(matchingRows, nonMatchingRows) {
   if (matchingRows.length) {
-    matchingGridApi = createCompareGrid(
-      "matching-table",
-      matchingRows
-    );
+    matchingGridApi = createCompareGrid("matching-table", matchingRows);
   } else {
     document.getElementById("matching-table").innerHTML =
       `<div class="muted">No matching rows.</div>`;
@@ -128,7 +125,7 @@ function renderResultsGrids(matchingRows, nonMatchingRows) {
   if (nonMatchingRows.length) {
     nonMatchingGridApi = createCompareGrid(
       "nonmatching-table",
-      nonMatchingRows
+      nonMatchingRows,
     );
   } else {
     document.getElementById("nonmatching-table").innerHTML =
@@ -178,7 +175,7 @@ function exportToXlsx(data, name) {
   XLSX.utils.book_append_sheet(wb, ws, "Compare");
   XLSX.writeFile(
     wb,
-    `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`
+    `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`,
   );
 }
 
@@ -275,89 +272,44 @@ document.getElementById("export-json").addEventListener("click", () => {
     exportToJson(comparedResults.nonMatching, "compare_nonmatching");
 });
 
-function syncHeaderScrollAll() {
-  document.querySelectorAll(".table-container").forEach((container) => {
-    const bodyScroll = container.querySelector(".table-scroll-body");
-    const headerTable = container.querySelector(".header-table");
-
-    if (!bodyScroll || !headerTable) return;
-
-    bodyScroll.addEventListener("scroll", () => {
-      headerTable.style.transform = `translateX(-${bodyScroll.scrollLeft}px)`;
-    });
-  });
-}
-
-function syncColumnWidthsAll() {
-  document.querySelectorAll(".table-container").forEach((container) => {
-    const header = container.querySelector(".header-table");
-    const body = container.querySelector(".body-table");
-
-    if (!header || !body) return;
-
-    const headerCols = header.querySelectorAll("th");
-    const bodyCols = body.querySelector("tr")?.querySelectorAll("td");
-
-    if (!headerCols.length || !bodyCols?.length) return;
-
-    headerCols.forEach((th, i) => {
-      const width = bodyCols[i]?.offsetWidth || 100;
-      th.style.width = width + "px";
-    });
-  });
-}
-
-
-	/* -------------------------
+/* -------------------------
 	   THEME HANDLING
 	   ------------------------- */
-	function setTheme(mode) {
-	  document.body.classList.remove("dark", "light");
-	  document.body.classList.add(mode);
+const THEME_KEY = "theme";
 
-	  // 👇 THIS is the AG Grid integration
-	  document.body.setAttribute("data-ag-theme-mode", mode);
+function applyTheme(theme) {
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(theme);
 
-	  localStorage.setItem("theme", mode);
-	}
+  document.body.setAttribute("data-ag-theme-mode", theme);
 
+  localStorage.setItem(THEME_KEY, theme);
+}
 
-	function initializeTheme(toggleEl) {
-	  const saved = localStorage.getItem("theme");
-	  if (saved === "dark") {
-		setTheme("dark");
-		if (toggleEl) toggleEl.checked = true;
-		return;
-	  }
-	  if (saved === "light") {
-		setTheme("light");
-		if (toggleEl) toggleEl.checked = false;
-		return;
-	  }
-	  const prefersDark =
-		window.matchMedia &&
-		window.matchMedia("(prefers-color-scheme: dark)").matches;
-	  setTheme(prefersDark ? "dark" : "light");
-	  if (toggleEl) toggleEl.checked = prefersDark;
-	}
-	// Theme init & toggle
-	initializeTheme(themeToggle);
-	if (themeToggle) {
-	  themeToggle.addEventListener("change", (e) => {
-		setTheme(e.target.checked ? "dark" : "light");
-	  });
-	}
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const theme = saved === "dark" ? "dark" : "light";
 
-	const hamburger = document.getElementById("hamburger");
-	const navLinks = document.getElementById("nav-links");
-	hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+  applyTheme(theme);
+  themeToggle.checked = theme === "dark";
+}
 
-	document.addEventListener("DOMContentLoaded", () => {
-	  const current = location.pathname.split("/").pop(); // e.g. "index.html"
+themeToggle.addEventListener("change", () => {
+  applyTheme(themeToggle.checked ? "dark" : "light");
+});
 
-	  document.querySelectorAll(".nav-links a").forEach((link) => {
-		if (link.getAttribute("href") === current) {
-		  link.classList.add("active");
-		}
-	  });
-	});
+initTheme();
+
+const hamburger = document.getElementById("hamburger");
+const navLinks = document.getElementById("nav-links");
+hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+
+document.addEventListener("DOMContentLoaded", () => {
+  const current = location.pathname.split("/").pop(); // e.g. "index.html"
+
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    if (link.getAttribute("href") === current) {
+      link.classList.add("active");
+    }
+  });
+});
