@@ -410,19 +410,19 @@ progress {
     justify-content: center;
 }
 
-.ag-theme-alpine .ag-row-odd {
+.ag-theme-quartz .ag-row-odd {
     background-color: rgba(0, 0, 0, 0.03);
 }
 
-.ag-theme-alpine .ag-row-even {
+.ag-theme-quartz .ag-row-even {
     background-color: transparent;
 }
 
-body.light .ag-theme-alpine .ag-row-odd {
+body.light .ag-theme-quartz .ag-row-odd {
     background-color: rgba(0, 0, 0, 0.04);
 }
 
-body.dark .ag-theme-alpine .ag-row-odd {
+body.dark .ag-theme-quartz .ag-row-odd {
     background-color: rgba(255, 255, 255, 0.05);
 
 }
