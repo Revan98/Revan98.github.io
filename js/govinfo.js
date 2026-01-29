@@ -27,14 +27,10 @@ const SheetCache = {
   lastSheetData: null,
 };
 
-/* query helper */
-const qs = (sel) => document.querySelector(sel);
-const themeToggle = qs("#toggle-theme");
-
 /* -------------------------
    SOURCE SELECTOR
    ------------------------- */
-const sourceSelector = qs("#source-selector");
+const sourceSelector = document.querySelector("#source-selector");
 
 function populateSourceSelector() {
   CONFIG.sources.forEach((src, index) => {
@@ -97,14 +93,8 @@ function formatNumber(val) {
 }
 
 /* Load DataTable from cache */
-/* -------------------------
-   AG GRID STATE
-   ------------------------- */
 let gridApi = null;
 
-/* -------------------------
-   AG GRID HELPERS
-   ------------------------- */
 function formatNumber(val) {
   const n = Number(val);
   return Number.isFinite(n) ? n.toLocaleString("en-US") : val;
@@ -123,9 +113,6 @@ function buildColumnDefs(headers) {
   }));
 }
 
-/* -------------------------
-   LOAD GRID FROM CACHE
-   ------------------------- */
 function loadAgGridFromCache() {
   const gridDiv = document.querySelector("#myGrid");
 
@@ -149,6 +136,7 @@ function loadAgGridFromCache() {
   }
 
   const gridOptions = {
+    theme: agGrid.themeQuartz,
     columnDefs,
     rowData: rows,
 
@@ -211,41 +199,31 @@ sourceSelector.addEventListener("change", () => {
 /* -------------------------
 	   THEME HANDLING
 	   ------------------------- */
-function setTheme(mode) {
-  document.body.classList.remove("dark", "light");
-  document.body.classList.add(mode);
+const THEME_KEY = "theme";
+const themeToggle = document.getElementById("toggle-theme");
 
-  // 👇 THIS is the AG Grid integration
-  document.body.setAttribute("data-ag-theme-mode", mode);
+function applyTheme(theme) {
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(theme);
 
-  localStorage.setItem("theme", mode);
+  document.body.setAttribute("data-ag-theme-mode", theme);
+
+  localStorage.setItem(THEME_KEY, theme);
 }
 
-function initializeTheme(toggleEl) {
-  const saved = localStorage.getItem("theme");
-  if (saved === "dark") {
-    setTheme("dark");
-    if (toggleEl) toggleEl.checked = true;
-    return;
-  }
-  if (saved === "light") {
-    setTheme("light");
-    if (toggleEl) toggleEl.checked = false;
-    return;
-  }
-  const prefersDark =
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
-  setTheme(prefersDark ? "dark" : "light");
-  if (toggleEl) toggleEl.checked = prefersDark;
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const theme = saved === "dark" ? "dark" : "light";
+
+  applyTheme(theme);
+  themeToggle.checked = theme === "dark";
 }
-// Theme init & toggle
-initializeTheme(themeToggle);
-if (themeToggle) {
-  themeToggle.addEventListener("change", (e) => {
-    setTheme(e.target.checked ? "dark" : "light");
-  });
-}
+
+themeToggle.addEventListener("change", () => {
+  applyTheme(themeToggle.checked ? "dark" : "light");
+});
+
+initTheme();
 
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
