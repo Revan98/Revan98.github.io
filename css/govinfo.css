@@ -6,7 +6,7 @@
 
 /* Dark mode via prefers-color-scheme */
 @media (prefers-color-scheme: dark) {
-  :root {
+  body {
     --accent: #2a2a2a;
     --bg-color: #333;
     --text-color: #eee;
@@ -31,7 +31,7 @@
 
 /* Light mode via prefers-color-scheme */
 @media (prefers-color-scheme: light) {
-  :root {
+  body {
     --accent: #fff;
     --bg-color: #e5e5e5;
     --text-color: #333;
@@ -455,23 +455,22 @@ progress {
 }
 
 .ag-header-cell-label {
-    justify-content: center;
+  justify-content: center;
 }
 
-.ag-theme-alpine .ag-row-odd {
-    background-color: rgba(0, 0, 0, 0.03);
+.ag-theme-quartz .ag-row-odd {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
-.ag-theme-alpine .ag-row-even {
-    background-color: transparent;
+.ag-theme-quartz .ag-row-even {
+  background-color: transparent;
 }
 
-body.light .ag-theme-alpine .ag-row-odd {
-    background-color: rgba(0, 0, 0, 0.04);
+body.light .ag-theme-quartz .ag-row-odd {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
-body.dark .ag-theme-alpine .ag-row-odd {
-    background-color: rgba(255, 255, 255, 0.05);
-
+body.dark .ag-theme-quartz .ag-row-odd {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
