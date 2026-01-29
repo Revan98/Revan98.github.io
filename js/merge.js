@@ -2,9 +2,9 @@ let file1Data = [];
 let file2Data = [];
 let mergedResults = null;
 
-
 const progressEl = document.getElementById("progress");
 const themeToggle = document.querySelector("#toggle-theme");
+const resultsInfo = document.getElementById("merge-results-info");
 
 // -------------------------
 // AG Grid Setup
@@ -36,6 +36,7 @@ function renderResultsAgGrid(rows) {
   const gridDiv = document.querySelector("#myGrid");
 
   const gridOptions = {
+    theme: agGrid.themeQuartz,
     columnDefs: buildColumnDefs(rows),
     rowData: rows,
     rowHeight: 40,
@@ -126,8 +127,7 @@ async function doMerge() {
   const idColumn = document.getElementById("idColumn").value;
   const mergeColumn = document.getElementById("mergeColumn").value;
 
-  if (!idColumn || !mergeColumn)
-    return alert("Please select columns first.");
+  if (!idColumn || !mergeColumn) return alert("Please select columns first.");
 
   progressEl.value = 10;
 
@@ -155,7 +155,6 @@ async function doMerge() {
   resultsInfo.textContent = `Merged ${mergedResults.length} rows using ID "${idColumn}" and column "${mergeColumn}" from File 2.`;
 }
 
-
 // Export: XLSX / CSV / JSON
 function exportToXlsx(rows) {
   if (!rows) return alert("No results to export.");
@@ -164,7 +163,7 @@ function exportToXlsx(rows) {
   XLSX.utils.book_append_sheet(wb, ws, "Merged");
   XLSX.writeFile(
     wb,
-    `merge_output_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`
+    `merge_output_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`,
   );
 }
 
@@ -213,46 +212,33 @@ function exportToJson(rows) {
   URL.revokeObjectURL(url);
 }
 
-
 /* -------------------------
    THEME HANDLING
    ------------------------- */
-function setTheme(mode) {
-  document.body.classList.remove("dark", "light");
-  document.body.classList.add(mode);
+const THEME_KEY = "theme";
 
-  // 👇 THIS is the AG Grid integration
-  document.body.setAttribute("data-ag-theme-mode", mode);
+function applyTheme(theme) {
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(theme);
 
-  localStorage.setItem("theme", mode);
+  document.body.setAttribute("data-ag-theme-mode", theme);
+
+  localStorage.setItem(THEME_KEY, theme);
 }
 
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const theme = saved === "dark" ? "dark" : "light";
 
-function initializeTheme(toggleEl) {
-  const saved = localStorage.getItem("theme");
-  if (saved === "dark") {
-    setTheme("dark");
-    if (toggleEl) toggleEl.checked = true;
-    return;
-  }
-  if (saved === "light") {
-    setTheme("light");
-    if (toggleEl) toggleEl.checked = false;
-    return;
-  }
-  const prefersDark =
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
-  setTheme(prefersDark ? "dark" : "light");
-  if (toggleEl) toggleEl.checked = prefersDark;
+  applyTheme(theme);
+  themeToggle.checked = theme === "dark";
 }
-// Theme init & toggle
-initializeTheme(themeToggle);
-if (themeToggle) {
-  themeToggle.addEventListener("change", (e) => {
-    setTheme(e.target.checked ? "dark" : "light");
-  });
-}
+
+themeToggle.addEventListener("change", () => {
+  applyTheme(themeToggle.checked ? "dark" : "light");
+});
+
+initTheme();
 
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
@@ -285,4 +271,3 @@ document
 document
   .getElementById("export-json")
   .addEventListener("click", () => exportToJson(mergedResults));
-
