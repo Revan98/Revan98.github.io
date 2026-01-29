@@ -1011,7 +1011,6 @@
     document.body.setAttribute("data-ag-theme-mode", theme);
 
     localStorage.setItem(THEME_KEY, theme);
-    applyChartTheme();
   }
 
   function initTheme() {
