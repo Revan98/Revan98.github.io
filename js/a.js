@@ -374,7 +374,7 @@ const CHART_SERIES = [
 ];
 
 function createChart(ctx, labels, datasets) {
-
+  const styles = CHART_STYLES[getCurrentTheme()];
   inlineChart = new Chart(ctx, {
     type: "line",
     data: {
