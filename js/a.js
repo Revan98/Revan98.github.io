@@ -440,13 +440,10 @@ function applyChartTheme() {
   if (!inlineChart) return;
 
   const styles = CHART_STYLES[getCurrentTheme()];
-  const ds = inlineChart.data.datasets.forEach((ds, i) => {
+  inlineChart.data.datasets.forEach((ds, i) => {
   ds.pointBackgroundColor = ds.borderColor;
   ds.pointBorderColor = styles.pointBorder;
   });
-
-  ds.pointBackgroundColor = styles.point;
-  ds.pointBorderColor = styles.pointBorder;
 
   inlineChart.options.plugins.legend.labels.color = styles.text;
 
