@@ -372,9 +372,9 @@ const CHART_SERIES = [
   { col: 3,  label: "Kill Points" },
   { col: 6,  label: "Deads" },
 ];
-
+const styles = CHART_STYLES[getCurrentTheme()];
 function createChart(ctx, labels, datasets) {
-  const styles = CHART_STYLES[getCurrentTheme()];
+
   inlineChart = new Chart(ctx, {
     type: "line",
     data: {
