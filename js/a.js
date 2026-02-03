@@ -328,16 +328,6 @@ function onFilterTextBoxChanged() {
 
 let inlineChart = null;
 let selectedGovernorId = null;
-let currentColIndex = 16;
-
-// Column labels
-const labelMap = {
-  16: "Power Diff",
-  4: "T4 Kills",
-  5: "T5 Kills",
-  3: "Kill Points",
-  6: "Deads",
-};
 
 const CHART_STYLES = {
   light: {
@@ -384,7 +374,6 @@ const CHART_SERIES = [
 ];
 
 function createChart(ctx, labels, datasets) {
-  const styles = CHART_STYLES[getCurrentTheme()];
 
   inlineChart = new Chart(ctx, {
     type: "line",
@@ -447,26 +436,15 @@ function buildChartDatasets(governorId) {
   });
 }
 
-
-function updateChartData(values, colIndex) {
-  if (!inlineChart) return;
-
-  const dataset = inlineChart.data.datasets[0];
-
-  dataset.data = values;
-  dataset.label = labelMap[colIndex] || `Col ${colIndex}`;
-
-  inlineChart.update();
-}
-
 function applyChartTheme() {
   if (!inlineChart) return;
 
   const styles = CHART_STYLES[getCurrentTheme()];
-  const ds = inlineChart.data.datasets[0];
+  const ds = inlineChart.data.datasets.forEach((ds, i) => {
+  ds.pointBackgroundColor = ds.borderColor;
+  ds.pointBorderColor = styles.pointBorder;
+  });
 
-  ds.borderColor = styles.line;
-  ds.backgroundColor = styles.line + "33";
   ds.pointBackgroundColor = styles.point;
   ds.pointBorderColor = styles.pointBorder;
 
@@ -501,16 +479,6 @@ function updateChart(governorId) {
     inlineChart.update();
   }
 }
-
-
-document.querySelectorAll(".chart-buttons button").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const col = Number(btn.dataset.col);
-    if (!isNaN(col) && selectedGovernorId) {
-      updateChart(selectedGovernorId, col);
-    }
-  });
-});
 
 const closeChartBtn = document.getElementById("close-chart");
 
