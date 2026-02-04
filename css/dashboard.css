@@ -615,34 +615,19 @@ body.dark .ag-theme-quartz .ag-row-odd {
   margin-bottom: 10px;
   display: flex;
   justify-content: center;
-  gap: 10px;
-}
-
-@media (max-width: 768px) {
-  .chart-buttons {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-left: 3px;
-    margin-right: 3px;
-  }
-}
-
-.chart-title {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin: 0 auto 12px auto;
-  font-weight: bold;
 }
 
 .modal-chart {
   margin-bottom: 10px;
   background: var(--bg-chart);
+  width: 100% !important;
+  height: 600px;
 }
-
+@media (max-width: 768px) {
+  .modal-chart {
+    height: 420px;
+  }
+}
 /* Hide grid until data is loaded */
 #myGrid {
   display: none;
@@ -655,7 +640,7 @@ body,
 .stat-box,
 .player-box,
 .footer,
-.ag-theme-alpine,
+.ag-theme-quartz,
 #chart-section {
   transition:
     background-color 0.35s ease,
@@ -702,20 +687,3 @@ body,
   color: #f44336 !important;
   font-weight: 600 !important;
 }
-
-.chart-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 19px;
-  font-weight: 500;
-  color: inherit;
-  text-align: center;
-  transition: opacity 0.3s ease;
-
-}
-
-
-
-
-
