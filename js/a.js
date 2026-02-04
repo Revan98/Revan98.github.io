@@ -17,7 +17,7 @@ const CONFIG = {
   ],
 };
 
-const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
+const API_KEY = "AIzaSyDIX6tSEresAQCeYE6cGOWEzWQ92HHoPeY";
 
 const SheetCache = {
   sheetsList: [],
@@ -213,7 +213,7 @@ const gridOptions = {
 
       tooltipValueGetter: (p) =>
         `Starting KP: ${Number(p.data?.killPoints || 0).toLocaleString(
-          "en-US"
+          "en-US",
         )}`,
 
       getQuickFilterText: () => "",
@@ -308,13 +308,13 @@ const gridOptions = {
   suppressRowTransform: true,
   onRowClicked: (event) => {
     selectedGovernorId = event.data.id;
-  
-    document.getElementById(
-      "chart-title"
-    ).textContent = `${event.data.name} (ID: ${event.data.id})`;
-  
+
+    if (inlineChart) {
+      inlineChart.options.plugins.title.text = `${event.data.name} (ID: ${event.data.id})`;
+      inlineChart.update();
+    }
+
     updateChart(selectedGovernorId);
-    chartPlaceholder.style.display = "none";
     chartSection.classList.add("visible");
   },
 };
@@ -366,36 +366,36 @@ function formatSheetDate(sheetName) {
   return sheetName;
 }
 const CHART_SERIES = [
-  { col: 16, label: "Power Diff" },
-  { col: 4,  label: "T4 Kills" },
-  { col: 5,  label: "T5 Kills" },
-  { col: 3,  label: "Kill Points" },
-  { col: 6,  label: "Deads" },
+  { col: 3, label: "Kill Points", secondary: false }, // Primary (Left)
+  { col: 16, label: "Power Diff", secondary: true }, // Secondary (Right)
+  { col: 4, label: "T4 Kills", secondary: true },
+  { col: 5, label: "T5 Kills", secondary: true },
+  { col: 6, label: "Deads", secondary: true },
 ];
 
 function createChart(ctx, labels, datasets) {
   const styles = CHART_STYLES[getCurrentTheme()];
   inlineChart = new Chart(ctx, {
     type: "line",
-    data: {
-      labels,
-      datasets,
-    },
+    data: { labels, datasets },
     options: {
       responsive: true,
-      interaction: {
-        mode: "index",
-        intersect: false,
-      },
+      interaction: { mode: "index", intersect: false },
       plugins: {
-        legend: {
-          labels: { color: styles.text },
+        title: {
+          display: true,
+          text: "Select a governor to view chart",
+          color: styles.text,
+          font: {
+            size: 18,
+            weight: "600",
+          },
+          padding: {
+            top: 10,
+            bottom: 10,
+          },
         },
-        tooltip: {
-          backgroundColor: styles.tooltipBg,
-          titleColor: styles.text,
-          bodyColor: styles.text,
-        },
+        legend: { labels: { color: styles.text } },
       },
       scales: {
         x: {
@@ -403,24 +403,34 @@ function createChart(ctx, labels, datasets) {
           grid: { color: styles.grid },
         },
         y: {
+          type: "linear",
+          display: true,
+          position: "left",
+          title: { display: true, text: "Kill Points", color: styles.text },
           ticks: { color: styles.text },
           grid: { color: styles.grid },
+        },
+        ySecondary: {
+          type: "linear",
+          display: true,
+          position: "right",
+          title: { display: true, text: "Other Stats", color: styles.text },
+          ticks: { color: styles.text },
+          grid: { drawOnChartArea: false },
         },
       },
     },
   });
-
   applyChartTheme();
 }
 function buildChartDatasets(governorId) {
   const styles = CHART_STYLES[getCurrentTheme()];
-  const colors = ["#007bff", "#28a745", "#ffc107", "#dc3545", "#6f42c1"];
+  const colors = ["#dc3545", "#007bff", "#28a745", "#ffc107", "#6f42c1"]; // Moved red (KP) to index 0
 
   return CHART_SERIES.map((series, i) => {
     const data = SheetCache.sheetsList.map((sheetName) => {
       const sheet = SheetCache.sheetsData[sheetName];
       if (!sheet) return 0;
-
       const row = sheet.rows.find((r) => `${r[0]}` === `${governorId}`);
       return row ? Number(row[series.col] || 0) : 0;
     });
@@ -432,6 +442,8 @@ function buildChartDatasets(governorId) {
       borderColor: colors[i],
       backgroundColor: colors[i] + "33",
       pointRadius: 3,
+      // This line assigns the axis:
+      yAxisID: series.secondary ? "ySecondary" : "y",
     };
   });
 }
@@ -441,20 +453,26 @@ function applyChartTheme() {
 
   const styles = CHART_STYLES[getCurrentTheme()];
   inlineChart.data.datasets.forEach((ds, i) => {
-  ds.pointBackgroundColor = ds.borderColor;
-  ds.pointBorderColor = styles.pointBorder;
+    ds.pointBackgroundColor = ds.borderColor;
+    ds.pointBorderColor = styles.pointBorder;
   });
 
   inlineChart.options.plugins.legend.labels.color = styles.text;
-
-  inlineChart.options.scales.x.ticks.color = styles.text;
-  inlineChart.options.scales.y.ticks.color = styles.text;
-  inlineChart.options.scales.x.grid.color = styles.grid;
-  inlineChart.options.scales.y.grid.color = styles.grid;
-
+  inlineChart.options.plugins.title.color = styles.text;
   inlineChart.options.plugins.tooltip.backgroundColor = styles.tooltipBg;
   inlineChart.options.plugins.tooltip.titleColor = styles.text;
   inlineChart.options.plugins.tooltip.bodyColor = styles.text;
+
+  const axes = ["x", "y", "ySecondary"];
+  axes.forEach((axis) => {
+    if (inlineChart.options.scales[axis]) {
+      inlineChart.options.scales[axis].ticks.color = styles.text;
+      inlineChart.options.scales[axis].grid.color = styles.grid;
+      if (inlineChart.options.scales[axis].title) {
+        inlineChart.options.scales[axis].title.color = styles.text;
+      }
+    }
+  });
 
   inlineChart.update();
 }
@@ -462,19 +480,26 @@ function applyChartTheme() {
 function updateChart(governorId) {
   selectedGovernorId = governorId;
 
-  if (!SheetCache.lastSheetData) return;
-
   const labels = SheetCache.sheetsList.map(formatSheetDate);
   const datasets = buildChartDatasets(governorId);
   const ctx = document.querySelector("#modal-chart").getContext("2d");
 
+  const row = SheetCache.lastSheetData.rows.find(
+    (r) => `${r[0]}` === `${governorId}`,
+  );
+
+  const titleText = row
+    ? `${row[1]} (ID: ${row[0]})`
+    : "Select a governor to view chart";
+
   if (!inlineChart) {
     createChart(ctx, labels, datasets);
-  } else {
-    inlineChart.data.labels = labels;
-    inlineChart.data.datasets = datasets;
-    inlineChart.update();
   }
+
+  inlineChart.data.labels = labels;
+  inlineChart.data.datasets = datasets;
+  inlineChart.options.plugins.title.text = titleText;
+  inlineChart.update();
 }
 
 const closeChartBtn = document.getElementById("close-chart");
