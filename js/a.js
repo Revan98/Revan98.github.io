@@ -380,6 +380,7 @@ function createChart(ctx, labels, datasets) {
     data: { labels, datasets },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       interaction: { mode: "index", intersect: false },
       plugins: {
         title: {
