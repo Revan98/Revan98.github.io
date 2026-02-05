@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DKP stats</title>
 
-  <link rel="stylesheet" href="css/a.css">
+  <link rel="stylesheet" href="css/dashboard.css">
 
 </head>
 
@@ -62,13 +62,13 @@
       <div id="myGrid" class="ag-theme-quartz" style="height: 700px"></div>
 
       <div id="chart-section">
-        <h2 id="chart-title" class="chart-title"></h2>
-
         <div class="chart-buttons">
           <button id="close-chart" class="secondary">Close</button>
         </div>
-
-        <canvas id="modal-chart" class="modal-chart" style="height: 700px"></canvas>
+        
+        <div  class="modal-chart">
+          <canvas id="modal-chart"></canvas>
+        </div>
       </div>
     </main>
 
@@ -79,8 +79,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="js/dashboard.js"></script>
+  <script src="js/a.js"></script>
 </body>
 
 </html>
+
+
+
 
