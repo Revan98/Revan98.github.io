@@ -20,9 +20,9 @@ const CONFIG = {
 const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
 
 const SheetCache = {
-  sheetsList: [],
-  sheetsData: {},
-  lastSheetData: null,
+  sheetsList: [], // ordered sheet names (timeline)
+  sheetsData: {}, // chart data only (lean rows)
+  lastSheetData: null, // grid data only (full rows)
 };
 
 const qs = (sel) => document.querySelector(sel);
@@ -59,10 +59,66 @@ async function safeFetch(url) {
   return res.json();
 }
 
+async function loadSheetList(spreadsheetId) {
+  const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?key=${API_KEY}`;
+
+  const metaJson = await safeFetch(metaUrl);
+  return metaJson.sheets.map((s) => s.properties.title);
+}
+async function loadLastSheetForGrid(spreadsheetId, sheetName) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/'${encodeURIComponent(sheetName)}'?key=${API_KEY}`;
+
+  const json = await safeFetch(url);
+
+  return {
+    headers: json.values[0],
+    rows: json.values.slice(1),
+  };
+}
+const CHART_RANGES = ["A:B", "D:D", "Q:Q", "E:G"];
+
+async function loadChartSheets(spreadsheetId, sheetNames) {
+  const ranges = sheetNames.flatMap((sheet) =>
+    CHART_RANGES.map((r) => `ranges=${encodeURIComponent(`'${sheet}'!${r}`)}`),
+  );
+
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?${ranges.join("&")}&key=${API_KEY}`;
+
+  const json = await safeFetch(url);
+
+  return normalizeChartValueRanges(json.valueRanges);
+}
+function normalizeChartValueRanges(valueRanges) {
+  const sheets = {};
+
+  valueRanges.forEach((range) => {
+    const sheetName = normalizeSheetName(range.range);
+    if (!range.values) return;
+
+    sheets[sheetName] ??= { rows: {}, _tmp: [] };
+
+    range.values.forEach((row, i) => {
+      sheets[sheetName]._tmp[i] ??= [];
+      sheets[sheetName]._tmp[i].push(...row);
+    });
+  });
+
+  // index by governor ID
+  Object.values(sheets).forEach((sheet) => {
+    sheet._tmp.forEach((r) => {
+      if (r[0] != null) {
+        sheet.rows[r[0]] = r;
+      }
+    });
+    delete sheet._tmp;
+  });
+
+  return sheets;
+}
+
 async function loadAllSheetsCache() {
   try {
     const source = getSelectedSource();
-
     if (!source) {
       alert("Invalid or missing KD parameter.");
       return;
@@ -70,41 +126,22 @@ async function loadAllSheetsCache() {
 
     const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
 
-    const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`;
-
-    const metaJson = await safeFetch(metaUrl);
-
-    SheetCache.sheetsList = metaJson.sheets.map((s) => s.properties.title);
+    // 1️⃣ metadata
+    SheetCache.sheetsList = await loadSheetList(SPREADSHEET_ID);
 
     const lastSheet = SheetCache.sheetsList.at(-1);
 
-    const ranges = SheetCache.sheetsList
-      .map((name) => `ranges=${encodeURIComponent(`'${name}'`)}`)
-      .join("&");
+    // 2️⃣ grid data (last sheet only)
+    SheetCache.lastSheetData = await loadLastSheetForGrid(
+      SPREADSHEET_ID,
+      lastSheet,
+    );
 
-    const batchUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&key=${API_KEY}`;
-
-    const batchRes = await fetch(batchUrl);
-    const batchJson = await batchRes.json();
-
-    let lastNonEmptySheet = null;
-
-    batchJson.valueRanges.forEach((range) => {
-      const sheetName = normalizeSheetName(range.range);
-      const values = range.values;
-
-      if (!values || values.length === 0) return;
-
-      const headers = values[0];
-      const rows = values.slice(1);
-
-      SheetCache.sheetsData[sheetName] = { headers, rows };
-      lastNonEmptySheet = sheetName;
-    });
-
-    if (lastNonEmptySheet) {
-      SheetCache.lastSheetData = SheetCache.sheetsData[lastNonEmptySheet];
-    }
+    // 3️⃣ chart data (lean, all sheets)
+    SheetCache.sheetsData = await loadChartSheets(
+      SPREADSHEET_ID,
+      SheetCache.sheetsList,
+    );
   } catch (err) {
     console.error("Sheet load failed:", err);
     alert("Failed to load spreadsheet data.");
@@ -365,12 +402,23 @@ function formatSheetDate(sheetName) {
 
   return sheetName;
 }
+
+const CHART_COL = {
+  ID: 0,
+  NAME: 1,
+  KP: 2, // D
+  POWER_DIFF: 3, // Q
+  T4: 4, // E
+  T5: 5, // F
+  DEADS: 6, // G
+};
+
 const CHART_SERIES = [
-  { col: 3, label: "Kill Points", secondary: false }, // Primary (Left)
-  { col: 16, label: "Power Diff", secondary: true }, // Secondary (Right)
-  { col: 4, label: "T4 Kills", secondary: true },
-  { col: 5, label: "T5 Kills", secondary: true },
-  { col: 6, label: "Deads", secondary: true },
+  { col: CHART_COL.KP, label: "Kill Points", secondary: false },
+  { col: CHART_COL.POWER_DIFF, label: "Power Diff", secondary: true },
+  { col: CHART_COL.T4, label: "T4 Kills", secondary: true },
+  { col: CHART_COL.T5, label: "T5 Kills", secondary: true },
+  { col: CHART_COL.DEADS, label: "Deads", secondary: true },
 ];
 
 function createChart(ctx, labels, datasets) {
@@ -385,10 +433,10 @@ function createChart(ctx, labels, datasets) {
         title: {
           display: true,
           text: "Select a governor to view chart",
-		  font: {
-		  size: 18,
-		  weight: "600",
-			},
+          font: {
+            size: 18,
+            weight: "600",
+          },
         },
         legend: {},
       },
@@ -417,7 +465,8 @@ function buildChartDatasets(governorId) {
     const data = SheetCache.sheetsList.map((sheetName) => {
       const sheet = SheetCache.sheetsData[sheetName];
       if (!sheet) return 0;
-      const row = sheet.rows.find((r) => `${r[0]}` === `${governorId}`);
+      const row = sheet.rows[governorId];
+
       return row ? Number(row[series.col] || 0) : 0;
     });
 
@@ -428,7 +477,6 @@ function buildChartDatasets(governorId) {
       borderColor: colors[i],
       backgroundColor: colors[i] + "33",
       pointRadius: 3,
-      // This line assigns the axis:
       yAxisID: series.secondary ? "ySecondary" : "y",
     };
   });
