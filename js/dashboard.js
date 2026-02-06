@@ -374,7 +374,6 @@ const CHART_SERIES = [
 ];
 
 function createChart(ctx, labels, datasets) {
-  const styles = CHART_STYLES[getCurrentTheme()];
   inlineChart = new Chart(ctx, {
     type: "line",
     data: { labels, datasets },
@@ -386,47 +385,33 @@ function createChart(ctx, labels, datasets) {
         title: {
           display: true,
           text: "Select a governor to view chart",
-          color: styles.text,
-          font: {
-            size: 18,
-            weight: "600",
-          },
-          padding: {
-            top: 10,
-            bottom: 10,
-          },
+		  font: {
+		  size: 18,
+		  weight: "600",
+			},
         },
-        legend: { labels: { color: styles.text } },
+        legend: {},
       },
       scales: {
-        x: {
-          ticks: { color: styles.text, maxRotation: 45 },
-          grid: { color: styles.grid },
-        },
+        x: {},
         y: {
           type: "linear",
-          display: true,
           position: "left",
-          title: { display: true, text: "Kill Points", color: styles.text },
-          ticks: { color: styles.text },
-          grid: { color: styles.grid },
         },
         ySecondary: {
           type: "linear",
-          display: true,
           position: "right",
-          title: { display: true, text: "Other Stats", color: styles.text },
-          ticks: { color: styles.text },
           grid: { drawOnChartArea: false },
         },
       },
     },
   });
+
   applyChartTheme();
 }
+
 function buildChartDatasets(governorId) {
-  const styles = CHART_STYLES[getCurrentTheme()];
-  const colors = ["#dc3545", "#007bff", "#28a745", "#ffc107", "#6f42c1"]; // Moved red (KP) to index 0
+  const colors = ["#dc3545", "#007bff", "#28a745", "#ffc107", "#6f42c1"];
 
   return CHART_SERIES.map((series, i) => {
     const data = SheetCache.sheetsList.map((sheetName) => {
