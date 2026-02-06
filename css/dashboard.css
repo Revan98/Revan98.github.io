@@ -619,7 +619,7 @@ body.dark .ag-theme-quartz .ag-row-odd {
 
 .modal-chart {
   margin-bottom: 10px;
-  background: var(--bg-chart);
+  /*background: var(--bg-chart);*/
   width: 100% !important;
   height: 600px;
 }
@@ -687,3 +687,4 @@ body,
   color: #f44336 !important;
   font-weight: 600 !important;
 }
+
