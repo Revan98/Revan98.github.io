@@ -3,6 +3,14 @@ const progressEl = document.getElementById("progressBar");
 const resultsInfo = document.getElementById("compare-results-info");
 const themeToggle = document.getElementById("toggle-theme");
 
+function setExportEnabled(enabled) {
+  ["export-xlsx", "export-csv", "export-json"].forEach((id) => {
+    document.getElementById(id).disabled = !enabled;
+  });
+}
+
+setExportEnabled(false);
+
 // Read Excel/CSV/JSON
 async function readFile(file) {
   const name = file.name.toLowerCase();
@@ -200,6 +208,7 @@ function exportToJson(data, name) {
 
 // Compare button
 document.getElementById("compareBtn").addEventListener("click", async () => {
+  setExportEnabled(false);
   const file1 = document.getElementById("file1").files[0];
   const file2 = document.getElementById("file2").files[0];
   const keyCol = document.getElementById("keyColumn").value.trim();
@@ -226,9 +235,14 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
     }
     const { matching, nonMatching } = compareData(df1, df2, keyCol, option);
     comparedResults = { matching, nonMatching };
+    if (!comparedResults || comparedResults.length === 0) {
+      setExportEnabled(false);
+      return;
+    }
     renderResultsGrids(matching, nonMatching);
     progressEl.value = 100;
     resultsInfo.textContent = `Comparison complete: ${matching.length} matching, ${nonMatching.length} non-matching rows.`;
+    setExportEnabled(true);
   } catch (err) {
     console.error(err);
     alert("Error: " + err);
