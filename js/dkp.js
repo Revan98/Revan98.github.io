@@ -49,6 +49,14 @@
   let resultsGridApi = null;
   let skippedCount = 0;
 
+  function setExportEnabled(enabled) {
+    ["export-xlsx", "export-csv", "export-json"].forEach((id) => {
+      document.getElementById(id).disabled = !enabled;
+    });
+  }
+
+  setExportEnabled(false);
+
   // Helpers: persistence
   async function loadAllFromStorage() {
     const m = await localforage.getItem(KEY_MULT);
@@ -312,6 +320,7 @@
   }
 
   async function calculateDkp({ mode = "lilithdata" } = {}) {
+    setExportEnabled(false);
     const f1 = file1El.files[0];
     const f2 = file2El.files[0];
     if (!f1 || !f2) return alert("Please select both files.");
@@ -455,7 +464,12 @@
     results.sort((x, y) => y.DKP - x.DKP);
 
     lastResults = results;
+    if (!results || results.length === 0) {
+      setExportEnabled(false);
+      return;
+    }
     createResultsGrid(results);
+    setExportEnabled(true);
     progressEl.value = 100;
     resultsInfo.textContent = `Calculated ${results.length} rows (skipped ${skippedCount} due to CH<25).`;
   }
@@ -510,12 +524,13 @@
       getQuickFilterText: () => "",
     }));
   }
+  
   function createResultsGrid(rows) {
     if (!rows || !rows.length) return;
 
-    const columnDefs = buildDynamicColumnDefs(rows);
     const gridDiv = document.querySelector("#result-table");
-
+    gridDiv.style.display = "block";
+    const columnDefs = buildDynamicColumnDefs(rows);
     // Destroy old grid if exists
     if (resultsGridApi) {
       resultsGridApi.destroy();
