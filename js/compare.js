@@ -1,8 +1,6 @@
 let comparedResults = { matching: [], nonMatching: [] };
 const progressEl = document.getElementById("progressBar");
-const resultsWrap = document.getElementById("compare-results-wrap");
 const resultsInfo = document.getElementById("compare-results-info");
-
 const themeToggle = document.getElementById("toggle-theme");
 
 // Read Excel/CSV/JSON
@@ -13,7 +11,8 @@ async function readFile(file) {
     reader.onload = (e) => {
       try {
         if (name.endsWith(".xlsx") || name.endsWith(".csv")) {
-          const wb = XLSX.read(e.target.result, { type: "binary" });
+          const wb = XLSX.read(e.target.result, { type: "array" });
+
           const first = wb.SheetNames[0];
           resolve(XLSX.utils.sheet_to_json(wb.Sheets[first], { defval: null }));
         } else if (name.endsWith(".json")) {
@@ -24,7 +23,7 @@ async function readFile(file) {
       }
     };
     if (name.endsWith(".xlsx") || name.endsWith(".csv"))
-      reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer(file);
     else reader.readAsText(file);
   });
 }
@@ -38,10 +37,26 @@ function compareRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
     for (const [k, v] of Object.entries(row2)) compared[prefix2 + k] = v;
   return compared;
 }
+function hasDuplicateKeys(data, key) {
+  const seen = new Set();
+  for (const r of data) {
+    const k = r[key] == null ? r[key] : String(r[key]).trim();
+    if (seen.has(k)) return true;
+    seen.add(k);
+  }
+  return false;
+}
 
 function compareData(df1, df2, keyColumn, option) {
-  const map1 = new Map(df1.map((r) => [r[keyColumn], r]));
-  const map2 = new Map(df2.map((r) => [r[keyColumn], r]));
+  const normalizeKey = (v) =>
+    v === null || v === undefined ? v : String(v).trim();
+  if (hasDuplicateKeys(df1, keyColumn) || hasDuplicateKeys(df2, keyColumn)) {
+    console.warn(
+      "Duplicate key values detected; later rows overwrite earlier ones.",
+    );
+  }
+  const map1 = new Map(df1.map((r) => [normalizeKey(r[keyColumn]), r]));
+  const map2 = new Map(df2.map((r) => [normalizeKey(r[keyColumn]), r]));
   const allKeys = new Set([...map1.keys(), ...map2.keys()]);
 
   const matching = [];
@@ -132,40 +147,6 @@ function renderResultsGrids(matchingRows, nonMatchingRows) {
   }
 }
 
-function renderSingleTable(rows, headId, bodyId, label) {
-  const head = document.getElementById(headId);
-  const body = document.getElementById(bodyId);
-
-  head.innerHTML = "";
-  body.innerHTML = "";
-
-  if (!rows || rows.length === 0) {
-    head.innerHTML = "";
-    body.innerHTML = `<tr><td class="muted">No ${label.toLowerCase()}.</td></tr>`;
-    return;
-  }
-
-  // Columns based on first row
-  const columns = Object.keys(rows[0]);
-
-  // Header
-  head.innerHTML =
-    "<tr>" + columns.map((col) => `<th>${col}</th>`).join("") + "</tr>";
-
-  // LIMIT TO FIRST 10 ROWS
-  const max = Math.min(rows.length, 10);
-
-  const out = [];
-
-  for (let i = 0; i < max; i++) {
-    const r = rows[i];
-    const tds = columns.map((col) => `<td>${r[col] ?? ""}</td>`).join("");
-    out.push(`<tr>${tds}</tr>`);
-  }
-
-  body.innerHTML = out.join("");
-}
-
 // Export helpers
 function exportToXlsx(data, name) {
   if (!data || !data.length) return;
@@ -183,7 +164,7 @@ function exportToCsv(data, name) {
 
   const columns = Object.keys(data[0]);
 
-  // Escape CSV fields properly
+  // Escape CSV fields
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
   const csv =
@@ -234,7 +215,15 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
     progressEl.value = 30;
     const df2 = await readFile(file2);
     progressEl.value = 60;
+    if (!df1.length || !df2.length) {
+      alert("One of the files is empty.");
+      return;
+    }
 
+    if (!(keyCol in df1[0]) || !(keyCol in df2[0])) {
+      alert(`Key column "${keyCol}" not found in both files.`);
+      return;
+    }
     const { matching, nonMatching } = compareData(df1, df2, keyCol, option);
     comparedResults = { matching, nonMatching };
     renderResultsGrids(matching, nonMatching);
@@ -243,6 +232,8 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
   } catch (err) {
     console.error(err);
     alert("Error: " + err);
+    progressEl.value = 0;
+    resultsInfo.textContent = "Comparison failed.";
   }
 });
 
@@ -271,9 +262,7 @@ document.getElementById("export-json").addEventListener("click", () => {
     exportToJson(comparedResults.nonMatching, "compare_nonmatching");
 });
 
-/* -------------------------
-	   THEME HANDLING
-	   ------------------------- */
+// THEME HANDLING
 const THEME_KEY = "theme";
 
 function applyTheme(theme) {
@@ -287,7 +276,15 @@ function applyTheme(theme) {
 
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
-  const theme = saved === "dark" ? "dark" : "light";
+
+  let theme;
+  if (saved === "light" || saved === "dark") {
+    theme = saved;
+  } else {
+    theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
 
   applyTheme(theme);
   themeToggle.checked = theme === "dark";
