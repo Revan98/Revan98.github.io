@@ -335,6 +335,28 @@ body.dark .hamburger {
 
 /* buttons */
 /* Dark mode via prefers-color-scheme */
+button:disabled,
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+  box-shadow: none;
+}
+
+/* Prevent hover effects when disabled */
+button:disabled:hover,
+.primary:disabled:hover,
+.secondary:disabled:hover {
+  background: var(--button-primary-bg);
+}
+.primary:disabled {
+  background-color: #9aa5b1; /* neutral gray */
+}
+
+body.dark .primary:disabled {
+  background-color: #555;
+}
 @media (prefers-color-scheme: dark) {
     :root {
         --button-primary-bg: #0b74d1;
@@ -389,7 +411,7 @@ body.dark {
     border: 1px solid var(--table-border);
     cursor: pointer;
     background: var(--button-primary-bg);
-    color: var(--text-color);
+    color: white;
 }
 
 progress {
@@ -424,7 +446,4 @@ body.light .ag-theme-quartz .ag-row-odd {
 
 body.dark .ag-theme-quartz .ag-row-odd {
     background-color: rgba(255, 255, 255, 0.05);
-
 }
-
-
