@@ -101,7 +101,7 @@ function createCompareGrid(containerId, rowData) {
   };
 
   const gridDiv = document.getElementById(containerId);
-
+  gridDiv.style.display = "block";
   // destroy old grid if re-running compare
   if (gridDiv.__agGridInstance) {
     gridDiv.__agGridInstance.destroy();
