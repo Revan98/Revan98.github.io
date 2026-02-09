@@ -38,7 +38,7 @@ let gridApi = null;
 
 function renderResultsAgGrid(rows) {
   const gridDiv = document.querySelector("#myGrid");
-
+  gridDiv.style.display = "block";
   const gridOptions = {
     theme: agGrid.themeQuartz,
     columnDefs: buildColumnDefs(rows),
