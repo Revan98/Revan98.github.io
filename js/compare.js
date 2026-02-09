@@ -3,7 +3,6 @@ const progressEl = document.getElementById("progressBar");
 const resultsWrap = document.getElementById("compare-results-wrap");
 const resultsInfo = document.getElementById("compare-results-info");
 
-/* Simple query helper */
 const themeToggle = document.getElementById("toggle-theme");
 
 // Read Excel/CSV/JSON
