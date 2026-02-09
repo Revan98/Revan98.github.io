@@ -426,3 +426,11 @@ body.dark .ag-theme-quartz .ag-row-odd {
     background-color: rgba(255, 255, 255, 0.05);
 
 }
+
+#matching-table {
+  display: none;
+}
+
+#nonmatching-table {
+  display: none;
+}
