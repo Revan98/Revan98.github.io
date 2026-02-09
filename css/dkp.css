@@ -6,7 +6,7 @@
 
 /* Dark mode via prefers-color-scheme */
 @media (prefers-color-scheme: dark) {
-  body.dark {
+  body {
     --accent: #2a2a2a;
     --bg-color: #333;
     --text-color: #eee;
@@ -31,7 +31,7 @@
 
 /* Light mode via prefers-color-scheme */
 @media (prefers-color-scheme: light) {
-  body.light {
+  body {
     --accent: #fff;
     --bg-color: #e5e5e5;
     --text-color: #333;
@@ -470,3 +470,28 @@ body.dark #backToTop:hover {
   background: #e68900;
 }
 
+button:disabled,
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+  box-shadow: none;
+}
+
+/* Prevent hover effects when disabled */
+button:disabled:hover,
+.primary:disabled:hover,
+.secondary:disabled:hover {
+  background: var(--button-primary-bg);
+}
+.primary:disabled {
+  background-color: #9aa5b1; 
+}
+
+body.dark .primary:disabled {
+  background-color: #555;
+}
+#result-table {
+  display: none;
+}
