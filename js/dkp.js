@@ -741,45 +741,44 @@
     });
   });
 
-  /* Theme */
-  function setTheme(mode) {
-    document.body.classList.remove("dark", "light");
-    document.body.classList.add(mode);
+// THEME HANDLING
+const THEME_KEY = "theme";
 
-    document.body.setAttribute("data-ag-theme-mode", mode);
+function applyTheme(theme) {
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(theme);
 
-    localStorage.setItem("theme", mode);
+  document.body.setAttribute("data-ag-theme-mode", theme);
+
+  localStorage.setItem(THEME_KEY, theme);
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+
+  let theme;
+  if (saved === "light" || saved === "dark") {
+    theme = saved;
+  } else {
+    theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   }
 
-  function initializeTheme(toggleEl) {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
-      setTheme("dark");
-      if (toggleEl) toggleEl.checked = true;
-      return;
-    }
-    if (saved === "light") {
-      setTheme("light");
-      if (toggleEl) toggleEl.checked = false;
-      return;
-    }
-    const prefersDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setTheme(prefersDark ? "dark" : "light");
-    if (toggleEl) toggleEl.checked = prefersDark;
-  }
-  // Theme init & toggle
-  initializeTheme(themeToggle);
-  if (themeToggle) {
-    themeToggle.addEventListener("change", (e) => {
-      setTheme(e.target.checked ? "dark" : "light");
-    });
-  }
+  applyTheme(theme);
+  themeToggle.checked = theme === "dark";
+}
 
-  const hamburger = document.getElementById("hamburger");
-  const navLinks = document.getElementById("nav-links");
-  hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+
+themeToggle.addEventListener("change", () => {
+  applyTheme(themeToggle.checked ? "dark" : "light");
+});
+
+initTheme();
+
+const hamburger = document.getElementById("hamburger");
+const navLinks = document.getElementById("nav-links");
+hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
 
   document.addEventListener("DOMContentLoaded", () => {
     const current = location.pathname.split("/").pop(); // e.g. "index.html"
