@@ -5,10 +5,15 @@ let mergedResults = null;
 const progressEl = document.getElementById("progress");
 const themeToggle = document.querySelector("#toggle-theme");
 const resultsInfo = document.getElementById("merge-results-info");
+function setExportEnabled(enabled) {
+  ["export-xlsx", "export-csv", "export-json"].forEach((id) => {
+    document.getElementById(id).disabled = !enabled;
+  });
+}
 
-// -------------------------
+setExportEnabled(false);
+
 // AG Grid Setup
-// -------------------------
 function buildColumnDefs(rows) {
   if (!rows || !rows.length) return [];
 
@@ -19,7 +24,6 @@ function buildColumnDefs(rows) {
       sortable: true,
       filter: false,
       resizable: true,
-      // Optional: you could add your diff renderers here
       cellRenderer: (params) => {
         if (key.endsWith("Diff")) {
           const val = params.value;
@@ -51,16 +55,15 @@ function renderResultsAgGrid(rows) {
   };
 
   // Destroy previous grid if exists
-  if (gridApi) {
-    gridApi.destroy();
+  if (!gridApi) {
+    gridApi = agGrid.createGrid(gridDiv, gridOptions);
+  } else {
+    gridApi.setGridOption("columnDefs", buildColumnDefs(rows));
+    gridApi.setGridOption("rowData", rows);
   }
-
-  gridApi = agGrid.createGrid(gridDiv, gridOptions);
 }
 
-// -------------------------
 // File Handling
-// -------------------------
 async function readExcel(file) {
   if (!file) throw new Error("No file provided");
   const arrBuf = await file.arrayBuffer();
@@ -86,13 +89,16 @@ async function readExcel(file) {
         normalized["T5 Kills"] = val;
       else if (["ch", "city hall", "cityhall", "city hall level"].includes(key))
         normalized.CH = val;
-      else normalized[k] = val;
+      else normalized[key] = val;
     });
     return normalized;
   });
 }
 
 async function handleFiles() {
+  setExportEnabled(false);
+  mergedResults = null;
+  progressEl.value = 0;
   const file1 = document.getElementById("file1").files[0];
   const file2 = document.getElementById("file2").files[0];
   const selectors = document.getElementById("columnSelectors");
@@ -120,39 +126,56 @@ async function handleFiles() {
   document.getElementById("mergeBtn").disabled = false;
 }
 
-// -------------------------
 // Merge Data & Render in AG Grid
-// -------------------------
 async function doMerge() {
-  const idColumn = document.getElementById("idColumn").value;
-  const mergeColumn = document.getElementById("mergeColumn").value;
+  const mergeBtn = document.getElementById("mergeBtn");
+  mergeBtn.disabled = true;
+  try {
+    const idColumn = document.getElementById("idColumn").value;
+    const mergeColumn = document.getElementById("mergeColumn").value;
 
-  if (!idColumn || !mergeColumn) return alert("Please select columns first.");
+    if (!idColumn || !mergeColumn) return alert("Please select columns first.");
 
-  progressEl.value = 10;
+    progressEl.value = 10;
 
-  const map = {};
-  for (const row of file2Data) {
-    map[row[idColumn]] = row[mergeColumn];
-  }
-
-  progressEl.value = 40;
-
-  mergedResults = file1Data.map((row) => {
-    const id = row[idColumn];
-    const newVal = map[id];
-    if (newVal !== undefined) {
-      return { ...row, [mergeColumn]: newVal };
+    const map = new Map();
+    /*     for (const row of file2Data) {
+      map.set(row[idColumn], row[mergeColumn]);
+    } */
+    for (const row of file2Data) {
+      const id = row[idColumn];
+      if (id == null) continue;
+      map.set(id, row[mergeColumn]);
     }
-    return row;
-  });
 
-  progressEl.value = 80;
+    progressEl.value = 40;
 
-  renderResultsAgGrid(mergedResults);
+    mergedResults = file1Data.map((row, i) => {
+      if (i % 100 === 0) {
+        progressEl.value = 40 + (i / file1Data.length) * 40;
+      }
+      const id = row[idColumn];
+      const newVal = map.get(id);
+      if (newVal !== undefined) {
+        return { ...row, [mergeColumn]: newVal };
+      }
+      return row;
+    });
 
-  progressEl.value = 100;
-  resultsInfo.textContent = `Merged ${mergedResults.length} rows using ID "${idColumn}" and column "${mergeColumn}" from File 2.`;
+    progressEl.value = 80;
+    if (!mergedResults || mergedResults.length === 0) {
+      setExportEnabled(false);
+      return;
+    }
+
+    renderResultsAgGrid(mergedResults);
+
+    progressEl.value = 100;
+    resultsInfo.textContent = `Merged ${mergedResults.length} rows using ID "${idColumn}" and column "${mergeColumn}" from File 2.`;
+    setExportEnabled(true);
+  } finally {
+    mergeBtn.disabled = false;
+  }
 }
 
 // Export: XLSX / CSV / JSON
@@ -171,7 +194,7 @@ function exportToCsv(rows) {
   if (!rows) return alert("No results to export.");
 
   const columns = Object.keys(rows[0]);
-  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`; // proper CSV escaping
+  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
   const csv =
     columns.map(escape).join(",") +
@@ -212,9 +235,7 @@ function exportToJson(rows) {
   URL.revokeObjectURL(url);
 }
 
-/* -------------------------
-   THEME HANDLING
-   ------------------------- */
+// THEME HANDLING
 const THEME_KEY = "theme";
 
 function applyTheme(theme) {
@@ -254,9 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// -------------------------
 // Event Listeners
-// -------------------------
 document.getElementById("file1").addEventListener("change", handleFiles);
 document.getElementById("file2").addEventListener("change", handleFiles);
 document.getElementById("mergeBtn").addEventListener("click", doMerge);
