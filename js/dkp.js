@@ -1,14 +1,11 @@
 (() => {
-  // Setup localforage store
   localforage.config({ name: "dkp_web_app" });
 
-  // Keys
   const KEY_MULT = "multipliers";
   const KEY_PR = "power_ranges";
   const KEY_VAC = "vacation_list";
   const KEY_MIN = "min_dkp";
 
-  // UI elements
   const t4El = document.getElementById("t4");
   const t5El = document.getElementById("t5");
   const deadsEl = document.getElementById("deads");
@@ -39,25 +36,8 @@
   const importSettingsFile = document.getElementById("import-settings-file");
   const clearMinBtn = document.getElementById("clear-min-dkp");
 
-  /* Simple query helper */
-
+  const themeToggle = document.querySelector("#toggle-theme");
   const ignoreChEl = document.getElementById("ignore-ch");
-  const KEY_PENALTIES = "penalties";
-  const PENALTY_COLUMNS = [
-    "DKP",
-    "T4 gained",
-    "T5 gained",
-    "Deads gained",
-    "KP gained",
-  ];
-  const penaltyColumnEl = document.getElementById("penalty-column");
-  PENALTY_COLUMNS.forEach((c) => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    penaltyColumnEl.appendChild(opt);
-  });
-  const CHECKPOINT_COLUMNS = new Set(["KP gained", "DKP"]);
 
   // In-memory caches
   let powerRanges = []; // [{min_power, max_power|null, percentage}]
@@ -67,14 +47,7 @@
   let lastResults = null; // array of result objects
   let powerGridApi = null;
   let resultsGridApi = null;
-  // penalties[id] = array of penalty rules
-  let penalties = {};
-  let df1Cache = null;
-  let df2Cache = null;
-  let map1Cache = null;
-  let map2Cache = null;
-  let allIdsCache = [];
-  let filteredIdsCache = [];
+  let skippedCount = 0;
 
   // Helpers: persistence
   async function loadAllFromStorage() {
@@ -86,22 +59,6 @@
     if (Array.isArray(v)) vacationList = v.slice();
     const md = await localforage.getItem(KEY_MIN);
     if (md && typeof md === "object") minDkpMap = md;
-    const p = await localforage.getItem(KEY_PENALTIES);
-    if (p && typeof p === "object") {
-      penalties = {};
-      Object.entries(p).forEach(([id, val]) => {
-        if (Array.isArray(val)) {
-          penalties[id] = val;
-        } else if (val && typeof val === "object") {
-          // migrate old single-penalty format → array
-          penalties[id] = [val];
-        }
-      });
-    }
-  }
-
-  async function savePenalties() {
-    await localforage.setItem(KEY_PENALTIES, penalties);
   }
 
   async function saveMultipliers() {
@@ -153,46 +110,32 @@
     minDkpMap = {};
     alert("All Min DKP values cleared.");
   }
-  async function loadFilesIfReady() {
-    const f1 = file1El.files[0];
-    const f2 = file2El.files[0];
-    if (!f1 || !f2) return;
 
-    progressEl.value = 5;
+  function validatePowerRange(newItem, ranges, editingIdx = null) {
+    const others = ranges.filter((_, i) => i !== editingIdx);
 
-    const [df1Raw, df2Raw] = await Promise.all([
-      readSpreadsheetFile(f1),
-      readSpreadsheetFile(f2),
-    ]);
+    for (const r of others) {
+      const rMin = r.min_power;
+      const rMax = r.max_power ?? Infinity;
+      const nMin = newItem.min_power;
+      const nMax = newItem.max_power ?? Infinity;
 
-    df1Cache = df1Raw;
-    df2Cache = df2Raw;
+      const overlaps = nMin <= rMax && nMax >= rMin;
+      if (overlaps) {
+        return `Range ${nMin}-${newItem.max_power ?? "∞"} overlaps with existing range ${rMin}-${r.max_power ?? "∞"}.`;
+      }
+      if (newItem.max_power === null) {
+        const hasInfinity = ranges.some(
+          (r, i) => i !== editingIdx && r.max_power === null,
+        );
+        if (hasInfinity) {
+          return "Only one open-ended (∞) range is allowed.";
+        }
+      }
+    }
 
-    // Build ID maps
-    const mapById = (arr) => {
-      const m = {};
-      arr.forEach((r) => {
-        const idS = String(r.ID ?? "").trim();
-        if (idS) m[idS] = r;
-      });
-      return m;
-    };
-
-    map1Cache = mapById(df1Cache);
-    map2Cache = mapById(df2Cache);
-
-    allIdsCache = Array.from(
-      new Set([...Object.keys(map1Cache), ...Object.keys(map2Cache)]),
-    );
-
-    // Populate penalties dropdown immediately
-    populatePenaltyIdDropdown(df1Cache, df2Cache);
-
-    progressEl.value = 20;
-    resultsInfo.textContent = "Files loaded. Ready to configure penalties.";
+    return null;
   }
-  file1El.addEventListener("change", loadFilesIfReady);
-  file2El.addEventListener("change", loadFilesIfReady);
 
   // UI: power ranges table
   const powerRangeColumnDefs = [
@@ -257,6 +200,7 @@
   prAddBtn.addEventListener("click", async () => {
     const minv = parseInt(prMin.value, 10);
     if (Number.isNaN(minv)) return alert("Min power must be an integer");
+
     const maxRaw = prMax.value.trim();
     const maxv =
       maxRaw === ""
@@ -264,21 +208,36 @@
         : Number.isInteger(Number(maxRaw))
           ? parseInt(maxRaw, 10)
           : null;
+    if (maxv !== null && maxv < minv) {
+      return alert("Max power must be greater than or equal to Min power.");
+    }
+
     const perc = parseFloat(prPercent.value);
     if (Number.isNaN(perc)) return alert("Percentage required (e.g. 0.6)");
 
     const item = { min_power: minv, max_power: maxv, percentage: perc };
+    const editIdx =
+      "editIdx" in prAddBtn.dataset ? Number(prAddBtn.dataset.editIdx) : null;
+    const error = validatePowerRange(item, powerRanges, editIdx);
+    if (error) {
+      alert(
+        error +
+          "\n\nExample fix:\nIf last range ends at 100, next should start at 101.",
+      );
+      return;
+    }
 
-    if (prAddBtn.dataset.editIdx !== undefined) {
-      const idx = Number(prAddBtn.dataset.editIdx);
-      powerRanges[idx] = item;
+    if (editIdx !== null) {
+      powerRanges[editIdx] = item;
       delete prAddBtn.dataset.editIdx;
       prAddBtn.textContent = "Add / Update";
     } else {
       powerRanges.push(item);
     }
+
     await savePowerRangesToStorage();
     powerGridApi?.setGridOption("rowData", powerRanges);
+
     prMin.value = prMax.value = prPercent.value = "";
   });
 
@@ -287,7 +246,6 @@
     powerGridApi?.setGridOption("rowData", powerRanges);
   });
 
-  // Utility: read spreadsheet file (.xlsx or .csv)
   async function readSpreadsheetFile(file) {
     if (!file) throw new Error("No file provided");
     const arrBuf = await file.arrayBuffer();
@@ -352,109 +310,17 @@
     const n = Number(row.CH);
     return Number.isFinite(n) ? n : null;
   }
-  let penaltyGridApi = null;
-  function buildPenaltyRows() {
-    const rows = [];
-
-    Object.entries(penalties).forEach(([id, rules]) => {
-      rules.forEach((p, idx) => {
-        rows.push({
-          id,
-          column: p.column,
-          type: p.type,
-          value: p.value,
-          checkpoint: p.checkpoint ?? "",
-          appliedValue: p.appliedValue ?? "",
-          _idx: idx, // internal index
-        });
-      });
-    });
-
-    return rows;
-  }
-  const penaltyColumnDefs = [
-    { headerName: "ID", field: "id", width: 140 },
-    { headerName: "Column", field: "column", width: 140 },
-    { headerName: "Type", field: "type", width: 110 },
-    { headerName: "Value", field: "value", width: 110 },
-    { headerName: "Checkpoint", field: "checkpoint", width: 140 },
-    { headerName: "Applied Value", field: "appliedValue", width: 140 },
-    {
-      headerName: "Actions",
-      width: 150,
-      cellRenderer: (params) => {
-        return `
-        <button class="secondary pen-delete">Delete</button>
-      `;
-      },
-      sortable: false,
-      filter: false,
-    },
-  ];
-  function createOrUpdatePenaltyGrid() {
-    const rows = buildPenaltyRows();
-    const gridDiv = document.querySelector("#penalty-grid");
-
-    // Destroy old grid
-    if (penaltyGridApi) {
-      penaltyGridApi.destroy();
-      penaltyGridApi = null;
-      gridDiv.innerHTML = "";
-    }
-
-    const gridOptions = {
-      theme: agGrid.themeQuartz,
-      columnDefs: penaltyColumnDefs,
-      rowData: rows,
-      rowHeight: 42,
-      animateRows: true,
-      defaultColDef: {
-        resizable: true,
-        sortable: true,
-      },
-      onCellClicked: async (event) => {
-        const row = event.data;
-        if (!row) return;
-
-        // DELETE
-        if (event.event.target.classList.contains("pen-delete")) {
-          if (!confirm("Delete this penalty?")) return;
-
-          penalties[row.id].splice(row._idx, 1);
-          if (!penalties[row.id].length) delete penalties[row.id];
-
-          await savePenalties();
-          createOrUpdatePenaltyGrid();
-        }
-
-        // EDIT
-        if (event.event.target.classList.contains("pen-edit")) {
-          penaltyIdEl.value = row.id;
-          penaltyColumnEl.value = row.column;
-          penaltyTypeEl.value = row.type;
-          penaltyValueEl.value = row.value;
-
-          penalties[row.id].splice(row._idx, 1);
-          if (!penalties[row.id].length) delete penalties[row.id];
-
-          createOrUpdatePenaltyGrid();
-        }
-      },
-    };
-
-    penaltyGridApi = agGrid.createGrid(gridDiv, gridOptions);
-  }
 
   async function calculateDkp({ mode = "lilithdata" } = {}) {
-    if (!df1Cache || !df2Cache) {
-      return alert("Please load both files first.");
-    }
+    const f1 = file1El.files[0];
+    const f2 = file2El.files[0];
+    if (!f1 || !f2) return alert("Please select both files.");
+    progressEl.value = 5;
 
-    const df1Raw = df1Cache;
-    const df2Raw = df2Cache;
-    const map1 = map1Cache;
-    const map2 = map2Cache;
-
+    const [df1Raw, df2Raw] = await Promise.all([
+      readSpreadsheetFile(f1),
+      readSpreadsheetFile(f2),
+    ]);
     progressEl.value = 20;
 
     const mapById = (arr) => {
@@ -467,11 +333,14 @@
       return m;
     };
 
+    const map1 = mapById(df1Raw);
+    const map2 = mapById(df2Raw);
+
     progressEl.value = 35;
 
     // build list of all unique IDs
-
-    const allIds = allIdsCache;
+    const allIdsSet = new Set([...Object.keys(map1), ...Object.keys(map2)]);
+    const allIds = Array.from(allIdsSet);
 
     // Filter IDs based on CH: skip if CH < 25 in both files (or missing in both)
     let filteredIds;
@@ -481,7 +350,7 @@
       filteredIds = allIds;
       skippedCount = 0;
     } else {
-      // Original CH filtering
+      // CH filtering
       filteredIds = allIds.filter((id) => {
         const ch1 = getChFromRow(map1[id]);
         const ch2 = getChFromRow(map2[id]);
@@ -532,14 +401,8 @@
         minDkpMap[id] !== undefined
           ? Number(minDkpMap[id])
           : Math.round(powerVal * getMinDkpPercent(powerVal));
-      let t4Final = applyDeltaPenalty(id, "T4 gained", Math.round(t4g));
-      let t5Final = applyDeltaPenalty(id, "T5 gained", Math.round(t5g));
-      let deadsFinal = applyDeltaPenalty(id, "Deads gained", Math.round(deg));
-
-      let DKPraw = Math.round(t4Final * t4 + t5Final * t5 + deadsFinal * deads);
-      let DKPfinal = applyCheckpointPenalty(id, "DKP", DKPraw);
-
-      const DKPpercent = minDkp ? DKPfinal / minDkp : 0;
+      const DKP = Math.round(t4g * t4 + t5g * t5 + deg * deads);
+      const DKPpercent = minDkp ? DKP / minDkp : 0;
 
       const status =
         a.Power === undefined || a.Power === null || a.Power === ""
@@ -556,16 +419,14 @@
         Name: name,
         Power: powerVal,
 
-        "KP gained": applyCheckpointPenalty(id, "KP gained", Math.round(kp)),
-
-        "T4 gained": t4Final,
-        "T5 gained": t5Final,
-        "Deads gained": deadsFinal,
+        "KP gained": Math.round(kp),
+        "T4 gained": Math.round(t4g),
+        "T5 gained": Math.round(t5g),
+        "Deads gained": Math.round(deg),
 
         "Min DKP": Math.round(minDkp),
-        DKP: DKPfinal,
-        "DKP%": minDkp ? Number((DKPfinal / minDkp).toFixed(4)) : 0,
-
+        DKP: Math.round(DKP),
+        "DKP%": Number.isFinite(DKPpercent) ? Number(DKPpercent.toFixed(4)) : 0,
         Vacation: vacation,
         Status: status,
 
@@ -649,25 +510,6 @@
       getQuickFilterText: () => "",
     }));
   }
-
-  function populatePenaltyIdDropdown(df1, df2) {
-    const select = document.getElementById("penalty-id");
-    select.innerHTML = "";
-
-    const seen = new Set();
-    [...df1, ...df2].forEach((r) => {
-      const id = String(r.ID ?? "").trim();
-      if (!id || seen.has(id)) return;
-      seen.add(id);
-
-      const name = r.Name ?? "Unknown";
-      const opt = document.createElement("option");
-      opt.value = id;
-      opt.textContent = `${name} (${id})`;
-      select.appendChild(opt);
-    });
-  }
-
   function createResultsGrid(rows) {
     if (!rows || !rows.length) return;
 
@@ -709,12 +551,11 @@
       `dkp_output_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`,
     );
   }
-
   function exportToCsv(rows) {
     if (!rows) return alert("No results to export.");
 
     const columns = Object.keys(rows[0]);
-    const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`; // proper CSV escaping
+    const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
     const csv =
       columns.map(escape).join(",") +
@@ -762,7 +603,6 @@
       power_ranges: powerRanges,
       vacation_list: vacationList,
       min_dkp: minDkpMap,
-      penalties,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
@@ -797,6 +637,7 @@
       if (Array.isArray(parsed.power_ranges)) {
         powerRanges = parsed.power_ranges;
         await localforage.setItem(KEY_PR, powerRanges);
+        powerGridApi?.setGridOption("rowData", powerRanges);
       }
       if (Array.isArray(parsed.vacation_list)) {
         vacationList = parsed.vacation_list;
@@ -806,25 +647,9 @@
         minDkpMap = parsed.min_dkp;
         await localforage.setItem(KEY_MIN, minDkpMap);
       }
-      if (parsed.penalties && typeof parsed.penalties === "object") {
-        penalties = {};
-
-        Object.entries(parsed.penalties).forEach(([id, rules]) => {
-          if (Array.isArray(rules)) {
-            penalties[id] = rules;
-          } else if (rules && typeof rules === "object") {
-            // backward compatibility (single penalty)
-            penalties[id] = [rules];
-          }
-        });
-
-        await localforage.setItem(KEY_PENALTIES, penalties);
-      }
-
       alert("Settings imported successfully.");
       // refresh UI
       populateUIFromMemory();
-      createOrUpdatePenaltyGrid();
     } catch (err) {
       console.error(err);
       alert("Failed to import settings: " + (err.message || err));
@@ -833,109 +658,12 @@
     }
   });
 
-  const penaltyIdEl = document.getElementById("penalty-id");
-  const penaltyTypeEl = document.getElementById("penalty-type");
-  const penaltyValueEl = document.getElementById("penalty-value");
-  const penaltySaveBtn = document.getElementById("penalty-save");
-
-  function applyDeltaPenalty(id, column, originalValue) {
-    const rules = penalties[id];
-    if (!Array.isArray(rules) || !rules.length) return originalValue;
-
-    let value = originalValue;
-
-    for (const p of rules) {
-      if (p.column !== column) continue;
-
-      if (p.type === "percent") {
-        value = value * (1 + p.value);
-      } else if (p.type === "absolute") {
-        value = p.value;
-      }
-    }
-
-    return Math.round(value);
-  }
-  penaltySaveBtn.addEventListener("click", async () => {
-    const id = String(penaltyIdEl.value).trim();
-    const column = penaltyColumnEl.value;
-    const type = penaltyTypeEl.value;
-    const value = Number(penaltyValueEl.value);
-
-    if (!id || !column || !Number.isFinite(value)) {
-      return alert("Invalid penalty data");
-    }
-
-    if (!Array.isArray(penalties[id])) {
-      penalties[id] = [];
-    }
-
-    let checkpoint = null;
-    let appliedValue = null;
-
-    // Only for checkpoint columns
-    if (CHECKPOINT_COLUMNS.has(column)) {
-      if (!lastResults) {
-        alert("Run DKP once before adding checkpoint penalties.");
-        return;
-      }
-
-      const row = lastResults.find((r) => String(r.ID) === id);
-      if (!row) {
-        alert("Player not found in last results.");
-        return;
-      }
-
-      const currentVal = Number(row[column]);
-      if (!Number.isFinite(currentVal)) {
-        alert("Invalid checkpoint value.");
-        return;
-      }
-
-      checkpoint = currentVal;
-
-      if (type === "percent") {
-        appliedValue = Math.round(currentVal * (1 + value));
-      } else if (type === "absolute") {
-        appliedValue = Math.round(value);
-      }
-    }
-
-    penalties[id].push({
-      column,
-      type,
-      value,
-      checkpoint,
-      appliedValue,
-    });
-
-    await savePenalties();
-    createOrUpdatePenaltyGrid();
-  });
-
-  function applyCheckpointPenalty(id, column, rawValue) {
-    const rules = penalties[id];
-    if (!Array.isArray(rules)) return rawValue;
-
-    const p = rules.find(
-      (r) => r.column === column && CHECKPOINT_COLUMNS.has(column),
-    );
-    if (!p || p.checkpoint == null || p.appliedValue == null) {
-      return rawValue;
-    }
-
-    const gainedSincePenalty = Math.max(0, rawValue - p.checkpoint);
-    return Math.round(p.appliedValue + gainedSincePenalty);
-  }
-
   // Init wiring
   async function init() {
     await loadAllFromStorage();
 
     populateUIFromMemory();
     createPowerRangesGrid();
-    createOrUpdatePenaltyGrid();
-
     progressEl.value = 0;
 
     progressEl.value = 0;
@@ -998,34 +726,41 @@
     });
   });
 
-  /* -------------------------
-	   THEME HANDLING
-	   ------------------------- */
-  const THEME_KEY = "theme";
-  const themeToggle = document.getElementById("toggle-theme");
+  /* Theme */
+  function setTheme(mode) {
+    document.body.classList.remove("dark", "light");
+    document.body.classList.add(mode);
 
-  function applyTheme(theme) {
-    document.body.classList.remove("light", "dark");
-    document.body.classList.add(theme);
+    document.body.setAttribute("data-ag-theme-mode", mode);
 
-    document.body.setAttribute("data-ag-theme-mode", theme);
-
-    localStorage.setItem(THEME_KEY, theme);
+    localStorage.setItem("theme", mode);
   }
 
-  function initTheme() {
-    const saved = localStorage.getItem(THEME_KEY);
-    const theme = saved === "dark" ? "dark" : "light";
-
-    applyTheme(theme);
-    themeToggle.checked = theme === "dark";
+  function initializeTheme(toggleEl) {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+      setTheme("dark");
+      if (toggleEl) toggleEl.checked = true;
+      return;
+    }
+    if (saved === "light") {
+      setTheme("light");
+      if (toggleEl) toggleEl.checked = false;
+      return;
+    }
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(prefersDark ? "dark" : "light");
+    if (toggleEl) toggleEl.checked = prefersDark;
   }
-
-  themeToggle.addEventListener("change", () => {
-    applyTheme(themeToggle.checked ? "dark" : "light");
-  });
-
-  initTheme();
+  // Theme init & toggle
+  initializeTheme(themeToggle);
+  if (themeToggle) {
+    themeToggle.addEventListener("change", (e) => {
+      setTheme(e.target.checked ? "dark" : "light");
+    });
+  }
 
   const hamburger = document.getElementById("hamburger");
   const navLinks = document.getElementById("nav-links");
