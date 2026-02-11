@@ -1,4 +1,4 @@
-const CONFIG = {
+ const CONFIG = {
   sources: [
     {
       id: "main",
@@ -12,7 +12,7 @@ const CONFIG = {
       kd: "2552",
       name: "KD2552",
       sheetUrl:
-        "https://docs.google.com/spreadsheets/d/1HS6wcMWCzLR4PVhYJA_8rFzUuqaYvwUilD2zffq9YNE/edit?usp=sharing",
+        "https://docs.google.com/spreadsheets/d/1gYXA8VR8L5s-qz2S5zlxlioNjGYHoAzKbbmtWENRQuU/edit?usp=sharing",
     },
   ],
 };
