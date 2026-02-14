@@ -1,4 +1,4 @@
- const CONFIG = {
+const CONFIG = {
   sources: [
     {
       id: "main",
@@ -213,7 +213,15 @@ const gridOptions = {
       headerName: "ID",
       field: "id",
       sortable: false,
+      cellRenderer: (params) => {
+        const a = document.createElement("a");
+        a.href = `governor.html?kd=${getKDFromURL()}&id=${params.value}`;
+        a.textContent = params.value;
+        a.classList.add("gov-id");
+        return a;
+      },
     },
+
     { headerName: "Name", field: "name" },
 
     {
@@ -674,7 +682,6 @@ function initTheme() {
   applyTheme(theme);
   themeToggle.checked = theme === "dark";
 }
-
 
 themeToggle.addEventListener("change", () => {
   applyTheme(themeToggle.checked ? "dark" : "light");
