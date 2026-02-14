@@ -688,3 +688,13 @@ body,
   font-weight: 600 !important;
 }
 
+.gov-id {
+  color: var(--chart-line);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.gov-id:hover {
+  text-decoration: underline;
+}
