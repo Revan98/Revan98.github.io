@@ -1,7 +1,7 @@
 const KVK_SHEETS = [
   {
     name: "KvK 1",
-    url: "https://docs.google.com/spreadsheets/d/1kCRr_ELFosXaXlrnpQem7URbcMKEgL-ER_XuTDOF0uM/",
+    url: "https://docs.google.com/spreadsheets/d/1wt5pWTBn3gzBB_kVi6JSXpr6clJSkmLHl-d5WsS6PM0",
   },
   {
     name: "KvK 2",
