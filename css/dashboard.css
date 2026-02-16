@@ -768,4 +768,6 @@ body,
 }
 .content-sec {
 	margin-bottom: 10px;
+	flex: 2;
 }
+
