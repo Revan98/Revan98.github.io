@@ -45,21 +45,36 @@
 
   <div class="page">
     <main class="content">
-      <div id="top-players"></div>
-      <div id="bottom-totals"></div>
-      <div class="info">
-        <p>Multiplers T4 - 5 points, T5 - 10 points, Deads - 15 points || Select a governor to view chart.</p>
+	<div id="top-players"></div>
+	<div id="bottom-totals"></div>
+	<div class="info">
+		<p>Multiplers T4 - 5 points, T5 - 10 points, Deads - 15 points || Select a governor to view chart.</p>
+	</div>
+
+	<div class="top-controls">
+		<label class="switch">
+			<input type="checkbox" id="maximizeTable">
+			<span class="slider"></span>
+			<span>Maximize table</span>
+		</label>
+
+		<div class="quick-filter-wrapper">
+		<input type="text" id="quickFilter" placeholder="Search..." class="quick-filter" oninput="onFilterTextBoxChanged()" />
+		</div>
+	</div>
+
+	<div id="loading-spinner" class="loading-spinner">
+		<div class="spinner"></div>
+		<p>Loading data...</p>
+	</div>
+
+    </main>
+	
+	<div class="content-sec">
+      <div id="gridWrapper" class="grid-wrapper">
+        <div id="myGrid" class="ag-theme-quartz" style="height: 700px"></div>
       </div>
 
-      <div class="quick-filter-wrapper">
-        <input type="text" id="quickFilter" placeholder="Search..." class="quick-filter"
-          oninput="onFilterTextBoxChanged()" />
-      </div>
-      <div id="loading-spinner" class="loading-spinner">
-        <div class="spinner"></div>
-        <p>Loading data...</p>
-      </div>
-      <div id="myGrid" class="ag-theme-quartz" style="height: 700px"></div>
 
       <div id="chart-section">
         <div class="chart-buttons">
@@ -70,8 +85,8 @@
           <canvas id="modal-chart"></canvas>
         </div>
       </div>
-    </main>
-
+	</div>
+	
     <footer class="footer">
       <p>Dashboard</p>
     </footer>
@@ -83,3 +98,4 @@
 </body>
 
 </html>
+
