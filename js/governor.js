@@ -229,6 +229,19 @@ const gridOptions = {
 
 gridApi = agGrid.createGrid(document.querySelector("#govGrid"), gridOptions);
 
+const maximizeToggle = document.getElementById("maximizeTable");
+const gridWrapper = document.getElementById("gridWrapper");
+
+maximizeToggle.addEventListener("change", () => {
+  gridWrapper.classList.toggle("maximized", maximizeToggle.checked);
+  gridApi.doLayout();
+});
+
+function onFilterTextBoxChanged() {
+  const input = document.getElementById("quickFilter");
+  gridApi.setGridOption("quickFilterText", input.value);
+}
+
 loadGovernorData().then((data) => {
   const spinner = document.getElementById("loading-spinner");
   const rowData = buildRowDataFromKvKs(data);
