@@ -61,12 +61,31 @@
 <div class="page">
   <main class="content">
     <h2 id="gov-title">Previous KvK data</h2>
+
+	<div class="top-controls">
+		<label class="switch">
+			<input type="checkbox" id="maximizeTable">
+			<span class="slider"></span>
+			<span>Maximize table</span>
+		</label>
+
+		<div class="quick-filter-wrapper">
+		<input type="text" id="quickFilter" placeholder="Search..." class="quick-filter" oninput="onFilterTextBoxChanged()" />
+		</div>
+	</div>
       <div id="loading-spinner" class="loading-spinner">
         <div class="spinner"></div>
         <p>Loading data...</p>
       </div>
-    <div id="govGrid" class="ag-theme-quartz" style="height:600px;"></div>
   </main>
+	<div class="content-sec">
+      <div id="gridWrapper" class="grid-wrapper">
+        <div id="govGrid" class="ag-theme-quartz" style="height: 700px"></div>
+      </div>
+	</div>
+    <footer class="footer">
+      <p>Dashboard</p>
+    </footer>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
