@@ -5,9 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DKP stats</title>
-
   <link rel="stylesheet" href="css/dashboard.css">
-
 </head>
 
 <body>
@@ -43,8 +41,8 @@
     </div>
   </header>
 
-  <div class="page">
-    <main class="content">
+  <main class="page">
+    <section class="content">
 	<div id="top-players"></div>
 	<div id="bottom-totals"></div>
 	<div class="info">
@@ -55,7 +53,7 @@
 		<label class="switch">
 			<input type="checkbox" id="maximizeTable">
 			<span class="slider"></span>
-			<span>Maximize table</span>
+			<span>Expand table</span>
 		</label>
 
 		<div class="quick-filter-wrapper">
@@ -67,14 +65,12 @@
 		<div class="spinner"></div>
 		<p>Loading data...</p>
 	</div>
-
-    </main>
+    </section>
 	
-	<div class="content-sec">
+	<section class="content-sec">
       <div id="gridWrapper" class="grid-wrapper">
         <div id="myGrid" class="ag-theme-quartz" style="height: 700px"></div>
       </div>
-
 
       <div id="chart-section">
         <div class="chart-buttons">
@@ -85,17 +81,15 @@
           <canvas id="modal-chart"></canvas>
         </div>
       </div>
-	</div>
+	</section>
 	
     <footer class="footer">
       <p>Dashboard</p>
     </footer>
-  </div>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
-
 </html>
-
