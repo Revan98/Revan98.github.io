@@ -619,8 +619,7 @@ body.dark .ag-theme-quartz .ag-row-odd {
 }
 
 .modal-chart {
-  display: flex;
-  align-items: center;
+  margin: 0 auto;
   margin-bottom: 10px;
   /*background: var(--bg-chart);*/
   width: 60% !important;
@@ -772,5 +771,6 @@ body,
 	margin-bottom: 10px;
 	flex: 2;
 }
+
 
 
