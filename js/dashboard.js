@@ -1,30 +1,3 @@
-const CONFIG = {
-  sources: [
-    {
-      id: "main",
-      kd: "2247",
-      name: "KD2247",
-      sheetUrl:
-        "https://docs.google.com/spreadsheets/d/1LHAa5r_coFO5XGCuqmZe6BrMmfanlq7Ds9TVIX_ekps/edit?usp=sharing",
-    },
-    {
-      id: "backup",
-      kd: "2552",
-      name: "KD2552",
-      sheetUrl:
-        "https://docs.google.com/spreadsheets/d/1gYXA8VR8L5s-qz2S5zlxlioNjGYHoAzKbbmtWENRQuU/edit?usp=sharing",
-    },
-  ],
-};
-
-const API_KEY = "AIzaSyAPP27INsgILZBAigyOm-g31djFgYlU7VY";
-
-const SheetCache = {
-  sheetsList: [], // ordered sheet names (timeline)
-  sheetsData: {}, // chart data only (lean rows)
-  lastSheetData: null, // grid data only (full rows)
-};
-
 const qs = (sel) => document.querySelector(sel);
 
 function extractSheetId(url) {
@@ -59,93 +32,116 @@ async function safeFetch(url) {
   return res.json();
 }
 
-async function loadSheetList(spreadsheetId) {
-  const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?key=${API_KEY}`;
-
-  const metaJson = await safeFetch(metaUrl);
-  return metaJson.sheets.map((s) => s.properties.title);
-}
-async function loadLastSheetForGrid(spreadsheetId, sheetName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/'${encodeURIComponent(sheetName)}'?key=${API_KEY}`;
-
-  const json = await safeFetch(url);
-
-  return {
-    headers: json.values[0],
-    rows: json.values.slice(1),
-  };
-}
 const CHART_RANGES = ["A:B", "D:D", "Q:Q", "E:G"];
 
-async function loadChartSheets(spreadsheetId, sheetNames) {
-  const ranges = sheetNames.flatMap((sheet) =>
-    CHART_RANGES.map((r) => `ranges=${encodeURIComponent(`'${sheet}'!${r}`)}`),
-  );
+let db;
 
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?${ranges.join("&")}&key=${API_KEY}`;
-
-  const json = await safeFetch(url);
-
-  return normalizeChartValueRanges(json.valueRanges);
-}
-function normalizeChartValueRanges(valueRanges) {
-  const sheets = {};
-
-  valueRanges.forEach((range) => {
-    const sheetName = normalizeSheetName(range.range);
-    if (!range.values) return;
-
-    sheets[sheetName] ??= { rows: {}, _tmp: [] };
-
-    range.values.forEach((row, i) => {
-      sheets[sheetName]._tmp[i] ??= [];
-      sheets[sheetName]._tmp[i].push(...row);
-    });
+async function loadDatabase() {
+  const SQL = await initSqlJs({
+    locateFile: (file) =>
+      `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`,
   });
 
-  // index by governor ID
-  Object.values(sheets).forEach((sheet) => {
-    sheet._tmp.forEach((r) => {
-      if (r[0] != null) {
-        sheet.rows[r[0]] = r;
-      }
-    });
-    delete sheet._tmp;
-  });
-
-  return sheets;
+  const res = await fetch("kvk.db");
+  const buffer = await res.arrayBuffer();
+  db = new SQL.Database(new Uint8Array(buffer));
 }
+
+const SheetCache = {
+  dates: [],
+  lastSnapshot: [],
+  chartData: {},
+};
 
 async function loadAllSheetsCache() {
-  try {
-    const source = getSelectedSource();
-    if (!source) {
-      alert("Invalid or missing KD parameter.");
-      return;
-    }
+  await loadDatabase();
 
-    const SPREADSHEET_ID = extractSheetId(source.sheetUrl);
+  const kd = getKDFromURL();
 
-    // 1️⃣ metadata
-    SheetCache.sheetsList = await loadSheetList(SPREADSHEET_ID);
+  // 1️⃣ Find KVKingdom
+  const kvk = db.exec(`
+	  SELECT id
+	  FROM kvks
+	  WHERE kingdom='${kd}'
+	  ORDER BY kvk_number DESC
+	  LIMIT 1
+	`)[0];
 
-    const lastSheet = SheetCache.sheetsList.at(-1);
-
-    // 2️⃣ grid data (last sheet only)
-    SheetCache.lastSheetData = await loadLastSheetForGrid(
-      SPREADSHEET_ID,
-      lastSheet,
-    );
-
-    // 3️⃣ chart data (lean, all sheets)
-    SheetCache.sheetsData = await loadChartSheets(
-      SPREADSHEET_ID,
-      SheetCache.sheetsList,
-    );
-  } catch (err) {
-    console.error("Sheet load failed:", err);
-    alert("Failed to load spreadsheet data.");
+  if (!kvk) {
+    alert("No KVKingdom found in DB");
+    return;
   }
+
+  const kvkId = kvk.values[0][0];
+
+  // 2️⃣ Get all snapshots (timeline)
+  const snaps = db.exec(`
+    SELECT id, snapshot_date
+    FROM snapshots
+    WHERE kvk_id=${kvkId}
+    ORDER BY snapshot_date
+  `)[0];
+
+  SheetCache.sheetsList = snaps.values.map((r) => r[1]); // dates
+  SheetCache._snapIds = Object.fromEntries(
+    snaps.values.map((r) => [r[1], r[0]]),
+  );
+
+  // 3️⃣ Get last snapshot (grid)
+  const lastSnap = db.exec(`
+    SELECT id FROM snapshots
+    WHERE kvk_id=${kvkId} AND is_last=1
+  `)[0].values[0][0];
+
+  const grid = db.exec(`
+    SELECT
+      s.governor_id,
+      g.name,
+      s.power,
+      s.power_diff,
+      s.kill_points,
+      s.kp_diff,
+      s.t4,
+      s.t4_diff,
+      s.t5,
+      s.t5_diff,
+      s.deads,
+      s.deads_diff,
+      s.dkp,
+      s.dkp_percent,
+      s.acclaim
+    FROM stats s
+    JOIN governors g ON g.governor_id=s.governor_id
+    WHERE s.snapshot_id=${lastSnap}
+  `)[0];
+
+  SheetCache.lastSheetData = {
+    rows: grid.values,
+  };
+
+  // Load chart data (all snapshots)
+  SheetCache.sheetsData = {};
+
+  SheetCache.sheetsList.forEach((date) => {
+    const sid = SheetCache._snapIds[date];
+
+    const data = db.exec(`
+	  SELECT
+		governor_id,
+		kp_diff,
+		power_diff,
+		t4_diff,
+		t5_diff,
+		deads_diff
+	  FROM stats
+	  WHERE snapshot_id=${sid}
+	`)[0];
+
+    const map = {};
+    data.values.forEach((r) => (map[String(r[0])] = r));
+
+    SheetCache.sheetsData[date] = { rows: map };
+  });
 }
 
 function formatNumber(val) {
@@ -155,54 +151,44 @@ function formatNumber(val) {
 }
 
 const num = (v) => Number(v) || 0;
-const COL = {
+const COL_table = {
   ID: 0,
   NAME: 1,
   POWER: 2,
-  KP_DIFF: 3,
-  T4_DIFF: 4,
-  T5_DIFF: 5,
-  DEADS_DIFF: 6,
-  DKP: 8,
-  DKP_PERCENT: 9,
-  EXCLUDED: 10,
-  STATUS: 11,
-  T4: 12,
-  T5: 13,
-  KP: 14,
-  DEADS: 15,
-  POWER_DIFF: 16,
-  ACCLAIM: 17,
+  KP_DIFF: 5,
+  T4_DIFF: 7,
+  T5_DIFF: 9,
+  DEADS_DIFF: 11,
+  DKP: 12,
+  DKP_PERCENT: 13,
+  T4: 6,
+  T5: 8,
+  KP: 4,
+  DEADS: 10,
+  POWER_DIFF: 3,
+  ACCLAIM: 14,
 };
 
 let gridApi;
 
 function buildRowDataFromSheet(rows) {
-  return rows
-    .filter((r) => String(r[COL.EXCLUDED]).trim().toUpperCase() !== "YES")
-    .map((r) => ({
-      id: r[COL.ID],
-      name: r[COL.NAME],
-      power: num(r[COL.POWER]),
-      powerDiff: num(r[COL.POWER_DIFF]),
-
-      killPoints: num(r[COL.KP]),
-      killPointsDiff: num(r[COL.KP_DIFF]),
-
-      t4: num(r[COL.T4]),
-      t4Diff: num(r[COL.T4_DIFF]),
-
-      t5: num(r[COL.T5]),
-      t5Diff: num(r[COL.T5_DIFF]),
-
-      deads: num(r[COL.DEADS]),
-      deadsDiff: num(r[COL.DEADS_DIFF]),
-
-      dkp: num(r[COL.DKP]),
-      dkpPercent: r[COL.DKP_PERCENT],
-      status: r[COL.STATUS],
-      acclaim: r[COL.ACCLAIM],
-    }));
+  return rows.map((r) => ({
+    id: r[COL_table.ID],
+    name: r[COL_table.NAME],
+    power: r[COL_table.POWER],
+    powerDiff: r[COL_table.POWER_DIFF],
+    killPoints: r[COL_table.KP],
+    killPointsDiff: r[COL_table.KP_DIFF],
+    t4: r[COL_table.T4],
+    t4Diff: r[COL_table.T4_DIFF],
+    t5: r[COL_table.T5],
+    t5Diff: r[COL_table.T5_DIFF],
+    deads: r[COL_table.DEADS],
+    deadsDiff: r[COL_table.DEADS_DIFF],
+    dkp: r[COL_table.DKP],
+    dkpPercent: r[COL_table.DKP_PERCENT],
+    acclaim: r[COL_table.ACCLAIM],
+  }));
 }
 
 const gridOptions = {
@@ -317,6 +303,8 @@ const gridOptions = {
     {
       headerName: "DKP",
       field: "dkp",
+      sort: "desc",
+      sortIndex: 0,
       getQuickFilterText: () => "",
 
       valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
@@ -324,12 +312,13 @@ const gridOptions = {
     {
       headerName: "DKP %",
       field: "dkpPercent",
+      comparator: (a, b) => Number(a) - Number(b),
       getQuickFilterText: () => "",
-    },
-    {
-      headerName: "Status",
-      field: "status",
-      hide: true,
+      valueFormatter: (p) => {
+        const v = Number(p.value);
+        if (isNaN(v)) return "";
+        return (v * 100).toFixed(2) + "%";
+      },
     },
     {
       headerName: "Acclaim",
@@ -365,7 +354,9 @@ const gridOptions = {
 };
 
 gridApi = agGrid.createGrid(document.querySelector("#myGrid"), gridOptions);
-
+//
+//table resize toggle js
+//
 const maximizeToggle = document.getElementById("maximizeTable");
 const gridWrapper = document.getElementById("gridWrapper");
 
@@ -374,6 +365,8 @@ maximizeToggle.addEventListener("change", () => {
   gridApi.doLayout();
 });
 
+
+//end resize
 function onFilterTextBoxChanged() {
   const input = document.getElementById("quickFilter");
   gridApi.setGridOption("quickFilterText", input.value);
@@ -420,21 +413,19 @@ function formatSheetDate(sheetName) {
 }
 
 const CHART_COL = {
-  ID: 0,
-  NAME: 1,
-  KP: 2, // D
-  POWER_DIFF: 3, // Q
-  T4: 4, // E
-  T5: 5, // F
-  DEADS: 6, // G
+  KP: 1,
+  POWER_DIFF: 2,
+  T4: 3,
+  T5: 4,
+  DEADS: 5,
 };
 
 const CHART_SERIES = [
-  { col: CHART_COL.KP, label: "Kill Points", secondary: false },
+  { col: CHART_COL.KP, label: "KP Diff", secondary: false },
   { col: CHART_COL.POWER_DIFF, label: "Power Diff", secondary: true },
-  { col: CHART_COL.T4, label: "T4 Kills", secondary: true },
-  { col: CHART_COL.T5, label: "T5 Kills", secondary: true },
-  { col: CHART_COL.DEADS, label: "Deads", secondary: true },
+  { col: CHART_COL.T4, label: "T4 Diff", secondary: true },
+  { col: CHART_COL.T5, label: "T5 Diff", secondary: true },
+  { col: CHART_COL.DEADS, label: "Deads Diff", secondary: true },
 ];
 
 function createChart(ctx, labels, datasets) {
@@ -480,8 +471,9 @@ function buildChartDatasets(governorId) {
   return CHART_SERIES.map((series, i) => {
     const data = SheetCache.sheetsList.map((sheetName) => {
       const sheet = SheetCache.sheetsData[sheetName];
+
       if (!sheet) return 0;
-      const row = sheet.rows[governorId];
+      const row = sheet.rows?.[governorId];
 
       return row ? Number(row[series.col] || 0) : 0;
     });
@@ -576,9 +568,9 @@ loadAllSheetsCache().then(() => {
 
   gridApi.setGridOption("rowData", rowData);
 
-  const sortedByDKP = [...rows]
-    .sort((a, b) => Number(b[8]) - Number(a[8]))
-    .slice(0, 3);
+	const sortedByDKP = [...rows]
+	  .sort((a, b) => Number(b[12]) - Number(a[12]))
+	  .slice(0, 3);
 
   renderTopPlayers(sortedByDKP);
   renderTotals(rows);
@@ -619,12 +611,13 @@ function renderTotals(rows = []) {
 
   container.innerHTML = "";
 
-  const defs = [
-    { label: "Total T4 kills", col: 4 },
-    { label: "Total T5 kills", col: 5 },
-    { label: "Total Deads", col: 6 },
-    { label: "Total KP", col: 3 },
-  ];
+	const defs = [
+	  { label: "Total T4 kills", col: 7 },      // t4_diff
+	  { label: "Total T5 kills", col: 9 },      // t5_diff
+	  { label: "Total Deads", col: 11 },        // deads_diff
+	  { label: "Total KP", col: 5 },            // kp_diff
+	];
+
 
   defs.forEach(({ label, col }) => {
     const sum = rows.reduce((acc, r) => acc + (Number(r[col]) || 0), 0);
