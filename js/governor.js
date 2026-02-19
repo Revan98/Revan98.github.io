@@ -118,14 +118,32 @@ const gridOptions = {
   theme: agGrid.themeQuartz,
   rowData: [],
   columnDefs: [
-    { headerName: "KvK", field: "kvk" },
-    { headerName: "ID", field: "id", sortable: false },
-    { headerName: "Name", field: "name" },
+    { 
+		headerName: "KvK", 
+		field: "kvk",
+		flex:1,
+		minWidth: 100,
+	},
+    { 
+		headerName: "ID", 
+		field: "id", 
+		sortable: false,
+		flex:1,
+		minWidth: 100,
+	},
+    { 
+		headerName: "Name", 
+		field: "name",
+		flex:1,
+		minWidth: 100,
+	},
 
     {
       headerName: "Power",
       field: "powerDiff",
       comparator: (a, b) => a - b,
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = num(p.value);
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -137,6 +155,8 @@ const gridOptions = {
     {
       headerName: "Killpoints",
       field: "killPointsDiff",
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = num(p.value);
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -148,6 +168,8 @@ const gridOptions = {
     {
       headerName: "T4",
       field: "t4Diff",
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = num(p.value);
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -159,6 +181,8 @@ const gridOptions = {
     {
       headerName: "T5",
       field: "t5Diff",
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = num(p.value);
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -170,6 +194,8 @@ const gridOptions = {
     {
       headerName: "Deads",
       field: "deadsDiff",
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = num(p.value);
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -181,6 +207,8 @@ const gridOptions = {
     {
       headerName: "DKP",
       field: "dkp",
+		flex:1,
+		minWidth: 100, 
       valueFormatter: (p) =>
         num(p.value).toLocaleString("en-US"),
     },
@@ -188,6 +216,8 @@ const gridOptions = {
     {
       headerName: "DKP %",
       field: "dkpPercent",
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value);
         if (isNaN(v)) return "";
@@ -198,6 +228,8 @@ const gridOptions = {
     {
       headerName: "Acclaim",
       field: "acclaim",
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) =>
         num(p.value).toLocaleString("en-US"),
     },
@@ -215,6 +247,19 @@ const gridApi = agGrid.createGrid(
   document.querySelector("#govGrid"),
   gridOptions
 );
+
+const maximizeToggle = document.getElementById("maximizeTable");
+const gridWrapper = document.getElementById("gridWrapper");
+
+maximizeToggle.addEventListener("change", () => {
+  gridWrapper.classList.toggle("maximized", maximizeToggle.checked);
+  gridApi.doLayout();
+});
+
+function onFilterTextBoxChanged() {
+  const input = document.getElementById("quickFilter");
+  gridApi.setGridOption("quickFilterText", input.value);
+}
 
 loadGovernorFromDb().then((rowData) => {
   const spinner = document.getElementById("loading-spinner");
