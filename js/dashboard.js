@@ -199,6 +199,8 @@ const gridOptions = {
       headerName: "ID",
       field: "id",
       sortable: false,
+	  flex:1,
+	  minWidth: 100,
       cellRenderer: (params) => {
         const a = document.createElement("a");
         a.href = `governor.html?kd=${getKDFromURL()}&id=${params.value}`;
@@ -208,13 +210,19 @@ const gridOptions = {
       },
     },
 
-    { headerName: "Name", field: "name" },
+    { 
+		headerName: "Name", 
+		field: "name",
+		flex:1,
+		minWidth: 100,
+	},
 
     {
       headerName: "Power",
       field: "powerDiff",
       comparator: (a, b) => a - b,
-
+		flex:1,
+		minWidth: 100,
       valueFormatter: (params) => {
         const v = Number(params.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -233,7 +241,8 @@ const gridOptions = {
     {
       headerName: "Killpoints",
       field: "killPointsDiff",
-
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -252,7 +261,8 @@ const gridOptions = {
     {
       headerName: "T4",
       field: "t4Diff",
-
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -269,7 +279,8 @@ const gridOptions = {
     {
       headerName: "T5",
       field: "t5Diff",
-
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -286,7 +297,8 @@ const gridOptions = {
     {
       headerName: "Deads",
       field: "deadsDiff",
-
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -306,7 +318,8 @@ const gridOptions = {
       sort: "desc",
       sortIndex: 0,
       getQuickFilterText: () => "",
-
+		flex:1,
+		minWidth: 100,
       valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
     },
     {
@@ -314,6 +327,8 @@ const gridOptions = {
       field: "dkpPercent",
       comparator: (a, b) => Number(a) - Number(b),
       getQuickFilterText: () => "",
+		flex:1,
+		minWidth: 100,	  
       valueFormatter: (p) => {
         const v = Number(p.value);
         if (isNaN(v)) return "";
@@ -323,6 +338,8 @@ const gridOptions = {
     {
       headerName: "Acclaim",
       field: "acclaim",
+		flex:1,
+		minWidth: 100,	  
       getQuickFilterText: () => "",
 
       valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
@@ -333,6 +350,7 @@ const gridOptions = {
     sortable: true,
     filter: false,
     resizable: true,
+
   },
   tooltipShowDelay: 300,
   pagination: false,
@@ -354,9 +372,7 @@ const gridOptions = {
 };
 
 gridApi = agGrid.createGrid(document.querySelector("#myGrid"), gridOptions);
-//
-//table resize toggle js
-//
+
 const maximizeToggle = document.getElementById("maximizeTable");
 const gridWrapper = document.getElementById("gridWrapper");
 
@@ -365,8 +381,6 @@ maximizeToggle.addEventListener("change", () => {
   gridApi.doLayout();
 });
 
-
-//end resize
 function onFilterTextBoxChanged() {
   const input = document.getElementById("quickFilter");
   gridApi.setGridOption("quickFilterText", input.value);
