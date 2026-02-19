@@ -767,10 +767,8 @@ body,
   justify-content: space-between;
   align-items: center;
 }
+
 .content-sec {
 	margin-bottom: 10px;
 	flex: 2;
 }
-
-
-
