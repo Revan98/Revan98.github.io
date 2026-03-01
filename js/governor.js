@@ -248,14 +248,6 @@ const gridApi = agGrid.createGrid(
   gridOptions
 );
 
-const maximizeToggle = document.getElementById("maximizeTable");
-const gridWrapper = document.getElementById("gridWrapper");
-
-maximizeToggle.addEventListener("change", () => {
-  gridWrapper.classList.toggle("maximized", maximizeToggle.checked);
-  gridApi.doLayout();
-});
-
 function onFilterTextBoxChanged() {
   const input = document.getElementById("quickFilter");
   gridApi.setGridOption("quickFilterText", input.value);
