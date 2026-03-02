@@ -219,7 +219,7 @@ const gridOptions = {
 		headerName: "Name", 
 		field: "name",
 		flex:1,
-		minWidth: 100,
+		minWidth: 115,
 	},
 
     {
