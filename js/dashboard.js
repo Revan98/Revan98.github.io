@@ -660,7 +660,32 @@ function escapeHtml(str) {
     }[s];
   });
 }
+	
+    // Sticky navbar shadow on scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 10);
+    });
 
+    // Hamburger toggle
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    hamburger.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      hamburger.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close menu when a link is clicked
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', false);
+      });
+    });
+	
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
@@ -695,13 +720,6 @@ themeToggle.addEventListener("change", () => {
 });
 
 initTheme();
-
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.getElementById("nav-links");
-if (hamburger && navLinks) {
-  hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   const current = location.pathname.split("/").pop();
 
