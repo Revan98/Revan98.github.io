@@ -268,6 +268,31 @@ loadGovernorFromDb().then((rowData) => {
 });
 
 
+    // Sticky navbar shadow on scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 10);
+    });
+
+    // Hamburger toggle
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    hamburger.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      hamburger.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close menu when a link is clicked
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', false);
+      });
+    });
+	
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
@@ -278,6 +303,7 @@ function applyTheme(theme) {
   document.body.setAttribute("data-ag-theme-mode", theme);
 
   localStorage.setItem(THEME_KEY, theme);
+
 }
 
 function initTheme() {
@@ -301,9 +327,12 @@ themeToggle.addEventListener("change", () => {
 });
 
 initTheme();
+document.addEventListener("DOMContentLoaded", () => {
+  const current = location.pathname.split("/").pop();
 
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.getElementById("nav-links");
-if (hamburger && navLinks) {
-  hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
-}
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    if (link.getAttribute("href") === current) {
+      link.classList.add("active");
+    }
+  });
+});
