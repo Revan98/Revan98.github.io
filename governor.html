@@ -4,7 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Governor Stats</title>
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/dashboard.css">
   <style>
     #govGrid {
@@ -24,21 +25,20 @@
     </style>
 </head>
 <body>
-  <header class="navbar">
-    <div class="nav-container">
-      <button class="hamburger" id="hamburger" aria-label="Menu">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list"
+
+  <nav id="navbar">
+    <div class="nav-inner">
+        <button class="hamburger" id="hamburger" aria-label="Menu"
+	  >
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-list"
           viewBox="0 0 16 16">
           <path fill-rule="evenodd"
             d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
         </svg>
       </button>
-
-        <div class="nav-links" id="nav-links">
-        <a id="backLink" href="#">← Back to Dashboard</a>
-        </div>
-
-
+      <ul class="nav-links">
+		<li><a id="backLink" href="#">← Back to Dashboard</a></li>
+      </ul>
       <label class="theme-toggle">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun"
           viewBox="0 0 16 16">
@@ -54,36 +54,41 @@
         </svg>
       </label>
     </div>
-  </header>
 
+    <div class="mobile-menu" id="mobileMenu">
+      <ul>
+		<li><a id="backLink" href="#">← Back to Dashboard</a></li>
+      </ul>
+      <div class="mobile-menu-wrap">
 
-	<div class="page">
-		<main class="page-body">
-			<div class="content">
-				<h2 id="gov-title">Previous KvK data</h2>
-				<div class="top-controls">
+      </div>
+    </div>
+  </nav>
 
-					<div class="quick-filter-wrapper">
-					<input type="text" id="quickFilter" placeholder="Search..." class="quick-filter" oninput="onFilterTextBoxChanged()" />
-					</div>
-				</div>
-				<div id="loading-spinner" class="loading-spinner">
-					<div class="spinner"></div>
-					<p>Loading data...</p>
-				</div>
-			</div>
+  <main>
+      <section>
+		<h2 id="gov-title">Previous KvK data</h2>
+		<div class="quick-filter-wrapper">
+			<input type="text" id="quickFilter" placeholder="Search..." class="quick-filter" oninput="onFilterTextBoxChanged()" />
+		</div>
 
-			<div class="content-sec">
-				<div id="gridWrapper" class="grid-wrapper">
-					<div id="govGrid" class="ag-theme-quartz" style="height:600px;"></div>
-				</div>
-			</div>
-		</main>
-		
-		<footer class="footer">
-		  <p>Dashboard</p>
-		</footer>
-	</div>
+		<div id="loading-spinner" class="loading-spinner">
+			<div class="spinner"></div>
+			<p>Loading data...</p>
+		</div>
+
+		<div id="gridWrapper" class="grid-wrapper">
+			<div id="govGrid" class="ag-theme-quartz" style="height:600px;"></div>
+		</div>
+    </section>
+  </main>
+
+  <footer id="contact">
+      <div class="footer-bottom">
+        <span>Dashboard.</span>
+      </div>
+    </div>
+  </footer>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
