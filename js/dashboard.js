@@ -202,10 +202,15 @@ const gridOptions = {
 	  flex:1,
 	  minWidth: 100,
       cellRenderer: (params) => {
+        if (!params.value) return '';
         const a = document.createElement("a");
-        a.href = `governor.html?kd=${getKDFromURL()}&id=${params.value}`;
         a.textContent = params.value;
         a.classList.add("gov-id");
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openGovModal(String(params.value), params.data?.name || '');
+        });
         return a;
       },
     },
@@ -729,3 +734,99 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+// ── GOVERNOR HISTORY MODAL ──────────────────────────────────────────────────
+
+function loadGovHistory(govId) {
+  const kd = getKDFromURL();
+
+  const kvksRes = db.exec(`
+    SELECT id, kvk_number
+    FROM kvks
+    WHERE kingdom='${kd}'
+    ORDER BY kvk_number
+  `);
+  if (!kvksRes.length) return [];
+
+  const results = [];
+  for (const [kvkId, kvkNumber] of kvksRes[0].values) {
+    const snapRes = db.exec(`
+      SELECT id FROM snapshots
+      WHERE kvk_id=${kvkId} AND is_last=1
+      LIMIT 1
+    `);
+    if (!snapRes.length) continue;
+
+    const snapId = snapRes[0].values[0][0];
+    const statsRes = db.exec(`
+      SELECT s.power_diff, s.kp_diff, s.t4_diff, s.t5_diff,
+             s.deads_diff, s.dkp, s.dkp_percent, s.acclaim
+      FROM stats s
+      WHERE s.snapshot_id=${snapId} AND s.governor_id='${govId}'
+    `);
+    if (!statsRes.length) continue;
+
+    const r = statsRes[0].values[0];
+    results.push({ kvk: `KvK ${kvkNumber}`, powerDiff: r[0], kpDiff: r[1],
+      t4Diff: r[2], t5Diff: r[3], deadsDiff: r[4], dkp: r[5],
+      dkpPercent: r[6], acclaim: r[7] });
+  }
+  return results;
+}
+
+function _fmtDiff(v) {
+  const n = Number(v) || 0;
+  const cls = n >= 0 ? 'diff-positive' : 'diff-negative';
+  return `<span class="${cls}">${n >= 0 ? '+' : ''}${n.toLocaleString('en-US')}</span>`;
+}
+
+function renderModalTable(rows) {
+  if (!rows.length)
+    return `<div class="gov-modal-empty">No historical data found for this governor.</div>`;
+
+  const headers = ['KvK','Power','Kill Points','T4','T5','Deads','DKP','DKP %','Acclaim'];
+  const ths = headers.map(h => `<th>${h}</th>`).join('');
+  const trs = rows.map(r => `
+    <tr>
+      <td class="kvk-label">${escapeHtml(r.kvk)}</td>
+      <td>${_fmtDiff(r.powerDiff)}</td>
+      <td>${_fmtDiff(r.kpDiff)}</td>
+      <td>${_fmtDiff(r.t4Diff)}</td>
+      <td>${_fmtDiff(r.t5Diff)}</td>
+      <td>${_fmtDiff(r.deadsDiff)}</td>
+      <td>${Number(r.dkp||0).toLocaleString('en-US')}</td>
+      <td>${isNaN(Number(r.dkpPercent)) ? '' : (Number(r.dkpPercent)*100).toFixed(2)+'%'}</td>
+      <td>${Number(r.acclaim||0).toLocaleString('en-US')}</td>
+    </tr>`).join('');
+
+  return `<table class="gov-modal-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+function openGovModal(govId, govName) {
+  const overlay  = document.getElementById('govModalOverlay');
+  const body     = document.getElementById('govModalBody');
+  const subtitle = document.getElementById('govModalSubtitle');
+
+  subtitle.textContent = govName ? `— ${govName} (${govId})` : `— ID: ${govId}`;
+  body.innerHTML = `<div class="gov-modal-loading"><div class="spinner"></div><span>Loading…</span></div>`;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  setTimeout(() => {
+    try {
+      body.innerHTML = renderModalTable(loadGovHistory(govId));
+    } catch (err) {
+      body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(err))}</div>`;
+    }
+  }, 50);
+}
+
+function closeGovModal() {
+  document.getElementById('govModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('govModalClose').addEventListener('click', closeGovModal);
+document.getElementById('govModalOverlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeGovModal();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeGovModal(); });
