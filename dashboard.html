@@ -89,10 +89,27 @@
       </div>
     </div>
   </footer>
+    <!-- GOVERNOR HISTORY MODAL -->
+  <div class="gov-modal-overlay" id="govModalOverlay">
+    <div class="gov-modal" id="govModal" role="dialog" aria-modal="true">
+      <div class="gov-modal-header">
+        <div class="gov-modal-title">
+          Governor History <span id="govModalSubtitle"></span>
+        </div>
+        <button class="gov-modal-close" id="govModalClose" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+          </svg>
+        </button>
+      </div>
+      <div class="gov-modal-body" id="govModalBody">
+        <div class="gov-modal-loading"><div class="spinner"></div><span>Loading…</span></div>
+      </div>
+    </div>
+  </div>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script src="js/dashboard.js"></script>
 </body>
 </html>
-
