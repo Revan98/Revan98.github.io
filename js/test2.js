@@ -987,7 +987,28 @@ function renderFarmsTable(rows) {
 	  false // collapsed by default
 	);
 }
+function renderEquipmentSection() {
+  const MARCH_COUNT = 7;
+  const PIECE_COUNT = 8;
 
+  let rows = '';
+  for (let m = 1; m <= MARCH_COUNT; m++) {
+    const boxes = Array(PIECE_COUNT)
+      .fill('<div class="equip-box"></div>')
+      .join('');
+    rows += `
+      <div class="equip-row">
+        <span class="equip-label">March ${m}</span>
+        <div class="equip-boxes">${boxes}</div>
+      </div>`;
+  }
+
+  return renderCollapsibleSection(
+    'Equipment',
+    `<div class="equip-grid">${rows}</div>`,
+    false
+  );
+}
 function renderFarmKvKTable(rows) {
   if (!rows.length)
     return `<div class="gov-modal-empty">No KvK data found for farm accounts.</div>`;
@@ -1070,7 +1091,8 @@ function openGovModal(govId, govName) {
 			  false
 			) +
 		  renderFarmsTable(farms) +
-		  renderFarmKvKTable(farmKvK);
+		  renderFarmKvKTable(farmKvK) +
+     		renderEquipmentSection();
     } catch (err) {
       body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(err))}</div>`;
     }
