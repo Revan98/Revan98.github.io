@@ -14,7 +14,7 @@
 	--diff-positive-bg: rgba(0, 200, 83, 0.15);
 	--diff-negative-bg: rgba(244, 67, 54, 0.15);
 	--diff-positive-text: #0a6025;
-	--diff-negative-text: #7a0e0e;
+	--diff-negative-text: #7a0e0e;mygrid
 	--row-hover-bg: rgba(0, 0, 0, 0.06);
 	--nav-bg: rgba(255, 255, 255, 0.85);
 	--nav-border: none;
@@ -592,6 +592,7 @@ body.dark .ag-theme-quartz .ag-row-odd {
   }
 }
 #myGrid {
+	height: 700px;
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 0.4s ease, transform 0.4s ease;
@@ -805,6 +806,7 @@ body.dark .ag-theme-quartz .ag-row-odd {
 .modal-controls button:hover {
   background: var(--row-hover-bg);
 }
+
 
 
 
