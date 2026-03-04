@@ -10,6 +10,116 @@
       --muted: #777;
 
     }
+	@media (prefers-color-scheme: light) {
+	  body {
+	    --accent: #fff;
+	    --bg-color: #e5e5e5;
+	    --text-color: #333;
+	    --table-bg: #fff;
+	    --table-border: #ccc;
+	    --scrollbar-bg: rgba(0, 0, 0, 0.3);
+	    --chart-text: #333;
+	    --chart-grid: rgba(0, 0, 0, 0.1);
+	    --chart-line: #007bff;
+	    --diff-positive-bg: rgba(0, 200, 83, 0.15);
+	    --diff-negative-bg: rgba(244, 67, 54, 0.15);
+	    --diff-positive-text: #0a6025;
+	    --diff-negative-text: #7a0e0e;
+	    --row-hover-bg: rgba(0, 0, 0, 0.06);
+	    --nav-bg: rgba(255, 255, 255, 0.85);
+	    --nav-border: none;
+	    --nav-box: rgba(0, 0, 0, 0.08);
+	    --table-stripe-odd: #ffffff;
+	    --table-stripe-even: #f7f9fb;
+	    --button-secondary-bg: rgb(211, 47, 47);
+	    --bg-chart: #ffffff;
+		--width: 90%;
+		--nav-h: 60px;
+		--footer-bg: #161616;
+	  }
+	}
+	
+	@media (prefers-color-scheme: dark) {
+	  body {
+	    --accent: #2a2a2a;
+	    --bg-color: #333;
+	    --text-color: #eee;
+	    --table-bg: #2a2a2a;
+	    --table-border: #444;
+	    --chart-text: #eee;
+	    --chart-grid: rgba(255, 255, 255, 0.2);
+	    --chart-line: #ff9800;
+	    --diff-positive-bg: rgba(0, 60, 0, 0.7);
+	    --diff-negative-bg: rgba(80, 0, 0, 0.7);
+	    --diff-positive-text: #b8ffba;
+	    --diff-negative-text: #ffbaba;
+	    --row-hover-bg: rgba(255, 255, 255, 0.08);
+	    --nav-bg: rgba(20, 20, 20, 0.8);
+	    --nav-border: rgba(255, 255, 255, 0.05);
+	    --nav-box: rgba(0, 0, 0, 0.5);
+	    --table-stripe-odd: rgba(255, 255, 255, 0.01);
+	    --table-stripe-even: rgba(255, 255, 255, 0.03);
+	    --button-secondary-bg: rgb(211, 47, 47);
+	    --bg-chart: #1e1e1e;
+		--width: 90%;
+		--nav-h: 60px;
+		--footer-bg: #161616;
+	  }
+	}
+	
+	body.light {
+	  --accent: #fff;
+	  --bg-color: #e5e5e5;
+	  --text-color: #333;
+	  --table-bg: #fff;
+	  --table-border: #ccc;
+	  --accent: #fff;
+	  --scrollbar-bg: rgba(0, 0, 0, 0.3);
+	  --chart-text: #333;
+	  --chart-grid: rgba(0, 0, 0, 0.1);
+	  --chart-line: #007bff;
+	  --diff-positive-bg: rgba(0, 200, 83, 0.15);
+	  --diff-negative-bg: rgba(244, 67, 54, 0.15);
+	  --diff-positive-text: #0a6025;
+	  --diff-negative-text: #7a0e0e;
+	  --row-hover-bg: rgba(0, 0, 0, 0.06);
+	  --nav-bg: rgba(255, 255, 255, 0.85);
+	  --nav-border: none;
+	  --nav-box: rgba(0, 0, 0, 0.08);
+	  --table-stripe-odd: #ffffff;
+	  --table-stripe-even: #f7f9fb;
+	  --button-secondary-bg: rgb(211, 47, 47);
+	  --bg-chart: #ffffff;
+	  --width: 90%;
+	  --nav-h: 60px;
+	  --footer-bg: #161616;
+	}
+	
+	body.dark {
+	  --accent: #2a2a2a;
+	  --bg-color: #333;
+	  --text-color: #eee;
+	  --table-bg: #2a2a2a;
+	  --table-border: #444;
+	  --chart-text: #eee;
+	  --chart-grid: rgba(255, 255, 255, 0.2);
+	  --chart-line: #ff9800;
+	  --diff-positive-bg: rgba(0, 60, 0, 0.7);
+	  --diff-negative-bg: rgba(80, 0, 0, 0.7);
+	  --diff-positive-text: #b8ffba;
+	  --diff-negative-text: #ffbaba;
+	  --row-hover-bg: rgba(255, 255, 255, 0.08);
+	  --nav-bg: rgba(20, 20, 20, 0.8);
+	  --nav-border: rgba(255, 255, 255, 0.05);
+	  --nav-box: rgba(0, 0, 0, 0.5);
+	  --table-stripe-odd: rgba(255, 255, 255, 0.01);
+	  --table-stripe-even: rgba(255, 255, 255, 0.03);
+	  --button-secondary-bg: rgb(211, 47, 47);
+	  --bg-chart: #1e1e1e;
+	  --width: 90%;
+	  --nav-h: 60px;
+	  --footer-bg: #161616;
+	}
 
     html { scroll-behavior: smooth; }
 
@@ -466,8 +576,6 @@ body.dark {
   color: white;
 }
 
-
-/* rest of css */
 .info {
   display: flex;
   margin-top: 15px;
@@ -584,117 +692,7 @@ body.dark .ag-theme-quartz .ag-row-odd {
     height: 420px;
   }
 }
-@media (prefers-color-scheme: light) {
-  body {
-    --accent: #fff;
-    --bg-color: #e5e5e5;
-    --text-color: #333;
-    --table-bg: #fff;
-    --table-border: #ccc;
-    --scrollbar-bg: rgba(0, 0, 0, 0.3);
-    --chart-text: #333;
-    --chart-grid: rgba(0, 0, 0, 0.1);
-    --chart-line: #007bff;
-    --diff-positive-bg: rgba(0, 200, 83, 0.15);
-    --diff-negative-bg: rgba(244, 67, 54, 0.15);
-    --diff-positive-text: #0a6025;
-    --diff-negative-text: #7a0e0e;
-    --row-hover-bg: rgba(0, 0, 0, 0.06);
-    --nav-bg: rgba(255, 255, 255, 0.85);
-    --nav-border: none;
-    --nav-box: rgba(0, 0, 0, 0.08);
-    --table-stripe-odd: #ffffff;
-    --table-stripe-even: #f7f9fb;
-    --button-secondary-bg: rgb(211, 47, 47);
-    --bg-chart: #ffffff;
-      --width: 90%;
-      --nav-h: 60px;
-	  --footer-bg: #161616;
-  }
-}
 
-@media (prefers-color-scheme: dark) {
-  body {
-    --accent: #2a2a2a;
-    --bg-color: #333;
-    --text-color: #eee;
-    --table-bg: #2a2a2a;
-    --table-border: #444;
-    --chart-text: #eee;
-    --chart-grid: rgba(255, 255, 255, 0.2);
-    --chart-line: #ff9800;
-    --diff-positive-bg: rgba(0, 60, 0, 0.7);
-    --diff-negative-bg: rgba(80, 0, 0, 0.7);
-    --diff-positive-text: #b8ffba;
-    --diff-negative-text: #ffbaba;
-    --row-hover-bg: rgba(255, 255, 255, 0.08);
-    --nav-bg: rgba(20, 20, 20, 0.8);
-    --nav-border: rgba(255, 255, 255, 0.05);
-    --nav-box: rgba(0, 0, 0, 0.5);
-    --table-stripe-odd: rgba(255, 255, 255, 0.01);
-    --table-stripe-even: rgba(255, 255, 255, 0.03);
-    --button-secondary-bg: rgb(211, 47, 47);
-    --bg-chart: #1e1e1e;
-      --width: 90%;
-      --nav-h: 60px;
-	  --footer-bg: #161616;
-  }
-}
-
-body.light {
-  --accent: #fff;
-  --bg-color: #e5e5e5;
-  --text-color: #333;
-  --table-bg: #fff;
-  --table-border: #ccc;
-  --accent: #fff;
-  --scrollbar-bg: rgba(0, 0, 0, 0.3);
-  --chart-text: #333;
-  --chart-grid: rgba(0, 0, 0, 0.1);
-  --chart-line: #007bff;
-  --diff-positive-bg: rgba(0, 200, 83, 0.15);
-  --diff-negative-bg: rgba(244, 67, 54, 0.15);
-  --diff-positive-text: #0a6025;
-  --diff-negative-text: #7a0e0e;
-  --row-hover-bg: rgba(0, 0, 0, 0.06);
-  --nav-bg: rgba(255, 255, 255, 0.85);
-  --nav-border: none;
-  --nav-box: rgba(0, 0, 0, 0.08);
-  --table-stripe-odd: #ffffff;
-  --table-stripe-even: #f7f9fb;
-  --button-secondary-bg: rgb(211, 47, 47);
-  --bg-chart: #ffffff;
-      --width: 90%;
-      --nav-h: 60px;
-	  --footer-bg: #161616;
-}
-
-
-body.dark {
-  --accent: #2a2a2a;
-  --bg-color: #333;
-  --text-color: #eee;
-  --table-bg: #2a2a2a;
-  --table-border: #444;
-  --chart-text: #eee;
-  --chart-grid: rgba(255, 255, 255, 0.2);
-  --chart-line: #ff9800;
-  --diff-positive-bg: rgba(0, 60, 0, 0.7);
-  --diff-negative-bg: rgba(80, 0, 0, 0.7);
-  --diff-positive-text: #b8ffba;
-  --diff-negative-text: #ffbaba;
-  --row-hover-bg: rgba(255, 255, 255, 0.08);
-  --nav-bg: rgba(20, 20, 20, 0.8);
-  --nav-border: rgba(255, 255, 255, 0.05);
-  --nav-box: rgba(0, 0, 0, 0.5);
-  --table-stripe-odd: rgba(255, 255, 255, 0.01);
-  --table-stripe-even: rgba(255, 255, 255, 0.03);
-  --button-secondary-bg: rgb(211, 47, 47);
-  --bg-chart: #1e1e1e;
-      --width: 90%;
-      --nav-h: 60px;
-	  --footer-bg: #161616;
-}
 #myGrid {
   opacity: 0;
   transform: translateY(10px);
@@ -745,7 +743,7 @@ body.dark {
 .gov-id:hover {
   text-decoration: underline;
 }
-/* ── GOVERNOR HISTORY MODAL ── */
+
 .gov-modal-overlay {
   display: none;
   position: fixed;
@@ -771,7 +769,7 @@ body.dark {
   border: 1px solid var(--table-border);
   border-radius: 12px;
   width: 100%;
-  max-width: 880px;
+  max-width: 1000px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -783,6 +781,7 @@ body.dark {
   from { opacity: 0; transform: translateY(16px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0)   scale(1);    }
 }
+
 .gov-modal-header {
   display: flex;
   align-items: center;
@@ -791,17 +790,20 @@ body.dark {
   border-bottom: 1px solid var(--table-border);
   flex-shrink: 0;
 }
+
 .gov-modal-title {
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-color);
 }
+
 .gov-modal-title span {
   color: var(--chart-line);
   margin-left: 6px;
   font-weight: 400;
   font-size: 0.875rem;
 }
+
 .gov-modal-close {
   background: none;
   border: none;
@@ -815,12 +817,14 @@ body.dark {
   justify-content: center;
   transition: opacity 0.15s, background 0.15s;
 }
+
 .gov-modal-close:hover { opacity: 1; background: rgba(128,128,128,0.15); }
 .gov-modal-body {
   overflow-y: auto;
   padding: 1.2rem 1.4rem;
   flex: 1;
 }
+
 .gov-modal-loading {
   display: flex;
   align-items: center;
@@ -831,12 +835,14 @@ body.dark {
   opacity: 0.6;
   font-size: 0.9rem;
 }
+
 .gov-modal-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
   color: var(--text-color);
 }
+
 .gov-modal-table th {
   text-align: center;
   padding: 8px 10px;
@@ -847,11 +853,13 @@ body.dark {
   border-bottom: 2px solid var(--table-border);
   white-space: nowrap;
 }
+
 .gov-modal-table td {
   text-align: center;
   padding: 9px 10px;
   border-bottom: 1px solid var(--table-border);
 }
+
 .gov-modal-table tbody tr:last-child td { border-bottom: none; }
 .gov-modal-table tbody tr:hover td { background: var(--row-hover-bg); }
 .gov-modal-table .kvk-label { font-weight: 600; text-align: left; }
@@ -861,4 +869,55 @@ body.dark {
   color: var(--text-color);
   opacity: 0.5;
   font-size: 0.9rem;
+}
+
+.collapsible-section {
+  margin-top: 20px;
+}
+
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--table-bg);
+  transition: background 0.2s ease;
+}
+
+.collapsible-header:hover {
+  background: var(--row-hover-bg);
+}
+
+.collapsible-icon {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.collapsible-content {
+  margin-top: 10px;
+}
+
+.modal-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.modal-controls button {
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.modal-controls button:hover {
+  background: var(--row-hover-bg);
 }
