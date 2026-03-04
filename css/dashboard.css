@@ -216,12 +216,11 @@ footer {
 .footer-bottom {
   display: flex;
   justify-content: center;
-  gap: 2rem;
   align-items: center;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
+  padding: 1.2rem 0;
   font-size: .8rem;
   color: var(--text-color);
+  text-align: center;
 }
 /* ── HAMBURGER ── */
 .hamburger {
@@ -806,6 +805,7 @@ body.dark .ag-theme-quartz .ag-row-odd {
 .modal-controls button:hover {
   background: var(--row-hover-bg);
 }
+
 
 
 
