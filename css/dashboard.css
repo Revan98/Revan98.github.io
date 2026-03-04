@@ -837,18 +837,19 @@ body.dark .ag-theme-quartz .ag-row-odd {
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
-  color: var(--text-color);
 }
 .modal-controls button {
-  background: var(--table-bg);
-  border: 1px solid var(--table-border);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
+	background: var(--table-bg);
+	border: 1px solid var(--table-border);
+	border-radius: 8px;
+	padding: 6px 12px;
+	font-size: 0.8rem;
+	cursor: pointer;
+	transition: background 0.2s ease;
+	color: var(--text-color);
 }
 .modal-controls button:hover {
   background: var(--row-hover-bg);
 }
+
 
