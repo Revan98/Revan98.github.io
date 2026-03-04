@@ -837,6 +837,7 @@ body.dark .ag-theme-quartz .ag-row-odd {
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
+  color: var(--text-color);
 }
 .modal-controls button {
   background: var(--table-bg);
@@ -850,3 +851,4 @@ body.dark .ag-theme-quartz .ag-row-odd {
 .modal-controls button:hover {
   background: var(--row-hover-bg);
 }
+
