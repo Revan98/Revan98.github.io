@@ -24,6 +24,7 @@ function normalizeSheetName(rangeStr) {
 
   return name;
 }
+
 async function safeFetch(url) {
   const res = await fetch(url);
   if (!res.ok) {
@@ -35,6 +36,7 @@ async function safeFetch(url) {
 const CHART_RANGES = ["A:B", "D:D", "Q:Q", "E:G"];
 
 let db;
+let playersDb;
 
 async function loadDatabase() {
   const SQL = await initSqlJs({
@@ -47,6 +49,17 @@ async function loadDatabase() {
   db = new SQL.Database(new Uint8Array(buffer));
 }
 
+async function loadPlayersDatabase() {
+  const SQL = await initSqlJs({
+    locateFile: (file) =>
+      `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`,
+  });
+
+  const res = await fetch("farms.db");
+  const buffer = await res.arrayBuffer();
+  playersDb = new SQL.Database(new Uint8Array(buffer));
+}
+
 const SheetCache = {
   dates: [],
   lastSnapshot: [],
@@ -55,10 +68,11 @@ const SheetCache = {
 
 async function loadAllSheetsCache() {
   await loadDatabase();
-
+  await loadPlayersDatabase();
+	
   const kd = getKDFromURL();
 
-  // 1️⃣ Find KVKingdom
+  //  Find KVKingdom
   const kvk = db.exec(`
 	  SELECT id
 	  FROM kvks
@@ -74,7 +88,7 @@ async function loadAllSheetsCache() {
 
   const kvkId = kvk.values[0][0];
 
-  // 2️⃣ Get all snapshots (timeline)
+  //  Get all snapshots (timeline)
   const snaps = db.exec(`
     SELECT id, snapshot_date
     FROM snapshots
@@ -87,7 +101,7 @@ async function loadAllSheetsCache() {
     snaps.values.map((r) => [r[1], r[0]]),
   );
 
-  // 3️⃣ Get last snapshot (grid)
+  //  Get last snapshot (grid)
   const lastSnap = db.exec(`
     SELECT id FROM snapshots
     WHERE kvk_id=${kvkId} AND is_last=1
@@ -219,7 +233,7 @@ const gridOptions = {
 		headerName: "Name", 
 		field: "name",
 		flex:1,
-		minWidth: 115,
+		minWidth: 100,
 	},
 
     {
@@ -629,7 +643,6 @@ function renderTotals(rows = []) {
 	  { label: "Total KP", col: 5 },            // kp_diff
 	];
 
-
   defs.forEach(({ label, col }) => {
     const sum = rows.reduce((acc, r) => acc + (Number(r[col]) || 0), 0);
 
@@ -734,7 +747,60 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-// ── GOVERNOR HISTORY MODAL ──────────────────────────────────────────────────
+// GOVERNOR HISTORY MODAL
+function renderCollapsibleSection(title, content, defaultOpen = false) {
+  const id = "sec_" + Math.random().toString(36).substr(2, 9);
+
+  return `
+    <div class="collapsible-section">
+      <div class="collapsible-header" 
+           data-target="${id}"
+           onclick="toggleSection('${id}')">
+        <span>${escapeHtml(title)}</span>
+        <span class="collapsible-icon">${defaultOpen ? "−" : "+"}</span>
+      </div>
+      <div id="${id}" 
+           class="collapsible-content" 
+           style="display:${defaultOpen ? 'block' : 'none'};">
+        ${content}
+      </div>
+    </div>
+  `;
+}
+
+function expandAllSections() {
+  document.querySelectorAll(".collapsible-content").forEach(el => {
+    el.style.display = "block";
+  });
+
+  document.querySelectorAll(".collapsible-icon").forEach(icon => {
+    icon.textContent = "−";
+  });
+}
+
+function collapseAllSections() {
+  document.querySelectorAll(".collapsible-content").forEach(el => {
+    el.style.display = "none";
+  });
+
+  document.querySelectorAll(".collapsible-icon").forEach(icon => {
+    icon.textContent = "+";
+  });
+}
+
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  const header = el.previousElementSibling;
+  const icon = header.querySelector(".collapsible-icon");
+
+  if (el.style.display === "none") {
+    el.style.display = "block";
+    icon.textContent = "−";
+  } else {
+    el.style.display = "none";
+    icon.textContent = "+";
+  }
+}
 
 function loadGovHistory(govId) {
   const kd = getKDFromURL();
@@ -772,6 +838,98 @@ function loadGovHistory(govId) {
   }
   return results;
 }
+function loadFarmKvKStats(farmIds) {
+  if (!farmIds.length) return [];
+
+  const kd = getKDFromURL();
+
+  const kvksRes = db.exec(`
+    SELECT id, kvk_number
+    FROM kvks
+    WHERE kingdom='${kd}'
+    ORDER BY kvk_number
+  `);
+
+  if (!kvksRes.length) return [];
+
+  const results = [];
+  const idList = farmIds.map(id => `'${id}'`).join(',');
+
+  for (const [kvkId, kvkNumber] of kvksRes[0].values) {
+
+    // get last snapshot of this kvk
+    const snapRes = db.exec(`
+      SELECT id
+      FROM snapshots
+      WHERE kvk_id=${kvkId} AND is_last=1
+      LIMIT 1
+    `);
+
+    if (!snapRes.length) continue;
+
+    const snapId = snapRes[0].values[0][0];
+
+    const statsRes = db.exec(`
+      SELECT
+        g.name,
+        s.governor_id,
+        s.power_diff,
+        s.kp_diff,
+        s.t4_diff,
+        s.t5_diff,
+        s.deads_diff,
+        s.dkp,
+        s.dkp_percent,
+        s.acclaim
+      FROM stats s
+      JOIN governors g ON g.governor_id = s.governor_id
+      WHERE s.snapshot_id=${snapId}
+        AND s.governor_id IN (${idList})
+      ORDER BY s.dkp DESC
+    `);
+
+    if (!statsRes.length) continue;
+
+    statsRes[0].values.forEach(r => {
+      results.push({
+        kvk: `KvK ${kvkNumber}`,
+        name: r[0],
+        id: r[1],
+        powerDiff: r[2],
+        kpDiff: r[3],
+        t4Diff: r[4],
+        t5Diff: r[5],
+        deadsDiff: r[6],
+        dkp: r[7],
+        dkpPercent: r[8],
+        acclaim: r[9]
+      });
+    });
+  }
+
+  return results;
+}
+function loadGovernorFarms(govId) {
+  if (!playersDb) return [];
+
+  const res = playersDb.exec(`
+    SELECT name, id, power, killpoints, deads, ch
+    FROM players
+    WHERE main_id='${govId}'
+    ORDER BY power DESC
+  `);
+
+  if (!res.length || !res[0].values.length) return [];
+
+  return res[0].values.map(r => ({
+    name: r[0] ?? '',
+    id: r[1] ?? '',
+    power: Number(r[2] ?? 0),
+    killpoints: Number(r[3] ?? 0),
+    deads: Number(r[4] ?? 0),
+    ch: r[5] ?? ''
+  }));
+}
 
 function _fmtDiff(v) {
   const n = Number(v) || 0;
@@ -801,6 +959,87 @@ function renderModalTable(rows) {
   return `<table class="gov-modal-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
 }
 
+function renderFarmsTable(rows) {
+  if (!rows.length)
+    return `<div class="gov-modal-empty">No farm accounts found.</div>`;
+
+  const headers = ['Name','ID','Power','Kill Points','Deads','CH'];
+  const ths = headers.map(h => `<th>${h}</th>`).join('');
+
+  const trs = rows.map(r => `
+    <tr>
+      <td class="kvk-label">${escapeHtml(r.name)}</td>
+      <td>${escapeHtml(r.id)}</td>
+      <td>${Number(r.power||0).toLocaleString('en-US')}</td>
+      <td>${Number(r.killpoints||0).toLocaleString('en-US')}</td>
+      <td>${Number(r.deads||0).toLocaleString('en-US')}</td>
+      <td>${escapeHtml(r.ch)}</td>
+    </tr>
+  `).join('');
+
+	return renderCollapsibleSection(
+	  "Farm Accounts",
+	  `
+		<table class="gov-modal-table">
+		  <thead><tr>${ths}</tr></thead>
+		  <tbody>${trs}</tbody>
+		</table>
+	  `,
+	  false // collapsed by default
+	);
+}
+
+function renderFarmKvKTable(rows) {
+  if (!rows.length)
+    return `<div class="gov-modal-empty">No KvK data found for farm accounts.</div>`;
+
+  const grouped = {};
+  rows.forEach(r => {
+    if (!grouped[r.kvk]) grouped[r.kvk] = [];
+    grouped[r.kvk].push(r);
+  });
+
+  const headers = [
+    'Name','ID','Power','Kill Points','T4','T5','Deads','DKP','DKP %','Acclaim'
+  ];
+  const ths = headers.map(h => `<th>${h}</th>`).join('');
+
+  let kvkBlocks = "";
+
+  Object.keys(grouped).forEach(kvkName => {
+
+    const trs = grouped[kvkName].map(r => `
+      <tr>
+        <td class="kvk-label">${escapeHtml(r.name)}</td>
+        <td>${escapeHtml(r.id)}</td>
+        <td>${_fmtDiff(r.powerDiff)}</td>
+        <td>${_fmtDiff(r.kpDiff)}</td>
+        <td>${_fmtDiff(r.t4Diff)}</td>
+        <td>${_fmtDiff(r.t5Diff)}</td>
+        <td>${_fmtDiff(r.deadsDiff)}</td>
+        <td>${Number(r.dkp||0).toLocaleString('en-US')}</td>
+        <td>${isNaN(Number(r.dkpPercent)) ? '' : (Number(r.dkpPercent)*100).toFixed(2)+'%'}</td>
+        <td>${Number(r.acclaim||0).toLocaleString('en-US')}</td>
+      </tr>
+    `).join('');
+
+    const table = `
+      <table class="gov-modal-table">
+        <thead><tr>${ths}</tr></thead>
+        <tbody>${trs}</tbody>
+      </table>
+    `;
+
+    kvkBlocks += renderCollapsibleSection(kvkName, table, false);
+  });
+
+  return renderCollapsibleSection(
+    "Farm Accounts – KvK Stats (All KvKs)",
+    kvkBlocks,
+    false // collapsed by default
+  );
+}
+
 function openGovModal(govId, govName) {
   const overlay  = document.getElementById('govModalOverlay');
   const body     = document.getElementById('govModalBody');
@@ -813,7 +1052,26 @@ function openGovModal(govId, govName) {
 
   setTimeout(() => {
     try {
-      body.innerHTML = renderModalTable(loadGovHistory(govId));
+		const history = loadGovHistory(govId);
+		const farms   = loadGovernorFarms(govId);
+		// Only CH25 farms
+		const ch25Farms = farms.filter(f => Number(f.ch) === 25);
+
+		const farmIds = ch25Farms.map(f => f.id);
+		const farmKvK = loadFarmKvKStats(farmIds);
+		body.innerHTML = `
+		  <div class="modal-controls">
+			<button onclick="expandAllSections()">Expand All</button>
+			<button onclick="collapseAllSections()">Collapse All</button>
+		  </div>
+		` +
+			renderCollapsibleSection(
+			  "Governor History",
+			  renderModalTable(history),
+			  false
+			) +
+		  renderFarmsTable(farms) +
+		  renderFarmKvKTable(farmKvK);
     } catch (err) {
       body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(err))}</div>`;
     }
