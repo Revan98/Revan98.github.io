@@ -600,7 +600,7 @@ loadAllSheetsCache().then(() => {
 
   spinner.style.display = "none";
   const gridEl = document.getElementById("myGrid");
-  gridEl.style.display = "block";
+
 
   requestAnimationFrame(() => {
     gridEl.classList.add("visible");
