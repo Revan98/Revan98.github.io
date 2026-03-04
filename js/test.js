@@ -54,7 +54,7 @@ async function loadPlayersDatabase() {
       `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`,
   });
 
-  const res = await fetch("output.db"); // your file
+  const res = await fetch("farms.db");
   const buffer = await res.arrayBuffer();
   playersDb = new SQL.Database(new Uint8Array(buffer));
 }
