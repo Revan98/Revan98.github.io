@@ -760,7 +760,10 @@ body.dark .ag-theme-quartz .ag-row-odd {
   justify-content: center;
   transition: opacity 0.15s, background 0.15s;
 }
-.gov-modal-close:hover { opacity: 1; background: rgba(128,128,128,0.15); }
+.gov-modal-close:hover { 
+	opacity: 1; 
+	background: rgba(128,128,128,0.15); 
+}
 .gov-modal-body {
   overflow-y: auto;
   padding: 1.2rem 1.4rem;
@@ -797,9 +800,16 @@ body.dark .ag-theme-quartz .ag-row-odd {
   padding: 9px 10px;
   border-bottom: 1px solid var(--table-border);
 }
-.gov-modal-table tbody tr:last-child td { border-bottom: none; }
-.gov-modal-table tbody tr:hover td { background: var(--row-hover-bg); }
-.gov-modal-table .kvk-label { font-weight: 600; text-align: left; }
+.gov-modal-table tbody tr:last-child td { 
+	border-bottom: none; 
+}
+.gov-modal-table tbody tr:hover td { 
+	background: var(--row-hover-bg); 
+}
+.gov-modal-table .kvk-label { 
+	font-weight: 600; 
+	text-align: left; 
+}
 .gov-modal-empty {
   text-align: center;
   padding: 2.5rem 0;
@@ -837,6 +847,7 @@ body.dark .ag-theme-quartz .ag-row-odd {
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
+  justify-content: right;
 }
 .modal-controls button {
 	background: var(--table-bg);
@@ -851,5 +862,6 @@ body.dark .ag-theme-quartz .ag-row-odd {
 .modal-controls button:hover {
   background: var(--row-hover-bg);
 }
+
 
 
