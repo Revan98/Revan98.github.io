@@ -320,7 +320,6 @@ body.dark .hamburger {
 }
 @media (max-width: 560px) {
   :root { --width: 94%; }
-  .footer-top { grid-template-columns: 1fr; }
   .footer-bottom { flex-direction: column; gap: .5rem; text-align: center; }
 }
 /* THEME TOGGLE */
@@ -807,6 +806,7 @@ body.dark .ag-theme-quartz .ag-row-odd {
 .modal-controls button:hover {
   background: var(--row-hover-bg);
 }
+
 
 
 
