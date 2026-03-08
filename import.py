@@ -5,8 +5,6 @@ import pandas as pd
 
 DB_PATH = "kvk.db"
 
-DB_PATH = "kvk_stats.db"
-
 schema_sql = """
 PRAGMA foreign_keys = ON;
 
@@ -73,47 +71,14 @@ conn.commit()
 conn.close()
 FILES = [
     {
-        "path": "C:/Users/revan/Downloads/Kopia DKP_KvK_Invictus_2247(KvK1) (1).xlsx",
-        "kingdom": "2247",
+        "path": "",
+        "kingdom": "7676",
         "kvk_number": 1,
-        "name": "KvK1 AI",
-    },
-    {
-        "path": "C:/Users/revan/Downloads/Kopia dkp_KoB_2024-10-30_02-58.xlsx",
-        "kingdom": "2247",
-        "kvk_number": 2,
-        "name": "KvK2 KoB",
-    },
-    {
-        "path": "C:/Users/revan/Downloads/Kopia DKP_KvK3_TOW.xlsx",
-        "kingdom": "2247",
-        "kvk_number": 3,
-        "name": "KvK3 ToW",
-    },
-    {
-        "path": "C:/Users/revan/Downloads/Kopia 2247_KvK4_HA.xlsx",
-        "kingdom": "2247",
-        "kvk_number": 4,
-        "name": "KvK4 HA",
-    },
-    {
-        "path": "C:/Users/revan/Downloads/Kopia KvK5_ToW_dkp_2025-09-01_13-17.xlsx",
-        "kingdom": "2247",
-        "kvk_number": 5,
-        "name": "KvK5 ToW",
-    },
-    {
-        "path": "C:/Users/revan/Downloads/Kopia 2247_KvK6_DKP.xlsx",
-        "kingdom": "2247",
-        "kvk_number": 6,
-        "name": "KvK6 ToW",
+        "name": "KvK",
     },
 ]
 
 
-# =========================
-# SAFE CASTING
-# =========================
 def to_int(v):
     if pd.isna(v) or v == "":
         return 0
@@ -138,13 +103,6 @@ def to_text(v, default):
     return str(v).strip()
 
 
-# def normalize_date(sheet_name: str) -> str:
-#     if "_" in sheet_name and len(sheet_name) == 10:
-#         d, m, y = sheet_name.split("_")
-#         return f"{y}-{m}-{d}"
-#     return sheet_name
-
-
 def normalize_date(sheet_name: str | int) -> str:
     sheet_name = str(sheet_name)
     if "_" in sheet_name and len(sheet_name) == 10:
@@ -153,15 +111,8 @@ def normalize_date(sheet_name: str | int) -> str:
     return sheet_name
 
 
-# =========================
-# IMPORT
-# =========================
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
-
-cur.execute("UPDATE kvks SET is_latest = 0")
-cur.execute("UPDATE snapshots SET is_last = 0")
-conn.commit()
 
 for cfg in FILES:
     path = Path(cfg["path"])
@@ -171,12 +122,6 @@ for cfg in FILES:
 
     print(f"📥 Importing {path.name}")
 
-    # cur.execute("""
-    #     INSERT INTO kvks (kingdom, kvk_number, name, is_latest)
-    #     VALUES (?, ?, ?, 0)
-    # """, (cfg["kingdom"], cfg["kvk_number"], cfg["name"]))
-
-    # kvk_id = cur.lastrowid
     cur.execute(
         """
         SELECT id FROM kvks
@@ -198,6 +143,10 @@ for cfg in FILES:
             (cfg["kingdom"], cfg["kvk_number"], cfg["name"]),
         )
         kvk_id = cur.lastrowid
+
+    cur.execute("UPDATE kvks SET is_latest = 0 WHERE kingdom = ?", (cfg["kingdom"],))
+    cur.execute("UPDATE snapshots SET is_last = 0 WHERE kvk_id = ?", (kvk_id,))
+    conn.commit()
 
     xls = pd.ExcelFile(path)
     last_snapshot_id = None
@@ -226,8 +175,8 @@ for cfg in FILES:
         last_snapshot_id = snapshot_id
 
         for _, r in df.iterrows():
-            governor_id = to_text(r[0], "")
-            name = to_text(r[1], "")
+            governor_id = to_text(r.iloc[0], "")
+            name = to_text(r.iloc[1], "")
 
             if not governor_id:
                 continue
@@ -249,22 +198,22 @@ for cfg in FILES:
                 (
                     snapshot_id,
                     governor_id,
-                    to_int(r[2]),  # power
-                    to_int(r[14]),  # kill_points
-                    to_int(r[12]),  # t4
-                    to_int(r[13]),  # t5
-                    to_int(r[15]),  # deads
-                    to_int(r[16]),  # power_diff
-                    to_int(r[3]),  # kp_diff
-                    to_int(r[4]),  # t4_diff
-                    to_int(r[5]),  # t5_diff
-                    to_int(r[6]),  # deads_diff
-                    to_int(r[7]),  # min DKP
-                    to_int(r[8]),  # dkp
-                    to_float(r[9]),  # dkp_percent
-                    to_text(r[10], "NO"),  # Vacation
-                    to_text(r[11], "OK"),  # status
-                    to_int(r[17]),  # acclaim
+                    to_int(r.iloc[2]),  # power
+                    to_int(r.iloc[14]),  # kill_points
+                    to_int(r.iloc[12]),  # t4
+                    to_int(r.iloc[13]),  # t5
+                    to_int(r.iloc[15]),  # deads
+                    to_int(r.iloc[16]),  # power_diff
+                    to_int(r.iloc[3]),  # kp_diff
+                    to_int(r.iloc[4]),  # t4_diff
+                    to_int(r.iloc[5]),  # t5_diff
+                    to_int(r.iloc[6]),  # deads_diff
+                    to_int(r.iloc[7]),  # min DKP
+                    to_int(r.iloc[8]),  # dkp
+                    to_float(r.iloc[9]),  # dkp_percent
+                    to_text(r.iloc[10], "NO"),  # Vacation
+                    to_text(r.iloc[11], "OK"),  # status
+                    to_int(r.iloc[17]),  # acclaim
                 ),
             )
 
