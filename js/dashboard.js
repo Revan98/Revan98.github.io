@@ -69,7 +69,7 @@ const SheetCache = {
 async function loadAllSheetsCache() {
   await loadDatabase();
   await loadPlayersDatabase();
-	
+
   const kd = getKDFromURL();
 
   //  Find KVKingdom
@@ -213,35 +213,35 @@ const gridOptions = {
       headerName: "ID",
       field: "id",
       sortable: false,
-	  flex:1,
-	  minWidth: 100,
+      flex: 1,
+      minWidth: 100,
       cellRenderer: (params) => {
-        if (!params.value) return '';
+        if (!params.value) return "";
         const a = document.createElement("a");
         a.textContent = params.value;
         a.classList.add("gov-id");
         a.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
-          openGovModal(String(params.value), params.data?.name || '');
+          openGovModal(String(params.value), params.data?.name || "");
         });
         return a;
       },
     },
 
-    { 
-		headerName: "Name", 
-		field: "name",
-		flex:1,
-		minWidth: 100,
-	},
+    {
+      headerName: "Name",
+      field: "name",
+      flex: 1,
+      minWidth: 100,
+    },
 
     {
       headerName: "Power",
       field: "powerDiff",
       comparator: (a, b) => a - b,
-		flex:1,
-		minWidth: 100,
+      flex: 1,
+      minWidth: 100,
       valueFormatter: (params) => {
         const v = Number(params.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -260,8 +260,8 @@ const gridOptions = {
     {
       headerName: "Killpoints",
       field: "killPointsDiff",
-		flex:1,
-		minWidth: 100,
+      flex: 1,
+      minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -280,8 +280,8 @@ const gridOptions = {
     {
       headerName: "T4",
       field: "t4Diff",
-		flex:1,
-		minWidth: 100,
+      flex: 1,
+      minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -298,8 +298,8 @@ const gridOptions = {
     {
       headerName: "T5",
       field: "t5Diff",
-		flex:1,
-		minWidth: 100,
+      flex: 1,
+      minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -316,8 +316,8 @@ const gridOptions = {
     {
       headerName: "Deads",
       field: "deadsDiff",
-		flex:1,
-		minWidth: 100,
+      flex: 1,
+      minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value) || 0;
         return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
@@ -337,8 +337,8 @@ const gridOptions = {
       sort: "desc",
       sortIndex: 0,
       getQuickFilterText: () => "",
-		flex:1,
-		minWidth: 100,
+      flex: 1,
+      minWidth: 100,
       valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
     },
     {
@@ -346,8 +346,8 @@ const gridOptions = {
       field: "dkpPercent",
       comparator: (a, b) => Number(a) - Number(b),
       getQuickFilterText: () => "",
-		flex:1,
-		minWidth: 100,	  
+      flex: 1,
+      minWidth: 100,
       valueFormatter: (p) => {
         const v = Number(p.value);
         if (isNaN(v)) return "";
@@ -357,8 +357,8 @@ const gridOptions = {
     {
       headerName: "Acclaim",
       field: "acclaim",
-		flex:1,
-		minWidth: 100,	  
+      flex: 1,
+      minWidth: 100,
       getQuickFilterText: () => "",
 
       valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
@@ -369,7 +369,6 @@ const gridOptions = {
     sortable: true,
     filter: false,
     resizable: true,
-
   },
   tooltipShowDelay: 300,
   pagination: false,
@@ -591,16 +590,15 @@ loadAllSheetsCache().then(() => {
 
   gridApi.setGridOption("rowData", rowData);
 
-	const sortedByDKP = [...rows]
-	  .sort((a, b) => Number(b[12]) - Number(a[12]))
-	  .slice(0, 3);
+  const sortedByDKP = [...rows]
+    .sort((a, b) => Number(b[12]) - Number(a[12]))
+    .slice(0, 3);
 
   renderTopPlayers(sortedByDKP);
   renderTotals(rows);
 
   spinner.style.display = "none";
   const gridEl = document.getElementById("myGrid");
-
 
   requestAnimationFrame(() => {
     gridEl.classList.add("visible");
@@ -634,12 +632,12 @@ function renderTotals(rows = []) {
 
   container.innerHTML = "";
 
-	const defs = [
-	  { label: "Total T4 kills", col: 7 },      // t4_diff
-	  { label: "Total T5 kills", col: 9 },      // t5_diff
-	  { label: "Total Deads", col: 11 },        // deads_diff
-	  { label: "Total KP", col: 5 },            // kp_diff
-	];
+  const defs = [
+    { label: "Total T4 kills", col: 7 }, // t4_diff
+    { label: "Total T5 kills", col: 9 }, // t5_diff
+    { label: "Total Deads", col: 11 }, // deads_diff
+    { label: "Total KP", col: 5 }, // kp_diff
+  ];
 
   defs.forEach(({ label, col }) => {
     const sum = rows.reduce((acc, r) => acc + (Number(r[col]) || 0), 0);
@@ -676,47 +674,32 @@ function escapeHtml(str) {
     }[s];
   });
 }
-	
-    // Sticky navbar shadow on scroll
-    const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-      navbar.classList.toggle('scrolled', window.scrollY > 10);
-    });
 
-    // Hamburger toggle
-    const hamburger = document.getElementById('hamburger');
-    const mobileMenu = document.getElementById('mobileMenu');
+// Sticky navbar shadow on scroll
+const navbar = document.getElementById("navbar");
+window.addEventListener("scroll", () => {
+  navbar.classList.toggle("scrolled", window.scrollY > 10);
+});
 
-    const hamburgerIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/></svg>`;
-    const closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/></svg>`;
+// Hamburger toggle
+const hamburger = document.getElementById("hamburger");
+const mobileMenu = document.getElementById("mobileMenu");
 
-    function closeMobileMenu() {
-      mobileMenu.classList.remove('open');
-      hamburger.classList.remove('open');
-      hamburger.setAttribute('aria-expanded', false);
-      hamburger.innerHTML = hamburgerIcon;
-    }
+hamburger.addEventListener("click", () => {
+  const isOpen = mobileMenu.classList.toggle("open");
+  hamburger.classList.toggle("open", isOpen);
+  hamburger.setAttribute("aria-expanded", isOpen);
+});
 
-    hamburger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = mobileMenu.classList.toggle('open');
-      hamburger.classList.toggle('open', isOpen);
-      hamburger.setAttribute('aria-expanded', isOpen);
-      hamburger.innerHTML = isOpen ? closeIcon : hamburgerIcon;
-    });
+// Close menu when a link is clicked
+mobileMenu.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
+    mobileMenu.classList.remove("open");
+    hamburger.classList.remove("open");
+    hamburger.setAttribute("aria-expanded", false);
+  });
+});
 
-    // Close menu when a link is clicked
-    mobileMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => closeMobileMenu());
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-      if (mobileMenu.classList.contains('open') && !mobileMenu.contains(e.target) && e.target !== hamburger) {
-        closeMobileMenu();
-      }
-    });
-	
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
@@ -774,7 +757,7 @@ function renderCollapsibleSection(title, content, defaultOpen = false) {
       </div>
       <div id="${id}" 
            class="collapsible-content" 
-           style="display:${defaultOpen ? 'block' : 'none'};">
+           style="display:${defaultOpen ? "block" : "none"};">
         ${content}
       </div>
     </div>
@@ -782,21 +765,21 @@ function renderCollapsibleSection(title, content, defaultOpen = false) {
 }
 
 function expandAllSections() {
-  document.querySelectorAll(".collapsible-content").forEach(el => {
+  document.querySelectorAll(".collapsible-content").forEach((el) => {
     el.style.display = "block";
   });
 
-  document.querySelectorAll(".collapsible-icon").forEach(icon => {
+  document.querySelectorAll(".collapsible-icon").forEach((icon) => {
     icon.textContent = "−";
   });
 }
 
 function collapseAllSections() {
-  document.querySelectorAll(".collapsible-content").forEach(el => {
+  document.querySelectorAll(".collapsible-content").forEach((el) => {
     el.style.display = "none";
   });
 
-  document.querySelectorAll(".collapsible-icon").forEach(icon => {
+  document.querySelectorAll(".collapsible-icon").forEach((icon) => {
     icon.textContent = "+";
   });
 }
@@ -845,9 +828,17 @@ function loadGovHistory(govId) {
     if (!statsRes.length) continue;
 
     const r = statsRes[0].values[0];
-    results.push({ kvk: `KvK ${kvkNumber}`, powerDiff: r[0], kpDiff: r[1],
-      t4Diff: r[2], t5Diff: r[3], deadsDiff: r[4], dkp: r[5],
-      dkpPercent: r[6], acclaim: r[7] });
+    results.push({
+      kvk: `KvK ${kvkNumber}`,
+      powerDiff: r[0],
+      kpDiff: r[1],
+      t4Diff: r[2],
+      t5Diff: r[3],
+      deadsDiff: r[4],
+      dkp: r[5],
+      dkpPercent: r[6],
+      acclaim: r[7],
+    });
   }
   return results;
 }
@@ -866,10 +857,9 @@ function loadFarmKvKStats(farmIds) {
   if (!kvksRes.length) return [];
 
   const results = [];
-  const idList = farmIds.map(id => `'${id}'`).join(',');
+  const idList = farmIds.map((id) => `'${id}'`).join(",");
 
   for (const [kvkId, kvkNumber] of kvksRes[0].values) {
-
     // get last snapshot of this kvk
     const snapRes = db.exec(`
       SELECT id
@@ -903,7 +893,7 @@ function loadFarmKvKStats(farmIds) {
 
     if (!statsRes.length) continue;
 
-    statsRes[0].values.forEach(r => {
+    statsRes[0].values.forEach((r) => {
       results.push({
         kvk: `KvK ${kvkNumber}`,
         name: r[0],
@@ -915,7 +905,7 @@ function loadFarmKvKStats(farmIds) {
         deadsDiff: r[6],
         dkp: r[7],
         dkpPercent: r[8],
-        acclaim: r[9]
+        acclaim: r[9],
       });
     });
   }
@@ -934,29 +924,41 @@ function loadGovernorFarms(govId) {
 
   if (!res.length || !res[0].values.length) return [];
 
-  return res[0].values.map(r => ({
-    name: r[0] ?? '',
-    id: r[1] ?? '',
+  return res[0].values.map((r) => ({
+    name: r[0] ?? "",
+    id: r[1] ?? "",
     power: Number(r[2] ?? 0),
     killpoints: Number(r[3] ?? 0),
     deads: Number(r[4] ?? 0),
-    ch: r[5] ?? ''
+    ch: r[5] ?? "",
   }));
 }
 
 function _fmtDiff(v) {
   const n = Number(v) || 0;
-  const cls = n >= 0 ? 'diff-positive' : 'diff-negative';
-  return `<span class="${cls}">${n >= 0 ? '+' : ''}${n.toLocaleString('en-US')}</span>`;
+  const cls = n >= 0 ? "diff-positive" : "diff-negative";
+  return `<span class="${cls}">${n >= 0 ? "+" : ""}${n.toLocaleString("en-US")}</span>`;
 }
 
 function renderModalTable(rows) {
   if (!rows.length)
     return `<div class="gov-modal-empty">No historical data found for this governor.</div>`;
 
-  const headers = ['KvK','Power','Kill Points','T4','T5','Deads','DKP','DKP %','Acclaim'];
-  const ths = headers.map(h => `<th>${h}</th>`).join('');
-  const trs = rows.map(r => `
+  const headers = [
+    "KvK",
+    "Power",
+    "Kill Points",
+    "T4",
+    "T5",
+    "Deads",
+    "DKP",
+    "DKP %",
+    "Acclaim",
+  ];
+  const ths = headers.map((h) => `<th>${h}</th>`).join("");
+  const trs = rows
+    .map(
+      (r) => `
     <tr>
       <td class="kvk-label">${escapeHtml(r.kvk)}</td>
       <td>${_fmtDiff(r.powerDiff)}</td>
@@ -964,10 +966,12 @@ function renderModalTable(rows) {
       <td>${_fmtDiff(r.t4Diff)}</td>
       <td>${_fmtDiff(r.t5Diff)}</td>
       <td>${_fmtDiff(r.deadsDiff)}</td>
-      <td>${Number(r.dkp||0).toLocaleString('en-US')}</td>
-      <td>${isNaN(Number(r.dkpPercent)) ? '' : (Number(r.dkpPercent)*100).toFixed(2)+'%'}</td>
-      <td>${Number(r.acclaim||0).toLocaleString('en-US')}</td>
-    </tr>`).join('');
+      <td>${Number(r.dkp || 0).toLocaleString("en-US")}</td>
+      <td>${isNaN(Number(r.dkpPercent)) ? "" : (Number(r.dkpPercent) * 100).toFixed(2) + "%"}</td>
+      <td>${Number(r.acclaim || 0).toLocaleString("en-US")}</td>
+    </tr>`,
+    )
+    .join("");
 
   return `<table class="gov-modal-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
 }
@@ -976,30 +980,34 @@ function renderFarmsTable(rows) {
   if (!rows.length)
     return `<div class="gov-modal-empty">No farm accounts found.</div>`;
 
-  const headers = ['Name','ID','Power','Kill Points','Deads','CH'];
-  const ths = headers.map(h => `<th>${h}</th>`).join('');
+  const headers = ["Name", "ID", "Power", "Kill Points", "Deads", "CH"];
+  const ths = headers.map((h) => `<th>${h}</th>`).join("");
 
-  const trs = rows.map(r => `
+  const trs = rows
+    .map(
+      (r) => `
     <tr>
       <td class="kvk-label">${escapeHtml(r.name)}</td>
       <td>${escapeHtml(r.id)}</td>
-      <td>${Number(r.power||0).toLocaleString('en-US')}</td>
-      <td>${Number(r.killpoints||0).toLocaleString('en-US')}</td>
-      <td>${Number(r.deads||0).toLocaleString('en-US')}</td>
+      <td>${Number(r.power || 0).toLocaleString("en-US")}</td>
+      <td>${Number(r.killpoints || 0).toLocaleString("en-US")}</td>
+      <td>${Number(r.deads || 0).toLocaleString("en-US")}</td>
       <td>${escapeHtml(r.ch)}</td>
     </tr>
-  `).join('');
+  `,
+    )
+    .join("");
 
-	return renderCollapsibleSection(
-	  "Farm Accounts",
-	  `
+  return renderCollapsibleSection(
+    "Farm Accounts",
+    `
 		<table class="gov-modal-table">
 		  <thead><tr>${ths}</tr></thead>
 		  <tbody>${trs}</tbody>
 		</table>
 	  `,
-	  false // collapsed by default
-	);
+    false, // collapsed by default
+  );
 }
 
 function renderFarmKvKTable(rows) {
@@ -1007,21 +1015,31 @@ function renderFarmKvKTable(rows) {
     return `<div class="gov-modal-empty">No KvK data found for farm accounts.</div>`;
 
   const grouped = {};
-  rows.forEach(r => {
+  rows.forEach((r) => {
     if (!grouped[r.kvk]) grouped[r.kvk] = [];
     grouped[r.kvk].push(r);
   });
 
   const headers = [
-    'Name','ID','Power','Kill Points','T4','T5','Deads','DKP','DKP %','Acclaim'
+    "Name",
+    "ID",
+    "Power",
+    "Kill Points",
+    "T4",
+    "T5",
+    "Deads",
+    "DKP",
+    "DKP %",
+    "Acclaim",
   ];
-  const ths = headers.map(h => `<th>${h}</th>`).join('');
+  const ths = headers.map((h) => `<th>${h}</th>`).join("");
 
   let kvkBlocks = "";
 
-  Object.keys(grouped).forEach(kvkName => {
-
-    const trs = grouped[kvkName].map(r => `
+  Object.keys(grouped).forEach((kvkName) => {
+    const trs = grouped[kvkName]
+      .map(
+        (r) => `
       <tr>
         <td class="kvk-label">${escapeHtml(r.name)}</td>
         <td>${escapeHtml(r.id)}</td>
@@ -1030,11 +1048,13 @@ function renderFarmKvKTable(rows) {
         <td>${_fmtDiff(r.t4Diff)}</td>
         <td>${_fmtDiff(r.t5Diff)}</td>
         <td>${_fmtDiff(r.deadsDiff)}</td>
-        <td>${Number(r.dkp||0).toLocaleString('en-US')}</td>
-        <td>${isNaN(Number(r.dkpPercent)) ? '' : (Number(r.dkpPercent)*100).toFixed(2)+'%'}</td>
-        <td>${Number(r.acclaim||0).toLocaleString('en-US')}</td>
+        <td>${Number(r.dkp || 0).toLocaleString("en-US")}</td>
+        <td>${isNaN(Number(r.dkpPercent)) ? "" : (Number(r.dkpPercent) * 100).toFixed(2) + "%"}</td>
+        <td>${Number(r.acclaim || 0).toLocaleString("en-US")}</td>
       </tr>
-    `).join('');
+    `,
+      )
+      .join("");
 
     const table = `
       <table class="gov-modal-table">
@@ -1049,42 +1069,43 @@ function renderFarmKvKTable(rows) {
   return renderCollapsibleSection(
     "Farm Accounts – KvK Stats (All KvKs)",
     kvkBlocks,
-    false // collapsed by default
+    false, // collapsed by default
   );
 }
 
 function openGovModal(govId, govName) {
-  const overlay  = document.getElementById('govModalOverlay');
-  const body     = document.getElementById('govModalBody');
-  const subtitle = document.getElementById('govModalSubtitle');
+  const overlay = document.getElementById("govModalOverlay");
+  const body = document.getElementById("govModalBody");
+  const subtitle = document.getElementById("govModalSubtitle");
 
   subtitle.textContent = govName ? `— ${govName} (${govId})` : `— ID: ${govId}`;
   body.innerHTML = `<div class="gov-modal-loading"><div class="spinner"></div><span>Loading…</span></div>`;
-  overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  overlay.classList.add("open");
+  document.body.style.overflow = "hidden";
 
   setTimeout(() => {
     try {
-		const history = loadGovHistory(govId);
-		const farms   = loadGovernorFarms(govId);
-		// Only CH25 farms
-		const ch25Farms = farms.filter(f => Number(f.ch) === 25);
+      const history = loadGovHistory(govId);
+      const farms = loadGovernorFarms(govId);
+      // Only CH25 farms
+      const ch25Farms = farms.filter((f) => Number(f.ch) === 25);
 
-		const farmIds = ch25Farms.map(f => f.id);
-		const farmKvK = loadFarmKvKStats(farmIds);
-		body.innerHTML = `
+      const farmIds = ch25Farms.map((f) => f.id);
+      const farmKvK = loadFarmKvKStats(farmIds);
+      body.innerHTML =
+        `
 		  <div class="modal-controls">
 			<button onclick="expandAllSections()">Expand All</button>
 			<button onclick="collapseAllSections()">Collapse All</button>
 		  </div>
 		` +
-			renderCollapsibleSection(
-			  "Governor History",
-			  renderModalTable(history),
-			  false
-			) +
-		  renderFarmsTable(farms) +
-		  renderFarmKvKTable(farmKvK);
+        renderCollapsibleSection(
+          "Governor History",
+          renderModalTable(history),
+          false,
+        ) +
+        renderFarmsTable(farms) +
+        renderFarmKvKTable(farmKvK);
     } catch (err) {
       body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(err))}</div>`;
     }
@@ -1092,12 +1113,16 @@ function openGovModal(govId, govName) {
 }
 
 function closeGovModal() {
-  document.getElementById('govModalOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  document.getElementById("govModalOverlay").classList.remove("open");
+  document.body.style.overflow = "";
 }
 
-document.getElementById('govModalClose').addEventListener('click', closeGovModal);
-document.getElementById('govModalOverlay').addEventListener('click', (e) => {
+document
+  .getElementById("govModalClose")
+  .addEventListener("click", closeGovModal);
+document.getElementById("govModalOverlay").addEventListener("click", (e) => {
   if (e.target === e.currentTarget) closeGovModal();
 });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeGovModal(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeGovModal();
+});
