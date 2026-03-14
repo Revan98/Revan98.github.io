@@ -21,6 +21,8 @@ function buildColumnDefs(rows) {
     return {
       headerName: key,
       field: key,
+      flex: 1,
+      minWidth: 200,
       sortable: true,
       filter: false,
       resizable: true,
@@ -245,6 +247,15 @@ function applyTheme(theme) {
   document.body.setAttribute("data-ag-theme-mode", theme);
 
   localStorage.setItem(THEME_KEY, theme);
+
+  // Update AG Grid theme
+  if (gridApi) {
+    const agTheme =
+      theme === "dark"
+        ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+        : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
+    gridApi.setGridOption("theme", agTheme);
+  }
 }
 
 function initTheme() {
@@ -263,7 +274,6 @@ function initTheme() {
   themeToggle.checked = theme === "dark";
 }
 
-
 themeToggle.addEventListener("change", () => {
   applyTheme(themeToggle.checked ? "dark" : "light");
 });
@@ -272,7 +282,24 @@ initTheme();
 
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
-hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+hamburger.addEventListener("click", () => {
+  navLinks.classList.toggle("show");
+  hamburger.classList.toggle("open");
+});
+
+document.addEventListener("click", (e) => {
+  if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+    navLinks.classList.remove("show");
+    hamburger.classList.remove("open");
+  }
+});
+
+navLinks.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
+    navLinks.classList.remove("show");
+    hamburger.classList.remove("open");
+  });
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   const current = location.pathname.split("/").pop(); // e.g. "index.html"
