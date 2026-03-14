@@ -99,10 +99,11 @@ function buildDynamicColumnDefs(rows) {
   return Object.keys(rows[0]).map((key) => ({
     headerName: key,
     field: key,
+    flex: 1,
+    minWidth: 200,
     sortable: true,
     filter: false,
     resizable: true,
-    minWidth: 120,
   }));
 }
 function createCompareGrid(containerId, rowData) {
@@ -138,6 +139,8 @@ function createCompareGrid(containerId, rowData) {
 // Render tables
 function renderResultsGrids(matchingRows, nonMatchingRows) {
   if (matchingRows.length) {
+    document.getElementById("matching-table").innerHTML =
+      `<p>Matching table.</p>`;
     matchingGridApi = createCompareGrid("matching-table", matchingRows);
   } else {
     document.getElementById("matching-table").innerHTML =
@@ -145,6 +148,8 @@ function renderResultsGrids(matchingRows, nonMatchingRows) {
   }
 
   if (nonMatchingRows.length) {
+    document.getElementById("nonmatching-table").innerHTML =
+      `<p>Non matching table.</p>`;
     nonMatchingGridApi = createCompareGrid(
       "nonmatching-table",
       nonMatchingRows,
@@ -286,6 +291,14 @@ function applyTheme(theme) {
   document.body.setAttribute("data-ag-theme-mode", theme);
 
   localStorage.setItem(THEME_KEY, theme);
+
+  // Update AG Grid themes
+  const agTheme =
+    theme === "dark"
+      ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+      : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
+  if (matchingGridApi) matchingGridApi.setGridOption("theme", agTheme);
+  if (nonMatchingGridApi) nonMatchingGridApi.setGridOption("theme", agTheme);
 }
 
 function initTheme() {
@@ -312,7 +325,24 @@ initTheme();
 
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
-hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+hamburger.addEventListener("click", () => {
+  navLinks.classList.toggle("show");
+  hamburger.classList.toggle("open");
+});
+
+document.addEventListener("click", (e) => {
+  if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+    navLinks.classList.remove("show");
+    hamburger.classList.remove("open");
+  }
+});
+
+navLinks.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
+    navLinks.classList.remove("show");
+    hamburger.classList.remove("open");
+  });
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   const current = location.pathname.split("/").pop(); // e.g. "index.html"
