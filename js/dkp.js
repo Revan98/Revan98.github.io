@@ -1,3 +1,6 @@
+let powerGridApi = null;
+let resultsGridApi = null;
+
 (() => {
   localforage.config({ name: "dkp_web_app" });
 
@@ -45,8 +48,6 @@
   let vacationList = []; // array of ids (strings)
   let minDkpMap = {}; // id -> min_dkp (number)
   let lastResults = null; // array of result objects
-  let powerGridApi = null;
-  let resultsGridApi = null;
   let skippedCount = 0;
 
   function setExportEnabled(enabled) {
@@ -147,9 +148,21 @@
 
   // UI: power ranges table
   const powerRangeColumnDefs = [
-    { headerName: "Min Power", field: "min_power", sortable: true },
-    { headerName: "Max Power", field: "max_power", sortable: true },
-    { headerName: "%", field: "percentage" },
+    {
+      headerName: "Min Power",
+      field: "min_power",
+      flex: 1,
+      minWidth: 100,
+      sortable: true,
+    },
+    {
+      headerName: "Max Power",
+      field: "max_power",
+      flex: 1,
+      minWidth: 100,
+      sortable: true,
+    },
+    { headerName: "%", field: "percentage", flex: 1, minWidth: 100 },
 
     {
       headerName: "Actions",
@@ -162,6 +175,8 @@
 
       sortable: false,
       filter: false,
+      flex: 1,
+      minWidth: 100,
     },
   ];
   function createPowerRangesGrid() {
@@ -518,13 +533,15 @@
     return Object.keys(rows[0]).map((key) => ({
       headerName: key,
       field: key,
+      flex: 1,
+      minWidth: 130,
       sortable: true,
       resizable: true,
       filter: false,
       getQuickFilterText: () => "",
     }));
   }
-  
+
   function createResultsGrid(rows) {
     if (!rows || !rows.length) return;
 
@@ -741,44 +758,68 @@
     });
   });
 
-// THEME HANDLING
-const THEME_KEY = "theme";
+  // THEME HANDLING
+  const THEME_KEY = "theme";
 
-function applyTheme(theme) {
-  document.body.classList.remove("light", "dark");
-  document.body.classList.add(theme);
+  function applyTheme(theme) {
+    document.body.classList.remove("light", "dark");
+    document.body.classList.add(theme);
 
-  document.body.setAttribute("data-ag-theme-mode", theme);
+    document.body.setAttribute("data-ag-theme-mode", theme);
 
-  localStorage.setItem(THEME_KEY, theme);
-}
+    localStorage.setItem(THEME_KEY, theme);
 
-function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-
-  let theme;
-  if (saved === "light" || saved === "dark") {
-    theme = saved;
-  } else {
-    theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    // Update AG Grid themes
+    const agTheme =
+      theme === "dark"
+        ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+        : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
+    if (powerGridApi) powerGridApi.setGridOption("theme", agTheme);
+    if (resultsGridApi) resultsGridApi.setGridOption("theme", agTheme);
   }
 
-  applyTheme(theme);
-  themeToggle.checked = theme === "dark";
-}
+  function initTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
 
+    let theme;
+    if (saved === "light" || saved === "dark") {
+      theme = saved;
+    } else {
+      theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
 
-themeToggle.addEventListener("change", () => {
-  applyTheme(themeToggle.checked ? "dark" : "light");
-});
+    applyTheme(theme);
+    themeToggle.checked = theme === "dark";
+  }
 
-initTheme();
+  themeToggle.addEventListener("change", () => {
+    applyTheme(themeToggle.checked ? "dark" : "light");
+  });
 
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.getElementById("nav-links");
-hamburger.addEventListener("click", () => navLinks.classList.toggle("show"));
+  initTheme();
+
+  const hamburger = document.getElementById("hamburger");
+  const navLinks = document.getElementById("nav-links");
+  hamburger.addEventListener("click", () => {
+    navLinks.classList.toggle("show");
+    hamburger.classList.toggle("open");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+      navLinks.classList.remove("show");
+      hamburger.classList.remove("open");
+    }
+  });
+
+  navLinks.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      navLinks.classList.remove("show");
+      hamburger.classList.remove("open");
+    });
+  });
 
   document.addEventListener("DOMContentLoaded", () => {
     const current = location.pathname.split("/").pop(); // e.g. "index.html"
