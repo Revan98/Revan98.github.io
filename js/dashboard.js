@@ -683,20 +683,23 @@ window.addEventListener("scroll", () => {
 
 // Hamburger toggle
 const hamburger = document.getElementById("hamburger");
-const mobileMenu = document.getElementById("mobileMenu");
-
+const navLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => {
-  const isOpen = mobileMenu.classList.toggle("open");
-  hamburger.classList.toggle("open", isOpen);
-  hamburger.setAttribute("aria-expanded", isOpen);
+  navLinks.classList.toggle("show");
+  hamburger.classList.toggle("open");
 });
 
-// Close menu when a link is clicked
-mobileMenu.querySelectorAll("a").forEach((link) => {
-  link.addEventListener("click", () => {
-    mobileMenu.classList.remove("open");
+document.addEventListener("click", (e) => {
+  if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+    navLinks.classList.remove("show");
     hamburger.classList.remove("open");
-    hamburger.setAttribute("aria-expanded", false);
+  }
+});
+
+navLinks.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
+    navLinks.classList.remove("show");
+    hamburger.classList.remove("open");
   });
 });
 
@@ -710,6 +713,16 @@ function applyTheme(theme) {
   document.body.setAttribute("data-ag-theme-mode", theme);
 
   localStorage.setItem(THEME_KEY, theme);
+
+  // Update AG Grid theme
+  if (gridApi) {
+    const agTheme =
+      theme === "dark"
+        ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+        : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
+    gridApi.setGridOption("theme", agTheme);
+  }
+
   applyChartTheme();
 }
 
