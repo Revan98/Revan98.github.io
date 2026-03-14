@@ -6,18 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>File Comparator</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/shared.css">
     <link rel="stylesheet" href="css/compare.css">
 
 </head>
-
 <body>
     <header class="navbar">
         <div class="nav-container">
             <button class="hamburger" id="hamburger" aria-label="Menu">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list"
-                    viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                        d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="icon-menu" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="icon-close" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                 </svg>
             </button>
 
@@ -46,8 +49,8 @@
         </div>
     </header>
 
-    <div class="page">
-        <main class="content">
+    <main class="page-main">
+        <div class="container">
             <section class="card">
                 <h1>Compare Two Files</h1>
 
@@ -87,18 +90,18 @@
                 </div>
 
                 <div id="compare-results-info" class="muted">No compared data yet.</div>
-                <!-- MATCHING TABLE -->
                 <div id="matching-table" class="ag-theme-quartz" style="height: 500px"></div>
-
-                <!-- NON-MATCHING TABLE -->
-                <div id="nonmatching-table" class="ag-theme-quartz" style="height: 500px"></div>
+                <div id="nonmatching-table" class="ag-theme-quartz" style="height: 500px; margin-top: 25px;"></div>
             </section>
-        </main>
-
-        <div class="footer">
-            <p>Compare</p>
         </div>
-    </div>
+    </main>
+
+    <footer id="contact">
+        <div class="footer-bottom">
+            <span>Comparsion</span>
+        </div>
+    </footer>
+
 
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@35.0.0/dist/ag-grid-community.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
