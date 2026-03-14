@@ -4,20 +4,22 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>DKP Web App (Baser only)</title>
-
+    <title>DKP Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/shared.css">
     <link rel="stylesheet" href="css/dkp.css">
 
 </head>
-
 <body>
     <header class="navbar">
         <div class="nav-container">
             <button class="hamburger" id="hamburger" aria-label="Menu">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list"
-                    viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                        d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="icon-menu" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="icon-close" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                 </svg>
             </button>
 
@@ -26,7 +28,6 @@
                 <a href="compare.html">Compare</a>
                 <a href="dkp.html">DKP Calculator</a>
                 <a href="merge.html">Merge</a>
-                <a href="govinfo.html">Governor info</a>
             </div>
 
             <label class="theme-toggle">
@@ -46,8 +47,8 @@
         </div>
     </header>
 
-    <div class="page">
-        <main class="content">
+    <main class="page-main">
+        <div class="container">
             <section class="card">
                 <h2>Settings</h2>
                 <div class="put-in-row">
@@ -79,92 +80,91 @@
                 </div>
             </section>
 
-            <main>
-                <section class="card">
-                    <h2>Multipliers</h2>
-                    <div class="put-in-row">
-                        <label>T4: <input id="t4" class="file" type="number" step="0.01"></label>
-                        <label>T5: <input id="t5" class="file" type="number" step="0.01"></label>
-                        <label>Deads: <input id="deads" class="file" type="number" step="0.01"></label>
-                        <button id="save-multipliers" class="primary">Save</button>
-                    </div>
-                </section>
+            <section class="card">
+                <h2>Multipliers</h2>
+                <div class="put-in-row">
+                    <label>T4: <input id="t4" class="file" type="number" step="0.01"></label>
+                    <label>T5: <input id="t5" class="file" type="number" step="0.01"></label>
+                    <label>Deads: <input id="deads" class="file" type="number" step="0.01"></label>
+                    <button id="save-multipliers" class="primary">Save</button>
+                </div>
+            </section>
 
-                <section class="card">
-                    <h2>Power Ranges (Min → Max optional → %)</h2>
-                    <div id="power-ranges-wrap">
-                        <div id="power-table" class="ag-theme-quartz" style="height: 429px"></div>
-
-                        <div class="put-in-row">
-                            <input id="pr-min" class="file" placeholder="Min power (integer)">
-                            <input id="pr-max" class="file" placeholder="Max power (optional)">
-                            <input id="pr-percent" class="file" placeholder="Percentage (e.g. 0.6)">
-                            <button id="pr-add" class="primary">Add / Update</button>
-                            <button id="pr-save" class="primary">Save ranges</button>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="card">
-                    <h2>Vacation List</h2>
-                    <div class="put-in-row">
-                        <input id="vacation-input" class="file" placeholder="IDs, comma separated (e.g. 123,456)">
-                        <button id="vac-save" class="primary">Save Vacation List</button>
-                        <button id="vac-clear" class="secondary">Clear Vacation List</button>
-                    </div>
-                </section>
-
-                <section class="card">
-                    <h2>Input Scans</h2>
-                    <p>Header names supported: ID, Name, Power, Killpoints, Deads, T4 Kills, T5 Kills,
-                    CH</p>
-                    <div class="put-in-row">
-                        <div class="file-col">
-                            <label>First scan (old): <input id="file1" class="file" type="file"
-                                    accept=".xlsx,.xls,.csv"></label>
-                        </div>
-                        <div class="file-col">
-                            <label>Latest scan (new): <input id="file2" class="file" type="file"
-                                    accept=".xlsx,.xls,.csv"></label>
-                        </div>
-                    </div>
+            <section class="card">
+                <h2>Power Ranges (Min → Max optional → %)</h2>
+                <div id="power-ranges-wrap">
+                    <div id="power-table" class="ag-theme-quartz" style="height: 429px"></div>
 
                     <div class="put-in-row">
-                        <label>DKP Mode:
-                            <label><input name="mode" value="lilithdata" type="radio" checked> Lilith</label>
-                            <label><input name="mode" value="default" type="radio"> Default</label>
-                            <label>
-                                <input type="checkbox" id="ignore-ch">
-                                Ignore CH < 25 filter </label>
-                            </label>
+                        <input id="pr-min" class="file" placeholder="Min power (integer)">
+                        <input id="pr-max" class="file" placeholder="Max power (optional)">
+                        <input id="pr-percent" class="file" placeholder="Percentage (e.g. 0.6)">
+                        <button id="pr-add" class="primary">Add / Update</button>
+                        <button id="pr-save" class="primary">Save ranges</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Vacation List</h2>
+                <div class="put-in-row">
+                    <input id="vacation-input" class="file" placeholder="IDs, comma separated (e.g. 123,456)">
+                    <button id="vac-save" class="primary">Save Vacation List</button>
+                    <button id="vac-clear" class="secondary">Clear Vacation List</button>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Input Scans</h2>
+                <p>Header names supported: ID, Name, Power, Killpoints, Deads, T4 Kills, T5 Kills,
+                CH</p>
+
+                    <div class="file-col">
+                        <label>First scan (old): <input id="file1" class="file" type="file"
+                                accept=".xlsx,.xls,.csv"></label>
+                    </div>
+                    <div class="file-col">
+                        <label>Latest scan (new): <input id="file2" class="file" type="file"
+                                accept=".xlsx,.xls,.csv"></label>
                     </div>
 
-                    <div class="put-in-row">
-                        <button id="run-dkp" class="primary">Calculate DKP</button>
-                        <progress id="progress" max="100" value="0"></progress>
-                    </div>
 
-                    <div class="put-in-row">
-                        <button id="export-xlsx" class="primary">Export XLSX</button>
-                        <button id="export-csv" class="primary">Export CSV</button>
-                        <button id="export-json" class="primary">Export JSON</button>
-                    </div>
-                </section>
+                <div class="put-in-row">
+                    <label>DKP Mode:
+                        <label><input name="mode" value="lilithdata" type="radio" checked> Lilith</label>
+                        <label><input name="mode" value="default" type="radio"> Default</label>
+                        <label>
+                            <input type="checkbox" id="ignore-ch">
+                            Ignore CH < 25 filter </label>
+                        </label>
+                </div>
 
-                <section class="card">
-                    <h2>Results</h2>
-                    <div id="results-info" class="muted">No results yet.</div>
-                    <div id="result-table" class="ag-theme-quartz" style="height: 500px"></div>
-                </section>
+                <div class="put-in-row">
+                    <button id="run-dkp" class="primary">Calculate DKP</button>
+                    <progress id="progress" max="100" value="0"></progress>
+                </div>
 
-            </main>
+                <div class="put-in-row">
+                    <button id="export-xlsx" class="primary">Export XLSX</button>
+                    <button id="export-csv" class="primary">Export CSV</button>
+                    <button id="export-json" class="primary">Export JSON</button>
+                </div>
+            </section>
 
-		</main>
-            <div class="footer">
-                <p>Data persisted locally with IndexedDB (localForage). Min DKP values are saved and reused across runs.
-                </p>
-            </div>
-    </div>
+            <section class="card">
+                <h2>Results</h2>
+                <div id="results-info" class="muted">No results yet.</div>
+                <div id="result-table" class="ag-theme-quartz" style="height: 500px"></div>
+            </section>
+      </div>
+    </main>
+
+    <footer>
+        <div class="footer-bottom">
+            <span>DKP</span>
+        </div>
+    </footer>
+
 	<button id="backToTop" aria-label="Back to top">
 	 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
 	  <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"/>
