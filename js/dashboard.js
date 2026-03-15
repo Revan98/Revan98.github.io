@@ -36,7 +36,6 @@ async function safeFetch(url) {
 const CHART_RANGES = ["A:B", "D:D", "Q:Q", "E:G"];
 
 let db;
-let playersDb;
 
 async function loadDatabase() {
   const SQL = await initSqlJs({
@@ -49,17 +48,6 @@ async function loadDatabase() {
   db = new SQL.Database(new Uint8Array(buffer));
 }
 
-async function loadPlayersDatabase() {
-  const SQL = await initSqlJs({
-    locateFile: (file) =>
-      `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`,
-  });
-
-  const res = await fetch("farms.db");
-  const buffer = await res.arrayBuffer();
-  playersDb = new SQL.Database(new Uint8Array(buffer));
-}
-
 const SheetCache = {
   dates: [],
   lastSnapshot: [],
@@ -68,7 +56,6 @@ const SheetCache = {
 
 async function loadAllSheetsCache() {
   await loadDatabase();
-  await loadPlayersDatabase();
 
   const kd = getKDFromURL();
 
@@ -870,7 +857,7 @@ function loadFarmKvKStats(farmIds) {
   if (!kvksRes.length) return [];
 
   const results = [];
-  const idList = farmIds.map((id) => `'${id}'`).join(",");
+  const idList = farmIds.join(",");
 
   for (const [kvkId, kvkNumber] of kvksRes[0].values) {
     // get last snapshot of this kvk
@@ -900,7 +887,7 @@ function loadFarmKvKStats(farmIds) {
       FROM stats s
       JOIN governors g ON g.governor_id = s.governor_id
       WHERE s.snapshot_id=${snapId}
-        AND s.governor_id IN (${idList})
+        AND CAST(s.governor_id AS INTEGER) IN (${idList})
       ORDER BY s.dkp DESC
     `);
 
@@ -926,11 +913,9 @@ function loadFarmKvKStats(farmIds) {
   return results;
 }
 function loadGovernorFarms(govId) {
-  if (!playersDb) return [];
-
-  const res = playersDb.exec(`
-    SELECT name, id, power, killpoints, deads, ch
-    FROM players
+  const res = db.exec(`
+    SELECT name, player_id, power, killpoints, deads, ch
+    FROM farm_accounts
     WHERE main_id='${govId}'
     ORDER BY power DESC
   `);
@@ -1100,10 +1085,7 @@ function openGovModal(govId, govName) {
     try {
       const history = loadGovHistory(govId);
       const farms = loadGovernorFarms(govId);
-      // Only CH25 farms
-      const ch25Farms = farms.filter((f) => Number(f.ch) === 25);
-
-      const farmIds = ch25Farms.map((f) => f.id);
+      const farmIds = farms.map((f) => f.id);
       const farmKvK = loadFarmKvKStats(farmIds);
       body.innerHTML =
         `
