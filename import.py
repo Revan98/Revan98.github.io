@@ -5,6 +5,7 @@ import pandas as pd
 
 DB_PATH = "kvk.db"
 
+
 schema_sql = """
 PRAGMA foreign_keys = ON;
 
@@ -63,18 +64,31 @@ CREATE TABLE IF NOT EXISTS stats (
   PRIMARY KEY (snapshot_id, governor_id),
   FOREIGN KEY (snapshot_id) REFERENCES snapshots(id)
 );
+
+-- farm accounts
+CREATE TABLE IF NOT EXISTS farm_accounts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  player_id INTEGER,
+  power INTEGER,
+  killpoints INTEGER,
+  deads INTEGER,
+  ch INTEGER,
+  acc_type TEXT,
+  main_id INTEGER
+);
 """
 conn = sqlite3.connect(DB_PATH)
 conn.execute("PRAGMA foreign_keys = ON")
 conn.executescript(schema_sql)
 conn.commit()
 conn.close()
-FILES = [
+
+FILES = []
+
+FARM_FILES = [
     {
-        "path": "",
-        "kingdom": "7676",
-        "kvk_number": 1,
-        "name": "KvK",
+        "path": "F:/2247-farms.xlsx",
     },
 ]
 
@@ -110,6 +124,8 @@ def normalize_date(sheet_name: str | int) -> str:
         return f"{y}-{m}-{d}"
     return sheet_name
 
+
+# KvK import
 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
@@ -175,7 +191,7 @@ for cfg in FILES:
         last_snapshot_id = snapshot_id
 
         for _, r in df.iterrows():
-            governor_id = to_text(r.iloc[0], "")
+            governor_id = to_int(r.iloc[0])
             name = to_text(r.iloc[1], "")
 
             if not governor_id:
@@ -227,4 +243,46 @@ for cfg in FILES:
     conn.commit()
 
 conn.close()
-print("✅ Import completed successfully")
+print("✅ KvK import completed successfully")
+
+# Farm accounts import
+
+conn = sqlite3.connect(DB_PATH)
+cur = conn.cursor()
+
+for cfg in FARM_FILES:
+    path = Path(cfg["path"])
+    if not path.exists():
+        print(f"❌ Missing file: {path}")
+        continue
+
+    print(f"📥 Importing farm accounts from {path.name}")
+
+    xls = pd.ExcelFile(path)
+
+    for sheet_name in xls.sheet_names:
+        df = pd.read_excel(xls, sheet_name=sheet_name)
+        df.columns = [col.strip().lower() for col in df.columns]
+
+        for _, r in df.iterrows():
+            cur.execute(
+                """
+                INSERT INTO farm_accounts (name, player_id, power, killpoints, deads, ch, acc_type, main_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    to_text(r.get("name"), ""),
+                    to_int(r.get("id")),
+                    to_int(r.get("power")),
+                    to_int(r.get("killpoints")),
+                    to_int(r.get("deads")),
+                    to_int(r.get("ch")),
+                    to_text(r.get("acc_type"), ""),
+                    to_int(r.get("main_id")),
+                ),
+            )
+
+    conn.commit()
+
+conn.close()
+print("✅ Farm accounts import completed successfully")
