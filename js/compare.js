@@ -11,7 +11,6 @@ function setExportEnabled(enabled) {
 
 setExportEnabled(false);
 
-// Read Excel/CSV/JSON
 async function readFile(file) {
   const name = file.name.toLowerCase();
   return new Promise((resolve, reject) => {
@@ -36,7 +35,6 @@ async function readFile(file) {
   });
 }
 
-// Compare logic
 function compareRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
   const compared = {};
   if (row1)
@@ -75,14 +73,12 @@ function compareData(df1, df2, keyColumn, option) {
     const in2 = map2.has(key);
 
     if (in1 && in2) {
-      // matched in both files
       matching.push(compareRows(map1.get(key), map2.get(key)));
     } else if (
       option === "both" ||
       (option === "pierwszy" && in1) ||
       (option === "drugi" && in2)
     ) {
-      // unmatched in one or both files
       nonMatching.push(
         compareRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null),
       );
@@ -108,7 +104,6 @@ function buildDynamicColumnDefs(rows) {
 }
 function createCompareGrid(containerId, rowData) {
   const columnDefs = buildDynamicColumnDefs(rowData);
-
   const gridOptions = {
     theme: agGrid.themeQuartz,
     columnDefs,
@@ -125,7 +120,6 @@ function createCompareGrid(containerId, rowData) {
 
   const gridDiv = document.getElementById(containerId);
   gridDiv.style.display = "block";
-  // destroy old grid if re-running compare
   if (gridDiv.__agGridInstance) {
     gridDiv.__agGridInstance.destroy();
   }
@@ -136,7 +130,6 @@ function createCompareGrid(containerId, rowData) {
   return api;
 }
 
-// Render tables
 function renderResultsGrids(matchingRows, nonMatchingRows) {
   if (matchingRows.length) {
     document.getElementById("matching-table").innerHTML =
@@ -159,8 +152,7 @@ function renderResultsGrids(matchingRows, nonMatchingRows) {
       `<div class="muted">No non-matching rows.</div>`;
   }
 }
-
-// Export helpers
+s
 function exportToXlsx(data, name) {
   if (!data || !data.length) return;
   const ws = XLSX.utils.json_to_sheet(data);
@@ -176,17 +168,13 @@ function exportToCsv(data, name) {
   if (!data || !data.length) return;
 
   const columns = Object.keys(data[0]);
-
-  // Escape CSV fields
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-
   const csv =
     columns.map(escape).join(",") +
     "\n" +
     data
       .map((row) => columns.map((col) => escape(row[col])).join(","))
       .join("\n");
-
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -211,7 +199,6 @@ function exportToJson(data, name) {
   URL.revokeObjectURL(url);
 }
 
-// Compare button
 document.getElementById("compareBtn").addEventListener("click", async () => {
   setExportEnabled(false);
   const file1 = document.getElementById("file1").files[0];
@@ -256,7 +243,6 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
   }
 });
 
-// Export buttons (save separate files)
 document.getElementById("export-xlsx").addEventListener("click", () => {
   if (!comparedResults.matching.length && !comparedResults.nonMatching.length)
     return alert("No results to export yet.");
@@ -281,7 +267,6 @@ document.getElementById("export-json").addEventListener("click", () => {
     exportToJson(comparedResults.nonMatching, "compare_nonmatching");
 });
 
-// THEME HANDLING
 const THEME_KEY = "theme";
 
 function applyTheme(theme) {
@@ -292,7 +277,6 @@ function applyTheme(theme) {
 
   localStorage.setItem(THEME_KEY, theme);
 
-  // Update AG Grid themes
   const agTheme =
     theme === "dark"
       ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
@@ -345,8 +329,7 @@ navLinks.querySelectorAll("a").forEach((link) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const current = location.pathname.split("/").pop(); // e.g. "index.html"
-
+  const current = location.pathname.split("/").pop();
   document.querySelectorAll(".nav-links a").forEach((link) => {
     if (link.getAttribute("href") === current) {
       link.classList.add("active");
