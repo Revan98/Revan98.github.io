@@ -42,12 +42,11 @@ let resultsGridApi = null;
   const themeToggle = document.querySelector("#toggle-theme");
   const ignoreChEl = document.getElementById("ignore-ch");
 
-  // In-memory caches
-  let powerRanges = []; // [{min_power, max_power|null, percentage}]
+  let powerRanges = [];
   let multipliers = { t4: 0.0, t5: 0.0, deads: 0.0 };
-  let vacationList = []; // array of ids (strings)
-  let minDkpMap = {}; // id -> min_dkp (number)
-  let lastResults = null; // array of result objects
+  let vacationList = [];
+  let minDkpMap = {};
+  let lastResults = null;
   let skippedCount = 0;
 
   function setExportEnabled(enabled) {
@@ -58,7 +57,6 @@ let resultsGridApi = null;
 
   setExportEnabled(false);
 
-  // Helpers: persistence
   async function loadAllFromStorage() {
     const m = await localforage.getItem(KEY_MULT);
     if (m) multipliers = m;
@@ -128,7 +126,6 @@ let resultsGridApi = null;
       const rMax = r.max_power ?? Infinity;
       const nMin = newItem.min_power;
       const nMax = newItem.max_power ?? Infinity;
-
       const overlaps = nMin <= rMax && nMax >= rMin;
       if (overlaps) {
         return `Range ${nMin}-${newItem.max_power ?? "∞"} overlaps with existing range ${rMin}-${r.max_power ?? "∞"}.`;
@@ -142,11 +139,9 @@ let resultsGridApi = null;
         }
       }
     }
-
     return null;
   }
 
-  // UI: power ranges table
   const powerRangeColumnDefs = [
     {
       headerName: "Min Power",
@@ -163,7 +158,6 @@ let resultsGridApi = null;
       sortable: true,
     },
     { headerName: "%", field: "percentage", flex: 1, minWidth: 100 },
-
     {
       headerName: "Actions",
       cellRenderer: (params) => {
@@ -172,7 +166,6 @@ let resultsGridApi = null;
 			<button class="secondary pr-delete">Delete</button>
 		  `;
       },
-
       sortable: false,
       filter: false,
       flex: 1,
@@ -213,7 +206,6 @@ let resultsGridApi = null;
         }
       },
     };
-
     powerGridApi = agGrid.createGrid(
       document.querySelector("#power-table"),
       gridOptions,
@@ -276,7 +268,7 @@ let resultsGridApi = null;
     const first = wb.SheetNames[0];
     const sheet = wb.Sheets[first];
     const json = XLSX.utils.sheet_to_json(sheet, { defval: null });
-    // Normalize header keys: lowercase & trimmed & mapping to expected columns
+
     return json.map((row) => {
       const normalized = {};
       Object.keys(row).forEach((k) => {
@@ -297,13 +289,12 @@ let resultsGridApi = null;
           ["ch", "city hall", "cityhall", "city hall level"].includes(key)
         )
           normalized.CH = val;
-        else normalized[k] = val; // keep other columns if any
+        else normalized[k] = val;
       });
       return normalized;
     });
   }
 
-  // DKP logic
   function getMinDkpPercent(power) {
     for (const r of powerRanges) {
       if (r.max_power === null) {
@@ -321,7 +312,6 @@ let resultsGridApi = null;
     return Number.isFinite(n) ? n : 0;
   }
 
-  // return CH numeric or null
   function getChFromRow(row) {
     if (
       !row ||
@@ -362,19 +352,14 @@ let resultsGridApi = null;
 
     progressEl.value = 35;
 
-    // build list of all unique IDs
     const allIdsSet = new Set([...Object.keys(map1), ...Object.keys(map2)]);
     const allIds = Array.from(allIdsSet);
-
-    // Filter IDs based on CH: skip if CH < 25 in both files (or missing in both)
     let filteredIds;
 
     if (ignoreChEl.checked) {
-      // User disabled filtering
       filteredIds = allIds;
       skippedCount = 0;
     } else {
-      // CH filtering
       filteredIds = allIds.filter((id) => {
         const ch1 = getChFromRow(map1[id]);
         const ch2 = getChFromRow(map2[id]);
@@ -386,7 +371,6 @@ let resultsGridApi = null;
       skippedCount = allIds.length - filteredIds.length;
     }
 
-    // Ensure min_dkp exists for filtered IDs
     await ensureMinDkpForIds(filteredIds, df1Raw, df2Raw, map1, map2);
     progressEl.value = 55;
 
@@ -437,34 +421,27 @@ let resultsGridApi = null;
 
       const vacation = vacationList.includes(id) ? "YES" : "NO";
 
-      // Build the row object
       const row = {
         ID: id,
         Name: name,
         Power: powerVal,
-
         "KP gained": Math.round(kp),
         "T4 gained": Math.round(t4g),
         "T5 gained": Math.round(t5g),
         "Deads gained": Math.round(deg),
-
         "Min DKP": Math.round(minDkp),
         DKP: Math.round(DKP),
         "DKP%": Number.isFinite(DKPpercent) ? Number(DKPpercent.toFixed(4)) : 0,
         Vacation: vacation,
         Status: status,
-
-        // Full totals
         "T4 Kills": safeNum(a["T4 Kills"]),
         "T5 Kills": safeNum(a["T5 Kills"]),
         Killpoints: safeNum(a.Killpoints),
         Deads: safeNum(a.Deads),
-
         "Power diff": Math.round(safeNum(b.Power) - safeNum(a.Power)),
         Acclaim: safeNum(b["Acclaim"]),
       };
 
-      // Zero out all stats if user is missing in either scan
       if (status === "missing in start" || status === "missing in new") {
         Object.keys(row).forEach((k) => {
           if (!["ID", "Name", "Power", "Status", "Vacation"].includes(k)) {
@@ -489,14 +466,13 @@ let resultsGridApi = null;
     resultsInfo.textContent = `Calculated ${results.length} rows (skipped ${skippedCount} due to CH<25).`;
   }
 
-  // Ensure min_dkp exists only for filtered IDs
   async function ensureMinDkpForIds(allIds, df1, df2, map1, map2) {
     const toInsert = [];
     for (const gid of allIds) {
       const gidStr = String(gid).trim();
       if (gidStr === "") continue;
       if (minDkpMap[gidStr] !== undefined) continue;
-      // find power in df1 then df2
+
       const findPower = (arr, map) => {
         const row =
           (map && map[gidStr]) ||
@@ -526,7 +502,6 @@ let resultsGridApi = null;
     if (toInsert.length) await saveMinDkpMap();
   }
 
-  // Render results (table)
   function buildDynamicColumnDefs(rows) {
     if (!rows?.length) return [];
 
@@ -548,7 +523,7 @@ let resultsGridApi = null;
     const gridDiv = document.querySelector("#result-table");
     gridDiv.style.display = "block";
     const columnDefs = buildDynamicColumnDefs(rows);
-    // Destroy old grid if exists
+
     if (resultsGridApi) {
       resultsGridApi.destroy();
       resultsGridApi = null;
@@ -568,11 +543,9 @@ let resultsGridApi = null;
         resizable: true,
       },
     };
-
     resultsGridApi = agGrid.createGrid(gridDiv, gridOptions);
   }
 
-  // Export: XLSX / CSV / JSON
   function exportToXlsx(rows) {
     if (!rows) return alert("No results to export.");
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -628,7 +601,6 @@ let resultsGridApi = null;
     URL.revokeObjectURL(url);
   }
 
-  // Settings export/import
   async function exportSettings() {
     const payload = {
       multipliers,
@@ -658,10 +630,9 @@ let resultsGridApi = null;
     try {
       const txt = await file.text();
       const parsed = JSON.parse(txt);
-      // Basic validation
+
       if (!parsed || typeof parsed !== "object")
         throw new Error("Invalid file format.");
-      // accept keys (multipliers, power_ranges, vacation_list, min_dkp)
       if (parsed.multipliers) {
         multipliers = parsed.multipliers;
         await localforage.setItem(KEY_MULT, multipliers);
@@ -680,17 +651,15 @@ let resultsGridApi = null;
         await localforage.setItem(KEY_MIN, minDkpMap);
       }
       alert("Settings imported successfully.");
-      // refresh UI
       populateUIFromMemory();
     } catch (err) {
       console.error(err);
       alert("Failed to import settings: " + (err.message || err));
     } finally {
-      importSettingsFile.value = ""; // reset
+      importSettingsFile.value = "";
     }
   });
 
-  // Init wiring
   async function init() {
     await loadAllFromStorage();
 
@@ -737,10 +706,8 @@ let resultsGridApi = null;
   exportSettingsBtn.addEventListener("click", exportSettings);
   clearMinBtn.addEventListener("click", clearAllMinDkp);
 
-  // initial load
   init().catch((err) => console.error("Init error", err));
 
-  // back to the top of the page
   const backToTopBtn = document.getElementById("backToTop");
 
   window.addEventListener("scroll", () => {
@@ -758,18 +725,14 @@ let resultsGridApi = null;
     });
   });
 
-  // THEME HANDLING
   const THEME_KEY = "theme";
 
   function applyTheme(theme) {
     document.body.classList.remove("light", "dark");
     document.body.classList.add(theme);
-
     document.body.setAttribute("data-ag-theme-mode", theme);
-
     localStorage.setItem(THEME_KEY, theme);
 
-    // Update AG Grid themes
     const agTheme =
       theme === "dark"
         ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
@@ -822,8 +785,7 @@ let resultsGridApi = null;
   });
 
   document.addEventListener("DOMContentLoaded", () => {
-    const current = location.pathname.split("/").pop(); // e.g. "index.html"
-
+    const current = location.pathname.split("/").pop();
     document.querySelectorAll(".nav-links a").forEach((link) => {
       if (link.getAttribute("href") === current) {
         link.classList.add("active");
