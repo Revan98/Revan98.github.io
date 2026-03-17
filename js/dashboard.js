@@ -1,5 +1,3 @@
-const qs = (sel) => document.querySelector(sel);
-
 function extractSheetId(url) {
   const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
   return match ? match[1] : null;
@@ -34,7 +32,6 @@ async function safeFetch(url) {
 }
 
 const CHART_RANGES = ["A:B", "D:D", "Q:Q", "E:G"];
-
 let db;
 
 async function loadDatabase() {
@@ -42,7 +39,6 @@ async function loadDatabase() {
     locateFile: (file) =>
       `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`,
   });
-
   const res = await fetch("kvk.db");
   const buffer = await res.arrayBuffer();
   db = new SQL.Database(new Uint8Array(buffer));
@@ -56,10 +52,7 @@ const SheetCache = {
 
 async function loadAllSheetsCache() {
   await loadDatabase();
-
   const kd = getKDFromURL();
-
-  //  Find KVKingdom
   const kvk = db.exec(`
 	  SELECT id
 	  FROM kvks
@@ -74,8 +67,6 @@ async function loadAllSheetsCache() {
   }
 
   const kvkId = kvk.values[0][0];
-
-  //  Get all snapshots (timeline)
   const snaps = db.exec(`
     SELECT id, snapshot_date
     FROM snapshots
@@ -83,12 +74,10 @@ async function loadAllSheetsCache() {
     ORDER BY snapshot_date
   `)[0];
 
-  SheetCache.sheetsList = snaps.values.map((r) => r[1]); // dates
+  SheetCache.sheetsList = snaps.values.map((r) => r[1]);
   SheetCache._snapIds = Object.fromEntries(
     snaps.values.map((r) => [r[1], r[0]]),
   );
-
-  //  Get last snapshot (grid)
   const lastSnap = db.exec(`
     SELECT id FROM snapshots
     WHERE kvk_id=${kvkId} AND is_last=1
@@ -119,10 +108,7 @@ async function loadAllSheetsCache() {
   SheetCache.lastSheetData = {
     rows: grid.values,
   };
-
-  // Load chart data (all snapshots)
   SheetCache.sheetsData = {};
-
   SheetCache.sheetsList.forEach((date) => {
     const sid = SheetCache._snapIds[date];
 
@@ -215,7 +201,6 @@ const gridOptions = {
         return a;
       },
     },
-
     {
       headerName: "Name",
       field: "name",
@@ -241,7 +226,6 @@ const gridOptions = {
         const base = Number(params.data?.power || 0).toLocaleString("en-US");
         return `Starting Power: ${base}`;
       },
-
       getQuickFilterText: () => "",
     },
     {
@@ -412,10 +396,7 @@ function getCurrentTheme() {
 }
 
 function formatSheetDate(sheetName) {
-  // Expecting DD_MM_YYYY
   if (!sheetName || typeof sheetName !== "string") return sheetName;
-
-  // Only replace if it matches the pattern
   if (/^\d{2}_\d{2}_\d{4}$/.test(sheetName)) {
     return sheetName.replaceAll("_", ".");
   }
@@ -472,7 +453,6 @@ function createChart(ctx, labels, datasets) {
       },
     },
   });
-
   applyChartTheme();
 }
 
@@ -532,15 +512,12 @@ function applyChartTheme() {
 
 function updateChart(governorId) {
   selectedGovernorId = governorId;
-
   const labels = SheetCache.sheetsList.map(formatSheetDate);
   const datasets = buildChartDatasets(governorId);
   const ctx = document.querySelector("#modal-chart").getContext("2d");
-
   const row = SheetCache.lastSheetData.rows.find(
     (r) => `${r[0]}` === `${governorId}`,
   );
-
   const titleText = row
     ? `${row[1]} (ID: ${row[0]})`
     : "Select a governor to view chart";
@@ -571,12 +548,9 @@ const chartSection = document.getElementById("chart-section");
 
 loadAllSheetsCache().then(() => {
   const spinner = document.getElementById("loading-spinner");
-
   const rows = SheetCache.lastSheetData.rows;
   const rowData = buildRowDataFromSheet(rows);
-
   gridApi.setGridOption("rowData", rowData);
-
   const sortedByDKP = [...rows]
     .sort((a, b) => Number(b[12]) - Number(a[12]))
     .slice(0, 3);
@@ -620,15 +594,14 @@ function renderTotals(rows = []) {
   container.innerHTML = "";
 
   const defs = [
-    { label: "Total T4 kills", col: 7 }, // t4_diff
-    { label: "Total T5 kills", col: 9 }, // t5_diff
-    { label: "Total Deads", col: 11 }, // deads_diff
-    { label: "Total KP", col: 5 }, // kp_diff
+    { label: "Total T4 kills", col: 7 },
+    { label: "Total T5 kills", col: 9 },
+    { label: "Total Deads", col: 11 },
+    { label: "Total KP", col: 5 },
   ];
 
   defs.forEach(({ label, col }) => {
     const sum = rows.reduce((acc, r) => acc + (Number(r[col]) || 0), 0);
-
     const box = document.createElement("div");
     box.className = "stat-box";
 
@@ -661,14 +634,10 @@ function escapeHtml(str) {
     }[s];
   });
 }
-
-// Sticky navbar shadow on scroll
 const navbar = document.getElementById("navbar");
 window.addEventListener("scroll", () => {
   navbar.classList.toggle("scrolled", window.scrollY > 10);
 });
-
-// Hamburger toggle
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => {
@@ -696,12 +665,9 @@ const themeToggle = document.getElementById("toggle-theme");
 function applyTheme(theme) {
   document.body.classList.remove("light", "dark");
   document.body.classList.add(theme);
-
   document.body.setAttribute("data-ag-theme-mode", theme);
-
   localStorage.setItem(THEME_KEY, theme);
 
-  // Update AG Grid theme
   if (gridApi) {
     const agTheme =
       theme === "dark"
@@ -743,7 +709,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-// GOVERNOR HISTORY MODAL
+
 function renderCollapsibleSection(title, content, defaultOpen = false) {
   const id = "sec_" + Math.random().toString(36).substr(2, 9);
 
@@ -860,7 +826,6 @@ function loadFarmKvKStats(farmIds) {
   const idList = farmIds.join(",");
 
   for (const [kvkId, kvkNumber] of kvksRes[0].values) {
-    // get last snapshot of this kvk
     const snapRes = db.exec(`
       SELECT id
       FROM snapshots
@@ -1004,7 +969,7 @@ function renderFarmsTable(rows) {
 		  <tbody>${trs}</tbody>
 		</table>
 	  `,
-    false, // collapsed by default
+    false,
   );
 }
 
@@ -1067,7 +1032,7 @@ function renderFarmKvKTable(rows) {
   return renderCollapsibleSection(
     "Farm Accounts – KvK Stats (All KvKs)",
     kvkBlocks,
-    false, // collapsed by default
+    false,
   );
 }
 
