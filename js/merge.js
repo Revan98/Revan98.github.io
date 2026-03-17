@@ -13,7 +13,6 @@ function setExportEnabled(enabled) {
 
 setExportEnabled(false);
 
-// AG Grid Setup
 function buildColumnDefs(rows) {
   if (!rows || !rows.length) return [];
 
@@ -56,7 +55,6 @@ function renderResultsAgGrid(rows) {
     animateRows: true,
   };
 
-  // Destroy previous grid if exists
   if (!gridApi) {
     gridApi = agGrid.createGrid(gridDiv, gridOptions);
   } else {
@@ -65,7 +63,6 @@ function renderResultsAgGrid(rows) {
   }
 }
 
-// File Handling
 async function readExcel(file) {
   if (!file) throw new Error("No file provided");
   const arrBuf = await file.arrayBuffer();
@@ -128,7 +125,6 @@ async function handleFiles() {
   document.getElementById("mergeBtn").disabled = false;
 }
 
-// Merge Data & Render in AG Grid
 async function doMerge() {
   const mergeBtn = document.getElementById("mergeBtn");
   mergeBtn.disabled = true;
@@ -141,9 +137,6 @@ async function doMerge() {
     progressEl.value = 10;
 
     const map = new Map();
-    /*     for (const row of file2Data) {
-      map.set(row[idColumn], row[mergeColumn]);
-    } */
     for (const row of file2Data) {
       const id = row[idColumn];
       if (id == null) continue;
@@ -180,7 +173,6 @@ async function doMerge() {
   }
 }
 
-// Export: XLSX / CSV / JSON
 function exportToXlsx(rows) {
   if (!rows) return alert("No results to export.");
   const ws = XLSX.utils.json_to_sheet(rows);
@@ -197,7 +189,6 @@ function exportToCsv(rows) {
 
   const columns = Object.keys(rows[0]);
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-
   const csv =
     columns.map(escape).join(",") +
     "\n" +
@@ -237,7 +228,6 @@ function exportToJson(rows) {
   URL.revokeObjectURL(url);
 }
 
-// THEME HANDLING
 const THEME_KEY = "theme";
 
 function applyTheme(theme) {
@@ -248,7 +238,6 @@ function applyTheme(theme) {
 
   localStorage.setItem(THEME_KEY, theme);
 
-  // Update AG Grid theme
   if (gridApi) {
     const agTheme =
       theme === "dark"
@@ -302,7 +291,7 @@ navLinks.querySelectorAll("a").forEach((link) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const current = location.pathname.split("/").pop(); // e.g. "index.html"
+  const current = location.pathname.split("/").pop();
 
   document.querySelectorAll(".nav-links a").forEach((link) => {
     if (link.getAttribute("href") === current) {
@@ -311,7 +300,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Event Listeners
 document.getElementById("file1").addEventListener("change", handleFiles);
 document.getElementById("file2").addEventListener("change", handleFiles);
 document.getElementById("mergeBtn").addEventListener("click", doMerge);
