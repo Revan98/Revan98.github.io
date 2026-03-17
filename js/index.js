@@ -1,10 +1,9 @@
-/* Simple query helper */
 const qs = (sel) => document.querySelector(sel);
 
 function selectKingdom(kd) {
   window.location.href = "dashboard.html?kd=" + kd;
 }
-/* THEME HANDLING */
+
 const themeToggle = qs("#toggle-theme");
 
 function setTheme(mode) {
@@ -32,7 +31,7 @@ function initializeTheme(toggleEl) {
   setTheme(prefersDark ? "dark" : "light");
   if (toggleEl) toggleEl.checked = prefersDark;
 }
-// Theme init & toggle
+
 initializeTheme(themeToggle);
 if (themeToggle) {
   themeToggle.addEventListener("change", (e) => {
@@ -62,7 +61,7 @@ navLinks.querySelectorAll("a").forEach((link) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const current = location.pathname.split("/").pop(); // e.g. "index.html"
+  const current = location.pathname.split("/").pop();
 
   document.querySelectorAll(".nav-links a").forEach((link) => {
     if (link.getAttribute("href") === current) {
