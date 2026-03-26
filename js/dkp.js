@@ -118,6 +118,17 @@ let resultsGridApi = null;
     alert("All Min DKP values cleared.");
   }
 
+  function getExportTimestamp() {
+	const now = new Date();
+	const dd = String(now.getDate()).padStart(2, "0");
+	const mm = String(now.getMonth() + 1).padStart(2, "0");
+	const yyyy = now.getFullYear();
+	const HH = String(now.getHours()).padStart(2, "0");
+	const MM = String(now.getMinutes()).padStart(2, "0");
+	const uuid = crypto.randomUUID().split("-")[0];
+	return `${dd}-${mm}-${yyyy}-T${HH}-${MM}-${uuid}`;
+  }
+	
   function validatePowerRange(newItem, ranges, editingIdx = null) {
     const others = ranges.filter((_, i) => i !== editingIdx);
 
@@ -555,7 +566,7 @@ let resultsGridApi = null;
     XLSX.utils.book_append_sheet(wb, ws, "DKP");
     XLSX.writeFile(
       wb,
-      `dkp_output_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`,
+      `dkp-${getExportTimestamp()}.xlsx`, { compression: true }
     );
   }
   function exportToCsv(rows) {
@@ -575,9 +586,7 @@ let resultsGridApi = null;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dkp_output_${new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")}.csv`;
+    a.download = `dkp-${getExportTimestamp()}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -594,9 +603,7 @@ let resultsGridApi = null;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dkp_output_${new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")}.json`;
+    a.download = `dkp-${getExportTimestamp()}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -616,9 +623,7 @@ let resultsGridApi = null;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dkp_settings_${new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")}.json`;
+    a.download = `dkp-settings-${getExportTimestamp()}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
