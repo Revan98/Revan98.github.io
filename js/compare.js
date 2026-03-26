@@ -1,0 +1,338 @@
+let comparedResults = { matching: [], nonMatching: [] };
+const progressEl = document.getElementById("progressBar");
+const resultsInfo = document.getElementById("compare-results-info");
+const themeToggle = document.getElementById("toggle-theme");
+
+function setExportEnabled(enabled) {
+  ["export-xlsx", "export-csv", "export-json"].forEach((id) => {
+    document.getElementById(id).disabled = !enabled;
+  });
+}
+
+setExportEnabled(false);
+
+async function readFile(file) {
+  const name = file.name.toLowerCase();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        if (name.endsWith(".xlsx") || name.endsWith(".csv")) {
+          const wb = XLSX.read(e.target.result, { type: "array" });
+
+          const first = wb.SheetNames[0];
+          resolve(XLSX.utils.sheet_to_json(wb.Sheets[first], { defval: null }));
+        } else if (name.endsWith(".json")) {
+          resolve(JSON.parse(e.target.result));
+        } else reject("Unsupported file format");
+      } catch (err) {
+        reject(err);
+      }
+    };
+    if (name.endsWith(".xlsx") || name.endsWith(".csv"))
+      reader.readAsArrayBuffer(file);
+    else reader.readAsText(file);
+  });
+}
+
+function compareRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
+  const compared = {};
+  if (row1)
+    for (const [k, v] of Object.entries(row1)) compared[prefix1 + k] = v;
+  if (row2)
+    for (const [k, v] of Object.entries(row2)) compared[prefix2 + k] = v;
+  return compared;
+}
+function hasDuplicateKeys(data, key) {
+  const seen = new Set();
+  for (const r of data) {
+    const k = r[key] == null ? r[key] : String(r[key]).trim();
+    if (seen.has(k)) return true;
+    seen.add(k);
+  }
+  return false;
+}
+
+function compareData(df1, df2, keyColumn, option) {
+  const normalizeKey = (v) =>
+    v === null || v === undefined ? v : String(v).trim();
+  if (hasDuplicateKeys(df1, keyColumn) || hasDuplicateKeys(df2, keyColumn)) {
+    console.warn(
+      "Duplicate key values detected; later rows overwrite earlier ones.",
+    );
+  }
+  const map1 = new Map(df1.map((r) => [normalizeKey(r[keyColumn]), r]));
+  const map2 = new Map(df2.map((r) => [normalizeKey(r[keyColumn]), r]));
+  const allKeys = new Set([...map1.keys(), ...map2.keys()]);
+
+  const matching = [];
+  const nonMatching = [];
+
+  for (const key of allKeys) {
+    const in1 = map1.has(key);
+    const in2 = map2.has(key);
+
+    if (in1 && in2) {
+      matching.push(compareRows(map1.get(key), map2.get(key)));
+    } else if (
+      option === "both" ||
+      (option === "pierwszy" && in1) ||
+      (option === "drugi" && in2)
+    ) {
+      nonMatching.push(
+        compareRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null),
+      );
+    }
+  }
+  return { matching, nonMatching };
+}
+
+let matchingGridApi = null;
+let nonMatchingGridApi = null;
+function buildDynamicColumnDefs(rows) {
+  if (!rows || !rows.length) return [];
+
+  return Object.keys(rows[0]).map((key) => ({
+    headerName: key,
+    field: key,
+    flex: 1,
+    minWidth: 200,
+    sortable: true,
+    filter: false,
+    resizable: true,
+  }));
+}
+function createCompareGrid(containerId, rowData) {
+  const columnDefs = buildDynamicColumnDefs(rowData);
+  const gridOptions = {
+    theme: agGrid.themeQuartz,
+    columnDefs,
+    rowData,
+    defaultColDef: {
+      sortable: true,
+      filter: false,
+      resizable: true,
+    },
+    animateRows: true,
+    pagination: true,
+    paginationPageSize: 50,
+  };
+
+  const gridDiv = document.getElementById(containerId);
+  gridDiv.style.display = "block";
+  if (gridDiv.__agGridInstance) {
+    gridDiv.__agGridInstance.destroy();
+  }
+
+  const api = agGrid.createGrid(gridDiv, gridOptions);
+  gridDiv.__agGridInstance = api;
+
+  return api;
+}
+
+function renderResultsGrids(matchingRows, nonMatchingRows) {
+  if (matchingRows.length) {
+    document.getElementById("matching-table").innerHTML =
+      `<p>Matching table.</p>`;
+    matchingGridApi = createCompareGrid("matching-table", matchingRows);
+  } else {
+    document.getElementById("matching-table").innerHTML =
+      `<div class="muted">No matching rows.</div>`;
+  }
+
+  if (nonMatchingRows.length) {
+    document.getElementById("nonmatching-table").innerHTML =
+      `<p>Non matching table.</p>`;
+    nonMatchingGridApi = createCompareGrid(
+      "nonmatching-table",
+      nonMatchingRows,
+    );
+  } else {
+    document.getElementById("nonmatching-table").innerHTML =
+      `<div class="muted">No non-matching rows.</div>`;
+  }
+}
+s
+function exportToXlsx(data, name) {
+  if (!data || !data.length) return;
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Compare");
+  XLSX.writeFile(
+    wb,
+    `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`,
+  );
+}
+
+function exportToCsv(data, name) {
+  if (!data || !data.length) return;
+
+  const columns = Object.keys(data[0]);
+  const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const csv =
+    columns.map(escape).join(",") +
+    "\n" +
+    data
+      .map((row) => columns.map((col) => escape(row[col])).join(","))
+      .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportToJson(data, name) {
+  if (!data || !data.length) return;
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById("compareBtn").addEventListener("click", async () => {
+  setExportEnabled(false);
+  const file1 = document.getElementById("file1").files[0];
+  const file2 = document.getElementById("file2").files[0];
+  const keyCol = document.getElementById("keyColumn").value.trim();
+  const option = document.getElementById("compareOption").value;
+  if (!file1 || !file2 || !keyCol)
+    return alert("Please select both files and a key column.");
+
+  progressEl.value = 5;
+  resultsInfo.textContent = "Reading files...";
+
+  try {
+    const df1 = await readFile(file1);
+    progressEl.value = 30;
+    const df2 = await readFile(file2);
+    progressEl.value = 60;
+    if (!df1.length || !df2.length) {
+      alert("One of the files is empty.");
+      return;
+    }
+
+    if (!(keyCol in df1[0]) || !(keyCol in df2[0])) {
+      alert(`Key column "${keyCol}" not found in both files.`);
+      return;
+    }
+    const { matching, nonMatching } = compareData(df1, df2, keyCol, option);
+    comparedResults = { matching, nonMatching };
+    if (!comparedResults || comparedResults.length === 0) {
+      setExportEnabled(false);
+      return;
+    }
+    renderResultsGrids(matching, nonMatching);
+    progressEl.value = 100;
+    resultsInfo.textContent = `Comparison complete: ${matching.length} matching, ${nonMatching.length} non-matching rows.`;
+    setExportEnabled(true);
+  } catch (err) {
+    console.error(err);
+    alert("Error: " + err);
+    progressEl.value = 0;
+    resultsInfo.textContent = "Comparison failed.";
+  }
+});
+
+document.getElementById("export-xlsx").addEventListener("click", () => {
+  if (!comparedResults.matching.length && !comparedResults.nonMatching.length)
+    return alert("No results to export yet.");
+  exportToXlsx(comparedResults.matching, "compare_matching");
+  if (comparedResults.nonMatching.length)
+    exportToXlsx(comparedResults.nonMatching, "compare_nonmatching");
+});
+
+document.getElementById("export-csv").addEventListener("click", () => {
+  if (!comparedResults.matching.length && !comparedResults.nonMatching.length)
+    return alert("No results to export yet.");
+  exportToCsv(comparedResults.matching, "compare_matching");
+  if (comparedResults.nonMatching.length)
+    exportToCsv(comparedResults.nonMatching, "compare_nonmatching");
+});
+
+document.getElementById("export-json").addEventListener("click", () => {
+  if (!comparedResults.matching.length && !comparedResults.nonMatching.length)
+    return alert("No results to export yet.");
+  exportToJson(comparedResults.matching, "compare_matching");
+  if (comparedResults.nonMatching.length)
+    exportToJson(comparedResults.nonMatching, "compare_nonmatching");
+});
+
+const THEME_KEY = "theme";
+
+function applyTheme(theme) {
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(theme);
+
+  document.body.setAttribute("data-ag-theme-mode", theme);
+
+  localStorage.setItem(THEME_KEY, theme);
+
+  const agTheme =
+    theme === "dark"
+      ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+      : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
+  if (matchingGridApi) matchingGridApi.setGridOption("theme", agTheme);
+  if (nonMatchingGridApi) nonMatchingGridApi.setGridOption("theme", agTheme);
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+
+  let theme;
+  if (saved === "light" || saved === "dark") {
+    theme = saved;
+  } else {
+    theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
+
+  applyTheme(theme);
+  themeToggle.checked = theme === "dark";
+}
+
+themeToggle.addEventListener("change", () => {
+  applyTheme(themeToggle.checked ? "dark" : "light");
+});
+
+initTheme();
+
+const hamburger = document.getElementById("hamburger");
+const navLinks = document.getElementById("nav-links");
+hamburger.addEventListener("click", () => {
+  navLinks.classList.toggle("show");
+  hamburger.classList.toggle("open");
+});
+
+document.addEventListener("click", (e) => {
+  if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+    navLinks.classList.remove("show");
+    hamburger.classList.remove("open");
+  }
+});
+
+navLinks.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
+    navLinks.classList.remove("show");
+    hamburger.classList.remove("open");
+  });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const current = location.pathname.split("/").pop();
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    if (link.getAttribute("href") === current) {
+      link.classList.add("active");
+    }
+  });
+});
