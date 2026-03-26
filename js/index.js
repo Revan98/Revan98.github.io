@@ -35,16 +35,6 @@ function applyTheme(theme) {
   document.body.classList.add(theme);
   document.body.setAttribute("data-ag-theme-mode", theme);
   localStorage.setItem(THEME_KEY, theme);
-
-  if (gridApi) {
-    const agTheme =
-      theme === "dark"
-        ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
-        : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
-    gridApi.setGridOption("theme", agTheme);
-  }
-
-  applyChartTheme();
 }
 
 function initTheme() {
