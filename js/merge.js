@@ -13,6 +13,17 @@ function setExportEnabled(enabled) {
 
 setExportEnabled(false);
 
+function getExportTimestamp() {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = now.getFullYear();
+  const HH = String(now.getHours()).padStart(2, "0");
+  const MM = String(now.getMinutes()).padStart(2, "0");
+  const uuid = crypto.randomUUID().split("-")[0];
+  return `${dd}-${mm}-${yyyy}-T${HH}-${MM}-${uuid}`;
+}
+
 function buildColumnDefs(rows) {
   if (!rows || !rows.length) return [];
 
@@ -180,7 +191,7 @@ function exportToXlsx(rows) {
   XLSX.utils.book_append_sheet(wb, ws, "Merged");
   XLSX.writeFile(
     wb,
-    `merge_output_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`,
+    `merge-${getExportTimestamp()}.xlsx`,
   );
 }
 
@@ -200,9 +211,7 @@ function exportToCsv(rows) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `merge_output_${new Date()
-    .toISOString()
-    .replace(/[:.]/g, "-")}.csv`;
+  a.download = `merge-${getExportTimestamp()}.csv`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -219,9 +228,7 @@ function exportToJson(rows) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `merge_output_${new Date()
-    .toISOString()
-    .replace(/[:.]/g, "-")}.json`;
+  a.download = `merge-${getExportTimestamp()}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
