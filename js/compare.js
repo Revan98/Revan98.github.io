@@ -43,6 +43,7 @@ function compareRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
     for (const [k, v] of Object.entries(row2)) compared[prefix2 + k] = v;
   return compared;
 }
+
 function hasDuplicateKeys(data, key) {
   const seen = new Set();
   for (const r of data) {
@@ -51,6 +52,17 @@ function hasDuplicateKeys(data, key) {
     seen.add(k);
   }
   return false;
+}
+
+function getExportTimestamp() {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = now.getFullYear();
+  const HH = String(now.getHours()).padStart(2, "0");
+  const MM = String(now.getMinutes()).padStart(2, "0");
+  const uuid = crypto.randomUUID().split("-")[0];
+  return `${dd}-${mm}-${yyyy}-T${HH}-${MM}-${uuid}`;
 }
 
 function compareData(df1, df2, keyColumn, option) {
@@ -160,8 +172,7 @@ function exportToXlsx(data, name) {
   XLSX.utils.book_append_sheet(wb, ws, "Compare");
   XLSX.writeFile(
     wb,
-    `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`,
-  );
+    `${name}--${getExportTimestamp()}.xlsx`, { compression: true );
 }
 
 function exportToCsv(data, name) {
@@ -179,7 +190,7 @@ function exportToCsv(data, name) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.csv`;
+  a.download = `${name}-${getExportTimestamp()}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -194,7 +205,7 @@ function exportToJson(data, name) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${name}_${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+  a.download = `${name}-${getExportTimestamp()}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
