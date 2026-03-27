@@ -1,4 +1,4 @@
-let comparedResults = { matching: [], nonMatching: [] };
+ let comparedResults = { matching: [], nonMatching: [] };
 const progressEl = document.getElementById("progressBar");
 const resultsInfo = document.getElementById("compare-results-info");
 const themeToggle = document.getElementById("toggle-theme");
@@ -164,7 +164,7 @@ function renderResultsGrids(matchingRows, nonMatchingRows) {
       `<div class="muted">No non-matching rows.</div>`;
   }
 }
-s
+
 function exportToXlsx(data, name) {
   if (!data || !data.length) return;
   const ws = XLSX.utils.json_to_sheet(data);
@@ -172,7 +172,8 @@ function exportToXlsx(data, name) {
   XLSX.utils.book_append_sheet(wb, ws, "Compare");
   XLSX.writeFile(
     wb,
-    `${name}--${getExportTimestamp()}.xlsx`, { compression: true );
+    `${name}--${getExportTimestamp()}.xlsx`, { compression: true }
+  );
 }
 
 function exportToCsv(data, name) {
