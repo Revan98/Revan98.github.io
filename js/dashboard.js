@@ -1091,7 +1091,7 @@ function renderPairBox(name) {
 }
 
 function renderPairsSection(row) {
-  const PAIR_COUNT = 8;
+  const PAIR_COUNT = 12;
   let pairRows = "";
   for (let n = 1; n <= PAIR_COUNT; n++) {
     const comm1 = row[`pair${n}_comm1`];
