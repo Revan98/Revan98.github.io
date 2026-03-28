@@ -1168,8 +1168,7 @@ function renderEquipmentSection(govId) {
     );
   }
 
-  // Marches 1–8 (march 1 = no suffix, 2–8 = numeric suffix)
-  const MARCH_SUFFIXES = ["", "2", "3", "4", "5", "6", "7", "8"];
+  const MARCH_SUFFIXES = ["", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
   let marchRows = "";
 
   MARCH_SUFFIXES.forEach((suffix, idx) => {
