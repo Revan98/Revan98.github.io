@@ -1111,6 +1111,22 @@ function renderPairsSection(row) {
       ${pairRows}
     </div>`;
 }
+const ABILITY_TIERS = (() => {
+  const gold = new Set(["Destructive","Straight to the point","Invincible","Fearless","Hunter","Unstoppable","Balanced","Intrepid","Sharpshooter","Drilled","Merciless","Astute","Influential leader","Loaded","Civilized","Fixed","Cocoon","Inviolable","Crowned","Rounded","Rich","Battlements","Moneyed","Transporter","Enmeshed","Logistical","Unassailed","Winged","Irreproachable","Cautious","Shield Bash","Rock Solid","Avenger","Guarding light","Turn the corner","Panacea","Hasty Retreat","Blast Shield","Full Force","United Front","Thrasher","Butterfly effect","Steelskin","Flurry","Battle Ready","Fortified","Chokepoint","Steelheart","Vanquisher","Self Heal","Brilliant","Mountain","Toppler","Demolisher","Airtight","Thundering","Advantage advanced","Indomitable","Maneuver at ease","Horseback action"]);
+  const blue = new Set(["Battle-Ready","Even-Keeled","Unswerving","Forceful","Crazed","Boiling Blood","Defiant","Focus Fire","Full Draw","Bloody Bolt","Tempered","Sharp Arrows","Drums of war","Nullify","Counter-Parry","Persevering","Self-Defense","Aegis","Reinforced","Tenacious","Gold Panner","Safeguard","Plentitude","Sturdy Back","Entangling","Arms Race","Sprinter","Strider","Ironclad","Strike & parry","Unshakeable","Convalescing","Back In Action","Medic","Rise Up","Refreshing","Fall Back","Spread Out","Shock Troops","Mutual Defense","Pummeler","Causative","Determined","Relentless","Vigilant","Resolute","Precautions","Ironsides","Overwhelm","Self Tend","Stone","Imploder","Raider","Hardheaded","Rattling","Fury","Soar","Ballista","Divine Staff"]);
+  return { gold, blue };
+})();
+
+function getAbilityTier(name) {
+  if (!name) return "gray";
+  const n = String(name).trim();
+  if (ABILITY_TIERS.gold.has(n)) return "gold";
+  if (ABILITY_TIERS.blue.has(n)) return "blue";
+  const lower = n.toLowerCase();
+  for (const v of ABILITY_TIERS.gold) if (v.toLowerCase() === lower) return "gold";
+  for (const v of ABILITY_TIERS.blue) if (v.toLowerCase() === lower) return "blue";
+  return "gray";
+}
 
 function renderArmamentRow(armRow) {
   if (!armRow) return `
@@ -1124,11 +1140,14 @@ function renderArmamentRow(armRow) {
     if (isEmptyVal(name)) return "";
 
     const insKeys = ["_ins","_ins2","_ins3","_ins4","_ins5","_ins6","_ins7","_ins8"];
-    const inscriptions = insKeys
-      .map(k => armRow[`${arm.prefix}${k}`])
-      .filter(v => !isEmptyVal(v))
-      .map(v => `<span class="arm-ins">${escapeHtml(String(v))}</span>`)
-      .join("");
+	const inscriptions = insKeys
+	  .map(k => armRow[`${arm.prefix}${k}`])
+	  .filter(v => !isEmptyVal(v))
+	  .map(v => {
+		const tier = getAbilityTier(String(v));
+		return `<span class="arm-ins tier-${tier}">${escapeHtml(String(v))}</span>`;
+	  })
+	  .join("");
 
     const statSlots = [
       { n: `${arm.prefix}_stat_name`,   v: `${arm.prefix}_stat`   },
@@ -1144,8 +1163,8 @@ function renderArmamentRow(armRow) {
     return `
       <div class="arm-card">
         <div class="arm-name">${escapeHtml(String(name))}</div>
-        ${inscriptions ? `<div class="arm-stats arm-ins-group">${inscriptions}</div>` : ""}
-        ${statsHtml    ? `<div class="arm-stats">${statsHtml}</div>`                  : ""}
+		${inscriptions ? `<div class="arm-ins-group">${inscriptions}</div>` : ""}
+		${statsHtml    ? `<div class="arm-stats">${statsHtml}</div>`         : ""}
       </div>`;
   }).filter(Boolean).join("");
 
