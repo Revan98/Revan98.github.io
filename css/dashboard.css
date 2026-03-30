@@ -466,16 +466,46 @@ footer {
 .arm-stats {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: left;
   gap: 2px;
   margin-top: 2px;
 }
-.arm-ins {
-  font-size: 0.9rem;
-  color: var(--chart-line);
-  opacity: 0.85;
-  text-align: center;
+
+.arm-ins-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
 }
+
+.arm-ins {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px 5px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid;
+  width: auto;
+}
+.arm-ins.tier-gold {
+  background: #2a1f00; border-color: #c9920a; color: #f5c842;
+}
+.arm-ins.tier-blue {
+  background: #001733; border-color: #3b7dd8; color: #80b8f5;
+}
+.arm-ins.tier-gray {
+  background: #1a1a1d; border-color: #6b6b72; color: #c8c8cc;
+}
+.arm-ins .badge-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.arm-ins.tier-gold .badge-dot { background: #f5c842; }
+.arm-ins.tier-blue .badge-dot { background: #80b8f5; }
+.arm-ins.tier-gray .badge-dot { background: #9a9aa0; }
+.arm-stat b { font-weight: 600; opacity: 0.9; }
 .arm-stat {
   font-size: 0.9rem;
   color: var(--text-color);
