@@ -230,12 +230,12 @@ conn.commit()
 conn.close()
 
 FILES = [
-     # {
-         # "path": "C:/Users/revan/Downloads/DKP-7-03-2026.xlsx",
-         # "kingdom": "2552",
-         # "kvk_number": 1,
-         # "name": "KvK",
-     # },
+      # {
+          # "path": "D:/RoK Tracker AIO/data/DKP.xlsx",
+          # "kingdom": "2247",
+          # "kvk_number": 8,
+          # "name": "HA",
+      # },
 ]
 
 FARM_FILES = [
@@ -273,9 +273,6 @@ def normalize_date(sheet_name: str | int) -> str:
         d, m, y = sheet_name.split("_")
         return f"{y}-{m}-{d}"
     return sheet_name
-
-
-# KvK import
 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
@@ -395,8 +392,6 @@ for cfg in FILES:
 conn.close()
 print("✅ KvK import completed successfully")
 
-# Farm accounts import
- 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
  
@@ -440,10 +435,8 @@ for cfg in FARM_FILES:
 conn.close()
 print("✅ Farm accounts import completed successfully")
 
-# Equipment import
-
 EQUIPMENT_FILES = [
-    {"path": "gear_template_with_arms.xlsx"},
+    #{"path": "gear_template_with_arms.xlsx"},
 ]
 
 _GEAR_SLOTS     = ["helm", "chest", "weapon", "gloves", "legs", "accessory", "accessory_sec", "boots"]
@@ -494,8 +487,6 @@ for cfg in EQUIPMENT_FILES:
 
 conn.close()
 print("\u2705 Equipment import completed successfully")
-
-# Armaments import
 
 ARMAMENTS_FILES = [
     #{"path": "armaments.xlsx"},
