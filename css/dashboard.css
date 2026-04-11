@@ -163,7 +163,7 @@ nav.scrolled {
 }
 .modal-chart {
   margin: 0 auto 10px;
-  max-width: 1400px;
+  max-width: 1050px;
   height: 600px;
 }
 @media (max-width: 768px) {
