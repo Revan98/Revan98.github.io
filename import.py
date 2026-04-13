@@ -236,6 +236,12 @@ FILES = [
           # "kvk_number": 8,
           # "name": "HA",
       # },
+      {
+          "path": "D:/RoK Tracker AIO/data/DKP.xlsx",
+          "kingdom": "2552",
+          "kvk_number": 1,
+          "name": "KvK",
+      },
 ]
 
 FARM_FILES = [
@@ -273,6 +279,9 @@ def normalize_date(sheet_name: str | int) -> str:
         d, m, y = sheet_name.split("_")
         return f"{y}-{m}-{d}"
     return sheet_name
+
+
+# KvK import
 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
@@ -392,6 +401,8 @@ for cfg in FILES:
 conn.close()
 print("✅ KvK import completed successfully")
 
+# Farm accounts import
+ 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
  
@@ -434,6 +445,8 @@ for cfg in FARM_FILES:
  
 conn.close()
 print("✅ Farm accounts import completed successfully")
+
+# Equipment import
 
 EQUIPMENT_FILES = [
     #{"path": "gear_template_with_arms.xlsx"},
@@ -488,10 +501,14 @@ for cfg in EQUIPMENT_FILES:
 conn.close()
 print("\u2705 Equipment import completed successfully")
 
+# Armaments import
+
 ARMAMENTS_FILES = [
     #{"path": "armaments.xlsx"},
 ]
 
+# Irregular pandas column names that appear when the Excel has merged/duplicate headers
+# Map them to the canonical DB names (stat4_name4 / stat4)
 _ARM_RENAMES = {
     "arm4_stat4_name":    "arm4_stat4_name4",
     "arm5_stat3_name3.1": "arm5_stat4_name4",
@@ -501,6 +518,7 @@ _ARM_RENAMES = {
     "arm6_stat4_name":    "arm6_stat4_name4",
 }
 
+# Canonical DB columns (must match schema exactly, no duplicates)
 _ARM_DB_COLS = []
 _seen_arm = set()
 for _n in range(1, 9):
@@ -548,14 +566,16 @@ for cfg in ARMAMENTS_FILES:
                     continue
                 db_col = _ARM_RENAMES.get(xl_col, xl_col)
                 if db_col not in db_row:
-                    continue
+                    continue  # unknown / already handled duplicate
                 raw = r[xl_col]
                 if db_col in _FLOAT_ARM_COLS:
                     v = to_float(raw)
+                    # Don't overwrite a real value with 0 from a duplicate col
                     if db_row[db_col] is None or (v != 0.0 and db_row[db_col] == 0.0):
                         db_row[db_col] = v
                 else:
                     v = to_text(raw, "none")
+                    # Don't overwrite a real value with "none" from a duplicate col
                     if db_row[db_col] is None or (v != "none" and db_row[db_col] == "none"):
                         db_row[db_col] = v
 
