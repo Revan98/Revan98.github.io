@@ -191,6 +191,15 @@ const gridOptions = {
   theme: agGrid.themeQuartz,
   rowData: [],
   columnDefs: [
+	{
+	  headerName: "#",
+	  valueGetter: "node.rowIndex + 1",
+	  width: 55,
+	  sortable: false,
+	  filter: false,
+	  pinned: "left",
+	  getQuickFilterText: () => "",
+	},
     {
       headerName: "ID",
       field: "id",
@@ -210,14 +219,12 @@ const gridOptions = {
         return a;
       },
     },
-
     {
       headerName: "Name",
       field: "name",
       flex: 1,
       minWidth: 100,
     },
-
     {
       headerName: "Power",
       field: "powerDiff",
