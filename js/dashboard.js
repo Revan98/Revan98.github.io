@@ -347,6 +347,8 @@ const gridOptions = {
       hide: false,
     },
   ],
+  enableCellTextSelection: true,
+  ensureDomOrder: true,
   defaultColDef: {
     sortable: true,
     filter: false,
