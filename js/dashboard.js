@@ -328,17 +328,6 @@ const gridOptions = {
   animateRows: true,
   rowBuffer: 20,
   suppressRowTransform: true,
-  onRowClicked: (event) => {
-    selectedGovernorId = event.data.id;
-
-    if (inlineChart) {
-      inlineChart.options.plugins.title.text = `${event.data.name} (ID: ${event.data.id})`;
-      inlineChart.update();
-    }
-
-    updateChart(selectedGovernorId);
-    chartSection.classList.add("visible");
-  },
 };
 
 gridApi = agGrid.createGrid(document.querySelector("#myGrid"), gridOptions);
@@ -406,12 +395,7 @@ function createChart(ctx, labels, datasets) {
       interaction: { mode: "index", intersect: false },
       plugins: {
         title: {
-          display: true,
-          text: "Select a governor to view chart",
-          font: {
-            size: 18,
-            weight: "600",
-          },
+          display: false,
         },
         legend: {},
       },
@@ -468,7 +452,6 @@ function applyChartTheme() {
   });
 
   inlineChart.options.plugins.legend.labels.color = styles.text;
-  inlineChart.options.plugins.title.color = styles.text;
   inlineChart.options.plugins.tooltip.backgroundColor = styles.tooltipBg;
   inlineChart.options.plugins.tooltip.titleColor = styles.text;
   inlineChart.options.plugins.tooltip.bodyColor = styles.text;
@@ -492,39 +475,22 @@ function updateChart(governorId) {
 
   const labels = SheetCache.sheetsList.map(formatSheetDate);
   const datasets = buildChartDatasets(governorId);
-  const ctx = document.querySelector("#modal-chart").getContext("2d");
+	const canvas = document.querySelector("#modal-chart");
+	if (!canvas) return;
+	
+	const ctx = canvas.getContext("2d");
 
-  const row = SheetCache.lastSheetData.rows.find(
-    (r) => `${r[0]}` === `${governorId}`,
-  );
 
-  const titleText = row
-    ? `${row[1]} (ID: ${row[0]})`
-    : "Select a governor to view chart";
-
-  if (!inlineChart) {
-    createChart(ctx, labels, datasets);
-  }
+	if (inlineChart) {
+	  inlineChart.destroy();
+	  inlineChart = null;
+	}
+	createChart(ctx, labels, datasets);
 
   inlineChart.data.labels = labels;
   inlineChart.data.datasets = datasets;
-  inlineChart.options.plugins.title.text = titleText;
   inlineChart.update();
 }
-
-const closeChartBtn = document.getElementById("close-chart");
-
-closeChartBtn.addEventListener("click", () => {
-  if (inlineChart) {
-    inlineChart.destroy();
-    inlineChart = null;
-  }
-
-  selectedGovernorId = null;
-  chartSection.classList.remove("visible");
-});
-
-const chartSection = document.getElementById("chart-section");
 
 loadAllSheetsCache().then(() => {
   const spinner = document.getElementById("loading-spinner");
@@ -1265,15 +1231,26 @@ function openGovModal(govId, govName) {
       const farms   = loadGovernorFarms(govId);
       const farmIds = farms.map((f) => f.id);
       const farmKvK = loadFarmKvKStats(farmIds);
+	  const chartSection = `
+	    <div class="modal-chart-section">
+	      <div class="modal-chart" style="height:400px;">
+	        <canvas id="modal-chart"></canvas>
+	      </div>
+	    </div>
+	  `;
       body.innerHTML =
         '<div class="modal-controls">' +
         '  <button onclick="expandAllSections()">Expand All</button>' +
         '  <button onclick="collapseAllSections()">Collapse All</button>' +
         '</div>' +
+		chartSection +
         safeRender("history",   () => renderCollapsibleSection("Governor History", renderModalTable(history), false)) +
         safeRender("farms",     () => renderFarmsTable(farms)) +
         safeRender("farmKvK",   () => renderFarmKvKTable(farmKvK)) +
         safeRender("equipment", () => renderEquipmentSection(govId));
+	setTimeout(() => {
+	  updateChart(govId);
+	}, 0);
     } catch (err) {
       console.error("openGovModal:", err);
       body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(err))}</div>`;
