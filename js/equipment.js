@@ -11,7 +11,7 @@ const EQUIP_SLOTS = [
   { key: "accessory_sec", label: "Acc. 2"    },
 ];
 
-const MARCH_COUNT = 7;
+const MARCH_COUNT = 12;
 const PAIR_COUNT  = 12;
 
 let SQL    = null;
@@ -273,6 +273,7 @@ async function createDatabase() {
     for (const stmt of stmts) {
       try { newDb.run(stmt + ";"); } catch (e) { }
     }
+    ensureEquipmentMarchColumns(newDb);
  
     const bytes = newDb.export();
     const blob  = new Blob([bytes], { type: "application/octet-stream" });
@@ -414,6 +415,36 @@ function ensureAppSchema() {
       if (!existing.has(name)) db.run(`ALTER TABLE stats ADD COLUMN ${name} ${type}`);
     });
   } catch (e) { console.warn("stats migration skipped:", e); }
+  ensureEquipmentMarchColumns(db);
+}
+
+function ensureEquipmentMarchColumns(targetDb = db) {
+  if (!targetDb) return;
+  try {
+    const table = targetDb.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='equipment'");
+    if (!table.length || !table[0].values.length) return;
+
+    const cols = targetDb.exec("PRAGMA table_info(equipment)");
+    const existing = new Set(cols.length ? cols[0].values.map(r => r[1]) : []);
+
+    for (let mi = 7; mi < MARCH_COUNT; mi++) {
+      for (const slot of EQUIP_SLOTS) {
+        const defs = [
+          [colKey(slot.key, mi), "TEXT"],
+          [lvlKey(slot.key, mi), "INTEGER"],
+          [talKey(slot.key, mi), "TEXT"],
+        ];
+        for (const [name, type] of defs) {
+          if (!existing.has(name)) {
+            targetDb.run(`ALTER TABLE equipment ADD COLUMN ${name} ${type}`);
+            existing.add(name);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("equipment march migration skipped:", e);
+  }
 }
 
 farmFileInput?.addEventListener("change", updateImportButtons);
@@ -814,6 +845,20 @@ function importToText(v, fallback = "") {
   return String(v).trim();
 }
 
+function headerMap(headers) {
+  const map = {};
+  headers.forEach((header, idx) => {
+    const key = String(header ?? "").trim();
+    if (key) map[key] = idx;
+  });
+  return map;
+}
+
+function rowValue(row, headers, columnName, fallback = 0) {
+  const idx = headers[columnName];
+  return idx === undefined ? fallback : row[idx];
+}
+
 function normalizeImportDate(sheetName) {
   const name = String(sheetName);
   if (name.includes("_") && name.length === 10) {
@@ -932,6 +977,7 @@ async function importKvkWorkbook() {
 
       for (const sheetName of workbook.SheetNames) {
         const rows = sheetRows(workbook, sheetName, { header: 1 });
+        const headers = headerMap(rows[0] || []);
         const snapshotDate = normalizeImportDate(sheetName);
 
         db.run(
@@ -947,10 +993,9 @@ async function importKvkWorkbook() {
         snapshotCount++;
 
         for (const row of rows.slice(1)) {
-          const governorId = importToInt(row[0]);
+          const governorId = importToInt(rowValue(row, headers, "ID"));
           if (!governorId) continue;
-          const name = importToText(row[1], "");
-          const hasRollupCols = row.length > 20;
+          const name = importToText(rowValue(row, headers, "Name", ""), "");
 
           db.run(
             `INSERT OR IGNORE INTO governors (governor_id, kingdom, name)
@@ -972,25 +1017,25 @@ async function importKvkWorkbook() {
             [
               snapshotId,
               String(governorId),
-              importToInt(row[2]),
-              importToInt(row[14]),
-              importToInt(row[12]),
-              importToInt(row[13]),
-              importToInt(row[15]),
-              importToInt(row[16]),
-              importToInt(row[3]),
-              importToInt(row[4]),
-              importToInt(row[5]),
-              importToInt(row[6]),
-              importToInt(row[7]),
-              importToInt(row[8]),
-              importToFloat(row[9]),
-              importToInt(hasRollupCols ? row[10] : row[7]),
-              importToInt(hasRollupCols ? row[11] : row[8]),
-              importToFloat(hasRollupCols ? row[12] : row[9]),
-              importToText(hasRollupCols ? row[13] : row[10], "NO"),
-              importToText(hasRollupCols ? row[14] : row[11], "OK"),
-              importToInt(hasRollupCols ? row[20] : row[17]),
+              importToInt(rowValue(row, headers, "Power")),
+              importToInt(rowValue(row, headers, "Killpoints")),
+              importToInt(rowValue(row, headers, "T4 Kills")),
+              importToInt(rowValue(row, headers, "T5 Kills")),
+              importToInt(rowValue(row, headers, "Deads")),
+              importToInt(rowValue(row, headers, "Power diff")),
+              importToInt(rowValue(row, headers, "KP gained")),
+              importToInt(rowValue(row, headers, "T4 gained")),
+              importToInt(rowValue(row, headers, "T5 gained")),
+              importToInt(rowValue(row, headers, "Deads gained")),
+              importToInt(rowValue(row, headers, "Min DKP")),
+              importToInt(rowValue(row, headers, "DKP")),
+              importToFloat(rowValue(row, headers, "DKP%")),
+              importToInt(rowValue(row, headers, "Sum Min DKP", rowValue(row, headers, "Min DKP"))),
+              importToInt(rowValue(row, headers, "Sum DKP", rowValue(row, headers, "DKP"))),
+              importToFloat(rowValue(row, headers, "Sum DKP%", rowValue(row, headers, "DKP%"))),
+              importToText(rowValue(row, headers, "Vacation", "NO"), "NO"),
+              importToText(rowValue(row, headers, "Status", "OK"), "OK"),
+              importToInt(rowValue(row, headers, "Acclaim")),
             ]
           );
           statCount++;
@@ -1039,6 +1084,22 @@ function renderActiveTab() {
   else if (activeTab === "armaments") renderArmamentsGrid();
   else if (activeTab === "farmImport" || activeTab === "kvkImport") updateImportButtons();
 }
+
+function renderMarchTabs() {
+  const tabs = document.getElementById("marchTabs");
+  if (!tabs) return;
+  tabs.innerHTML = "";
+  for (let i = 1; i <= MARCH_COUNT; i++) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "eq-tab" + (i === currentMarch ? " active" : "");
+    button.dataset.march = String(i);
+    button.textContent = `March ${i}`;
+    tabs.appendChild(button);
+  }
+}
+
+renderMarchTabs();
 
 document.getElementById("marchTabs").addEventListener("click", e => {
   const tab = e.target.closest(".eq-tab");
