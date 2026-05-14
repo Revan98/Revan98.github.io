@@ -108,6 +108,7 @@ async function loadAllSheetsCache() {
       s.acclaim
     FROM stats s
     JOIN governors g ON g.governor_id=s.governor_id
+      AND g.kingdom='${kd}'
     WHERE s.snapshot_id=${lastSnap}
       AND upper(coalesce(s.vacation, 'NO')) != 'YES'
   `)[0];
@@ -582,7 +583,7 @@ loadAllSheetsCache().then(() => {
   gridApi.setGridOption("rowData", rowData);
 
   const sortedByDKP = [...rows]
-    .sort((a, b) => Number(b[12]) - Number(a[12]))
+	.sort((a, b) => Number(b[COL_table.DKP]) - Number(a[COL_table.DKP]))
     .slice(0, 3);
 
   renderTopPlayers(sortedByDKP);
@@ -624,10 +625,10 @@ function renderTotals(rows = []) {
   container.innerHTML = "";
 
   const defs = [
-    { label: "Total T4 kills", col: 7 },
-    { label: "Total T5 kills", col: 9 },
-    { label: "Total Deads", col: 11 },
-    { label: "Total KP", col: 5 },
+	{ label: "Total T4 kills", col: COL_table.T4_DIFF },
+    { label: "Total T5 kills", col: COL_table.T5_DIFF },
+    { label: "Total Deads", col: COL_table.DEADS_DIFF },
+    { label: "Total KP", col: COL_table.KP_DIFF },
   ];
 
   defs.forEach(({ label, col }) => {
@@ -899,6 +900,7 @@ function loadFarmKvKStats(farmIds) {
         s.acclaim
       FROM stats s
       JOIN governors g ON g.governor_id = s.governor_id
+        AND g.kingdom='${kd}'
       WHERE s.snapshot_id=${snapId}
         AND CAST(s.governor_id AS INTEGER) IN (${idList})
         AND upper(coalesce(s.vacation, 'NO')) != 'YES'
