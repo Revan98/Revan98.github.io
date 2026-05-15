@@ -347,6 +347,9 @@ const gridOptions = {
       flex: 1,
       minWidth: 135,
       cellClass: "metric-stack-cell",
+      comparator: (a, b, nodeA, nodeB) =>
+        (Number(nodeA.data?.sumMinDkp) || 0) -
+        (Number(nodeB.data?.sumMinDkp) || 0),
       tooltipValueGetter: () => "with farms\nwithout farms",
       cellRenderer: (p) =>
         renderMetricStack(p.value, p.data?.sumMinDkp, formatNumber),
@@ -360,6 +363,9 @@ const gridOptions = {
       flex: 1,
       minWidth: 130,
       cellClass: "metric-stack-cell",
+      comparator: (a, b, nodeA, nodeB) =>
+        (Number(nodeA.data?.sumDkp) || 0) -
+        (Number(nodeB.data?.sumDkp) || 0),
       tooltipValueGetter: () => "with farms\nwithout farms",
       cellRenderer: (p) =>
         renderMetricStack(p.value, p.data?.sumDkp, formatNumber),
@@ -372,6 +378,9 @@ const gridOptions = {
       flex: 1,
       minWidth: 120,
       cellClass: "metric-stack-cell",
+      comparator: (a, b, nodeA, nodeB) =>
+        (Number(nodeA.data?.sumDkpPercent) || 0) -
+        (Number(nodeB.data?.sumDkpPercent) || 0),
       tooltipValueGetter: () => "with farms\nwithout farms",
       cellRenderer: (p) =>
         renderMetricStack(p.value, p.data?.sumDkpPercent, formatPercent),
