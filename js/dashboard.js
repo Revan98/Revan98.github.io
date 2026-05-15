@@ -193,6 +193,11 @@ function formatNumber(value) {
   return Number(value || 0).toLocaleString("en-US");
 }
 
+function formatSignedNumber(value) {
+  const n = Number(value) || 0;
+  return `${n >= 0 ? "+" : ""}${n.toLocaleString("en-US")}`;
+}
+
 function formatPercent(value) {
   const n = Number(value);
   return Number.isFinite(n) ? `${(n * 100).toFixed(2)}%` : "";
@@ -203,8 +208,38 @@ function renderMetricStack(baseValue, sumValue, formatter) {
   const sum = formatter(sumValue);
   return `
     <div class="metric-stack">
-      <div class="metric-base">${base}</div>
-      <div class="metric-rollup">${sum}</div>
+      <div class="metric-base">${sum}</div>
+      <div class="metric-rollup">${base}</div>
+    </div>
+  `;
+}
+
+function renderTroopDiffStack(t4Diff, t5Diff) {
+  const t4 = Number(t4Diff) || 0;
+  const t5 = Number(t5Diff) || 0;
+  return `
+    <div class="troop-diff-stack">
+      <div class="${t4 >= 0 ? "diff-positive" : "diff-negative"}">
+        <span class="troop-diff-label">T4</span>${formatSignedNumber(t4)}
+      </div>
+      <div class="${t5 >= 0 ? "diff-positive" : "diff-negative"}">
+        <span class="troop-diff-label">T5</span>${formatSignedNumber(t5)}
+      </div>
+    </div>
+  `;
+}
+
+function renderDeadsPowerDiffStack(deadsDiff, powerDiff) {
+  const deads = Number(deadsDiff) || 0;
+  const power = Number(powerDiff) || 0;
+  return `
+    <div class="troop-diff-stack">
+      <div class="${deads >= 0 ? "diff-positive" : "diff-negative"}">
+        <span class="troop-diff-label">Dead</span>${formatSignedNumber(deads)}
+      </div>
+      <div class="${power >= 0 ? "diff-positive" : "diff-negative"}">
+        <span class="troop-diff-label">Pwr</span>${formatSignedNumber(power)}
+      </div>
     </div>
   `;
 }
@@ -257,27 +292,6 @@ const gridOptions = {
     },
 
     {
-      headerName: "Power",
-      field: "powerDiff",
-      comparator: (a, b) => a - b,
-      flex: 1,
-      minWidth: 100,
-      valueFormatter: (params) => {
-        const v = Number(params.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
-      },
-
-      cellClass: (params) =>
-        Number(params.value) >= 0 ? "diff-positive" : "diff-negative",
-
-      tooltipValueGetter: (params) => {
-        const base = Number(params.data?.power || 0).toLocaleString("en-US");
-        return `Starting Power: ${base}`;
-      },
-
-      getQuickFilterText: () => "",
-    },
-    {
       headerName: "Killpoints",
       field: "killPointsDiff",
       flex: 1,
@@ -298,56 +312,31 @@ const gridOptions = {
       getQuickFilterText: () => "",
     },
     {
-      headerName: "T4",
+      headerName: "T4 / T5",
       field: "t4Diff",
       flex: 1,
-      minWidth: 100,
-      valueFormatter: (p) => {
-        const v = Number(p.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
-      },
-
-      cellClass: (p) =>
-        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
-
+      minWidth: 115,
+      cellClass: "metric-stack-cell",
+      comparator: (a, b, nodeA, nodeB) =>
+        (Number(nodeA.data?.t4Diff) || 0) +
+        (Number(nodeA.data?.t5Diff) || 0) -
+        ((Number(nodeB.data?.t4Diff) || 0) + (Number(nodeB.data?.t5Diff) || 0)),
+      cellRenderer: (p) => renderTroopDiffStack(p.value, p.data?.t5Diff),
       tooltipValueGetter: (p) =>
-        `Starting T4: ${Number(p.data?.t4 || 0).toLocaleString("en-US")}`,
+        `Starting T4: ${Number(p.data?.t4 || 0).toLocaleString("en-US")}\nStarting T5: ${Number(p.data?.t5 || 0).toLocaleString("en-US")}`,
 
       getQuickFilterText: () => "",
     },
     {
-      headerName: "T5",
-      field: "t5Diff",
-      flex: 1,
-      minWidth: 100,
-      valueFormatter: (p) => {
-        const v = Number(p.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
-      },
-
-      cellClass: (p) =>
-        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
-
-      tooltipValueGetter: (p) =>
-        `Starting T5: ${Number(p.data?.t5 || 0).toLocaleString("en-US")}`,
-
-      getQuickFilterText: () => "",
-    },
-    {
-      headerName: "Deads",
+      headerName: "Deads / Power",
       field: "deadsDiff",
       flex: 1,
-      minWidth: 100,
-      valueFormatter: (p) => {
-        const v = Number(p.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
-      },
-
-      cellClass: (p) =>
-        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
-
+      minWidth: 125,
+      sortable: false,
+      cellClass: "metric-stack-cell",
+      cellRenderer: (p) => renderDeadsPowerDiffStack(p.value, p.data?.powerDiff),
       tooltipValueGetter: (p) =>
-        `Starting deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}`,
+        `Starting deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}\nStarting Power: ${Number(p.data?.power || 0).toLocaleString("en-US")}`,
 
       getQuickFilterText: () => "",
     },
@@ -358,7 +347,7 @@ const gridOptions = {
       flex: 1,
       minWidth: 135,
       cellClass: "metric-stack-cell",
-      tooltipValueGetter: () => "without farms\nwith farms",
+      tooltipValueGetter: () => "with farms\nwithout farms",
       cellRenderer: (p) =>
         renderMetricStack(p.value, p.data?.sumMinDkp, formatNumber),
     },
@@ -371,7 +360,7 @@ const gridOptions = {
       flex: 1,
       minWidth: 130,
       cellClass: "metric-stack-cell",
-      tooltipValueGetter: () => "without farms\nwith farms",
+      tooltipValueGetter: () => "with farms\nwithout farms",
       cellRenderer: (p) =>
         renderMetricStack(p.value, p.data?.sumDkp, formatNumber),
     },
@@ -383,7 +372,7 @@ const gridOptions = {
       flex: 1,
       minWidth: 120,
       cellClass: "metric-stack-cell",
-      tooltipValueGetter: () => "without farms\nwith farms",
+      tooltipValueGetter: () => "with farms\nwithout farms",
       cellRenderer: (p) =>
         renderMetricStack(p.value, p.data?.sumDkpPercent, formatPercent),
     },
@@ -583,7 +572,7 @@ loadAllSheetsCache().then(() => {
   gridApi.setGridOption("rowData", rowData);
 
   const sortedByDKP = [...rows]
-	.sort((a, b) => Number(b[COL_table.DKP]) - Number(a[COL_table.DKP]))
+    .sort((a, b) => Number(b[COL_table.DKP]) - Number(a[COL_table.DKP]))
     .slice(0, 3);
 
   renderTopPlayers(sortedByDKP);
@@ -625,10 +614,10 @@ function renderTotals(rows = []) {
   container.innerHTML = "";
 
   const defs = [
-	{ label: "Total T4 kills", col: COL_table.T4_DIFF },
-    { label: "Total T5 kills", col: COL_table.T5_DIFF },
-    { label: "Total Deads", col: COL_table.DEADS_DIFF },
-    { label: "Total KP", col: COL_table.KP_DIFF },
+    { label: "Total T4 kills", col: COL_table.T4 },
+    { label: "Total T5 kills", col: COL_table.T5 },
+    { label: "Total Deads", col: COL_table.DEADS },
+    { label: "Total KP", col: COL_table.KP },
   ];
 
   defs.forEach(({ label, col }) => {
