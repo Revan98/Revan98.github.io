@@ -105,6 +105,8 @@ async function loadAllSheetsCache() {
       coalesce(s.sum_min_dkp, s.min_dkp) AS sum_min_dkp,
       coalesce(s.sum_dkp, s.dkp) AS sum_dkp,
       coalesce(s.sum_dkp_percent, s.dkp_percent) AS sum_dkp_percent,
+      coalesce(s.vacation, 'NO') AS vacation,
+      coalesce(s.status, 'OK') AS status,
       s.acclaim
     FROM stats s
     JOIN governors g ON g.governor_id=s.governor_id
@@ -160,7 +162,9 @@ const COL_table = {
   SUM_MIN_DKP: 15,
   SUM_DKP: 16,
   SUM_DKP_PERCENT: 17,
-  ACCLAIM: 18,
+  VACATION: 18,
+  STATUS: 19,
+  ACCLAIM: 20,
 };
 
 let gridApi;
@@ -185,6 +189,8 @@ function buildRowDataFromSheet(rows) {
     sumMinDkp: r[COL_table.SUM_MIN_DKP],
     sumDkp: r[COL_table.SUM_DKP],
     sumDkpPercent: r[COL_table.SUM_DKP_PERCENT],
+    vacation: r[COL_table.VACATION],
+    status: r[COL_table.STATUS],
     acclaim: r[COL_table.ACCLAIM],
   }));
 }
@@ -201,6 +207,57 @@ function formatSignedNumber(value) {
 function formatPercent(value) {
   const n = Number(value);
   return Number.isFinite(n) ? `${(n * 100).toFixed(2)}%` : "";
+}
+
+function formatCsvPercent(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? String(n).replace(".", ",") : "";
+}
+
+const DKP_EXPORT_COLUMNS = [
+  { headerName: "ID", field: "id" },
+  { headerName: "Name", field: "name" },
+  { headerName: "Power", field: "power" },
+  { headerName: "KP gained", field: "killPointsDiff" },
+  { headerName: "T4 gained", field: "t4Diff" },
+  { headerName: "T5 gained", field: "t5Diff" },
+  { headerName: "Deads gained", field: "deadsDiff" },
+  { headerName: "Min DKP", field: "minDkp" },
+  { headerName: "DKP", field: "dkp" },
+  { headerName: "DKP%", field: "dkpPercent", valueFormatter: (p) => formatCsvPercent(p.value) },
+  { headerName: "Sum Min DKP", field: "sumMinDkp" },
+  { headerName: "Sum DKP", field: "sumDkp" },
+  { headerName: "Sum DKP%", field: "sumDkpPercent", valueFormatter: (p) => formatCsvPercent(p.value) },
+  { headerName: "Vacation", field: "vacation" },
+  { headerName: "Status", field: "status" },
+  { headerName: "T4 Kills", field: "t4" },
+  { headerName: "T5 Kills", field: "t5" },
+  { headerName: "Killpoints", field: "killPoints" },
+  { headerName: "Deads", field: "deads" },
+  { headerName: "Power diff", field: "powerDiff" },
+  { headerName: "Acclaim", field: "acclaim" },
+].map((column) => ({
+  ...column,
+  colId: `export_${column.field}`,
+  hide: true,
+  suppressColumnsToolPanel: true,
+  getQuickFilterText: () => "",
+}));
+
+function getExportFileName() {
+  const kd = getKDFromURL() || "dkp";
+  const lastSheet = SheetCache.sheetsList?.[SheetCache.sheetsList.length - 1] || "export";
+  return `DKP_${kd}_${String(lastSheet).replaceAll("-", "_")}.csv`;
+}
+
+function exportDkpCsv() {
+  if (!gridApi) return;
+  gridApi.exportDataAsCsv({
+    fileName: getExportFileName(),
+    columnKeys: DKP_EXPORT_COLUMNS.map((column) => column.colId),
+    columnSeparator: ";",
+    exportedRows: "all",
+  });
 }
 
 function renderMetricStack(baseValue, sumValue, formatter) {
@@ -394,6 +451,7 @@ const gridOptions = {
 
       valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
     },
+    ...DKP_EXPORT_COLUMNS,
   ],
   enableCellTextSelection: true,
   ensureDomOrder: true,
@@ -416,6 +474,8 @@ function onFilterTextBoxChanged() {
   const input = document.getElementById("quickFilter");
   gridApi.setGridOption("quickFilterText", input.value);
 }
+
+document.getElementById("export-csv-btn")?.addEventListener("click", exportDkpCsv);
 
 let inlineChart = null;
 let selectedGovernorId = null;
