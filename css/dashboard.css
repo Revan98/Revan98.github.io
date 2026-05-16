@@ -638,7 +638,8 @@ footer {
   width: 100%;
 }
 
-.farms-overview-btn {
+.farms-overview-btn,
+.export-csv-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -653,7 +654,8 @@ footer {
   transition: background 0.2s, border-color 0.2s;
   flex-shrink: 0;
 }
-.farms-overview-btn:hover {
+.farms-overview-btn:hover,
+.export-csv-btn:hover {
   background: var(--row-hover-bg);
   border-color: var(--chart-line);
 }
