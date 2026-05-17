@@ -862,6 +862,11 @@ function loadGovHistory(govId) {
   const kd = getKDFromURL();
   const safeGovId = normalizeNumericId(govId);
   if (!kd || !safeGovId) return [];
+  const isMainAccount = resolveFarmMainId(safeGovId) === safeGovId;
+  const farmIds = isMainAccount
+    ? getGovernorFarmIds(safeGovId)
+    : [];
+  const farmIdList = buildNumericInList(farmIds);
 
   const kvksRes = db.exec(`
     SELECT id, kvk_number
@@ -896,8 +901,30 @@ function loadGovHistory(govId) {
     if (!statsRes.length) continue;
 
     const r = statsRes[0].values[0];
+    let farmSums = null;
+    if (farmIdList) {
+      const farmStatsRes = db.exec(`
+        SELECT
+          coalesce(sum(s.power_diff), 0),
+          coalesce(sum(s.kp_diff), 0),
+          coalesce(sum(s.t4_diff), 0),
+          coalesce(sum(s.t5_diff), 0),
+          coalesce(sum(s.deads_diff), 0),
+          coalesce(sum(s.min_dkp), 0),
+          coalesce(sum(s.dkp), 0),
+          coalesce(sum(s.dkp_percent), 0),
+          coalesce(sum(s.acclaim), 0)
+        FROM stats s
+        WHERE s.snapshot_id=${snapId}
+          AND CAST(s.governor_id AS INTEGER) IN (${farmIdList})
+          AND upper(coalesce(s.vacation, 'NO')) != 'YES'
+      `);
+      farmSums = farmStatsRes.length ? farmStatsRes[0].values[0] : null;
+    }
+
     results.push({
       kvk: `KvK ${kvkNumber}`,
+      hasFarmRollup: isMainAccount && Boolean(farmIdList),
       powerDiff: r[0],
       kpDiff: r[1],
       t4Diff: r[2],
@@ -906,10 +933,16 @@ function loadGovHistory(govId) {
       minDkp: r[5],
       dkp: r[6],
       dkpPercent: r[7],
-      sumMinDkp: r[8],
-      sumDkp: r[9],
-      sumDkpPercent: r[10],
       acclaim: r[11],
+      sumPowerDiff: Number(r[0] || 0) + Number(farmSums?.[0] || 0),
+      sumKpDiff: Number(r[1] || 0) + Number(farmSums?.[1] || 0),
+      sumT4Diff: Number(r[2] || 0) + Number(farmSums?.[2] || 0),
+      sumT5Diff: Number(r[3] || 0) + Number(farmSums?.[3] || 0),
+      sumDeadsDiff: Number(r[4] || 0) + Number(farmSums?.[4] || 0),
+      sumMinDkp: Number(r[5] || 0) + Number(farmSums?.[5] || 0),
+      sumDkp: Number(r[6] || 0) + Number(farmSums?.[6] || 0),
+      sumDkpPercent: Number(r[7] || 0) + Number(farmSums?.[7] || 0),
+      sumAcclaim: Number(r[11] || 0) + Number(farmSums?.[8] || 0),
     });
   }
   return results;
@@ -989,11 +1022,14 @@ function loadFarmKvKStats(farmIds) {
 function loadGovernorFarms(govId) {
   const safeGovId = normalizeNumericId(govId);
   if (!safeGovId) return [];
+  const mainId = resolveFarmMainId(safeGovId);
+  if (!mainId) return [];
 
   const res = db.exec(`
     SELECT name, player_id, power, killpoints, deads, ch
     FROM farm_accounts
-    WHERE main_id='${safeGovId}'
+    WHERE main_id=${mainId}
+      AND acc_type='farm'
     ORDER BY power DESC
   `);
 
@@ -1009,10 +1045,128 @@ function loadGovernorFarms(govId) {
   }));
 }
 
+function loadFarmOwner(govId) {
+  const safeGovId = normalizeNumericId(govId);
+  if (!safeGovId) return null;
+
+  const res = db.exec(`
+    SELECT
+      main.player_id,
+      main.name,
+      main.power,
+      main.killpoints,
+      main.deads,
+      main.ch
+    FROM farm_accounts farm
+    JOIN farm_accounts main ON main.player_id=farm.main_id
+      AND main.acc_type='main'
+    WHERE farm.player_id=${safeGovId}
+      AND farm.acc_type='farm'
+    LIMIT 1
+  `);
+
+  if (!res.length || !res[0].values.length) return null;
+
+  const r = res[0].values[0];
+  return {
+    id: r[0] ?? "",
+    name: r[1] ?? "",
+    power: Number(r[2] ?? 0),
+    killpoints: Number(r[3] ?? 0),
+    deads: Number(r[4] ?? 0),
+    ch: r[5] ?? "",
+  };
+}
+
+function resolveFarmMainId(govId) {
+  const safeGovId = normalizeNumericId(govId);
+  if (!safeGovId) return null;
+
+  const res = db.exec(`
+    SELECT main_id, acc_type
+    FROM farm_accounts
+    WHERE player_id=${safeGovId}
+    LIMIT 1
+  `);
+
+  if (!res.length || !res[0].values.length) return safeGovId;
+
+  const [mainId, accType] = res[0].values[0];
+  const safeMainId = normalizeNumericId(mainId);
+  return String(accType || "").toLowerCase() === "farm" && safeMainId
+    ? safeMainId
+    : safeGovId;
+}
+
+function getGovernorFarmIds(govId) {
+  return loadGovernorFarms(govId).map((farm) => farm.id);
+}
+
 function _fmtDiff(v) {
   const n = Number(v) || 0;
   const cls = n >= 0 ? "diff-positive" : "diff-negative";
   return `<span class="${cls}">${n >= 0 ? "+" : ""}${n.toLocaleString("en-US")}</span>`;
+}
+
+function renderDiffStack(baseValue, sumValue) {
+  return renderMetricStack(baseValue, sumValue, (value) => {
+    const n = Number(value) || 0;
+    return `${n >= 0 ? "+" : ""}${n.toLocaleString("en-US")}`;
+  });
+}
+
+function renderMaybeRollupStack(baseValue, sumValue, formatter, showRollup) {
+  return showRollup
+    ? renderMetricStack(baseValue, sumValue, formatter)
+    : formatter(baseValue);
+}
+
+function renderPairedDiffStack(firstLabel, firstBase, firstSum, secondLabel, secondBase, secondSum, showRollup = true) {
+  return `
+    <div class="modal-pair-stack">
+      <div class="modal-pair-line">
+        <span class="troop-diff-label">${escapeHtml(firstLabel)}</span>
+        ${showRollup ? renderDiffStack(firstBase, firstSum) : _fmtDiff(firstBase)}
+      </div>
+      <div class="modal-pair-line">
+        <span class="troop-diff-label">${escapeHtml(secondLabel)}</span>
+        ${showRollup ? renderDiffStack(secondBase, secondSum) : _fmtDiff(secondBase)}
+      </div>
+    </div>
+  `;
+}
+
+function renderFarmOwnerInfo(owner) {
+  if (!owner) return "";
+
+  return renderCollapsibleSection(
+    "Main Account Owner",
+    `
+      <table class="gov-modal-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Power</th>
+            <th>Kill Points</th>
+            <th>Deads</th>
+            <th>CH</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="kvk-label">${escapeHtml(owner.name)}</td>
+            <td>${escapeHtml(owner.id)}</td>
+            <td>${Number(owner.power || 0).toLocaleString("en-US")}</td>
+            <td>${Number(owner.killpoints || 0).toLocaleString("en-US")}</td>
+            <td>${Number(owner.deads || 0).toLocaleString("en-US")}</td>
+            <td>${escapeHtml(owner.ch)}</td>
+          </tr>
+        </tbody>
+      </table>
+    `,
+    true,
+  );
 }
 
 function renderModalTable(rows) {
@@ -1021,11 +1175,9 @@ function renderModalTable(rows) {
 
   const headers = [
     "KvK",
-    "Power",
-    "Kill Points",
-    "T4",
-    "T5",
-    "Deads",
+    "Killpoints",
+    "T4 / T5",
+    "Deads / Power",
     "Min DKP",
     "DKP",
     "DKP %",
@@ -1037,15 +1189,13 @@ function renderModalTable(rows) {
       (r) => `
     <tr>
       <td class="kvk-label">${escapeHtml(r.kvk)}</td>
-      <td>${_fmtDiff(r.powerDiff)}</td>
-      <td>${_fmtDiff(r.kpDiff)}</td>
-      <td>${_fmtDiff(r.t4Diff)}</td>
-      <td>${_fmtDiff(r.t5Diff)}</td>
-      <td>${_fmtDiff(r.deadsDiff)}</td>
-      <td>${renderMetricStack(r.minDkp, r.sumMinDkp, formatNumber)}</td>
-      <td>${renderMetricStack(r.dkp, r.sumDkp, formatNumber)}</td>
-      <td>${renderMetricStack(r.dkpPercent, r.sumDkpPercent, formatPercent)}</td>
-      <td>${Number(r.acclaim || 0).toLocaleString("en-US")}</td>
+      <td>${r.hasFarmRollup ? renderDiffStack(r.kpDiff, r.sumKpDiff) : _fmtDiff(r.kpDiff)}</td>
+      <td>${renderPairedDiffStack("T4", r.t4Diff, r.sumT4Diff, "T5", r.t5Diff, r.sumT5Diff, r.hasFarmRollup)}</td>
+      <td>${renderPairedDiffStack("Dead", r.deadsDiff, r.sumDeadsDiff, "Pwr", r.powerDiff, r.sumPowerDiff, r.hasFarmRollup)}</td>
+      <td>${renderMaybeRollupStack(r.minDkp, r.sumMinDkp, formatNumber, r.hasFarmRollup)}</td>
+      <td>${renderMaybeRollupStack(r.dkp, r.sumDkp, formatNumber, r.hasFarmRollup)}</td>
+      <td>${renderMaybeRollupStack(r.dkpPercent, r.sumDkpPercent, formatPercent, r.hasFarmRollup)}</td>
+      <td>${renderMaybeRollupStack(r.acclaim, r.sumAcclaim, formatNumber, r.hasFarmRollup)}</td>
     </tr>`,
     )
     .join("");
@@ -1327,11 +1477,9 @@ function renderFarmKvKTable(rows) {
   const headers = [
     "Name",
     "ID",
-    "Power",
-    "Kill Points",
-    "T4",
-    "T5",
-    "Deads",
+    "Killpoints",
+    "T4 / T5",
+    "Deads / Power",
     "DKP",
     "DKP %",
     "Acclaim",
@@ -1347,11 +1495,9 @@ function renderFarmKvKTable(rows) {
       <tr>
         <td class="kvk-label">${escapeHtml(r.name)}</td>
         <td>${escapeHtml(r.id)}</td>
-        <td>${_fmtDiff(r.powerDiff)}</td>
         <td>${_fmtDiff(r.kpDiff)}</td>
-        <td>${_fmtDiff(r.t4Diff)}</td>
-        <td>${_fmtDiff(r.t5Diff)}</td>
-        <td>${_fmtDiff(r.deadsDiff)}</td>
+        <td>${renderTroopDiffStack(r.t4Diff, r.t5Diff)}</td>
+        <td>${renderDeadsPowerDiffStack(r.deadsDiff, r.powerDiff)}</td>
         <td>${Number(r.dkp || 0).toLocaleString("en-US")}</td>
         <td>${isNaN(Number(r.dkpPercent)) ? "" : (Number(r.dkpPercent) * 100).toFixed(2) + "%"}</td>
         <td>${Number(r.acclaim || 0).toLocaleString("en-US")}</td>
@@ -1405,6 +1551,7 @@ function openGovModal(govId, govName) {
     };
     try {
       const history = loadGovHistory(govId);
+      const farmOwner = loadFarmOwner(govId);
       const farms   = loadGovernorFarms(govId);
       const farmIds = farms.map((f) => f.id);
       const farmKvK = loadFarmKvKStats(farmIds);
@@ -1421,6 +1568,7 @@ function openGovModal(govId, govName) {
         '  <button onclick="collapseAllSections()">Collapse All</button>' +
         '</div>' +
 		chartSection +
+        safeRender("farmOwner", () => renderFarmOwnerInfo(farmOwner)) +
         safeRender("history",   () => renderCollapsibleSection("Governor History", renderModalTable(history), false)) +
         safeRender("farms",     () => renderFarmsTable(farms)) +
         safeRender("farmKvK",   () => renderFarmKvKTable(farmKvK)) +
