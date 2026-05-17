@@ -192,6 +192,35 @@
 .troop-diff-stack > div {
   white-space: nowrap;
 }
+.modal-pair-stack {
+  display: flex;
+  min-height: 58px;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  line-height: 1.15;
+}
+.modal-pair-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.modal-pair-line .metric-stack {
+  min-height: 0;
+  width: auto;
+  align-items: flex-start;
+  gap: 1px;
+}
+.modal-pair-line .metric-base {
+  font-size: 13px;
+}
+.modal-pair-line .metric-rollup {
+  font-size: 11.5px;
+}
 .troop-diff-label {
   display: inline-block;
   min-width: 22px;
