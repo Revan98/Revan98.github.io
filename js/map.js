@@ -35,11 +35,19 @@ const CUSTOM_PIN_KEY = "interactiveMapCustomPins";
 const MARKER_POSITIONS_KEY = "interactiveMapMarkerPositions";
 const MARKER_NOTES_KEY = "interactiveMapMarkerNotes";
 const MAP_LABELS_KEY = "interactiveMapLabels";
+const MAP_LABEL_SECTIONS_KEY = "interactiveMapLabelSections";
 const MAP_STAGES_KEY = "interactiveMapStages";
 const TEAM_PLAYERS_KEY = "interactiveMapTeamPlayers";
 const TEAM_LAYOUT_KEY = "interactiveMapTeamLayout";
 const LANE_PLANS_KEY = "interactiveMapLanePlans";
 const ARK_SKILLS_KEY = "interactiveMapArkSkills";
+
+const MAP_LABEL_SECTIONS = [
+  { key: "top", label: "Top" },
+  { key: "midTop", label: "Mid Top" },
+  { key: "midBottom", label: "Mid Bottom" },
+  { key: "bottom", label: "Bottom" },
+];
 
 let currentFilter = "all";
 let selectedMarkerId = MAP_MARKERS[0].id;
@@ -53,9 +61,11 @@ let teamLayout = loadTeamLayout();
 let lanePlans;
 let activeLanePlan = "overview";
 let selectedArkSkills;
+let visibleLabelSections = loadVisibleLabelSections();
 let addPinMode = false;
 let addLabelMode = false;
 let moveMarkersMode = false;
+let activeLabelShape = "bubble-left";
 let view = { scale: 1, x: 0, y: 0 };
 let dragState = null;
 let markerDragState = null;
@@ -64,6 +74,9 @@ let labelResizeState = null;
 let suppressMarkerClick = false;
 let editingLabelId = null;
 let labelContextMenu = null;
+
+const DEFAULT_LABEL_WIDTH = 10;
+const DEFAULT_LABEL_HEIGHT = 4;
 
 const navbar = document.getElementById("navbar");
 const hamburger = document.getElementById("hamburger");
@@ -75,11 +88,13 @@ const filterGroup = document.getElementById("filterGroup");
 const mapLayer = document.getElementById("mapLayer");
 const mapViewport = document.getElementById("mapViewport");
 const mapStage = document.getElementById("mapStage");
+const mapSectionControls = document.getElementById("mapSectionControls");
 const mapDetail = document.getElementById("mapDetail");
 const mapSearch = document.getElementById("mapSearch");
 const mapCoords = document.getElementById("mapCoords");
 const addPinBtn = document.getElementById("addPinBtn");
 const addLabelBtn = document.getElementById("addLabelBtn");
+const labelShapeSelect = document.getElementById("labelShapeSelect");
 const exportPngBtn = document.getElementById("exportPngBtn");
 const moveMarkersBtn = document.getElementById("moveMarkersBtn");
 const mapStageSwitcher = document.getElementById("mapStageSwitcher");
@@ -89,13 +104,16 @@ const tabButtons = document.querySelectorAll(".map-tab");
 const tabPanels = document.querySelectorAll(".tab-panel");
 const playerForm = document.getElementById("playerForm");
 const playerNameInput = document.getElementById("playerNameInput");
-const playerIdInput = document.getElementById("playerIdInput");
 const playersCsvInput = document.getElementById("playersCsvInput");
 const clearPlayersBtn = document.getElementById("clearPlayersBtn");
 const playerList = document.getElementById("playerList");
 const playerCount = document.getElementById("playerCount");
 const mapPlayerList = document.getElementById("mapPlayerList");
 const mapPlayerCount = document.getElementById("mapPlayerCount");
+const mapPlayerForm = document.getElementById("mapPlayerForm");
+const mapPlayerNameInput = document.getElementById("mapPlayerNameInput");
+const mapPlayersCsvInput = document.getElementById("mapPlayersCsvInput");
+const mapClearPlayersBtn = document.getElementById("mapClearPlayersBtn");
 const lanePlanTabs = document.getElementById("lanePlanTabs");
 const lanePlanWrap = document.getElementById("lanePlanWrap");
 const arkSkillSlots = document.getElementById("arkSkillSlots");
@@ -147,6 +165,7 @@ const BACKUP_KEYS = [
   MARKER_POSITIONS_KEY,
   MARKER_NOTES_KEY,
   MAP_LABELS_KEY,
+  MAP_LABEL_SECTIONS_KEY,
   MAP_STAGES_KEY,
   TEAM_PLAYERS_KEY,
   TEAM_LAYOUT_KEY,
@@ -161,26 +180,26 @@ lanePlans = loadLanePlans();
 selectedArkSkills = loadArkSkills();
 
 window.addEventListener("scroll", () => {
-  navbar.classList.toggle("scrolled", window.scrollY > 10);
+  navbar?.classList.toggle("scrolled", window.scrollY > 10);
 });
 
-hamburger.addEventListener("click", () => {
-  navLinks.classList.toggle("show");
+hamburger?.addEventListener("click", () => {
+  navLinks?.classList.toggle("show");
   hamburger.classList.toggle("open");
 });
 
 document.addEventListener("click", (e) => {
   hideLabelContextMenu();
-  if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+  if (hamburger && navLinks && !hamburger.contains(e.target) && !navLinks.contains(e.target)) {
     navLinks.classList.remove("show");
     hamburger.classList.remove("open");
   }
 });
 
-navLinks.querySelectorAll("a").forEach((link) => {
+navLinks?.querySelectorAll("a").forEach((link) => {
   link.addEventListener("click", () => {
     navLinks.classList.remove("show");
-    hamburger.classList.remove("open");
+    hamburger?.classList.remove("open");
   });
 });
 
@@ -198,10 +217,10 @@ function initTheme() {
     : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
   applyTheme(theme);
-  themeToggle.checked = theme === "dark";
+  if (themeToggle) themeToggle.checked = theme === "dark";
 }
 
-themeToggle.addEventListener("change", () => {
+themeToggle?.addEventListener("change", () => {
   applyTheme(themeToggle.checked ? "dark" : "light");
 });
 
@@ -220,7 +239,7 @@ function getMarkers() {
 }
 
 function getVisibleMarkers() {
-  const search = mapSearch.value.trim().toLowerCase();
+  const search = mapSearch?.value.trim().toLowerCase() || "";
   return getMarkers().filter((marker) => {
     const matchesType = currentFilter === "all" || marker.type === currentFilter;
     const matchesSearch = !search || `${marker.name} ${TYPE_LABELS[marker.type]} ${marker.note}`.toLowerCase().includes(search);
@@ -229,6 +248,7 @@ function getVisibleMarkers() {
 }
 
 function renderFilters() {
+  if (!filterGroup) return;
   filterGroup.innerHTML = "";
   Object.entries(TYPE_LABELS).forEach(([type, label]) => {
     const button = document.createElement("button");
@@ -244,53 +264,21 @@ function renderFilters() {
 }
 
 function renderMarkers() {
-  const visibleIds = new Set(getVisibleMarkers().map((marker) => marker.id));
   markerLayer.innerHTML = "";
-
-  getMarkers().forEach((marker) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = [
-      "map-marker",
-      `marker-${marker.type}`,
-      marker.id === selectedMarkerId ? "active" : "",
-      moveMarkersMode ? "editable" : "",
-      visibleIds.has(marker.id) ? "" : "hidden",
-    ].filter(Boolean).join(" ");
-    button.style.left = `${marker.x}%`;
-    button.style.top = `${marker.y}%`;
-    button.title = marker.name;
-    button.setAttribute("aria-label", marker.name);
-    button.addEventListener("pointerdown", (event) => {
-      event.stopPropagation();
-      if (!moveMarkersMode) return;
-      event.preventDefault();
-      startMarkerDrag(event, marker.id);
-    });
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      if (suppressMarkerClick) {
-        suppressMarkerClick = false;
-        return;
-      }
-      selectMarker(marker.id);
-      centerOnMarker(marker);
-    });
-    markerLayer.appendChild(button);
-  });
-
   renderMapLabels();
   renderMapStageControls();
 }
 
 function renderMapLabels() {
   getMapLabels().forEach((label) => {
+    if (!isLabelVisible(label)) return;
     const isEditing = editingLabelId === label.id;
     const item = document.createElement("div");
-    item.className = "map-label";
+    item.className = `map-label shape-${label.shape || "bubble-left"}`;
     item.style.left = `${label.x}%`;
     item.style.top = `${label.y}%`;
-    item.style.width = `${label.width || 16}%`;
+    item.style.width = `${label.width || DEFAULT_LABEL_WIDTH}%`;
+    item.style.height = `${label.height || DEFAULT_LABEL_HEIGHT}%`;
     item.innerHTML = `
       <textarea class="map-label-text" title="Edit label" rows="1" ${isEditing ? "" : "readonly"}>${escapeHtml(label.text)}</textarea>
       <span class="map-label-resize" title="Resize label"></span>
@@ -335,7 +323,7 @@ function renderMapLabels() {
       startLabelResize(event, label.id);
     });
     markerLayer.appendChild(item);
-    resizeMapLabelInput(labelText);
+    if (!label.height) resizeMapLabelInput(labelText);
     if (isEditing) {
       requestAnimationFrame(() => {
         labelText.focus();
@@ -345,7 +333,89 @@ function renderMapLabels() {
   });
 }
 
+function renderLabelSectionControls() {
+  if (!mapSectionControls) return;
+  mapSectionControls.innerHTML = "";
+  MAP_LABEL_SECTIONS.forEach((section) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `map-section-toggle${visibleLabelSections[section.key] ? " active" : ""}`;
+    button.textContent = section.label;
+    button.setAttribute("aria-pressed", String(Boolean(visibleLabelSections[section.key])));
+    button.title = `${section.label} labels`;
+    button.addEventListener("click", () => {
+      visibleLabelSections[section.key] = !visibleLabelSections[section.key];
+      saveVisibleLabelSections();
+      renderMarkers();
+      renderLabelSectionControls();
+    });
+    mapSectionControls.appendChild(button);
+  });
+}
+
+function getLabelSection(label) {
+  // Non-overlapping sections matching the annotated map outlines.
+  // Evaluated in priority order — first match wins.
+  //
+  // TOP (blue oval, top-right):
+  //   Shrine of Life (67.5,15.6), Sky Altar (80.8,27.9), Anubis2 (91.4,10)
+  //
+  // MID TOP (purple oval, right-center):
+  //   Desert Altar (54,29.8), Shrine of War (67.3,41.5)
+  //
+  // MID BOTTOM (red diagonal band, central ruins):
+  //   Shrine of War (28,47.3), Desert Altar (41.2,59.8)
+  //
+  // BOTTOM (black rectangle, bottom-left):
+  //   Sky Altar (13,58.4), Shrine of Life (25,75.3), Anubis1 (9.3,89.1)
+
+  const x = Number(label.x) || 0;
+  const y = Number(label.y) || 0;
+
+  // TOP: tight top-right oval
+  if (x > 62 && y < 32) return "top";
+
+  // MID TOP: right-side area, below/left of top
+  if (x > 48 && y < 48) return "midTop";
+
+  // MID BOTTOM: diagonal central band around the ruins
+  if (y < 62 && x > 22 && (x - y) > -28) return "midBottom";
+
+  // BOTTOM: explicit bounds from black outline — x < 52, y > 48
+  if (x < 42 && y > 48) return "bottom";
+  return null;
+}
+
+function isLabelSectionControlled(label) {
+  const nearestMarker = getNearestMarker(label);
+  return !nearestMarker || !["obelisk", "outpost"].includes(nearestMarker.type);
+}
+
+function getNearestMarker(label) {
+  const markers = getMarkers();
+  let nearest = null;
+  let nearestDistance = Infinity;
+  markers.forEach((marker) => {
+    const dx = Number(label.x) - marker.x;
+    const dy = Number(label.y) - marker.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance < nearestDistance) {
+      nearest = marker;
+      nearestDistance = distance;
+    }
+  });
+  return nearestDistance <= 8 ? nearest : null;
+}
+
+function isLabelVisible(label) {
+  if (!isLabelSectionControlled(label)) return true;
+  const sec = getLabelSection(label);
+  if (sec === null) return true; // outside all defined sections — always visible
+  return visibleLabelSections[sec];
+}
+
 function renderList() {
+  if (!markerList) return;
   const visibleMarkers = getVisibleMarkers();
   markerList.innerHTML = "";
 
@@ -371,6 +441,7 @@ function renderList() {
 }
 
 function renderDetail() {
+  if (!mapDetail) return;
   const marker = getMarkers().find((item) => item.id === selectedMarkerId);
   if (!marker) {
     mapDetail.innerHTML = '<div class="detail-empty">Select a marker</div>';
@@ -418,6 +489,7 @@ function render() {
   renderFilters();
   renderMarkers();
   renderList();
+  renderLabelSectionControls();
   renderDetail();
 }
 
@@ -457,8 +529,11 @@ function startLabelResize(event, labelId) {
     pointerId: event.pointerId,
     labelId,
     startX: event.clientX,
-    startWidth: label.width || 16,
+    startY: event.clientY,
+    startWidth: label.width || DEFAULT_LABEL_WIDTH,
+    startHeight: label.height || DEFAULT_LABEL_HEIGHT,
     layerWidth: mapLayer.getBoundingClientRect().width,
+    layerHeight: mapLayer.getBoundingClientRect().height,
     element: event.currentTarget.closest(".map-label"),
   };
   event.currentTarget.setPointerCapture(event.pointerId);
@@ -542,10 +617,13 @@ function resizeSelectedLabel(event) {
   if (!labelResizeState) return;
   const label = getMapLabels().find((item) => item.id === labelResizeState.labelId);
   if (!label) return;
-  const deltaPct = ((event.clientX - labelResizeState.startX) / labelResizeState.layerWidth) * 100;
-  label.width = Number(Math.min(42, Math.max(6, labelResizeState.startWidth + deltaPct)).toFixed(1));
+  const deltaXPct = ((event.clientX - labelResizeState.startX) / labelResizeState.layerWidth) * 100;
+  const deltaYPct = ((event.clientY - labelResizeState.startY) / labelResizeState.layerHeight) * 100;
+  label.width = Number(Math.min(42, Math.max(4, labelResizeState.startWidth + deltaXPct)).toFixed(1));
+  label.height = Number(Math.min(24, Math.max(2.4, labelResizeState.startHeight + deltaYPct)).toFixed(1));
   if (labelResizeState.element) {
     labelResizeState.element.style.width = `${label.width}%`;
+    labelResizeState.element.style.height = `${label.height}%`;
   }
   saveMapLabels();
 }
@@ -554,7 +632,7 @@ function updateCoords(event) {
   const point = getMapPoint(event);
   const x = Math.min(100, Math.max(0, point.x));
   const y = Math.min(100, Math.max(0, point.y));
-  mapCoords.textContent = `X ${x.toFixed(1)} / Y ${y.toFixed(1)}`;
+  if (mapCoords) mapCoords.textContent = `X ${x.toFixed(1)} / Y ${y.toFixed(1)}`;
 }
 
 function addCustomPin(event) {
@@ -580,18 +658,22 @@ function addCustomPin(event) {
   render();
 }
 
-function addMapLabel() {
-  const point = getViewportCenterMapPoint();
+function addMapLabel(event = null) {
+  const point = event ? getMapPoint(event) : getViewportCenterMapPoint();
+  if (point.x < 0 || point.x > 100 || point.y < 0 || point.y > 100) return;
   const label = {
     id: `label-${Date.now()}`,
-    text: "New label",
+    text: "New bubble",
     x: Number(point.x.toFixed(1)),
     y: Number(point.y.toFixed(1)),
+    width: 13,
+    height: 12,
+    shape: activeLabelShape,
   };
   getMapLabels().push(label);
   saveMapLabels();
   editingLabelId = label.id;
-  addLabelBtn.classList.remove("active");
+  addLabelBtn?.classList.remove("active");
   renderMarkers();
 }
 
@@ -641,16 +723,21 @@ async function exportCurrentStagePng() {
   canvas.width = image.naturalWidth || 600;
   canvas.height = image.naturalHeight || 450;
   const ctx = canvas.getContext("2d");
+  const exportScale = getExportScale(canvas);
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-  getMarkers().forEach((marker) => drawExportMarker(ctx, canvas, marker));
-  getMapLabels().forEach((label) => drawExportLabel(ctx, canvas, label));
+  getMapLabels().filter(isLabelVisible).forEach((label) => drawExportLabel(ctx, canvas, label, exportScale));
 
   canvas.toBlob((blob) => {
     if (!blob) return;
     const stage = getActiveMapStage();
     downloadBlob(blob, `ark-map-${slugify(stage.name)}-${formatDateForFile(new Date())}.png`);
   }, "image/png");
+}
+
+function getExportScale(canvas) {
+  const layerWidth = mapLayer.getBoundingClientRect().width;
+  return layerWidth > 0 ? canvas.width / layerWidth : canvas.width / 1000;
 }
 
 function loadImage(src) {
@@ -662,69 +749,126 @@ function loadImage(src) {
   });
 }
 
-function drawExportMarker(ctx, canvas, marker) {
+function drawExportMarker(ctx, canvas, marker, scale = 1) {
   const x = (marker.x / 100) * canvas.width;
   const y = (marker.y / 100) * canvas.height;
   const color = getMarkerColor(marker.type);
+  const markerOffset = 12 * scale;
+  const markerSize = 20 * scale;
+  const markerRadius = 10 * scale;
   ctx.save();
-  ctx.translate(x, y - 12);
+  ctx.translate(x, y - markerOffset);
   ctx.rotate(-Math.PI / 4);
   ctx.fillStyle = color;
   ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 2;
-  roundedRectPath(ctx, -10, -10, 20, 20, 10);
+  ctx.lineWidth = 2 * scale;
+  roundedRectPath(ctx, -markerSize / 2, -markerSize / 2, markerSize, markerSize, markerRadius);
   ctx.fill();
   ctx.stroke();
   ctx.restore();
 
   ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.arc(x, y - 12, 3.4, 0, Math.PI * 2);
+  ctx.arc(x, y - markerOffset, 3.4 * scale, 0, Math.PI * 2);
   ctx.fill();
 }
 
-function drawExportLabel(ctx, canvas, label) {
+function drawExportLabel(ctx, canvas, label, scale = 1) {
   const x = (label.x / 100) * canvas.width;
   const y = (label.y / 100) * canvas.height;
-  const width = Math.max(70, ((label.width || 16) / 100) * canvas.width);
-  const lines = wrapCanvasText(ctx, label.text, width - 16);
-  const lineHeight = 16;
-  const height = Math.max(30, lines.length * lineHeight + 12);
+  const width = Math.max(48 * scale, ((label.width || DEFAULT_LABEL_WIDTH) / 100) * canvas.width);
+  const height = Math.max(22 * scale, ((label.height || DEFAULT_LABEL_HEIGHT) / 100) * canvas.height);
+  const fontSize = 13.2 * scale;
+  const paddingX = 5 * scale;
+  const paddingY = 3 * scale;
+  const lineHeight = 13.625 * scale;
+  ctx.font = `800 ${fontSize}px system-ui, sans-serif`;
+  const maxLines = Math.max(1, Math.floor((height - paddingY * 2) / lineHeight));
+  const lines = wrapCanvasText(ctx, label.text, width - paddingX * 2).slice(0, maxLines);
   const left = x - width / 2;
 
   ctx.save();
-  ctx.fillStyle = "rgba(12, 18, 28, 0.84)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
-  ctx.lineWidth = 1;
-  roundedRectPath(ctx, left, y, width, height, 6);
-  ctx.fill();
+  ctx.strokeStyle = "#050505";
+  ctx.lineWidth = 2 * scale;
+  drawExportBubblePath(ctx, left, y, width, height, label.shape || "bubble-left", 6 * scale);
   ctx.stroke();
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "700 13px system-ui, sans-serif";
+  drawExportBubblePath(ctx, left + 1 * scale, y + 1 * scale, width - 2 * scale, height - 2 * scale, label.shape || "bubble-left", 5 * scale);
+  ctx.clip();
+  ctx.fillStyle = "#050505";
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.font = `800 ${fontSize}px system-ui, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  const textBlockHeight = lines.length * lineHeight;
+  const textStartY = y + Math.max(paddingY, (height - textBlockHeight) / 2);
   lines.forEach((line, index) => {
-    ctx.fillText(line, x, y + 11 + index * lineHeight);
+    ctx.fillText(line, x, textStartY + lineHeight / 2 + index * lineHeight);
   });
   ctx.restore();
 }
 
+function drawExportBubblePath(ctx, x, y, width, height, shape, radius) {
+  const tail = Math.min(width, height) * 0.22;
+  ctx.beginPath();
+  if (shape === "oval") {
+    ctx.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, 0, 0, Math.PI * 2);
+  } else if (shape === "bubble-right") {
+    ctx.ellipse(x + width * 0.48, y + height / 2, width * 0.48, height * 0.48, 0, Math.PI * 0.15, Math.PI * 1.85);
+    ctx.lineTo(x + width + tail, y + height * 0.56);
+    ctx.lineTo(x + width * 0.91, y + height * 0.72);
+  } else if (shape === "bubble-top") {
+    ctx.ellipse(x + width / 2, y + height * 0.54, width * 0.48, height * 0.46, 0, Math.PI * 1.15, Math.PI * 0.85);
+    ctx.lineTo(x + width * 0.55, y - tail);
+    ctx.lineTo(x + width * 0.38, y + height * 0.09);
+  } else if (shape === "bubble-bottom") {
+    ctx.ellipse(x + width / 2, y + height * 0.46, width * 0.48, height * 0.46, 0, Math.PI * 0.85, Math.PI * 2.15);
+    ctx.lineTo(x + width * 0.45, y + height + tail);
+    ctx.lineTo(x + width * 0.62, y + height * 0.91);
+  } else {
+    ctx.ellipse(x + width * 0.52, y + height / 2, width * 0.48, height * 0.48, 0, Math.PI * 1.15, Math.PI * 0.85);
+    ctx.lineTo(x - tail, y + height * 0.56);
+    ctx.lineTo(x + width * 0.09, y + height * 0.72);
+  }
+  ctx.closePath();
+}
+
 function wrapCanvasText(ctx, text, maxWidth) {
-  ctx.font = "700 13px system-ui, sans-serif";
   const words = String(text || "").split(/\s+/).filter(Boolean);
   const lines = [];
   let line = "";
   words.forEach((word) => {
-    const testLine = line ? `${line} ${word}` : word;
-    if (ctx.measureText(testLine).width > maxWidth && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = testLine;
-    }
+    const chunks = splitCanvasWord(ctx, word, maxWidth);
+    chunks.forEach((chunk) => {
+      const testLine = line ? `${line} ${chunk}` : chunk;
+      if (ctx.measureText(testLine).width > maxWidth && line) {
+        lines.push(line);
+        line = chunk;
+      } else {
+        line = testLine;
+      }
+    });
   });
   if (line) lines.push(line);
   return lines.length ? lines : [""];
+}
+
+function splitCanvasWord(ctx, word, maxWidth) {
+  if (ctx.measureText(word).width <= maxWidth) return [word];
+  const chunks = [];
+  let chunk = "";
+  [...word].forEach((char) => {
+    const testChunk = `${chunk}${char}`;
+    if (ctx.measureText(testChunk).width > maxWidth && chunk) {
+      chunks.push(chunk);
+      chunk = char;
+    } else {
+      chunk = testChunk;
+    }
+  });
+  if (chunk) chunks.push(chunk);
+  return chunks;
 }
 
 function roundedRectPath(ctx, x, y, width, height, radius) {
@@ -808,20 +952,28 @@ function hideLabelContextMenu() {
   labelContextMenu = null;
 }
 
-function deleteSelectedPin() {
+function deleteMarker(markerId) {
   const stage = getActiveMapStage();
-  stage.pins = getCustomPins().filter((pin) => pin.id !== selectedMarkerId);
-  delete markerNotes[selectedMarkerId];
+  stage.pins = getCustomPins().filter((pin) => pin.id !== markerId);
+  delete markerNotes[markerId];
   saveMapStages();
   saveMarkerNotes();
-  selectedMarkerId = MAP_MARKERS[0].id;
+  if (selectedMarkerId === markerId) selectedMarkerId = MAP_MARKERS[0].id;
+  render();
+}
+
+function deleteSelectedPin() {
+  deleteMarker(selectedMarkerId);
+}
+
+function resetMarkerPosition(markerId) {
+  delete markerPositions[markerId];
+  saveMarkerPositions();
   render();
 }
 
 function resetSelectedMarkerPosition() {
-  delete markerPositions[selectedMarkerId];
-  saveMarkerPositions();
-  render();
+  resetMarkerPosition(selectedMarkerId);
 }
 
 function loadCustomPins() {
@@ -973,7 +1125,7 @@ function renderMapStageControls() {
     select.addEventListener("change", () => {
       activeMapStageId = select.value;
       editingLabelId = null;
-      renderMarkers();
+      render();
     });
     mapStageSwitcher.appendChild(select);
     return;
@@ -987,7 +1139,7 @@ function renderMapStageControls() {
     button.addEventListener("click", () => {
       activeMapStageId = stage.id;
       editingLabelId = null;
-      renderMarkers();
+      render();
     });
     mapStageSwitcher.appendChild(button);
   });
@@ -1088,6 +1240,28 @@ function loadMarkerNotes() {
   }
 }
 
+function loadVisibleLabelSections() {
+  const defaults = MAP_LABEL_SECTIONS.reduce((sections, section) => {
+    sections[section.key] = true;
+    return sections;
+  }, {});
+
+  try {
+    const parsed = JSON.parse(localStorage.getItem(MAP_LABEL_SECTIONS_KEY) || "null");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return defaults;
+    return MAP_LABEL_SECTIONS.reduce((sections, section) => {
+      sections[section.key] = parsed[section.key] !== false;
+      return sections;
+    }, {});
+  } catch {
+    return defaults;
+  }
+}
+
+function saveVisibleLabelSections() {
+  localStorage.setItem(MAP_LABEL_SECTIONS_KEY, JSON.stringify(visibleLabelSections));
+}
+
 function saveMarkerNote(markerId, note) {
   markerNotes[markerId] = note;
   saveMarkerNotes();
@@ -1150,7 +1324,7 @@ function renderTeam() {
 
 function renderPlayerList() {
   renderPlayerListInto(playerList, playerCount, "Add players or load a CSV", true);
-  renderPlayerListInto(mapPlayerList, mapPlayerCount, "Add players in Team Overview", false);
+  renderPlayerListInto(mapPlayerList, mapPlayerCount, "Add players or load a CSV", true);
 }
 
 function renderPlayerListInto(container, countNode, emptyText, editable) {
@@ -1180,7 +1354,6 @@ function renderPlayerListInto(container, countNode, emptyText, editable) {
       <span class="player-slot">${escapeHtml(assignmentLabel)}</span>
       <span>
         <span class="player-name">${escapeHtml(player.name)}</span>
-        <span class="player-id">${escapeHtml(player.id)}</span>
       </span>
       ${editable ? `<button class="player-coordinator${isCoordinator ? " active" : ""}" type="button" title="Toggle coordinator" aria-label="Toggle coordinator" ${coordinatorLimitReached ? "disabled" : ""}>C</button>
       <button class="player-remove" type="button" title="Remove player" aria-label="Remove player">x</button>` : `<span class="player-map-badge">${isCoordinator ? "Coordinator" : ""}</span>`}
@@ -1282,16 +1455,16 @@ function renderAssignedPlayer(player, slotId) {
   return `
     <span class="${isCoordinator ? "slot-player coordinator" : "slot-player"}">
       <span class="slot-player-name">${escapeHtml(player.name)}</span>
-      <span class="slot-player-id">${escapeHtml(player.id)}${isCoordinator ? " - Coordinator" : ""}</span>
+      ${isCoordinator ? '<span class="slot-player-id">Coordinator</span>' : ""}
     </span>
     <button class="slot-clear" type="button" data-slot="${slotId}" title="Clear slot" aria-label="Clear slot">x</button>
   `;
 }
 
-function addPlayer(name, id) {
+function addPlayer(name, id = "") {
   const cleanName = name.trim();
-  const cleanId = id.trim();
-  if (!cleanName || !cleanId) return;
+  const cleanId = id.trim() || makePlayerId(cleanName);
+  if (!cleanName) return;
 
   const existing = teamPlayers.find((player) => player.id === cleanId);
   if (existing) {
@@ -1302,6 +1475,17 @@ function addPlayer(name, id) {
 
   saveTeamPlayers();
   renderTeam();
+}
+
+function makePlayerId(name) {
+  const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "player";
+  let id = base;
+  let index = 2;
+  while (teamPlayers.some((player) => player.id === id && player.name !== name)) {
+    id = `${base}-${index}`;
+    index += 1;
+  }
+  return id;
 }
 
 function removePlayer(playerId) {
@@ -1536,7 +1720,7 @@ function renderPlanPlayer(player) {
   return `
     <span class="${coordinator ? "plan-player coordinator" : "plan-player"}">
       <span>${escapeHtml(player.name)}</span>
-      <small>${escapeHtml(player.id)}${coordinator ? " - Coordinator" : ""}</small>
+      ${coordinator ? "<small>Coordinator</small>" : ""}
     </span>
   `;
 }
@@ -1638,14 +1822,13 @@ function parseCsvPlayers(text) {
   return text
     .split(/\r?\n/)
     .map((line) => parseCsvLine(line))
-    .filter((columns) => columns.length >= 2)
+    .filter((columns) => columns.length >= 1)
     .filter((columns, index) => {
       const first = columns[0].trim().toLowerCase();
-      const second = columns[1].trim().toLowerCase();
-      return index !== 0 || (first !== "name" && second !== "id");
+      return index !== 0 || first !== "name";
     })
-    .map((columns) => ({ name: columns[0].trim(), id: columns[1].trim() }))
-    .filter((player) => player.name && player.id);
+    .map((columns) => ({ name: columns[0].trim(), id: columns[1]?.trim() || "" }))
+    .filter((player) => player.name);
 }
 
 function parseCsvLine(line) {
@@ -1704,10 +1887,16 @@ tabButtons.forEach((button) => {
 
 playerForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  addPlayer(playerNameInput.value, playerIdInput.value);
+  addPlayer(playerNameInput.value);
   playerNameInput.value = "";
-  playerIdInput.value = "";
   playerNameInput.focus();
+});
+
+mapPlayerForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  addPlayer(mapPlayerNameInput.value);
+  mapPlayerNameInput.value = "";
+  mapPlayerNameInput.focus();
 });
 
 playersCsvInput.addEventListener("change", async () => {
@@ -1718,7 +1907,24 @@ playersCsvInput.addEventListener("change", async () => {
   playersCsvInput.value = "";
 });
 
+mapPlayersCsvInput?.addEventListener("change", async () => {
+  const file = mapPlayersCsvInput.files[0];
+  if (!file) return;
+  const text = await file.text();
+  parseCsvPlayers(text).forEach((player) => addPlayer(player.name, player.id));
+  mapPlayersCsvInput.value = "";
+});
+
 clearPlayersBtn.addEventListener("click", () => {
+  if (!confirm("Clear all players and lane assignments?")) return;
+  teamPlayers = [];
+  teamLayout.assignments = {};
+  saveTeamPlayers();
+  saveTeamLayout();
+  renderTeam();
+});
+
+mapClearPlayersBtn?.addEventListener("click", () => {
   if (!confirm("Clear all players and lane assignments?")) return;
   teamPlayers = [];
   teamLayout.assignments = {};
@@ -1769,39 +1975,43 @@ addStageModalBtn.addEventListener("click", () => {
   renderStageManager();
 });
 
-addPinBtn.addEventListener("click", () => {
+labelShapeSelect?.addEventListener("change", () => {
+  activeLabelShape = labelShapeSelect.value;
+});
+
+addPinBtn?.addEventListener("click", () => {
   addPinMode = !addPinMode;
   if (addPinMode) {
     addLabelMode = false;
-    addLabelBtn.classList.remove("active");
+    addLabelBtn?.classList.remove("active");
     moveMarkersMode = false;
-    moveMarkersBtn.classList.remove("active");
+    moveMarkersBtn?.classList.remove("active");
   }
-  addPinBtn.classList.toggle("active", addPinMode);
+  addPinBtn?.classList.toggle("active", addPinMode);
 });
 
-addLabelBtn.addEventListener("click", () => {
+addLabelBtn?.addEventListener("click", () => {
   addPinMode = false;
-  addPinBtn.classList.remove("active");
-  addLabelMode = false;
+  addPinBtn?.classList.remove("active");
+  addLabelMode = !addLabelMode;
   moveMarkersMode = false;
-  moveMarkersBtn.classList.remove("active");
-  addMapLabel();
+  moveMarkersBtn?.classList.remove("active");
+  addLabelBtn.classList.toggle("active", addLabelMode);
 });
 
-moveMarkersBtn.addEventListener("click", () => {
+moveMarkersBtn?.addEventListener("click", () => {
   moveMarkersMode = !moveMarkersMode;
   if (moveMarkersMode) {
     addPinMode = false;
-    addPinBtn.classList.remove("active");
+    addPinBtn?.classList.remove("active");
     addLabelMode = false;
-    addLabelBtn.classList.remove("active");
+    addLabelBtn?.classList.remove("active");
   }
   moveMarkersBtn.classList.toggle("active", moveMarkersMode);
   renderMarkers();
 });
 
-mapSearch.addEventListener("input", render);
+mapSearch?.addEventListener("input", render);
 mapStage.addEventListener("pointermove", updateCoords);
 mapStage.addEventListener("wheel", (event) => {
   event.preventDefault();
@@ -1809,6 +2019,12 @@ mapStage.addEventListener("wheel", (event) => {
 }, { passive: false });
 
 mapViewport.addEventListener("pointerdown", (event) => {
+  if (addLabelMode) {
+    addMapLabel(event);
+    addLabelMode = false;
+    addLabelBtn?.classList.remove("active");
+    return;
+  }
   if (addPinMode) {
     addCustomPin(event);
     return;
