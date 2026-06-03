@@ -6,25 +6,27 @@
   --planner-cell-bg: var(--table-bg);
   --planner-cell-alt: var(--table-stripe-even);
   --planner-cell-strong: color-mix(in srgb, var(--chart-line) 18%, var(--table-bg));
-  padding: 12px;
+  min-height: 100vh;
+  padding: 4px;
 }
 
 .map-shell {
   width: 100%;
+  min-height: calc(100vh - 8px);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 4px;
 }
 
 .map-tabs {
   display: flex;
   gap: 8px;
   align-items: center;
-  background: var(--table-bg);
-  border: 1px solid var(--table-border);
-  border-radius: 8px;
-  padding: 8px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
 }
 
 .map-tab {
@@ -106,6 +108,8 @@ body.dark .map-tab.active {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: calc(100vh - 66px);
+  min-height: 520px;
 }
 
 .panel-title-row,
@@ -124,7 +128,7 @@ body.dark .map-tab.active {
 
 .player-form {
   display: grid;
-  grid-template-columns: 1fr 0.75fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
 }
 
@@ -844,11 +848,15 @@ body.dark .lane-plan-tab.active {
 }
 
 .map-toolbar {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(240px, 420px) auto;
-  gap: 14px;
+  display: flex;
+  gap: 8px;
   align-items: center;
-  padding: 14px 16px;
+  justify-content: space-between;
+  padding: 6px;
+}
+
+.map-toolbar.merged {
+  flex-wrap: wrap;
 }
 
 .map-title-group {
@@ -889,7 +897,7 @@ body.dark .lane-plan-tab.active {
 
 .map-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
   justify-content: flex-end;
   flex-wrap: wrap;
@@ -931,6 +939,33 @@ body.dark .lane-plan-tab.active {
   align-items: center;
   gap: 6px;
   padding-left: 2px;
+}
+
+.map-section-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 2px;
+}
+
+.map-section-toggle {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+  opacity: 0.58;
+}
+
+.map-section-toggle.active {
+  opacity: 1;
+  border-color: var(--chart-line);
+  background: var(--planner-accent-soft);
 }
 
 .map-stage-btn {
@@ -989,10 +1024,11 @@ body.dark .marker-row.active {
 
 .map-content {
   display: grid;
-  grid-template-columns: 250px 250px minmax(0, 1fr) 280px;
-  gap: 14px;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 4px;
   align-items: stretch;
-  min-height: 660px;
+  min-height: 0;
+  flex: 1;
 }
 
 .map-panel,
@@ -1051,7 +1087,8 @@ body.dark .marker-row.active {
 
 .map-stage {
   position: relative;
-  min-height: 660px;
+  height: calc(100vh - 66px);
+  min-height: 520px;
   border-radius: 8px;
   border: 1px solid var(--table-border);
   background:
@@ -1077,7 +1114,7 @@ body.dark .marker-row.active {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(1000px, 96%);
+  width: min(calc((100vh - 76px) * 1.3333), calc(100% - 8px));
   aspect-ratio: 600 / 450;
   transform-origin: center center;
   user-select: none;
@@ -1096,6 +1133,10 @@ body.dark .marker-row.active {
 .marker-layer {
   position: absolute;
   inset: 0;
+}
+
+.map-marker {
+  display: none;
 }
 
 .map-marker {
@@ -1140,28 +1181,89 @@ body.dark .marker-row.active {
 
 .map-label {
   position: absolute;
-  display: block;
+  display: flex;
   align-items: center;
+  justify-content: center;
   transform: translate(-50%, 0);
   z-index: 4;
 }
 
+.map-label::before,
+.map-label::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.map-label::before {
+  inset: 0;
+  border: 2px solid #070707;
+  border-radius: 50%;
+}
+
+.map-label.shape-bubble-left::after {
+  left: -14%;
+  top: 55%;
+  width: 24%;
+  height: 18%;
+  border-left: 2px solid #070707;
+  border-bottom: 2px solid #070707;
+  transform: skewX(-28deg) rotate(18deg);
+}
+
+.map-label.shape-bubble-right::after {
+  right: -14%;
+  top: 55%;
+  width: 24%;
+  height: 18%;
+  border-right: 2px solid #070707;
+  border-bottom: 2px solid #070707;
+  transform: skewX(28deg) rotate(-18deg);
+}
+
+.map-label.shape-bubble-top::after {
+  left: 48%;
+  top: -17%;
+  width: 18%;
+  height: 24%;
+  border-left: 2px solid #070707;
+  border-top: 2px solid #070707;
+  transform: skewY(-28deg) rotate(12deg);
+}
+
+.map-label.shape-bubble-bottom::after {
+  left: 40%;
+  bottom: -17%;
+  width: 18%;
+  height: 24%;
+  border-left: 2px solid #070707;
+  border-bottom: 2px solid #070707;
+  transform: skewY(28deg) rotate(-12deg);
+}
+
 .map-label-text {
-  min-width: 92px;
+  box-sizing: border-box;
   width: 100%;
-  min-height: 30px;
-  padding: 5px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.46);
-  border-radius: 6px;
-  background: rgba(12, 18, 28, 0.82);
-  color: #fff;
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.34);
+  height: 100%;
+  min-width: 48px;
+  min-height: 22px;
+  /* Inset padding so text stays inside the ellipse curve (~18% each side horizontally,
+     use auto top/bottom via flex on the container instead) */
+  padding: 10% 20%;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #050505;
+  text-shadow: none;
   cursor: pointer;
-  font-size: 0.78rem;
-  font-weight: 800;
-  line-height: 1.25;
+  font-size: 0.82rem;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1.3;
   text-align: center;
-  white-space: normal;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
   resize: none;
   overflow: hidden;
   outline: none;
@@ -1170,8 +1272,9 @@ body.dark .marker-row.active {
 
 .map-label-text:not([readonly]) {
   border-color: var(--chart-line);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--chart-line) 35%, transparent), 0 5px 14px rgba(0, 0, 0, 0.34);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--chart-line) 60%, transparent);
   cursor: text;
+  overflow: auto;
 }
 
 .map-label-resize {
@@ -1183,7 +1286,7 @@ body.dark .marker-row.active {
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.56);
   background: var(--chart-line);
-  cursor: ew-resize;
+  cursor: nwse-resize;
 }
 
 .label-context-menu {
