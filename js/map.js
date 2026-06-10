@@ -161,6 +161,44 @@ const ARK_SKILLS = [
   "war-drums.webp",
 ];
 
+const ROLES = [
+  {
+    group: "Rally",
+    roles: [
+      "Rally desert altar",
+      "Rally shrine of life",
+      "Rally shrine of war",
+      "Rally sky altar",
+      "Rally obelisk",
+      "Rally enemy obelisk",
+    ],
+  },
+  {
+    group: "Garrison",
+    roles: [
+      "Garrison desert altar",
+      "Garrison shrine of life",
+      "Garrison shrine of war",
+      "Garrison sky altar",
+      "Garrison obelisk",
+    ],
+  },
+  {
+    group: "Field",
+    roles: ["Open field"],
+  },
+  {
+    group: "Protect",
+    roles: [
+      "Protect desert altar",
+      "Protect shrine of life",
+      "Protect shrine of war",
+      "Protect sky altar",
+      "Protect obelisk",
+    ],
+  },
+];
+
 const BACKUP_KEYS = [
   MARKER_POSITIONS_KEY,
   MARKER_NOTES_KEY,
@@ -674,6 +712,21 @@ function addMapLabel(event = null) {
   saveMapLabels();
   editingLabelId = label.id;
   addLabelBtn?.classList.remove("active");
+  renderMarkers();
+}
+
+function dropLabelOnMap(text, point, shape) {
+  const label = {
+    id: `label-${Date.now()}`,
+    text: String(text).trim() || "Label",
+    x: Number(Math.min(100, Math.max(0, point.x)).toFixed(1)),
+    y: Number(Math.min(100, Math.max(0, point.y)).toFixed(1)),
+    width: 13,
+    height: 12,
+    shape: shape || activeLabelShape,
+  };
+  getMapLabels().push(label);
+  saveMapLabels();
   renderMarkers();
 }
 
@@ -1317,9 +1370,24 @@ function saveTeamLayout() {
 
 function renderTeam() {
   renderPlayerList();
+  renderRolesPanel();
+  renderMapRolesPanel();
+  renderTeamRolesPanel();
   renderLanePlanTabs();
   renderLanePlan();
   renderArkSkills();
+}
+
+function renderMapRolesPanel() {
+  const container = document.getElementById("mapRolesPanel");
+  if (!container) return;
+  renderRolesSidebarInto(container);
+}
+
+function renderTeamRolesPanel() {
+  const container = document.getElementById("teamRolesPanel");
+  if (!container) return;
+  renderRolesSidebarInto(container);
 }
 
 function renderPlayerList() {
@@ -1342,13 +1410,16 @@ function renderPlayerListInto(container, countNode, emptyText, editable) {
     return;
   }
 
+  // Detect if this is the map player panel (used to allow map-drop dragging)
+  const isMapPanel = container === mapPlayerList;
+
   teamPlayers.forEach((player, index) => {
     const isCoordinator = teamLayout.coordinators.includes(player.id);
     const coordinatorLimitReached = teamLayout.coordinators.length >= 5 && !isCoordinator;
     const assignmentLabel = getPlayerAssignmentLabel(player.id);
     const row = document.createElement("div");
-    row.className = `player-card${isCoordinator ? " coordinator" : ""}`;
-    row.draggable = editable;
+    row.className = `player-card${isCoordinator ? " coordinator" : ""}${isMapPanel ? " map-draggable" : ""}`;
+    row.draggable = true;
     row.dataset.playerId = player.id;
     row.innerHTML = `
       <span class="player-slot">${escapeHtml(assignmentLabel)}</span>
@@ -1358,11 +1429,18 @@ function renderPlayerListInto(container, countNode, emptyText, editable) {
       ${editable ? `<button class="player-coordinator${isCoordinator ? " active" : ""}" type="button" title="Toggle coordinator" aria-label="Toggle coordinator" ${coordinatorLimitReached ? "disabled" : ""}>C</button>
       <button class="player-remove" type="button" title="Remove player" aria-label="Remove player">x</button>` : `<span class="player-map-badge">${isCoordinator ? "Coordinator" : ""}</span>`}
     `;
-    if (editable) {
-      row.addEventListener("dragstart", (event) => {
+    // All player cards in both panels are draggable
+    // On the team board panel: drag means assign to lane slot (player id)
+    // On the map panel: drag means drop onto map as a label (player:id prefix)
+    row.addEventListener("dragstart", (event) => {
+      if (isMapPanel) {
+        event.dataTransfer.setData("text/plain", `player:${player.id}`);
+      } else {
         event.dataTransfer.setData("text/plain", player.id);
-        event.dataTransfer.effectAllowed = "copy";
-      });
+      }
+      event.dataTransfer.effectAllowed = "copy";
+    });
+    if (editable) {
       row.querySelector(".player-coordinator").addEventListener("click", () => toggleCoordinator(player.id));
       row.querySelector(".player-remove").addEventListener("click", () => removePlayer(player.id));
     }
@@ -1523,6 +1601,25 @@ function assignPlayerToSlot(playerId, slotId) {
   renderLanePlan();
 }
 
+function clearSlotRole(slotId) {
+  const [laneKey, rowNumber] = slotId.split("-");
+  if (lanePlans[laneKey]?.rows?.[rowNumber]) {
+    delete lanePlans[laneKey].rows[rowNumber].role;
+    saveLanePlans();
+    renderTeamBoard();
+  }
+}
+
+function assignRoleToSlot(role, slotId) {
+  const [laneKey, rowNumber] = slotId.split("-");
+  lanePlans[laneKey] ||= { notes: "", rows: {} };
+  lanePlans[laneKey].rows[rowNumber] ||= {};
+  lanePlans[laneKey].rows[rowNumber].role = role;
+  saveLanePlans();
+  renderTeamBoard();
+  renderPlayerList();
+}
+
 function clearSlot(slotId) {
   delete teamLayout.assignments[slotId];
   saveTeamLayout();
@@ -1556,16 +1653,7 @@ function renameLane(laneKey, name) {
 
 function getDefaultLanePlans() {
   return {
-    a: {
-      notes: 'SA = Sky Altar, DA = Desert Altar, SoW = Shrine of War, SoL = Shrine of Life, Obe = Obelisk.\nTeleport Timing is where the HH:MM is time left on the match, example: 3rd Spawn (38:00) = 38 mins left until match finishes.\n"Filler" is ideally a CC/JC march (with JC relic) or any other troop capacity % secondary.',
-      rows: {
-        1: { role: "SoL Main Garrison", before: "1x Garrison to SoL\n1x Filler [A4] Rally\n3x Marches to enemy SA", until: "1x Garrison in SoL\n1x Filler in [B3] Rally\n3x Marches to Mid", noArk: "1x Garrison in SoL\n1x Filler in [A3] Rally\n3x Marches to enemy SA", teleport: "ASAP ( 53:00 )", entering: "16" },
-        2: { role: "Forward Garrison", before: "1x Garrison to enemy SA\n4x Marches to enemy SA", until: "1x Forward Garrison to enemy SA\n1x Filler in [B3] Rally\n3x Marches to enemy SA", noArk: "1x Forward Garrison to enemy SA\n1x Filler in [A3] Rally\n3x Marches to enemy SA", teleport: "ASAP ( 53:00 )", entering: "24" },
-        3: { role: "Main Rally ( Archers )", before: "1x Filler in [A4] Rally\n4x Marches to enemy SA", until: "1x Rally enemy SA\n1x Filler in SoL\n3x Marches to enemy SA", noArk: "1x Filler in SoL\n1x Rally Enemy SA\n4x Marches to enemy SA", teleport: "ASAP ( 53:00 )", entering: "23" },
-        4: { role: "Home Obe Rally ( Cavs )", before: "1x Rally Home Obe\n4x Marches to enemy SA", until: "1x Filler in [B3] Rally\n1x Filler in SoL\n3x Marches to Mid", noArk: "1x Filler in [A3] Rally\n1x Filler in SoL\n3x Marches to enemy SA", teleport: "ASAP ( 53:00 )", entering: "18" },
-        5: { role: "Open Field", before: "5x Marches to enemy SA", until: "5x Marches to Mid", noArk: "5x Marches to enemy SA", teleport: "2nd Spawn ( 43:00 )", entering: "9" },
-      },
-    },
+    a: { notes: "", rows: {} },
     b: { notes: "", rows: {} },
     c: { notes: "", rows: {} },
     d: { notes: "", rows: {} },
@@ -1638,48 +1726,130 @@ function renderLanePlan() {
     const player = teamPlayers.find((item) => item.id === teamLayout.assignments[slotId]);
     const plan = lanePlans[laneKey].rows[rowNumber] || {};
     const stageCells = mapStages.map((stage) => `
-        <td><textarea data-plan-stage="${stage.id}" data-row="${rowNumber}">${escapeHtml(getLanePlanStageValue(plan, stage))}</textarea></td>
+        <td class="lane-plan-drop-cell" data-drop-target="stage" data-drop-stage="${stage.id}" data-drop-row="${rowNumber}"><textarea data-plan-stage="${stage.id}" data-row="${rowNumber}">${escapeHtml(getLanePlanStageValue(plan, stage))}</textarea></td>
     `).join("");
+    const rolesList = getPlanRoles(plan);
+    const rolesHtml = rolesList.map((r, ri) =>
+      `<span class="role-tag">${escapeHtml(r)}<button class="role-tag-remove" type="button" data-row="${rowNumber}" data-role-index="${ri}" aria-label="Remove role">×</button></span>`
+    ).join("");
     return `
       <tr>
         <th>${laneKey.toUpperCase()}${rowNumber}</th>
         <td class="lane-plan-player">${player ? renderPlanPlayer(player) : "drop name"}</td>
-        <td><textarea data-plan-field="role" data-row="${rowNumber}">${escapeHtml(plan.role || "")}</textarea></td>
         ${stageCells}
-        <td><textarea data-plan-field="teleport" data-row="${rowNumber}">${escapeHtml(plan.teleport || "")}</textarea></td>
-        <td><textarea data-plan-field="entering" data-row="${rowNumber}">${escapeHtml(plan.entering || "")}</textarea></td>
+        <td class="lane-plan-drop-cell" data-drop-target="field" data-drop-field="teleport" data-drop-row="${rowNumber}"><textarea data-plan-field="teleport" data-row="${rowNumber}">${escapeHtml(plan.teleport || "")}</textarea></td>
+        <td class="lane-plan-drop-cell" data-drop-target="field" data-drop-field="entering" data-drop-row="${rowNumber}"><textarea data-plan-field="entering" data-row="${rowNumber}">${escapeHtml(plan.entering || "")}</textarea></td>
       </tr>
     `;
   }).join("");
 
   lanePlanWrap.innerHTML = `
-    <div class="lane-plan-title">${escapeHtml(laneName)}</div>
-    <div class="lane-plan-scroll">
-      <table class="lane-plan-table" style="min-width: ${640 + mapStages.length * 230}px">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Player</th>
-            <th>Main Role</th>
-            ${stageHeaders}
-            <th>Teleport</th>
-            <th>Entering Map</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-    <div class="lane-plan-notes">
-      <strong>NOTES</strong>
-      <textarea id="lanePlanNotes">${escapeHtml(lanePlans[laneKey].notes || "")}</textarea>
+    <div class="lane-plan-with-roles">
+      <div class="lane-plan-roles-sidebar" id="laneRolesSidebar">
+        <div class="roles-panel-title">Roles</div>
+      </div>
+      <div class="lane-plan-main">
+        <div class="lane-plan-title">${escapeHtml(laneName)}</div>
+        <div class="lane-plan-scroll">
+          <table class="lane-plan-table" style="min-width: ${640 + mapStages.length * 230}px">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Player</th>
+                ${stageHeaders}
+                <th>Teleport</th>
+                <th>Entering Map</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <div class="lane-plan-notes">
+          <strong>NOTES</strong>
+          <textarea id="lanePlanNotes">${escapeHtml(lanePlans[laneKey].notes || "")}</textarea>
+        </div>
+      </div>
     </div>
   `;
 
+  // Render roles sidebar inside lane plan
+  renderRolesSidebarInto(document.getElementById("laneRolesSidebar"));
+
+  // Role drop zones on the role-tags-wrap
+  lanePlanWrap.querySelectorAll("[data-role-drop]").forEach((zone) => {
+    const rowNumber = zone.dataset.roleDrop;
+    zone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      zone.classList.add("drag-over");
+    });
+    zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+    zone.addEventListener("drop", (event) => {
+      event.preventDefault();
+      zone.classList.remove("drag-over");
+      const data = event.dataTransfer.getData("text/plain");
+      if (data.startsWith("role:")) {
+        addRoleToRow(laneKey, rowNumber, data.slice(5));
+      }
+    });
+  });
+
+  // Manual role input — press Enter or comma to add
+  lanePlanWrap.querySelectorAll(".role-manual-input").forEach((input) => {
+    const rowNumber = input.dataset.row;
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === ",") {
+        event.preventDefault();
+        const val = input.value.trim().replace(/,$/, "");
+        if (val) {
+          addRoleToRow(laneKey, rowNumber, val);
+          input.value = "";
+        }
+      }
+    });
+    input.addEventListener("blur", () => {
+      const val = input.value.trim();
+      if (val) {
+        addRoleToRow(laneKey, rowNumber, val);
+        input.value = "";
+      }
+    });
+  });
+
+  // Role tag remove buttons
+  lanePlanWrap.querySelectorAll(".role-tag-remove").forEach((button) => {
+    button.addEventListener("click", () => {
+      removeRoleFromRow(laneKey, button.dataset.row, Number(button.dataset.roleIndex));
+    });
+  });
+
+  lanePlanWrap.querySelectorAll("[data-plan-stage]").forEach((input) => {
+    input.addEventListener("input", () => updateLanePlanStageCell(laneKey, input.dataset.row, input.dataset.planStage, input.value));
+  });
   lanePlanWrap.querySelectorAll("[data-plan-field]").forEach((input) => {
     input.addEventListener("input", () => updateLanePlanCell(laneKey, input.dataset.row, input.dataset.planField, input.value));
   });
-  lanePlanWrap.querySelectorAll("[data-plan-stage]").forEach((input) => {
-    input.addEventListener("input", () => updateLanePlanStageCell(laneKey, input.dataset.row, input.dataset.planStage, input.value));
+
+  // Role drop support on stage / teleport / entering cells
+  lanePlanWrap.querySelectorAll(".lane-plan-drop-cell").forEach((cell) => {
+    cell.addEventListener("dragover", (event) => {
+      if (event.dataTransfer.types.includes("text/plain")) {
+        event.preventDefault();
+        cell.classList.add("drag-over");
+      }
+    });
+    cell.addEventListener("dragleave", () => cell.classList.remove("drag-over"));
+    cell.addEventListener("drop", (event) => {
+      event.preventDefault();
+      cell.classList.remove("drag-over");
+      const data = event.dataTransfer.getData("text/plain");
+      if (!data.startsWith("role:")) return;
+      const role = data.slice(5);
+      const textarea = cell.querySelector("textarea");
+      if (!textarea) return;
+      const current = textarea.value;
+      textarea.value = current ? `${current}\n${role}` : role;
+      textarea.dispatchEvent(new Event("input"));
+    });
   });
   document.getElementById("lanePlanNotes").addEventListener("input", (event) => {
     lanePlans[laneKey].notes = event.target.value;
@@ -1695,6 +1865,90 @@ function getLanePlanStageValue(plan, stage) {
     "stage-3": "noArk",
   };
   return legacyFields[stage.id] ? plan[legacyFields[stage.id]] || "" : "";
+}
+
+function getPlanRoles(plan) {
+  if (Array.isArray(plan.roles)) return plan.roles;
+  // Legacy: single string stored in plan.role
+  if (plan.role && typeof plan.role === "string" && plan.role.trim()) return [plan.role.trim()];
+  return [];
+}
+
+function addRoleToRow(laneKey, rowNumber, role) {
+  lanePlans[laneKey] ||= { notes: "", rows: {} };
+  lanePlans[laneKey].rows[rowNumber] ||= {};
+  const row = lanePlans[laneKey].rows[rowNumber];
+  const current = getPlanRoles(row);
+  if (!current.includes(role)) {
+    row.roles = [...current, role];
+    // keep legacy role field in sync with first role
+    row.role = row.roles[0] || "";
+    delete row.role; // clean up legacy field — roles array is canonical now
+  }
+  saveLanePlans();
+  renderLanePlan();
+}
+
+function removeRoleFromRow(laneKey, rowNumber, roleIndex) {
+  lanePlans[laneKey] ||= { notes: "", rows: {} };
+  const row = lanePlans[laneKey].rows[rowNumber];
+  if (!row) return;
+  const current = getPlanRoles(row);
+  current.splice(roleIndex, 1);
+  row.roles = current;
+  saveLanePlans();
+  renderLanePlan();
+}
+
+function renderRolesSidebarInto(container) {
+  if (!container) return;
+  // preserve the title if already there
+  const title = container.querySelector(".roles-panel-title");
+  container.innerHTML = "";
+  if (title) container.appendChild(title);
+  else {
+    const t = document.createElement("div");
+    t.className = "roles-panel-title";
+    t.textContent = "Roles";
+    container.appendChild(t);
+  }
+
+  ROLES.forEach((group) => {
+    const section = document.createElement("div");
+    section.className = "roles-group";
+
+    const heading = document.createElement("div");
+    heading.className = "roles-group-title";
+    heading.textContent = group.group;
+    section.appendChild(heading);
+
+    const chips = document.createElement("div");
+    chips.className = "roles-chips";
+
+    group.roles.forEach((role) => {
+      const chip = document.createElement("div");
+      chip.className = "role-chip";
+      chip.textContent = role;
+      chip.draggable = true;
+      chip.dataset.role = role;
+      chip.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/plain", `role:${role}`);
+        event.dataTransfer.effectAllowed = "copy";
+        chip.classList.add("dragging");
+      });
+      chip.addEventListener("dragend", () => chip.classList.remove("dragging"));
+      chips.appendChild(chip);
+    });
+
+    section.appendChild(chips);
+    container.appendChild(section);
+  });
+}
+
+function renderRolesPanel() {
+  const container = document.getElementById("rolesPanel");
+  if (!container) return;
+  renderRolesSidebarInto(container);
 }
 
 function renderTeamOverviewView() {
@@ -2086,6 +2340,41 @@ mapViewport.addEventListener("pointercancel", () => {
   labelDragState = null;
   labelResizeState = null;
   mapViewport.classList.remove("dragging");
+});
+
+mapViewport.addEventListener("dragover", (event) => {
+  if (event.dataTransfer.types.includes("text/plain")) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    mapViewport.classList.add("drop-target");
+  }
+});
+
+mapViewport.addEventListener("dragleave", (event) => {
+  // Only remove if leaving the viewport entirely (not entering a child)
+  if (!mapViewport.contains(event.relatedTarget)) {
+    mapViewport.classList.remove("drop-target");
+  }
+});
+
+mapViewport.addEventListener("drop", (event) => {
+  event.preventDefault();
+  mapViewport.classList.remove("drop-target");
+  const data = event.dataTransfer.getData("text/plain");
+  if (!data) return;
+
+  const point = getMapPoint(event);
+  if (point.x < 0 || point.x > 100 || point.y < 0 || point.y > 100) return;
+
+  if (data.startsWith("player:")) {
+    const playerId = data.slice(7);
+    const player = teamPlayers.find((p) => p.id === playerId);
+    if (!player) return;
+    dropLabelOnMap(player.name, point, "bubble-left");
+  } else if (data.startsWith("role:")) {
+    const role = data.slice(5);
+    dropLabelOnMap(role, point, "bubble-left");
+  }
 });
 
 document.addEventListener("DOMContentLoaded", () => {
