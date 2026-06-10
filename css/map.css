@@ -82,9 +82,11 @@ body.dark .map-tab.active {
 
 .team-layout {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr);
   gap: 14px;
-  min-height: 650px;
+  height: calc(100vh - 66px);
+  min-height: 520px;
+  align-items: start;
 }
 
 .team-main {
@@ -100,6 +102,8 @@ body.dark .map-tab.active {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: calc(100vh - 66px);
+  min-height: 520px;
 }
 
 .map-player-panel {
@@ -158,8 +162,10 @@ body.dark .map-tab.active {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow: auto;
+  overflow-y: auto;
   padding-right: 3px;
+  flex: 1 1 0;
+  min-height: 60px;
 }
 
 .player-card {
@@ -183,6 +189,14 @@ body.dark .map-tab.active {
 }
 
 .player-card:active {
+  cursor: grabbing;
+}
+
+.map-player-panel .player-card.map-draggable {
+  cursor: grab;
+}
+
+.map-player-panel .player-card.map-draggable:active {
   cursor: grabbing;
 }
 
@@ -1110,6 +1124,11 @@ body.dark .marker-row.active {
   cursor: grabbing;
 }
 
+.map-viewport.drop-target {
+  outline: 3px dashed var(--chart-line);
+  outline-offset: -4px;
+}
+
 .map-layer {
   position: absolute;
   left: 50%;
@@ -1300,7 +1319,31 @@ body.dark .marker-row.active {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
-.label-context-menu button {
+.map-roles-divider {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-color);
+  opacity: 0.55;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--table-border);
+  flex-shrink: 0;
+}
+
+.map-roles-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  flex: 1 1 0;
+  min-height: 80px;
+  padding-right: 3px;
+}
+
+.map-roles-panel .roles-panel-title {
+  display: none;
+}
   width: 100%;
   min-height: 34px;
   border: 0;
@@ -1490,4 +1533,294 @@ body.dark .marker-row.active {
   .map-layer {
     width: 112%;
   }
+}
+/* Lane plan roles sidebar layout */
+.lane-plan-with-roles {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  height: 100%;
+}
+
+.lane-plan-roles-sidebar {
+  border-right: 1px solid var(--table-border);
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  background: var(--table-bg);
+}
+
+.lane-plan-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Role tags in lane plan table cells */
+.lane-plan-role-cell {
+  vertical-align: top;
+  padding: 6px 8px !important;
+  min-width: 160px;
+}
+
+.role-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 24px;
+  padding: 3px 4px;
+  border-radius: 6px;
+  transition: outline 0.1s;
+}
+
+.role-tags-wrap.drag-over {
+  outline: 2px solid var(--chart-line);
+  outline-offset: -2px;
+  background: var(--planner-accent-softer);
+}
+
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--planner-accent-soft);
+  border: 1px solid var(--chart-line);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+.role-tag-remove {
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  opacity: 0.6;
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.role-tag-remove:hover {
+  opacity: 1;
+  background: var(--button-secondary-bg);
+  color: #fff;
+}
+
+.role-manual-input {
+  width: 100%;
+  margin-top: 4px;
+  padding: 4px 6px;
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.78rem;
+  outline: none;
+}
+
+.role-manual-input:focus {
+  border-color: var(--chart-line);
+}
+
+.role-manual-input::placeholder {
+  opacity: 0.45;
+  font-style: italic;
+}
+
+@media (max-width: 1100px) {
+  .lane-plan-with-roles {
+    grid-template-columns: 1fr;
+  }
+
+  .lane-plan-roles-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--table-border);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .lane-plan-roles-sidebar .roles-panel-title {
+    width: 100%;
+  }
+
+  .lane-plan-roles-sidebar .roles-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .lane-plan-roles-sidebar .roles-chips {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.05);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+}
+
+.roles-panel-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.roles-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.roles-group-title {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-color);
+  opacity: 0.55;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--table-border);
+}
+
+.roles-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.role-chip {
+  padding: 7px 10px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: grab;
+  user-select: none;
+  transition: border-color 0.14s, background 0.14s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.role-chip:hover {
+  border-color: var(--chart-line);
+  background: var(--planner-accent-soft);
+}
+
+.role-chip.dragging {
+  opacity: 0.5;
+}
+
+/* Slot role cell */
+.slot-role {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 5px 8px;
+  border-left: 1px solid var(--table-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 0;
+  transition: outline 0.1s;
+}
+
+.slot-role.drag-over {
+  outline: 2px solid var(--chart-line);
+  outline-offset: -2px;
+}
+
+.slot-role span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.slot-role-empty {
+  opacity: 0.45;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.slot-role.has-role {
+  background: var(--planner-accent-softer);
+}
+
+.slot-role-clear {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--table-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.slot-role-clear:hover {
+  background: var(--button-secondary-bg);
+  border-color: var(--button-secondary-bg);
+  color: #fff;
+}
+
+/* ── Scrollbars: player list & roles panel ─────────────────────────── */
+.player-list,
+.map-roles-panel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--table-border) transparent;
+}
+
+.player-list::-webkit-scrollbar,
+.map-roles-panel::-webkit-scrollbar {
+  width: 5px;
+}
+
+.player-list::-webkit-scrollbar-track,
+.map-roles-panel::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 999px;
+}
+
+.player-list::-webkit-scrollbar-thumb,
+.map-roles-panel::-webkit-scrollbar-thumb {
+  background: var(--table-border);
+  border-radius: 999px;
+}
+
+.player-list::-webkit-scrollbar-thumb:hover,
+.map-roles-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--chart-line);
 }
