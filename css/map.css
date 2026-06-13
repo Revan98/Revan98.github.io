@@ -170,17 +170,30 @@ body.dark .map-tab.active {
 
 .player-card {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto auto;
-  gap: 8px;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 6px 8px;
   align-items: center;
   width: 100%;
-  padding: 9px;
+  padding: 8px 9px;
   border: 1px solid var(--table-border);
   border-radius: 8px;
   background: var(--bg-color);
   color: var(--text-color);
   cursor: grab;
   text-align: left;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.player-role-btns {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .player-card.coordinator {
@@ -225,8 +238,7 @@ body.dark .player-slot {
   background: rgba(255, 152, 0, 0.16);
 }
 
-.player-name,
-.slot-player-name {
+.player-name {
   display: block;
   font-weight: 800;
   line-height: 1.2;
@@ -249,6 +261,21 @@ body.dark .player-slot {
   background: transparent;
   color: var(--text-color);
   cursor: pointer;
+}
+
+.player-coordinator,
+.player-gl-btn,
+.player-rl-btn {
+  height: 22px;
+  min-width: 24px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 900;
 }
 
 .player-coordinator {
@@ -407,36 +434,9 @@ body.dark .player-slot {
   font-style: normal;
 }
 
-.slot-player.coordinator {
-  position: relative;
-  padding-left: 10px;
-}
 
-.slot-player.coordinator::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 2px;
-  bottom: 2px;
-  width: 4px;
-  border-radius: 4px;
-  background: var(--chart-line);
-}
 
-.slot-player.coordinator .slot-player-name::after {
-  content: " C";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  margin-left: 6px;
-  border-radius: 50%;
-  background: var(--chart-line);
-  color: #fff;
-  font-size: 0.68rem;
-  font-weight: 900;
-}
+
 
 .slot-drop.drag-over {
   outline: 2px solid var(--chart-line);
@@ -771,65 +771,71 @@ body.dark .lane-plan-tab.active {
 
 .lane-plan-table textarea {
   width: 100%;
-  height: 100%;
+  height: 60px; /* explicit default; JS overrides with saved value */
   min-height: 60px;
+  box-sizing: border-box;
   border: 0;
   resize: vertical;
-  padding: 8px;
+  padding: 8px 8px 14px; /* extra bottom padding so text clears the handle */
   background: transparent;
-  color: var(--text-color);
+  color: inherit;
   font: inherit;
   font-size: 0.78rem;
   font-weight: 750;
   text-align: center;
   line-height: 1.28;
   outline: none;
+  /* Custom resize grip — three dots stacked at the bottom-right */
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px, transparent 1.5px);
+  background-size: 3px 3px, 3px 3px, 3px 3px;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-position: calc(100% - 8px) calc(100% - 4px),
+                       calc(100% - 8px) calc(100% - 9px),
+                       calc(100% - 8px) calc(100% - 14px);
+  cursor: auto;
+}
+
+/* Show a highlighted resize zone when the cursor is near the bottom edge */
+.lane-plan-table td {
+  position: relative;
 }
 
 .lane-plan-table textarea:focus {
-  background: var(--planner-accent-softer);
+  background-color: var(--planner-accent-softer);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px, transparent 1.5px);
+  background-size: 3px 3px, 3px 3px, 3px 3px;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-position: calc(100% - 8px) calc(100% - 4px),
+                       calc(100% - 8px) calc(100% - 9px),
+                       calc(100% - 8px) calc(100% - 14px);
 }
 
-.plan-player {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  min-height: 58px;
-  padding: 6px;
-  color: var(--text-color);
-  font-style: normal;
+/* Resize-handle pill — sits at the very bottom of each textarea cell */
+.lane-plan-table td::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 4px;
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in srgb, var(--text-color) 18%, transparent);
+  pointer-events: none;
+  transition: background 0.15s, width 0.15s;
 }
 
-.plan-player span {
-  font-weight: 900;
+.lane-plan-table td:has(textarea:hover)::after,
+.lane-plan-table td:has(textarea:focus)::after {
+  background: color-mix(in srgb, var(--chart-line) 55%, transparent);
+  width: 44px;
 }
 
-.plan-player small {
-  color: var(--text-color);
-  opacity: 0.62;
-  font-size: 0.72rem;
-}
-
-.plan-player.coordinator {
-  box-shadow: inset 4px 0 0 var(--chart-line);
-}
-
-.plan-player.coordinator span::after {
-  content: " C";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  margin-left: 6px;
-  border-radius: 50%;
-  background: var(--chart-line);
-  color: #fff;
-  font-size: 0.68rem;
-  font-weight: 900;
-}
+/* plan-player styles moved to bottom of file */
 
 .lane-plan-notes {
   padding: 12px 14px;
@@ -849,16 +855,49 @@ body.dark .lane-plan-tab.active {
   resize: vertical;
   border: 1px solid var(--table-border);
   border-radius: 6px;
-  padding: 9px 10px;
+  padding: 9px 10px 18px; /* extra bottom for handle clearance */
   background: var(--bg-color);
   color: var(--text-color);
   font: inherit;
   line-height: 1.4;
   outline: none;
+  /* Grip dots — 2×3 grid at bottom-right */
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px);
+  background-size: 3px 3px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 14px) calc(100% - 5px),
+                       calc(100% - 14px) calc(100% - 10px),
+                       calc(100% - 9px)  calc(100% - 5px),
+                       calc(100% - 9px)  calc(100% - 10px),
+                       calc(100% - 4px)  calc(100% - 5px),
+                       calc(100% - 4px)  calc(100% - 10px);
+}
+
+.lane-plan-notes textarea:hover {
+  border-color: color-mix(in srgb, var(--chart-line) 45%, var(--table-border));
 }
 
 .lane-plan-notes textarea:focus {
   border-color: var(--chart-line);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px);
+  background-size: 3px 3px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 14px) calc(100% - 5px),
+                       calc(100% - 14px) calc(100% - 10px),
+                       calc(100% - 9px)  calc(100% - 5px),
+                       calc(100% - 9px)  calc(100% - 10px),
+                       calc(100% - 4px)  calc(100% - 5px),
+                       calc(100% - 4px)  calc(100% - 10px);
 }
 
 .map-toolbar {
@@ -1534,23 +1573,7 @@ body.dark .marker-row.active {
     width: 112%;
   }
 }
-/* Lane plan roles sidebar layout */
-.lane-plan-with-roles {
-  display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
-  height: 100%;
-}
-
-.lane-plan-roles-sidebar {
-  border-right: 1px solid var(--table-border);
-  padding: 12px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
-  background: var(--table-bg);
-}
-
+/* Lane plan main content area */
 .lane-plan-main {
   display: flex;
   flex-direction: column;
@@ -1640,35 +1663,6 @@ body.dark .marker-row.active {
 }
 
 @media (max-width: 1100px) {
-  .lane-plan-with-roles {
-    grid-template-columns: 1fr;
-  }
-
-  .lane-plan-roles-sidebar {
-    border-right: none;
-    border-bottom: 1px solid var(--table-border);
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px;
-  }
-
-  .lane-plan-roles-sidebar .roles-panel-title {
-    width: 100%;
-  }
-
-  .lane-plan-roles-sidebar .roles-group {
-    flex-direction: row;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .lane-plan-roles-sidebar .roles-chips {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-}
 
 
   background: var(--table-bg);
@@ -1823,4 +1817,442 @@ body.dark .marker-row.active {
 .player-list::-webkit-scrollbar-thumb:hover,
 .map-roles-panel::-webkit-scrollbar-thumb:hover {
   background: var(--chart-line);
+}
+
+/* ── GL / RL buttons in player list ──────────────────────────────────────── */
+
+.player-gl-btn.active {
+  background: #5aa36b;
+  border-color: #5aa36b;
+  color: #fff;
+}
+
+.player-rl-btn.active {
+  background: #8b6ac8;
+  border-color: #8b6ac8;
+  color: #fff;
+}
+
+/* GL/RL card borders */
+.player-card.garrison-leader {
+  border-color: #5aa36b;
+  box-shadow: inset 3px 0 0 #5aa36b;
+}
+
+.player-card.rally-leader {
+  border-color: #8b6ac8;
+  box-shadow: inset 3px 0 0 #8b6ac8;
+}
+
+/* Plan player GL/RL — multi-badge support */
+.plan-player {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 6px;
+}
+
+.plan-player.coordinator {
+  box-shadow: inset 4px 0 0 var(--chart-line);
+}
+
+.plan-player.garrison-leader {
+  box-shadow: inset 4px 0 0 #5aa36b;
+}
+
+.plan-player.rally-leader {
+  box-shadow: inset 4px 0 0 #8b6ac8;
+}
+
+.plan-player.coordinator.garrison-leader,
+.plan-player.coordinator.rally-leader,
+.plan-player.coordinator.garrison-leader.rally-leader {
+  box-shadow: inset 4px 0 0 var(--chart-line);
+}
+
+.plan-player-name-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
+.plan-player-name {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.plan-badges-inline {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.plan-player-roles {
+  font-size: 0.65rem;
+  opacity: 0.65;
+  font-weight: 600;
+  white-space: nowrap;
+  font-style: italic;
+}
+
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  min-width: 18px;
+  padding: 0 3px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 900;
+  font-style: normal;
+  flex-shrink: 0;
+}
+
+.plan-badge.badge-c {
+  background: var(--chart-line);
+}
+
+.plan-badge.badge-gl {
+  background: #5aa36b;
+}
+
+.plan-badge.badge-rl {
+  background: #8b6ac8;
+}
+
+/* ── Stage column preview in Manage Stages modal ─────────────────────────── */
+.stage-cols-preview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 0.74rem;
+}
+
+.stage-col-pill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--chart-line);
+  background: color-mix(in srgb, var(--chart-line) 12%, var(--table-bg));
+  color: var(--text-color);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.stage-col-pill.fixed {
+  border-color: var(--table-border);
+  background: var(--bg-color);
+  opacity: 0.6;
+  font-weight: 500;
+}
+
+.stage-col-arrow {
+  color: var(--text-color);
+  opacity: 0.35;
+  font-size: 0.7rem;
+}
+
+/* Slot player GL/RL — multi-badge support */
+.slot-player {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.slot-player.garrison-leader,
+.slot-player.rally-leader,
+.slot-player.coordinator {
+  position: relative;
+  padding-left: 10px;
+}
+
+.slot-player.coordinator::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 4px;
+  border-radius: 4px;
+  background: var(--chart-line);
+}
+
+.slot-player.garrison-leader::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 4px;
+  border-radius: 4px;
+  background: #5aa36b;
+}
+
+.slot-player.rally-leader::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 4px;
+  border-radius: 4px;
+  background: #8b6ac8;
+}
+
+/* Priority: coordinator colour wins */
+.slot-player.coordinator.garrison-leader::before,
+.slot-player.coordinator.rally-leader::before,
+.slot-player.coordinator.garrison-leader.rally-leader::before {
+  background: var(--chart-line);
+}
+
+.slot-player-name-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.slot-player-name {
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-player-roles {
+  font-size: 0.62rem;
+  opacity: 0.62;
+  font-weight: 600;
+  white-space: nowrap;
+  font-style: italic;
+}
+
+.slot-badges-inline {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.slot-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 15px;
+  min-width: 17px;
+  padding: 0 3px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.slot-badge.badge-c {
+  background: var(--chart-line);
+}
+
+.slot-badge.badge-gl {
+  background: #5aa36b;
+}
+
+.slot-badge.badge-rl {
+  background: #8b6ac8;
+}
+
+/* ── Lane plan tab: wrap with per-lane stages gear button ─────────────────── */
+.lane-plan-tab-wrap {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.lane-plan-tab-wrap.active {
+  border-color: var(--chart-line);
+  background: var(--planner-accent-soft);
+}
+
+.lane-plan-tab-wrap .lane-plan-tab {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.lane-tab-stages-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 30px;
+  border: none;
+  border-left: 1px solid var(--table-border);
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  opacity: 0.55;
+  transition: opacity 0.14s, background 0.14s;
+  flex-shrink: 0;
+}
+
+.lane-tab-stages-btn:hover {
+  opacity: 1;
+  background: var(--planner-accent-soft);
+}
+
+/* ── Lane plan title bar with Manage Stages button ────────────────────────── */
+.lane-plan-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  min-height: 40px;
+  background: var(--planner-header-bg);
+  color: var(--planner-header-text);
+  border-bottom: 1px solid var(--table-border);
+  gap: 10px;
+}
+
+.lane-plan-title-text {
+  font-size: 1rem;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.lane-stages-btn {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  padding: 0 10px;
+  min-height: 30px;
+}
+
+/* ── Lane stages modal overlay (inline in lanePlanWrap) ───────────────────── */
+.lane-stages-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.lane-stages-modal-overlay[hidden] {
+  display: none;
+}
+
+/* ── Cell colour picker popover ───────────────────────────────────────────── */
+.cell-color-picker {
+  position: fixed;
+  z-index: 20000;
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
+  padding: 10px;
+  min-width: 196px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cell-color-picker-title {
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-color);
+  opacity: 0.55;
+}
+
+.cell-color-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+
+.cell-color-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  border: 1.5px solid var(--table-border);
+  cursor: pointer;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  transition: transform 0.1s, border-color 0.1s;
+}
+
+.cell-color-swatch:hover {
+  transform: scale(1.18);
+  border-color: var(--chart-line);
+  z-index: 1;
+}
+
+.cell-color-swatch.active {
+  border-color: var(--chart-line);
+  box-shadow: 0 0 0 2px var(--chart-line);
+}
+
+.cell-color-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--table-border);
+}
+
+.cell-color-custom-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.cell-color-custom-input {
+  width: 32px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  padding: 2px;
+  cursor: pointer;
+  background: var(--bg-color);
+}
+
+/* Right-click hint cursor on drop cells */
+.lane-plan-drop-cell textarea {
+  color: inherit;
+}
+.lane-plan-drop-cell {
+  cursor: context-menu;
+}
+
+/* ── Table column resize (resizable th via CSS resize) ───────────────────── */
+.lane-plan-table {
+  table-layout: fixed;
+}
+
+.lane-plan-table thead th {
+  position: relative;
+  overflow: hidden;
+  resize: horizontal;
+  min-width: 60px;
+  box-sizing: border-box;
 }
