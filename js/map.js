@@ -41,6 +41,9 @@ const TEAM_PLAYERS_KEY = "interactiveMapTeamPlayers";
 const TEAM_LAYOUT_KEY = "interactiveMapTeamLayout";
 const LANE_PLANS_KEY = "interactiveMapLanePlans";
 const ARK_SKILLS_KEY = "interactiveMapArkSkills";
+const LANE_STAGES_KEY = "interactiveMapLaneStages";
+const TABLE_COL_WIDTHS_KEY = "interactiveMapTableColWidths";
+const TABLE_CELL_COLORS_KEY = "interactiveMapCellColors";
 
 const MAP_LABEL_SECTIONS = [
   { key: "top", label: "Top" },
@@ -188,6 +191,10 @@ const ROLES = [
     roles: ["Open field"],
   },
   {
+    group: "Fill",
+    roles: ["Fill shrine", "Fill altar", "Fill altar & shrine"],
+  },
+  {
     group: "Protect",
     roles: [
       "Protect desert altar",
@@ -210,12 +217,18 @@ const BACKUP_KEYS = [
   LANE_PLANS_KEY,
   ARK_SKILLS_KEY,
   CUSTOM_PIN_KEY,
+  LANE_STAGES_KEY,
+  TABLE_COL_WIDTHS_KEY,
+  TABLE_CELL_COLORS_KEY,
 ];
 
 let sqlJsPromise = null;
 
 lanePlans = loadLanePlans();
 selectedArkSkills = loadArkSkills();
+let laneStages = loadLaneStages();
+let tableColWidths = loadTableColWidths();
+let cellColors = loadCellColors();
 
 window.addEventListener("scroll", () => {
   navbar?.classList.toggle("scrolled", window.scrollY > 10);
@@ -1094,11 +1107,18 @@ async function getSqlJs() {
 }
 
 function collectBackupState() {
+  // Flush all in-memory state to localStorage before reading it
   saveMapStages();
+  saveMarkerPositions();
+  saveMarkerNotes();
+  saveVisibleLabelSections();
   saveTeamPlayers();
   saveTeamLayout();
   saveLanePlans();
+  saveLaneStages();
   saveArkSkills();
+  saveTableColWidths();
+  saveCellColors();
   return BACKUP_KEYS.reduce((state, key) => {
     const value = localStorage.getItem(key);
     if (value !== null) state[key] = value;
@@ -1344,6 +1364,8 @@ function getDefaultTeamLayout() {
     rowCounts: { a: 5, b: 10, c: 10, d: 5 },
     laneNames: { a: "A Lane", b: "B Lane", c: "C Lane", d: "D Lane" },
     coordinators: [],
+    garrisonLeaders: [],
+    rallyLeaders: [],
     assignments: {},
   };
 }
@@ -1357,6 +1379,8 @@ function loadTeamLayout() {
       rowCounts: { ...fallback.rowCounts, ...(parsed.rowCounts || {}) },
       laneNames: { ...fallback.laneNames, ...(parsed.laneNames || {}) },
       coordinators: Array.isArray(parsed.coordinators) ? parsed.coordinators.slice(0, 5) : [],
+      garrisonLeaders: Array.isArray(parsed.garrisonLeaders) ? parsed.garrisonLeaders.slice(0, 10) : [],
+      rallyLeaders: Array.isArray(parsed.rallyLeaders) ? parsed.rallyLeaders.slice(0, 10) : [],
       assignments: parsed.assignments && typeof parsed.assignments === "object" ? parsed.assignments : {},
     };
   } catch {
@@ -1415,19 +1439,25 @@ function renderPlayerListInto(container, countNode, emptyText, editable) {
 
   teamPlayers.forEach((player, index) => {
     const isCoordinator = teamLayout.coordinators.includes(player.id);
+    const isGL = teamLayout.garrisonLeaders.includes(player.id);
+    const isRL = teamLayout.rallyLeaders.includes(player.id);
     const coordinatorLimitReached = teamLayout.coordinators.length >= 5 && !isCoordinator;
     const assignmentLabel = getPlayerAssignmentLabel(player.id);
     const row = document.createElement("div");
-    row.className = `player-card${isCoordinator ? " coordinator" : ""}${isMapPanel ? " map-draggable" : ""}`;
+    row.className = `player-card${isCoordinator ? " coordinator" : ""}${isGL ? " garrison-leader" : ""}${isRL ? " rally-leader" : ""}${isMapPanel ? " map-draggable" : ""}`;
     row.draggable = true;
     row.dataset.playerId = player.id;
     row.innerHTML = `
       <span class="player-slot">${escapeHtml(assignmentLabel)}</span>
-      <span>
+      <span class="player-info">
         <span class="player-name">${escapeHtml(player.name)}</span>
+        ${editable ? `<span class="player-role-btns">
+          <button class="player-coordinator${isCoordinator ? " active" : ""}" type="button" title="Toggle coordinator" aria-label="Toggle coordinator" ${coordinatorLimitReached ? "disabled" : ""}>C</button>
+          <button class="player-gl-btn${isGL ? " active" : ""}" type="button" title="Toggle Garrison Leader" aria-label="Toggle GL">GL</button>
+          <button class="player-rl-btn${isRL ? " active" : ""}" type="button" title="Toggle Rally Leader" aria-label="Toggle RL">RL</button>
+        </span>` : `<span class="player-map-badge">${isCoordinator ? "C" : isGL ? "GL" : isRL ? "RL" : ""}</span>`}
       </span>
-      ${editable ? `<button class="player-coordinator${isCoordinator ? " active" : ""}" type="button" title="Toggle coordinator" aria-label="Toggle coordinator" ${coordinatorLimitReached ? "disabled" : ""}>C</button>
-      <button class="player-remove" type="button" title="Remove player" aria-label="Remove player">x</button>` : `<span class="player-map-badge">${isCoordinator ? "Coordinator" : ""}</span>`}
+      ${editable ? `<button class="player-remove" type="button" title="Remove player" aria-label="Remove player">x</button>` : ""}
     `;
     // All player cards in both panels are draggable
     // On the team board panel: drag means assign to lane slot (player id)
@@ -1442,6 +1472,8 @@ function renderPlayerListInto(container, countNode, emptyText, editable) {
     });
     if (editable) {
       row.querySelector(".player-coordinator").addEventListener("click", () => toggleCoordinator(player.id));
+      row.querySelector(".player-gl-btn").addEventListener("click", () => toggleGarrisonLeader(player.id));
+      row.querySelector(".player-rl-btn").addEventListener("click", () => toggleRallyLeader(player.id));
       row.querySelector(".player-remove").addEventListener("click", () => removePlayer(player.id));
     }
     container.appendChild(row);
@@ -1495,7 +1527,7 @@ function renderTeamBoard(container = document.getElementById("teamBoard")) {
       slot.className = "lane-slot";
       slot.innerHTML = `
         <div class="slot-label">${lane.key.toUpperCase()}${index}</div>
-        <div class="slot-drop${player ? " filled" : ""}" data-slot="${slotId}">
+        <div class="slot-drop${player ? " filled" : ""}" data-slot="${slotId}" data-color-row="${slotId}" data-color-col="slot">
           ${player ? renderAssignedPlayer(player, slotId) : "drop name"}
         </div>
       `;
@@ -1526,14 +1558,36 @@ function renderTeamBoard(container = document.getElementById("teamBoard")) {
     input.addEventListener("change", () => renameLane(input.dataset.laneName, input.value));
     input.addEventListener("blur", () => renameLane(input.dataset.laneName, input.value));
   });
+
+  applyAllCellColors("overview", container);
+  attachCellColorListeners(container, "overview");
 }
 
 function renderAssignedPlayer(player, slotId) {
   const isCoordinator = teamLayout.coordinators.includes(player.id);
+  const isGL = (teamLayout.garrisonLeaders || []).includes(player.id);
+  const isRL = (teamLayout.rallyLeaders || []).includes(player.id);
+  const classes = ["slot-player"];
+  if (isCoordinator) classes.push("coordinator");
+  if (isGL) classes.push("garrison-leader");
+  if (isRL) classes.push("rally-leader");
+  const badges = [
+    ...(isCoordinator ? [`<span class="slot-badge badge-c">C</span>`] : []),
+    ...(isGL ? [`<span class="slot-badge badge-gl">GL</span>`] : []),
+    ...(isRL ? [`<span class="slot-badge badge-rl">RL</span>`] : []),
+  ].join("");
+  const roleLabels = [
+    ...(isCoordinator ? ["Coordinator"] : []),
+    ...(isGL ? ["Garrison"] : []),
+    ...(isRL ? ["Rally"] : []),
+  ].join(", ");
   return `
-    <span class="${isCoordinator ? "slot-player coordinator" : "slot-player"}">
-      <span class="slot-player-name">${escapeHtml(player.name)}</span>
-      ${isCoordinator ? '<span class="slot-player-id">Coordinator</span>' : ""}
+    <span class="${classes.join(" ")}">
+      <span class="slot-player-name-row">
+        <span class="slot-player-name">${escapeHtml(player.name)}</span>
+        ${badges ? `<span class="slot-badges-inline">${badges}</span>` : ""}
+      </span>
+      ${roleLabels ? `<span class="slot-player-roles">${escapeHtml(roleLabels)}</span>` : ""}
     </span>
     <button class="slot-clear" type="button" data-slot="${slotId}" title="Clear slot" aria-label="Clear slot">x</button>
   `;
@@ -1569,6 +1623,8 @@ function makePlayerId(name) {
 function removePlayer(playerId) {
   teamPlayers = teamPlayers.filter((player) => player.id !== playerId);
   teamLayout.coordinators = teamLayout.coordinators.filter((id) => id !== playerId);
+  teamLayout.garrisonLeaders = (teamLayout.garrisonLeaders || []).filter((id) => id !== playerId);
+  teamLayout.rallyLeaders = (teamLayout.rallyLeaders || []).filter((id) => id !== playerId);
   Object.entries(teamLayout.assignments).forEach(([slot, assignedId]) => {
     if (assignedId === playerId) delete teamLayout.assignments[slot];
   });
@@ -1584,6 +1640,28 @@ function toggleCoordinator(playerId) {
     teamLayout.coordinators.push(playerId);
   }
 
+  saveTeamLayout();
+  renderTeam();
+}
+
+function toggleGarrisonLeader(playerId) {
+  teamLayout.garrisonLeaders = teamLayout.garrisonLeaders || [];
+  if (teamLayout.garrisonLeaders.includes(playerId)) {
+    teamLayout.garrisonLeaders = teamLayout.garrisonLeaders.filter((id) => id !== playerId);
+  } else {
+    teamLayout.garrisonLeaders.push(playerId);
+  }
+  saveTeamLayout();
+  renderTeam();
+}
+
+function toggleRallyLeader(playerId) {
+  teamLayout.rallyLeaders = teamLayout.rallyLeaders || [];
+  if (teamLayout.rallyLeaders.includes(playerId)) {
+    teamLayout.rallyLeaders = teamLayout.rallyLeaders.filter((id) => id !== playerId);
+  } else {
+    teamLayout.rallyLeaders.push(playerId);
+  }
   saveTeamLayout();
   renderTeam();
 }
@@ -1660,6 +1738,444 @@ function getDefaultLanePlans() {
   };
 }
 
+// ── Per-lane stages ────────────────────────────────────────────────────────────
+
+const DEFAULT_LANE_STAGE_NAMES = ["Before First Ark", "6 mins until Ark", "No Ark"];
+
+function getDefaultLaneStagesForLane(laneKey) {
+  return DEFAULT_LANE_STAGE_NAMES.map((name, i) => ({
+    id: `lane-${laneKey}-stage-${i + 1}`,
+    name,
+  }));
+}
+
+function loadLaneStages() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(LANE_STAGES_KEY) || "null");
+    if (!parsed || typeof parsed !== "object") return {};
+    const result = {};
+    LANES.forEach((lane) => {
+      const saved = parsed[lane.key];
+      result[lane.key] = Array.isArray(saved) && saved.length
+        ? saved.map((s, i) => ({ id: String(s.id || `lane-${lane.key}-stage-${i + 1}`), name: String(s.name || `Stage ${i + 1}`) }))
+        : getDefaultLaneStagesForLane(lane.key);
+    });
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+function saveLaneStages() {
+  localStorage.setItem(LANE_STAGES_KEY, JSON.stringify(laneStages));
+}
+
+function getLaneStages(laneKey) {
+  if (!laneStages[laneKey] || !laneStages[laneKey].length) {
+    laneStages[laneKey] = getDefaultLaneStagesForLane(laneKey);
+  }
+  return laneStages[laneKey];
+}
+
+function addLaneStage(laneKey) {
+  const stages = getLaneStages(laneKey);
+  const nextNumber = stages.length + 1;
+  stages.push({ id: `lane-${laneKey}-stage-${Date.now()}`, name: `Stage ${nextNumber}` });
+  saveLaneStages();
+  refreshLanePlanTable(laneKey);
+}
+
+function deleteLaneStage(laneKey, stageId) {
+  const stages = getLaneStages(laneKey);
+  const index = stages.findIndex((s) => s.id === stageId);
+  if (index < 3) return; // lock first 3
+  stages.splice(index, 1);
+  saveLaneStages();
+  refreshLanePlanTable(laneKey);
+}
+
+function renameLaneStage(laneKey, stageId, name) {
+  const stage = getLaneStages(laneKey).find((s) => s.id === stageId);
+  if (!stage) return;
+  stage.name = name.trim() || "Untitled Stage";
+  saveLaneStages();
+  // Just update the header text in the existing table, no full rebuild
+  const planTable = document.getElementById("lanePlanTable");
+  if (planTable) {
+    const th = planTable.querySelector(`thead th[data-col-id="stage-${stageId}"]`);
+    if (th) th.textContent = stage.name;
+  }
+}
+
+// Refresh the lane plan table columns without closing the stages modal
+function refreshLanePlanTable(laneKey) {
+  const planTable = document.getElementById("lanePlanTable");
+  if (!planTable) {
+    // Table not present (different lane active), nothing to do
+    return;
+  }
+  const stages = getLaneStages(laneKey);
+  const rowCount = teamLayout.rowCounts[laneKey];
+  lanePlans[laneKey] ||= { notes: "", rows: {} };
+
+  // Rebuild header row
+  const thead = planTable.querySelector("thead tr");
+  if (thead) {
+    // Remove old stage headers (between Player and Teleport)
+    thead.querySelectorAll("th[data-col-id^='stage-']").forEach((th) => th.remove());
+    const teleportTh = thead.querySelector("th[data-col-id='teleport']");
+    stages.forEach((stage) => {
+      const th = document.createElement("th");
+      th.dataset.colId = `stage-${stage.id}`;
+      th.textContent = stage.name;
+      thead.insertBefore(th, teleportTh);
+    });
+  }
+
+  // Rebuild stage cells in each body row
+  const tbody = planTable.querySelector("tbody");
+  if (tbody) {
+    tbody.querySelectorAll("tr").forEach((tr, idx) => {
+      const rowNumber = idx + 1;
+      const plan = lanePlans[laneKey].rows[rowNumber] || {};
+      // Remove old stage cells
+      tr.querySelectorAll("td[data-drop-target='stage']").forEach((td) => td.remove());
+      const teleportTd = tr.querySelector("td[data-drop-target='field'][data-drop-field='teleport']");
+      stages.forEach((stage) => {
+        const td = document.createElement("td");
+        td.className = "lane-plan-drop-cell";
+        td.dataset.dropTarget = "stage";
+        td.dataset.dropStage = stage.id;
+        td.dataset.dropRow = rowNumber;
+        const ta = document.createElement("textarea");
+        ta.dataset.planStage = stage.id;
+        ta.dataset.row = rowNumber;
+        ta.textContent = getLanePlanStageValue(plan, stage);
+        td.appendChild(ta);
+        tbody.insertBefore ? tr.insertBefore(td, teleportTd) : tr.appendChild(td);
+      });
+    });
+  }
+
+  // Rebuild colgroup
+  const colgroup = planTable.querySelector("colgroup");
+  if (colgroup) {
+    colgroup.querySelectorAll("col[data-col-id^='stage-']").forEach((c) => c.remove());
+    const teleportCol = colgroup.querySelector("col[data-col-id='teleport']");
+    stages.forEach((stage) => {
+      const col = document.createElement("col");
+      col.dataset.colId = `stage-${stage.id}`;
+      colgroup.insertBefore(col, teleportCol);
+    });
+  }
+
+  // Update min-width
+  planTable.style.minWidth = `${640 + stages.length * 230}px`;
+
+  // Re-wire textarea listeners and restore heights
+  planTable.querySelectorAll("tbody textarea[data-plan-stage]").forEach((ta) => {
+    ta.addEventListener("input", () => updateLanePlanStageCell(laneKey, ta.dataset.row, ta.dataset.planStage, ta.value));
+  });
+
+  // Drag-drop on new cells
+  planTable.querySelectorAll("td[data-drop-target='stage']").forEach((cell) => {
+    cell.addEventListener("dragover", (event) => {
+      if (event.dataTransfer.types.includes("text/plain")) {
+        event.preventDefault();
+        cell.classList.add("drag-over");
+      }
+    });
+    cell.addEventListener("dragleave", () => cell.classList.remove("drag-over"));
+    cell.addEventListener("drop", (event) => {
+      event.preventDefault();
+      cell.classList.remove("drag-over");
+      const data = event.dataTransfer.getData("text/plain");
+      if (!data.startsWith("role:")) return;
+      const role = data.slice(5);
+      const textarea = cell.querySelector("textarea");
+      if (!textarea) return;
+      const current = textarea.value;
+      textarea.value = current ? `${current}\n${role}` : role;
+      textarea.dispatchEvent(new Event("input"));
+    });
+  });
+
+  // Re-apply col widths and row heights, reattach observers
+  applyColWidths(planTable, laneKey);
+  attachColResizeListeners(planTable, laneKey);
+  applyRowHeights(lanePlanWrap, laneKey);
+  attachRowHeightListeners(lanePlanWrap, laneKey);
+
+  // Re-render the stage manager list (modal stays open)
+  renderLaneStageManager(laneKey);
+}
+
+// ── Table column widths ────────────────────────────────────────────────────────
+
+function loadTableColWidths() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TABLE_COL_WIDTHS_KEY) || "null");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveTableColWidths() {
+  localStorage.setItem(TABLE_COL_WIDTHS_KEY, JSON.stringify(tableColWidths));
+}
+
+// ── Per-cell background colours ────────────────────────────────────────────────
+
+function loadCellColors() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TABLE_CELL_COLORS_KEY) || "null");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveCellColors() {
+  localStorage.setItem(TABLE_CELL_COLORS_KEY, JSON.stringify(cellColors));
+}
+
+function getCellColorKey(laneKey, rowNumber, colId) {
+  return `${laneKey}::row-${rowNumber}::col-${colId}`;
+}
+
+function getCellColor(laneKey, rowNumber, colId) {
+  return cellColors[getCellColorKey(laneKey, rowNumber, colId)] || "";
+}
+
+function setCellColor(laneKey, rowNumber, colId, color) {
+  const key = getCellColorKey(laneKey, rowNumber, colId);
+  if (color) {
+    cellColors[key] = color;
+  } else {
+    delete cellColors[key];
+  }
+  saveCellColors();
+}
+
+// Returns true if the hex color is light enough that dark text is needed
+function isColorLight(hex) {
+  if (!hex || !hex.startsWith("#")) return false;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  // Perceived luminance (WCAG formula)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55;
+}
+
+function applyCellColorToElement(td, color) {
+  td.style.background = color || "";
+  td.style.color = color && isColorLight(color) ? "#111" : "";
+}
+
+function applyAllCellColors(laneKey, container) {
+  const el = container || document.getElementById("lanePlanTable");
+  if (!el) return;
+  el.querySelectorAll("[data-color-row][data-color-col]").forEach((td) => {
+    const color = getCellColor(laneKey, td.dataset.colorRow, td.dataset.colorCol);
+    applyCellColorToElement(td, color);
+  });
+}
+
+// ── Cell colour picker ─────────────────────────────────────────────────────────
+
+const CELL_COLOR_PALETTE = [
+  "", // clear
+  "#d32f2f", "#e64a19", "#f57c00", "#f9a825",
+  "#388e3c", "#00796b", "#0288d1", "#1565c0",
+  "#6a1b9a", "#ad1457", "#4e342e", "#455a64",
+  // softer tints for readability
+  "#ffcdd2", "#ffe0b2", "#fff9c4", "#c8e6c9",
+  "#b3e5fc", "#bbdefb", "#e1bee7", "#f8bbd0",
+];
+
+function attachCellColorListeners(container, laneKey) {
+  container.querySelectorAll("[data-color-row][data-color-col]").forEach((td) => {
+    td.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      showCellColorPicker(event.clientX, event.clientY, laneKey, td);
+    });
+  });
+}
+
+function showCellColorPicker(x, y, laneKey, td) {
+  removeCellColorPicker();
+
+  const rowNumber = td.dataset.colorRow;
+  const colId = td.dataset.colorCol;
+  const currentColor = getCellColor(laneKey, rowNumber, colId);
+
+  const picker = document.createElement("div");
+  picker.id = "cellColorPicker";
+  picker.className = "cell-color-picker";
+  picker.innerHTML = `
+    <div class="cell-color-picker-title">Cell colour</div>
+    <div class="cell-color-swatches">
+      ${CELL_COLOR_PALETTE.map((color) => `
+        <button type="button" class="cell-color-swatch${color === currentColor ? " active" : ""}"
+          data-color="${color}"
+          style="${color ? `background:${color}` : "background:var(--bg-color)"}"
+          title="${color || "Clear"}"
+          aria-label="${color || "Clear colour"}">
+          ${!color ? "✕" : ""}
+        </button>
+      `).join("")}
+    </div>
+    <div class="cell-color-custom-row">
+      <label class="cell-color-custom-label">Custom
+        <input type="color" class="cell-color-custom-input" value="${currentColor && currentColor.startsWith("#") ? currentColor : "#ffffff"}">
+      </label>
+    </div>
+  `;
+
+  // Position near cursor, keep within viewport
+  document.body.appendChild(picker);
+  const pr = picker.getBoundingClientRect();
+  picker.style.left = `${Math.min(x, window.innerWidth - pr.width - 8)}px`;
+  picker.style.top = `${Math.min(y, window.innerHeight - pr.height - 8)}px`;
+
+  // Swatch clicks
+  picker.querySelectorAll(".cell-color-swatch").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const color = btn.dataset.color;
+      setCellColor(laneKey, rowNumber, colId, color);
+      applyCellColorToElement(td, color);
+      if (laneKey === "overview") syncOverviewColorToLanePlan(rowNumber, color);
+      removeCellColorPicker();
+    });
+  });
+
+  // Custom colour input
+  const customInput = picker.querySelector(".cell-color-custom-input");
+  customInput.addEventListener("input", () => {
+    const color = customInput.value;
+    setCellColor(laneKey, rowNumber, colId, color);
+    applyCellColorToElement(td, color);
+    if (laneKey === "overview") syncOverviewColorToLanePlan(rowNumber, color);
+  });
+
+  // Close on outside click
+  requestAnimationFrame(() => {
+    document.addEventListener("pointerdown", removeCellColorPickerOnOutside, { capture: true, once: true });
+  });
+}
+
+function removeCellColorPickerOnOutside(event) {
+  const picker = document.getElementById("cellColorPicker");
+  if (picker && !picker.contains(event.target)) {
+    removeCellColorPicker();
+  } else if (picker) {
+    // Re-attach for next outside click
+    document.addEventListener("pointerdown", removeCellColorPickerOnOutside, { capture: true, once: true });
+  }
+}
+
+function removeCellColorPicker() {
+  document.getElementById("cellColorPicker")?.remove();
+}
+
+// When a slot colour is changed in the Team Overview, mirror it onto the
+// matching player <td> in whichever lane plan table is currently visible.
+function syncOverviewColorToLanePlan(slotId, color) {
+  const planTable = document.getElementById("lanePlanTable");
+  if (!planTable) return;
+  // slotId is e.g. "a-3"; find the matching row by iterating tbody rows
+  // The lane plan table is only shown for one lane at a time, so we check
+  // that the slotId prefix matches the active lane.
+  const [slotLane, slotRow] = String(slotId).split("-");
+  if (slotLane !== activeLanePlan) return;
+  const tbody = planTable.querySelector("tbody");
+  if (!tbody) return;
+  const tr = tbody.querySelectorAll("tr")[Number(slotRow) - 1];
+  if (!tr) return;
+  const playerTd = tr.querySelector("td.lane-plan-player");
+  if (playerTd) applyCellColorToElement(playerTd, color);
+}
+
+function getLaneColWidthKey(laneKey, colId) {
+  return `${laneKey}::${colId}`;
+}
+
+function applyColWidths(table, laneKey) {
+  // Restore column widths via colgroup
+  table.querySelectorAll("col[data-col-id]").forEach((col) => {
+    const key = getLaneColWidthKey(laneKey, col.dataset.colId);
+    if (tableColWidths[key]) col.style.width = tableColWidths[key];
+  });
+}
+
+function applyRowHeights(container, laneKey) {
+  // Restore textarea heights per row/col.
+  // We set both height and min-height so the value overrides the CSS height:100%.
+  const restore = (ta, key) => {
+    const saved = tableColWidths[key];
+    if (!saved) return;
+    ta.style.height = saved;
+    ta.style.minHeight = saved;
+  };
+  container.querySelectorAll("textarea[data-row][data-plan-stage]").forEach((ta) => {
+    restore(ta, `${laneKey}::row-${ta.dataset.row}::stage-${ta.dataset.planStage}`);
+  });
+  container.querySelectorAll("textarea[data-row][data-plan-field]").forEach((ta) => {
+    restore(ta, `${laneKey}::row-${ta.dataset.row}::field-${ta.dataset.planField}`);
+  });
+}
+
+function attachColResizeListeners(table, laneKey) {
+  // Track column header resize (CSS resize:horizontal on th)
+  const ths = table.querySelectorAll("thead th[data-col-id]");
+  if (!ths.length) return;
+  const ro = new ResizeObserver((entries) => {
+    let changed = false;
+    entries.forEach((entry) => {
+      const th = entry.target;
+      const colId = th.dataset.colId;
+      if (!colId) return;
+      const key = getLaneColWidthKey(laneKey, colId);
+      const newVal = `${Math.round(entry.contentRect.width + 2)}px`;
+      if (tableColWidths[key] !== newVal) {
+        tableColWidths[key] = newVal;
+        changed = true;
+      }
+    });
+    if (changed) saveTableColWidths();
+  });
+  ths.forEach((th) => ro.observe(th));
+}
+
+function attachRowHeightListeners(container, laneKey) {
+  // Track textarea height resizes via pointerup — fires only after the user
+  // finishes dragging the resize handle, not on every content/layout change.
+  const textareas = container.querySelectorAll(
+    "textarea[data-row][data-plan-stage], textarea[data-row][data-plan-field]"
+  );
+  textareas.forEach((ta) => {
+    // Store the height at pointerdown so we can tell if it changed.
+    ta.addEventListener("pointerdown", () => {
+      ta._heightBeforeDrag = ta.offsetHeight;
+    });
+    ta.addEventListener("pointerup", () => {
+      const newHeight = ta.offsetHeight;
+      if (newHeight === ta._heightBeforeDrag) return; // not a resize drag
+      const row = ta.dataset.row;
+      const stageId = ta.dataset.planStage;
+      const fieldId = ta.dataset.planField;
+      const key = stageId
+        ? `${laneKey}::row-${row}::stage-${stageId}`
+        : `${laneKey}::row-${row}::field-${fieldId}`;
+      tableColWidths[key] = `${newHeight}px`;
+      saveTableColWidths();
+    });
+  });
+}
+
 function loadLanePlans() {
   try {
     const parsed = JSON.parse(localStorage.getItem(LANE_PLANS_KEY) || "null");
@@ -1681,6 +2197,54 @@ function saveLanePlans() {
   localStorage.setItem(LANE_PLANS_KEY, JSON.stringify(lanePlans));
 }
 
+function getLaneTableColumns(laneKey) {
+  // Returns the ordered list of columns currently visible in the lane plan table.
+  // Always: Player | ...stages... | Teleport | Entering Map
+  const stages = getLaneStages(laneKey);
+  const cols = [
+    { id: "player", label: "Player", fixed: true },
+    ...stages.map((s) => ({ id: `stage-${s.id}`, label: s.name, stageId: s.id, fixed: false })),
+    { id: "teleport", label: "Teleport", fixed: true },
+    { id: "entering", label: "Entering Map", fixed: true },
+  ];
+  return cols;
+}
+
+function renderLaneStageManager(laneKey) {
+  const list = document.getElementById("laneStageManagerList");
+  if (!list) return;
+
+  // Column overview header
+  const colsPreview = document.getElementById("laneStageColsPreview");
+  if (colsPreview) {
+    const cols = getLaneTableColumns(laneKey);
+    colsPreview.innerHTML = cols.map((col) =>
+      `<span class="stage-col-pill${col.fixed ? " fixed" : ""}">${escapeHtml(col.label)}</span>`
+    ).join('<span class="stage-col-arrow">→</span>');
+  }
+
+  list.innerHTML = "";
+  getLaneStages(laneKey).forEach((stage, index) => {
+    const locked = index < 3;
+    const row = document.createElement("div");
+    row.className = "stage-manager-row";
+    row.innerHTML = `
+      <span class="stage-manager-index">${index + 1}</span>
+      <input type="text" value="${escapeHtml(stage.name)}" data-lane-stage-name="${stage.id}" aria-label="Stage name">
+      <button class="detail-delete" type="button" data-lane-stage-delete="${stage.id}" ${locked ? "disabled" : ""}>Delete</button>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll("[data-lane-stage-name]").forEach((input) => {
+    input.addEventListener("input", () => renameLaneStage(laneKey, input.dataset.laneStageName, input.value));
+  });
+  list.querySelectorAll("[data-lane-stage-delete]").forEach((button) => {
+    button.addEventListener("click", () => {
+      deleteLaneStage(laneKey, button.dataset.laneStageDelete);
+    });
+  });
+}
+
 function renderLanePlanTabs() {
   lanePlanTabs.innerHTML = "";
   const overviewButton = document.createElement("button");
@@ -1695,6 +2259,9 @@ function renderLanePlanTabs() {
   lanePlanTabs.appendChild(overviewButton);
 
   LANES.forEach((lane) => {
+    const wrap = document.createElement("div");
+    wrap.className = `lane-plan-tab-wrap${activeLanePlan === lane.key ? " active" : ""}`;
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = `lane-plan-tab${activeLanePlan === lane.key ? " active" : ""}`;
@@ -1704,7 +2271,34 @@ function renderLanePlanTabs() {
       renderLanePlanTabs();
       renderLanePlan();
     });
-    lanePlanTabs.appendChild(button);
+
+    const stagesBtn = document.createElement("button");
+    stagesBtn.type = "button";
+    stagesBtn.className = "lane-tab-stages-btn";
+    stagesBtn.title = `Manage stages for ${teamLayout.laneNames[lane.key]}`;
+    stagesBtn.setAttribute("aria-label", `Manage stages for ${teamLayout.laneNames[lane.key]}`);
+    stagesBtn.textContent = "⚙";
+    stagesBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      // Switch to this lane first so the modal + table context is correct
+      if (activeLanePlan !== lane.key) {
+        activeLanePlan = lane.key;
+        renderLanePlanTabs();
+        renderLanePlan();
+        // Give the DOM a tick to render, then open
+        requestAnimationFrame(() => {
+          const overlay = document.getElementById("laneStagesOverlay");
+          if (overlay) overlay.hidden = false;
+        });
+      } else {
+        const overlay = document.getElementById("laneStagesOverlay");
+        if (overlay) overlay.hidden = false;
+      }
+    });
+
+    wrap.appendChild(button);
+    wrap.appendChild(stagesBtn);
+    lanePlanTabs.appendChild(wrap);
   });
 }
 
@@ -1718,24 +2312,29 @@ function renderLanePlan() {
   const laneName = teamLayout.laneNames[laneKey];
   const rowCount = teamLayout.rowCounts[laneKey];
   lanePlans[laneKey] ||= { notes: "", rows: {} };
-  const stageHeaders = mapStages.map((stage) => `<th>${escapeHtml(stage.name)}</th>`).join("");
+  const stages = getLaneStages(laneKey);
+  const stageHeaders = stages.map((stage) => `<th data-col-id="stage-${stage.id}">${escapeHtml(stage.name)}</th>`).join("");
 
   const rows = Array.from({ length: rowCount }, (_, index) => {
     const rowNumber = index + 1;
     const slotId = `${laneKey}-${rowNumber}`;
     const player = teamPlayers.find((item) => item.id === teamLayout.assignments[slotId]);
     const plan = lanePlans[laneKey].rows[rowNumber] || {};
-    const stageCells = mapStages.map((stage) => `
+    const stageCells = stages.map((stage) => `
         <td class="lane-plan-drop-cell" data-drop-target="stage" data-drop-stage="${stage.id}" data-drop-row="${rowNumber}"><textarea data-plan-stage="${stage.id}" data-row="${rowNumber}">${escapeHtml(getLanePlanStageValue(plan, stage))}</textarea></td>
     `).join("");
     const rolesList = getPlanRoles(plan);
     const rolesHtml = rolesList.map((r, ri) =>
       `<span class="role-tag">${escapeHtml(r)}<button class="role-tag-remove" type="button" data-row="${rowNumber}" data-role-index="${ri}" aria-label="Remove role">×</button></span>`
     ).join("");
+    const slotColor = getCellColor("overview", slotId, "slot");
+    const playerTdStyle = slotColor
+      ? ` style="background:${slotColor};color:${isColorLight(slotColor) ? "#111" : ""}"`
+      : "";
     return `
       <tr>
         <th>${laneKey.toUpperCase()}${rowNumber}</th>
-        <td class="lane-plan-player">${player ? renderPlanPlayer(player) : "drop name"}</td>
+        <td class="lane-plan-player"${playerTdStyle}>${player ? renderPlanPlayer(player) : "drop name"}</td>
         ${stageCells}
         <td class="lane-plan-drop-cell" data-drop-target="field" data-drop-field="teleport" data-drop-row="${rowNumber}"><textarea data-plan-field="teleport" data-row="${rowNumber}">${escapeHtml(plan.teleport || "")}</textarea></td>
         <td class="lane-plan-drop-cell" data-drop-target="field" data-drop-field="entering" data-drop-row="${rowNumber}"><textarea data-plan-field="entering" data-row="${rowNumber}">${escapeHtml(plan.entering || "")}</textarea></td>
@@ -1743,37 +2342,84 @@ function renderLanePlan() {
     `;
   }).join("");
 
+  // col group for resize persistence
+  const colGroupHtml = `<colgroup>
+    <col data-col-id="slot" style="width:70px">
+    <col data-col-id="player" style="width:150px">
+    ${stages.map((stage) => `<col data-col-id="stage-${stage.id}">`).join("")}
+    <col data-col-id="teleport">
+    <col data-col-id="entering">
+  </colgroup>`;
+
   lanePlanWrap.innerHTML = `
-    <div class="lane-plan-with-roles">
-      <div class="lane-plan-roles-sidebar" id="laneRolesSidebar">
-        <div class="roles-panel-title">Roles</div>
+    <div class="lane-plan-main">
+      <div class="lane-plan-title-bar">
+        <span class="lane-plan-title-text">${escapeHtml(laneName)}</span>
+        <button class="map-pin-btn lane-stages-btn" id="laneStagesBtn" type="button">Manage Stages</button>
       </div>
-      <div class="lane-plan-main">
-        <div class="lane-plan-title">${escapeHtml(laneName)}</div>
-        <div class="lane-plan-scroll">
-          <table class="lane-plan-table" style="min-width: ${640 + mapStages.length * 230}px">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Player</th>
-                ${stageHeaders}
-                <th>Teleport</th>
-                <th>Entering Map</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
+      <div class="lane-plan-scroll">
+        <table class="lane-plan-table" id="lanePlanTable" style="min-width: ${640 + stages.length * 230}px">
+          ${colGroupHtml}
+          <thead>
+            <tr>
+              <th data-col-id="slot"></th>
+              <th data-col-id="player">Player</th>
+              ${stageHeaders}
+              <th data-col-id="teleport">Teleport</th>
+              <th data-col-id="entering">Entering Map</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="lane-plan-notes">
+        <strong>NOTES</strong>
+        <textarea id="lanePlanNotes">${escapeHtml(lanePlans[laneKey].notes || "")}</textarea>
+      </div>
+    </div>
+    <div class="lane-stages-modal-overlay" id="laneStagesOverlay" hidden>
+      <div class="skill-modal stage-modal" role="dialog" aria-modal="true">
+        <div class="skill-modal-header">
+          <h2>Manage Stages — ${escapeHtml(laneName)}</h2>
+          <button class="skill-modal-close" id="laneStagesModalClose" type="button" aria-label="Close">x</button>
         </div>
-        <div class="lane-plan-notes">
-          <strong>NOTES</strong>
-          <textarea id="lanePlanNotes">${escapeHtml(lanePlans[laneKey].notes || "")}</textarea>
+        <div class="skill-modal-actions">
+          <span>First 3 stages cannot be deleted</span>
+          <button class="map-pin-btn" id="addLaneStageBtn" type="button">Add Stage</button>
         </div>
+        <div class="stage-cols-preview" id="laneStageColsPreview"></div>
+        <div class="stage-manager-list" id="laneStageManagerList"></div>
       </div>
     </div>
   `;
 
-  // Render roles sidebar inside lane plan
-  renderRolesSidebarInto(document.getElementById("laneRolesSidebar"));
+  renderLaneStageManager(laneKey);
+
+  document.getElementById("laneStagesBtn").addEventListener("click", () => {
+    document.getElementById("laneStagesOverlay").hidden = false;
+  });
+  document.getElementById("laneStagesModalClose").addEventListener("click", () => {
+    document.getElementById("laneStagesOverlay").hidden = true;
+  });
+  document.getElementById("laneStagesOverlay").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("laneStagesOverlay")) {
+      document.getElementById("laneStagesOverlay").hidden = true;
+    }
+  });
+  document.getElementById("addLaneStageBtn").addEventListener("click", () => {
+    addLaneStage(laneKey);
+    // renderLaneStageManager is called inside refreshLanePlanTable → no extra call needed
+  });
+
+  // Apply saved col widths and attach resize observer
+  const planTable = document.getElementById("lanePlanTable");
+  if (planTable) {
+    applyColWidths(planTable, laneKey);
+    planTable.style.tableLayout = "fixed";
+    attachColResizeListeners(planTable, laneKey);
+    applyRowHeights(lanePlanWrap, laneKey);
+    attachRowHeightListeners(lanePlanWrap, laneKey);
+  }
 
   // Role drop zones on the role-tags-wrap
   lanePlanWrap.querySelectorAll("[data-role-drop]").forEach((zone) => {
@@ -1859,12 +2505,16 @@ function renderLanePlan() {
 
 function getLanePlanStageValue(plan, stage) {
   if (plan.stages?.[stage.id] !== undefined) return plan.stages[stage.id];
+  // Legacy: global stage IDs mapped to old field names
   const legacyFields = {
     "stage-1": "before",
     "stage-2": "until",
     "stage-3": "noArk",
   };
-  return legacyFields[stage.id] ? plan[legacyFields[stage.id]] || "" : "";
+  // Try matching by legacy name pattern (stage-N for the first 3)
+  const legacyField = legacyFields[stage.id];
+  if (legacyField && plan[legacyField] !== undefined) return plan[legacyField];
+  return "";
 }
 
 function getPlanRoles(plan) {
@@ -1957,24 +2607,41 @@ function renderTeamOverviewView() {
       <div class="team-board-header">
         <h2>Team Overview</h2>
         <div class="overview-actions">
-          <button class="map-pin-btn" id="addPlanningStageBtn" type="button">Manage Stages</button>
           <div class="lane-controls" id="laneControls"></div>
         </div>
       </div>
       <div class="team-board" id="teamBoard"></div>
     </div>
   `;
-  document.getElementById("addPlanningStageBtn").addEventListener("click", openStageManager);
   renderLaneControls();
   renderTeamBoard();
 }
 
 function renderPlanPlayer(player) {
-  const coordinator = teamLayout.coordinators.includes(player.id);
+  const isCoordinator = teamLayout.coordinators.includes(player.id);
+  const isGL = (teamLayout.garrisonLeaders || []).includes(player.id);
+  const isRL = (teamLayout.rallyLeaders || []).includes(player.id);
+  const classes = ["plan-player"];
+  if (isCoordinator) classes.push("coordinator");
+  if (isGL) classes.push("garrison-leader");
+  if (isRL) classes.push("rally-leader");
+  const badges = [
+    ...(isCoordinator ? [`<small class="plan-badge badge-c">C</small>`] : []),
+    ...(isGL ? [`<small class="plan-badge badge-gl">GL</small>`] : []),
+    ...(isRL ? [`<small class="plan-badge badge-rl">RL</small>`] : []),
+  ].join("");
+  const roleLabels = [
+    ...(isCoordinator ? ["Coordinator"] : []),
+    ...(isGL ? ["Garrison"] : []),
+    ...(isRL ? ["Rally"] : []),
+  ].join(", ");
   return `
-    <span class="${coordinator ? "plan-player coordinator" : "plan-player"}">
-      <span>${escapeHtml(player.name)}</span>
-      ${coordinator ? "<small>Coordinator</small>" : ""}
+    <span class="${classes.join(" ")}">
+      <span class="plan-player-name-row">
+        <span class="plan-player-name">${escapeHtml(player.name)}</span>
+        ${badges ? `<span class="plan-badges-inline">${badges}</span>` : ""}
+      </span>
+      ${roleLabels ? `<span class="plan-player-roles">${escapeHtml(roleLabels)}</span>` : ""}
     </span>
   `;
 }
