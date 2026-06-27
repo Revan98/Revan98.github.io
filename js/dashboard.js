@@ -477,6 +477,42 @@ function onFilterTextBoxChanged() {
 
 document.getElementById("export-csv-btn")?.addEventListener("click", exportDkpCsv);
 
+function copyTop18() {
+  const allRows = [];
+  gridApi.forEachNode((node) => { if (node.data) allRows.push(node.data); });
+
+  if (!allRows.length) {
+    alert("No data loaded yet.");
+    return;
+  }
+
+  const text = [...allRows]
+    .sort((a, b) => Number(b.sumDkp || 0) - Number(a.sumDkp || 0))
+    .slice(0, 18)
+    .map((row, i) => `${i + 1}. ${row.id} ${row.name}`)
+    .join("\n");
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById("copy-top18-btn");
+    const original = btn.innerHTML;
+    btn.textContent = "✓ Copied!";
+    btn.disabled = true;
+    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+  });
+}
+
+document.getElementById("copy-top18-btn")?.addEventListener("click", copyTop18);
+
 let inlineChart = null;
 let selectedGovernorId = null;
 
