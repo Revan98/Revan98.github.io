@@ -53,7 +53,7 @@
             </svg>
           </div>
           <h1>Player Card</h1>
-          <p>Enter a governor ID to view their full stats, history, equipment, and farm accounts.</p>
+          <p>Enter a governor ID or name to view their full stats, history, equipment, and farm accounts.</p>
         </div>
         <div class="search-box">
           <div class="search-input-wrap">
@@ -64,10 +64,10 @@
               type="text"
               id="player-id-input"
               class="player-search-input"
-              placeholder="Governor ID (e.g. 123456789)"
+              placeholder="Governor ID or Name"
               autocomplete="off"
-              inputmode="numeric"
             />
+          <div id="name-suggestions" class="name-suggestions" style="display:none;"></div>
           </div>
           <button id="search-btn" class="primary search-btn">
             Load Player Card
