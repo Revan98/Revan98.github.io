@@ -34,7 +34,61 @@ function pairStack(l1, b1, s1, l2, b2, s2, show) {
   </div>`;
 }
 
-// ── DB state ───────────────────────────────────────────────────────
+// ── Name search ────────────────────────────────────────────────────
+function searchByName(query) {
+  const q = query.trim().toLowerCase();
+  if (!q || q.length < 2) return [];
+  const results = [];
+  const seen = new Set();
+
+  // Search kvk.db governors table
+  if (db) {
+    try {
+      const res = db.exec(`
+        SELECT DISTINCT governor_id, name FROM governors
+        WHERE lower(name) LIKE '%${q.replace(/'/g,"''")}%'
+        ORDER BY name
+        LIMIT 20
+      `);
+      if (res.length && res[0].values.length) {
+        res[0].values.forEach(([id, name]) => {
+          const key = String(id);
+          if (!seen.has(key)) { seen.add(key); results.push({ id: key, name: name || key, src: "kvk" }); }
+        });
+      }
+    } catch(e) { console.warn("Name search (kvk.db):", e); }
+  }
+
+  // Search scans db governors table
+  if (scansDb) {
+    try {
+      const res = scansDb.exec(`
+        SELECT DISTINCT governor_id, name FROM governors
+        WHERE lower(name) LIKE '%${q.replace(/'/g,"''")}%'
+        ORDER BY name
+        LIMIT 20
+      `);
+      if (res.length && res[0].values.length) {
+        res[0].values.forEach(([id, name]) => {
+          const key = String(id);
+          if (!seen.has(key)) { seen.add(key); results.push({ id: key, name: name || key, src: "scan" }); }
+        });
+      }
+    } catch(e) { console.warn("Name search (scans.db):", e); }
+  }
+
+  // Sort: prefix matches first
+  results.sort((a, b) => {
+    const al = a.name.toLowerCase(), bl = b.name.toLowerCase();
+    const aStarts = al.startsWith(q), bStarts = bl.startsWith(q);
+    if (aStarts && !bStarts) return -1;
+    if (!aStarts && bStarts) return 1;
+    return al.localeCompare(bl);
+  });
+  return results.slice(0, 15);
+}
+
+
 let db = null;
 let dbReady = false;
 let scansDb = null;
@@ -814,11 +868,90 @@ loadDatabase().then(async (SQL) => {
 function doSearch() {
   if (!dbReady) return;
   const val = inputEl.value.trim();
-  if (!val) { showError("Please enter a governor ID."); return; }
-  if (!normalizeNumericId(val)) { showError("Governor ID must be numeric."); return; }
-  document.getElementById("search-error").style.display = "none";
-  renderPlayerCard(val);
+  if (!val) { showError("Please enter a governor ID or name."); return; }
+  hideSuggestions();
+  if (normalizeNumericId(val)) {
+    document.getElementById("search-error").style.display = "none";
+    renderPlayerCard(val);
+  } else {
+    // Name search — if there's exactly one match, load it; otherwise show suggestions
+    const matches = searchByName(val);
+    if (!matches.length) { showError(`No player found matching "${val}".`); return; }
+    if (matches.length === 1) {
+      document.getElementById("search-error").style.display = "none";
+      inputEl.value = matches[0].id;
+      renderPlayerCard(matches[0].id);
+    } else {
+      showSuggestions(matches);
+    }
+  }
 }
 
+// ── Autocomplete suggestions ───────────────────────────────────────
+const suggestionsEl = document.getElementById("name-suggestions");
+let activeSuggestionIdx = -1;
+
+function showSuggestions(matches) {
+  activeSuggestionIdx = -1;
+  suggestionsEl.innerHTML = matches.map((m, i) =>
+    `<div class="name-suggestion-item" data-id="${escapeHtml(m.id)}" data-idx="${i}">
+      <span class="name-suggestion-name">${escapeHtml(m.name)}</span>
+      <span class="name-suggestion-id">${escapeHtml(m.id)}</span>
+    </div>`
+  ).join("");
+  suggestionsEl.style.display = "block";
+  suggestionsEl.querySelectorAll(".name-suggestion-item").forEach(item => {
+    item.addEventListener("mousedown", e => {
+      e.preventDefault();
+      selectSuggestion(item.dataset.id);
+    });
+  });
+}
+
+function hideSuggestions() {
+  suggestionsEl.style.display = "none";
+  suggestionsEl.innerHTML = "";
+  activeSuggestionIdx = -1;
+}
+
+function selectSuggestion(id) {
+  hideSuggestions();
+  inputEl.value = id;
+  document.getElementById("search-error").style.display = "none";
+  renderPlayerCard(id);
+}
+
+inputEl.addEventListener("input", () => {
+  if (!dbReady) return;
+  const val = inputEl.value.trim();
+  if (!val || normalizeNumericId(val)) { hideSuggestions(); return; }
+  if (val.length < 2) { hideSuggestions(); return; }
+  const matches = searchByName(val);
+  if (matches.length) showSuggestions(matches);
+  else hideSuggestions();
+});
+
+inputEl.addEventListener("keydown", e => {
+  if (e.key === "Enter") { doSearch(); return; }
+  if (suggestionsEl.style.display === "none") return;
+  const items = suggestionsEl.querySelectorAll(".name-suggestion-item");
+  if (!items.length) return;
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    activeSuggestionIdx = Math.min(activeSuggestionIdx + 1, items.length - 1);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    activeSuggestionIdx = Math.max(activeSuggestionIdx - 1, -1);
+  } else if (e.key === "Escape") {
+    hideSuggestions(); return;
+  } else { return; }
+  items.forEach((item, i) => item.classList.toggle("is-active", i === activeSuggestionIdx));
+  if (activeSuggestionIdx >= 0) items[activeSuggestionIdx].scrollIntoView({ block: "nearest" });
+  if (e.key === "Enter" && activeSuggestionIdx >= 0) {
+    selectSuggestion(items[activeSuggestionIdx].dataset.id);
+  }
+});
+
+inputEl.addEventListener("blur", () => { setTimeout(hideSuggestions, 150); });
+
 searchBtn.addEventListener("click", doSearch);
-inputEl.addEventListener("keydown", e=>{ if (e.key==="Enter") doSearch(); });
