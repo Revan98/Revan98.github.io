@@ -121,26 +121,36 @@ async function loadAllSheetsCache() {
 
   SheetCache.sheetsData = {};
 
-  SheetCache.sheetsList.forEach((date) => {
-    const sid = SheetCache._snapIds[date];
+  // Batch-load all snapshot diff data in one query instead of one per snapshot
+  const allSnapIds = snaps.values.map((r) => r[0]).join(",");
+  if (allSnapIds) {
+    const allDiffData = db.exec(`
+      SELECT
+        snapshot_id,
+        governor_id,
+        kp_diff,
+        power_diff,
+        t4_diff,
+        t5_diff,
+        deads_diff
+      FROM stats
+      WHERE snapshot_id IN (${allSnapIds})
+    `)[0];
 
-    const data = db.exec(`
-	  SELECT
-		governor_id,
-		kp_diff,
-		power_diff,
-		t4_diff,
-		t5_diff,
-		deads_diff
-	  FROM stats
-	  WHERE snapshot_id=${sid}
-	`)[0];
+    if (allDiffData) {
+      // Group rows by snapshot_id -> governor_id map
+      const bySnap = {};
+      allDiffData.values.forEach((r) => {
+        const sid = r[0];
+        if (!bySnap[sid]) bySnap[sid] = {};
+        bySnap[sid][String(r[1])] = r;
+      });
 
-    const map = {};
-    data.values.forEach((r) => (map[String(r[0])] = r));
-
-    SheetCache.sheetsData[date] = { rows: map };
-  });
+      snaps.values.forEach(([sid, date]) => {
+        SheetCache.sheetsData[date] = { rows: bySnap[sid] || {} };
+      });
+    }
+  }
 }
 
 const COL_table = {
@@ -430,7 +440,6 @@ const gridOptions = {
     {
       headerName: "DKP %",
       field: "dkpPercent",
-      comparator: (a, b) => Number(a) - Number(b),
       getQuickFilterText: () => "",
       flex: 1,
       minWidth: 120,
@@ -545,12 +554,14 @@ function formatSheetDate(sheetName) {
   return sheetName;
 }
 
+// Column indices in the batched sheetsData rows:
+// [0]=snapshot_id, [1]=governor_id, [2]=kp_diff, [3]=power_diff, [4]=t4_diff, [5]=t5_diff, [6]=deads_diff
 const CHART_COL = {
-  KP: 1,
-  POWER_DIFF: 2,
-  T4: 3,
-  T5: 4,
-  DEADS: 5,
+  KP: 2,
+  POWER_DIFF: 3,
+  T4: 4,
+  T5: 5,
+  DEADS: 6,
 };
 
 const CHART_SERIES = [
@@ -662,10 +673,6 @@ function updateChart(governorId) {
 	  inlineChart = null;
 	}
 	createChart(ctx, labels, datasets);
-
-  inlineChart.data.labels = labels;
-  inlineChart.data.datasets = datasets;
-  inlineChart.update();
 }
 
 loadAllSheetsCache().then(() => {
@@ -841,7 +848,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function renderCollapsibleSection(title, content, defaultOpen = false) {
-  const id = "sec_" + Math.random().toString(36).substr(2, 9);
+  // Use a stable incrementing counter instead of Math.random() for predictable IDs
+  const id = "sec_" + (renderCollapsibleSection._counter = (renderCollapsibleSection._counter || 0) + 1);
+
 
   return `
     <div class="collapsible-section">
