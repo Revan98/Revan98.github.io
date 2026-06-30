@@ -331,7 +331,7 @@ let resultsGridApi = null;
   }
 
   function isVacationRow(row) {
-    return String(row?.Vacation ?? "").trim().toUpperCase() === "YES";
+    return vacationList.includes(String(row?.ID ?? "").trim());
   }
 
   function loadFarmLinks() {
@@ -528,8 +528,6 @@ let resultsGridApi = null;
             ? "missing in new"
             : "OK";
 
-      const vacation = vacationList.includes(id) ? "YES" : "NO";
-
       const row = {
         ID: id,
         Name: name,
@@ -544,7 +542,6 @@ let resultsGridApi = null;
         "Sum Min DKP": 0,
         "Sum DKP": 0,
         "Sum DKP%": 0,
-        Vacation: vacation,
         Status: status,
         "T4 Kills": safeNum(a["T4 Kills"]),
         "T5 Kills": safeNum(a["T5 Kills"]),
@@ -556,7 +553,7 @@ let resultsGridApi = null;
 
       if (status === "missing in start" || status === "missing in new") {
         Object.keys(row).forEach((k) => {
-          if (!["ID", "Name", "Power", "Status", "Vacation"].includes(k)) {
+          if (!["ID", "Name", "Power", "Status"].includes(k)) {
             row[k] = 0;
           }
         });
@@ -567,7 +564,7 @@ let resultsGridApi = null;
 
     await applyFarmRollups(results);
 
-    const visibleResults = results.filter((row) => !isVacationRow(row));
+    const visibleResults = results;
 
     visibleResults.sort((x, y) => y.DKP - x.DKP);
 
