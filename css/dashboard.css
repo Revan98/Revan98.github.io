@@ -98,17 +98,17 @@
   width: 100%;
 }
 .quick-filter {
-  width: 100% !important;
-  max-width: 280px !important;
-  padding: 9px 12px 9px 28px !important;
-  border-radius: 8px !important;
-  border: 2px solid var(--table-border) !important;
-  background: var(--table-bg) !important;
-  color: var(--text-color) !important;
-  background-repeat: no-repeat !important;
-  background-position: 8px center !important;
-  background-size: 16px 16px !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E") !important;
+  width: 100%;
+  max-width: 280px;
+  padding: 9px 12px 9px 28px;
+  border-radius: 8px;
+  border: 2px solid var(--table-border);
+  background: var(--table-bg);
+  color: var(--text-color);
+  background-repeat: no-repeat;
+  background-position: 8px center;
+  background-size: 16px 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E");
   margin-bottom: 6px;
 }
 #myGrid {
@@ -170,7 +170,7 @@
 }
 .metric-base {
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 700;
   white-space: nowrap;
 }
 .metric-rollup {
@@ -245,7 +245,7 @@
   max-width: 100%;
   overflow: hidden;
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
