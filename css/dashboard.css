@@ -719,6 +719,10 @@ footer {
 .equip-pair-box--empty {
   opacity: 0.25;
 }
+.equip-box[data-tip-code] {
+  cursor: help;
+}
+
 .quick-filter-wrapper {
   display: flex;
   justify-content: flex-end;
