@@ -104,8 +104,8 @@ function buildTooltipHtml(code, kind) {
     if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
     const rarityClass = String(info.rarity || "gold").toLowerCase();
     const parts = [`<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`];
-    if (info.rarity) {
-      parts.push(`<div class="tt-slot">${escapeHtml(info.rarity)}</div>`);
+    if (info.type) {
+      parts.push(`<div class="tt-slot">${escapeHtml(info.type)}</div>`);
     }
     if (info.description) {
       parts.push(`<div class="tt-desc">${escapeHtml(String(info.description))}</div>`);
