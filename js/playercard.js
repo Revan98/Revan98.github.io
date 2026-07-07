@@ -148,7 +148,8 @@ function buildTooltipHtml(code, kind) {
   if (kind === "inscription") {
     const info = getInscriptionInfo(key);
     if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
-    const parts = [`<div class="tt-name">${escapeHtml(info.name || key)}</div>`];
+    const rarityClass = String(info.rarity || "gold").toLowerCase();
+    const parts = [`<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`];
     if (info.rarity) {
       parts.push(`<div class="tt-slot">${escapeHtml(info.rarity)}</div>`);
     }
@@ -161,7 +162,8 @@ function buildTooltipHtml(code, kind) {
   const info = getItemInfo(key);
   if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
 
-  const parts = [`<div class="tt-name">${escapeHtml(info.name || key)}</div>`];
+  const rarityClass = String(info.rarity || "gold").toLowerCase();
+  const parts = [`<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`];
 
   if (info.slot) {
     parts.push(`<div class="tt-slot">${escapeHtml(info.slot)}</div>`);
