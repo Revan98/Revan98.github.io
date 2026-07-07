@@ -1,0 +1,994 @@
+{
+  "inscriptions": {
+    "wellclad": {
+      "name": "Well Clad",
+      "description": "Increases the Defense of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "robust": {
+      "name": "Robust",
+      "description": "Increases the Health of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "swift": {
+      "name": "Swift",
+      "description": "Increases the March Speed of the wielder's troop by 2.5%.",
+      "rarity": "gray"
+    },
+    "payback": {
+      "name": "Payback",
+      "description": "The wielder's troop deals 7.5% extra damage to barbarians.",
+      "rarity": "gray"
+    },
+    "onslaught": {
+      "name": "Onslaught",
+      "description": "The wielder's troop deals 1.5% more normal damage of all types.",
+      "rarity": "gray"
+    },
+    "retaliatory": {
+      "name": "Retaliatory",
+      "description": "The wielder's troop deals 2.5% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "enraged": {
+      "name": "Enraged",
+      "description": "The wielder's troop deals 2.5% more skill damage of all types and 1% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "valiant": {
+      "name": "Valiant",
+      "description": "The wielder's troop deals 1% extra damage.",
+      "rarity": "gray"
+    },
+    "ironwall": {
+      "name": "Iron Wall",
+      "description": "The wielder's troop takes 1.5% less normal damage of all types.",
+      "rarity": "gray"
+    },
+    "bellicose": {
+      "name": "Bellicose",
+      "description": "Whenever the wielder's troop launches any type of basic attack, it has a 10% chance to gain a 5% bonus to damage dealt for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "pulverize": {
+      "name": "Pulverize",
+      "description": "Whenever the wielder's troop launches any type of basic attack, it has a 10% chance to gain a 20% bonus to all types of normal damage dealt for 1 seconds. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "breaker": {
+      "name": "Breaker",
+      "description": "Whenever the wielder's troop launches any type of basic attack, it has a 10% chance to reduce the target's Defense by 15% for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "furious": {
+      "name": "Furious",
+      "description": "Whenever the wielder's troop uses an active skill, it gains a 8% bonus to all types of skill damage dealt and a 3% bonus to all types of counterattack damage dealt for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "ward": {
+      "name": "Ward",
+      "description": "Whenever the wielder uses an active skill, their troop takes 5% less damage for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "phalanx": {
+      "name": "Phalanx",
+      "description": "Whenever the wielder uses an active skill, their troop has a 30% chance to gain a shield (Damage Factor 100) for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "hurried": {
+      "name": "Hurried",
+      "description": "The wielder's troop gains a 15% bonus to March Speed for 10 seconds after leaving battle.",
+      "rarity": "gray"
+    },
+    "tremors": {
+      "name": "Tremors",
+      "description": "Whenever the wielder's troop uses an active skill, it has a 30% chance to deal extra direct damage/ranged direct damage to all targets hit by the skill (Damage Factor 100). Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "calm": {
+      "name": "Calm",
+      "description": "Whenever the wielder's troop uses an active skill, it has a 30% chance to gain a 10% bonus to Attack for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "loosed": {
+      "name": "Loosed",
+      "description": "While in V formation, whenever the wielder's troop launches a ranged basic attack it has a 10% chance to deal extra ranged direct damage to the target (Damage Factor 200). Cooldown: 5 seconds. While not in V formation, the wielder's troop takes 1% less normal damage of all types.",
+      "rarity": "gray"
+    },
+    "armored": {
+      "name": "Armored",
+      "description": "Increases the Defense of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "fit": {
+      "name": "Fit",
+      "description": "Increases the Health of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "finehorse": {
+      "name": "Fine Horse",
+      "description": "Increases the March Speed of the wielder's troop by 2.5%.",
+      "rarity": "gray"
+    },
+    "annexer": {
+      "name": "Annexer",
+      "description": "The wielder's troop deals 7.5% extra damage to barbarians.",
+      "rarity": "gray"
+    },
+    "warhunger": {
+      "name": "Warhunger",
+      "description": "The wielder's troop deals 1.5% more normal damage of all types.",
+      "rarity": "gray"
+    },
+    "alert": {
+      "name": "Alert",
+      "description": "The wielder's troop deals 2.5% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "devious": {
+      "name": "Devious",
+      "description": "The wielder's troop deals 2.5% more skill damage of all types and 1% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "fearsome": {
+      "name": "Fearsome",
+      "description": "The wielder's troop deals 1% extra damage.",
+      "rarity": "gray"
+    },
+    "evasive": {
+      "name": "Evasive",
+      "description": "The wielder's troop takes 2.5% less counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "requital": {
+      "name": "Requital",
+      "description": "Whenever the wielder's troop is hit with any type of basic attack, it has a 10% chance to deal additional damage to the attacker every second for 2 seconds (Damage Factor 50). Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "respite": {
+      "name": "Respite",
+      "description": "Whenever the wielder's troop is hit with any type of basic attack, it has a 10% chance to take 10% less damage for the next 2 seconds. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "guarded": {
+      "name": "Guarded",
+      "description": "Whenever the wielder's troop takes skill/combo attack/smite damage of any type, it has a 10% chance to reduce the damage by 20%. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "embattled": {
+      "name": "Embattled",
+      "description": "Whenever the wielder's troop takes skill/combo attack/smite damage of any type, it has a 10% chance to gain 50 Rage. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "vengeful": {
+      "name": "Vengeful",
+      "description": "Whenever the wielder's troop launches any type of basic attack, it gains an extra 2 Rage for every 10% of its units it has lost (up to 10 Rage).",
+      "rarity": "gray"
+    },
+    "patronage": {
+      "name": "Patronage",
+      "description": "Whenever the wielder's troop receives healing or a shield, it deals 2% extra damage for the next 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gray"
+    },
+    "primed": {
+      "name": "Primed",
+      "description": "The wielder's troop gains a 5% bonus to March Speed when it has over 50% units remaining.",
+      "rarity": "gray"
+    },
+    "uplifting": {
+      "name": "Uplifting",
+      "description": "When it enters a battle, the wielder's troop gains a 1% bonus to all types of normal damage dealt. Every 10 seconds after the start of the battle, their troop gains an extra 1% bonus to all types of normal damage dealt (up to 5%).",
+      "rarity": "gray"
+    },
+    "spirited": {
+      "name": "Spirited",
+      "description": "The wielder's troop deals 5% extra damage when it has over 70% Rage.",
+      "rarity": "gray"
+    },
+    "bluster": {
+      "name": "Bluster",
+      "description": "Whenever the wielder's troop is inflicted with a control effect, it has a 10% chance to negate the effect and deal direct damage to 3 nearby enemy troops (Damage Factor 100). Damage dealt to each target is reduced by 15% for each additional target. This damage effect has a cooldown of 5 seconds.",
+      "rarity": "gray"
+    },
+    "metallics": {
+      "name": "Metallics",
+      "description": "Increases the Defense of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "vitality": {
+      "name": "Vitality",
+      "description": "Increases the Health of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "galloping": {
+      "name": "Galloping",
+      "description": "Increases the March Speed of the wielder's troop by 2.5%.",
+      "rarity": "gray"
+    },
+    "cleanser": {
+      "name": "Cleanser",
+      "description": "The wielder's troop deals 7.5% extra damage to barbarians.",
+      "rarity": "gray"
+    },
+    "striker": {
+      "name": "Striker",
+      "description": "The wielder's troop deals 1.5% more normal damage of all types.",
+      "rarity": "gray"
+    },
+    "rebuff": {
+      "name": "Rebuff",
+      "description": "The wielder's troop deals 2.5% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "brawler": {
+      "name": "Brawler",
+      "description": "The wielder's troop deals 2.5% more skill damage of all types and 1% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "warflames": {
+      "name": "Warflames",
+      "description": "The wielder's troop deals 1% extra damage.",
+      "rarity": "gray"
+    },
+    "eclipsed": {
+      "name": "Eclipsed",
+      "description": "The wielder's troop takes 2.5% less skill/combo attack/smite damage of all types.",
+      "rarity": "gray"
+    },
+    "brave": {
+      "name": "Brave",
+      "description": "While surrounded, the wielder's troop deals 5% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "strategic": {
+      "name": "Strategic",
+      "description": "The wielder's troop deals 2% extra damage to surrounded troops.",
+      "rarity": "gray"
+    },
+    "desperado": {
+      "name": "Desperado",
+      "description": "The wielder's troop takes 2% less damage when it has under 50% units remaining.",
+      "rarity": "gray"
+    },
+    "cohesive": {
+      "name": "Cohesive",
+      "description": "The wielder's troop deals 2% extra damage when it has over 50% units remaining.",
+      "rarity": "gray"
+    },
+    "pursuer": {
+      "name": "Pursuer",
+      "description": "The wielder's troop deals 2% extra damage to troops with under 20% units remaining.",
+      "rarity": "gray"
+    },
+    "assertive": {
+      "name": "Assertive",
+      "description": "The wielder's troop deals 2% more damage while on the map.",
+      "rarity": "gray"
+    },
+    "wary": {
+      "name": "Wary",
+      "description": "Increases the March Speed of the wielder's troop by 5% while outside of alliance territory.",
+      "rarity": "gray"
+    },
+    "siegework": {
+      "name": "Siegework",
+      "description": "The wielder's troop deals 2% more damage when attacking a city or stronghold.",
+      "rarity": "gray"
+    },
+    "sentries": {
+      "name": "Sentries",
+      "description": "The wielder's troop takes 2% less damage while garrisoned.",
+      "rarity": "gray"
+    },
+    "ballistics": {
+      "name": "Ballistics",
+      "description": "While in V formation and in ranged mode, the wielder's troop deals 3% more damage. While not in V formation, the wielder's troop deals 1.5% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "shielded": {
+      "name": "Shielded",
+      "description": "Increases the Defense of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "hardy": {
+      "name": "Hardy",
+      "description": "Increases the Health of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "haste": {
+      "name": "Haste",
+      "description": "Increases the March Speed of the wielder's troop by 2.5%.",
+      "rarity": "gray"
+    },
+    "pacifier": {
+      "name": "Pacifier",
+      "description": "The wielder's troop deals 7.5% extra damage to barbarians.",
+      "rarity": "gray"
+    },
+    "militant": {
+      "name": "Militant",
+      "description": "The wielder's troop deals 1.5% more normal damage of all types.",
+      "rarity": "gray"
+    },
+    "resistant": {
+      "name": "Resistant",
+      "description": "The wielder's troop deals 2.5% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "daring": {
+      "name": "Daring",
+      "description": "The wielder's troop deals 2.5% more skill damage of all types and 1% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "elite": {
+      "name": "Elite",
+      "description": "The wielder's troop deals 1% extra damage.",
+      "rarity": "gray"
+    },
+    "smite": {
+      "name": "Smite",
+      "description": "The wielder's troop deals 2% more normal damage of all types.",
+      "rarity": "gray"
+    },
+    "enduring": {
+      "name": "Enduring",
+      "description": "The wielder's troop deals 3% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "artisan": {
+      "name": "Artisan",
+      "description": "The wielder's troop deals 3% more skill damage of all types and 1.5% more counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "rapacious": {
+      "name": "Rapacious",
+      "description": "The wielder's troop deals 1.5% extra damage.",
+      "rarity": "gray"
+    },
+    "guardians": {
+      "name": "Guardians",
+      "description": "The wielder's troop takes 2% less normal damage of all types.",
+      "rarity": "gray"
+    },
+    "counterer": {
+      "name": "Counterer",
+      "description": "The wielder's troop takes 3% less counterattack damage of all types.",
+      "rarity": "gray"
+    },
+    "deflecter": {
+      "name": "Deflecter",
+      "description": "The wielder's troop takes 3% less skill/combo attack/smite damage of all types.",
+      "rarity": "gray"
+    },
+    "watchmen": {
+      "name": "Watchmen",
+      "description": "The wielder's troop takes 1.5% less damage.",
+      "rarity": "gray"
+    },
+    "lineshot": {
+      "name": "Lineshot",
+      "description": "While in V formation, the wielder's troop deals 5% more ranged normal damage. While not in V formation, the wielder's troop deals 1% more normal damage of all types.",
+      "rarity": "gray"
+    },
+    "warcry": {
+      "name": "Warcry",
+      "description": "Increases the Attack of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "brutal": {
+      "name": "Brutal",
+      "description": "Increases the Attack of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "spiked": {
+      "name": "Spiked",
+      "description": "Increases the Attack of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "infamy": {
+      "name": "Infamy",
+      "description": "Increases the Attack of the wielder's troop by 3.5%.",
+      "rarity": "gray"
+    },
+    "destructive": {
+      "name": "Destructive",
+      "description": "The wielder's troop gains a 3.5% boost to normal damage dealt. Whenever their troop launches a basic attack, it has a 10% chance to spend 100 Rage to increase the damage of the attack by 70%. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "straighttothepoint": {
+      "name": "Straight to the point",
+      "description": "The wielder's troop gains a 3.5% boost to normal damage dealt. Whenever their troop launches a basic attack, it has a 10% chance to gain a 20% bonus to normal damage dealt but a 10% reduction to skill damage dealt for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "invincible": {
+      "name": "Invincible",
+      "description": "Increases the skill damage resistance of the wielder's troop by 5%. For every 20% of its units a target troop has lost, the wielder's troop deals 3% more normal damage (up to 12%).",
+      "rarity": "gold"
+    },
+    "fearless": {
+      "name": "Fearless",
+      "description": "The wielder's troop gains a 8% boost to normal damage dealt.",
+      "rarity": "gold"
+    },
+    "hunter": {
+      "name": "Hunter",
+      "description": "The wielder's troop gains a 5% boost to skill damage dealt. When dealing direct damage to a single target, the damage is increased by 10%. Otherwise, it is increased by 2%. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "unstoppable": {
+      "name": "Unstoppable",
+      "description": "The wielder's troop gains a 5% boost to skill damage dealt. When dealing direct damage to a target, there is a 30% chance that the damage will be increased by 10%. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "balanced": {
+      "name": "Balanced",
+      "description": "Increases the normal damage resistance of the wielder's troop by 3.5%. Upon reaching 80% Rage, their troop deals 8% more skill damage for the next 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "intrepid": {
+      "name": "Intrepid",
+      "description": "The wielder's troop gains a 10% boost to skill damage dealt.",
+      "rarity": "gold"
+    },
+    "sharpshooter": {
+      "name": "Sharpshooter",
+      "description": "The wielder's troop gains a 5% boost to ranged normal damage dealt. Whenever their troop launches a ranged basic attack, it has a 10% chance to spend 50 Rage to increase the damage of the attack by 50%. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "drilled": {
+      "name": "Drilled",
+      "description": "The wielder's troop gains a 5% boost to ranged normal damage dealt. When attacking from range, for every 20% units the target has lost, the wielder's troop gains a 3% bonus to ranged normal damage dealt (up to a maximum of 12%).",
+      "rarity": "gold"
+    },
+    "merciless": {
+      "name": "Merciless",
+      "description": "Increases the skill damage resistance of the wielder's troop by 5%. Increases the Attack of the wielder's siege units by 30% for 10 seconds after entering battle.",
+      "rarity": "gold"
+    },
+    "astute": {
+      "name": "Astute",
+      "description": "The wielder's troop gains a 10% boost to ranged normal damage dealt.",
+      "rarity": "gold"
+    },
+    "influentialleader": {
+      "name": "Influential leader",
+      "description": "The wielder's troop gains a 5% boost to Rage gain speed. Whenever their troop launches a basic attack, it has a 10% chance to increase the Attack of up to 3 nearby allied targets (not including itself) by 15% for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "loaded": {
+      "name": "Loaded",
+      "description": "Increases the skill damage resistance of the wielder's troop by 5%. Whenever it takes damage, their troop has a 10% chance to reduce the damage by 15% and gain a 20% bonus to March Speed for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "civilized": {
+      "name": "Civilized",
+      "description": "The wearer's troop gains 5% counterattack damage resistance. Whenever their troop grants an allied troop a buff, extra Rage, or healing, the affected troop instantly gains 25 Rage. Can trigger once per second for each troop.",
+      "rarity": "gold"
+    },
+    "fixed": {
+      "name": "Fixed",
+      "description": "Increases the normal damage resistance of the wielder's troop by 8%.",
+      "rarity": "gold"
+    },
+    "cocoon": {
+      "name": "Cocoon",
+      "description": "The wielder's troop gains 5% skill damage resistance. Whenever their troop launches a basic attack, it has a 10% chance to increase the strength of any shields it receives by 10% for 5 seconds. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "inviolable": {
+      "name": "Inviolable",
+      "description": "The wielder's troop gains a 5% boost to all shields it creates. Their troop takes 10% less skill damage while it has a shield.",
+      "rarity": "gold"
+    },
+    "crowned": {
+      "name": "Crowned",
+      "description": "The wielder's troop gains a 5% boost to all shields it creates. If their troop has a shield, it deals 3% more damage. If their troop does not have a shield, it instead deals 2% more damage.",
+      "rarity": "gold"
+    },
+    "rounded": {
+      "name": "Rounded",
+      "description": "Increases the damage resistance of the wielder's troop by 5%.",
+      "rarity": "gold"
+    },
+    "rich": {
+      "name": "Rich",
+      "description": "Increases the Gold gathering speed of the wielder's troop by 25%.",
+      "rarity": "gold"
+    },
+    "battlements": {
+      "name": "Battlements",
+      "description": "Reduces the number of severely wounded units in battle by 10%.",
+      "rarity": "gold"
+    },
+    "moneyed": {
+      "name": "Moneyed",
+      "description": "The wielder's troop receives an extra 7.5% resources after gathering.",
+      "rarity": "gold"
+    },
+    "transporter": {
+      "name": "Transporter",
+      "description": "Increases the resource load of the wielder's troop by 25%.",
+      "rarity": "gold"
+    },
+    "enmeshed": {
+      "name": "Enmeshed",
+      "description": "The wielder's active skills reduce the March Speed of their current target by 20% for 5 seconds. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "logistical": {
+      "name": "Logistical",
+      "description": "Increases the wielder's Unit Capacity by 5%.",
+      "rarity": "gold"
+    },
+    "unassailed": {
+      "name": "Unassailed",
+      "description": "The wielder's troop gains a 50% bonus to March Speed for 10 seconds when departing buildings.",
+      "rarity": "gold"
+    },
+    "winged": {
+      "name": "Winged",
+      "description": "Increases the March Speed of the wielder's troop by 10%.",
+      "rarity": "gold"
+    },
+    "irreproachable": {
+      "name": "Irreproachable",
+      "description": "The wielder's troop gains a 3.5% boost to all shields it creates and all healing it receives. Whenever the wielder's troop launches a basic attack, it has a 10% chance to increase the strength of all shields and healing it receives within the next 3 seconds by 7%. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "cautious": {
+      "name": "Cautious",
+      "description": "The wielder's troop gains a 5% boost to counterattack damage dealt. Whenever their troop receives a shield or is healed, the strength of said shield/healing is increased by 7%. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "shieldbash": {
+      "name": "Shield Bash",
+      "description": "Increases the skill damage resistance of the wielder's troop by 5%. Whenever their troop is healed or receives a shield, it gains a 3.5% bonus to damage dealt for 5 seconds. Cooldown: 8 seconds.",
+      "rarity": "gold"
+    },
+    "rocksolid": {
+      "name": "Rock Solid",
+      "description": "The wielder's troop gains a 7% boost to all healing it receives and a 7% boost to all shields it creates.",
+      "rarity": "gold"
+    },
+    "avenger": {
+      "name": "Avenger",
+      "description": "The wielder's troop gains a 5% boost to counterattack damage. Whenever their troop uses an active skill, any healing it receives within the next 3 seconds is increased by 10%. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "guardinglight": {
+      "name": "Guarding light",
+      "description": "The wielder's troop gains a 5% boost to all healing it receives. Whenever their troop takes damage, it has a 30% chance to increase all healing it receives within the next 3 seconds by 10%. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "turnthecorner": {
+      "name": "Turn the corner",
+      "description": "Increases the skill damage resistance of the wielder's troop by 5%. Whenever their troop is healed, it gains a 5% bonus to damage dealt for 5 seconds. Cooldown: 8 seconds.",
+      "rarity": "gold"
+    },
+    "panacea": {
+      "name": "Panacea",
+      "description": "The wielder's troop gains a 10% boost to all healing it receives.",
+      "rarity": "gold"
+    },
+    "hastyretreat": {
+      "name": "Hasty Retreat",
+      "description": "The wielder's troop gains 50% March Speed while routed.",
+      "rarity": "gold"
+    },
+    "blastshield": {
+      "name": "Blast Shield",
+      "description": "When the wielder's troop takes skill damage from an AoE skill, the damage is reduced by 30%. Cooldown: 60 seconds (does not reset after exiting combat).",
+      "rarity": "gold"
+    },
+    "fullforce": {
+      "name": "Full Force",
+      "description": "Increases the wielder's Unit Capacity by 5%.",
+      "rarity": "gold"
+    },
+    "unitedfront": {
+      "name": "United Front",
+      "description": "If the wielder's troop is in a rally or garrison but is not the captain, the wielder's troop gains 5% severe wound resistance.",
+      "rarity": "gold"
+    },
+    "thrasher": {
+      "name": "Thrasher",
+      "description": "The wielder's troop gains a 3.5% boost to combo attack damage dealt. Whenever their troop launches a combo attack, it gains a 1.5% bonus to combo attack damage dealt for 10 seconds. This effect can stack up to 5 times.",
+      "rarity": "gold"
+    },
+    "butterflyeffect": {
+      "name": "Butterfly effect",
+      "description": "The wielder's troop gains a 3.5% boost to combo attack damage dealt. Combo attacks launched by their troop are 20% more likely to trigger effects triggered by launching a basic attack.",
+      "rarity": "gold"
+    },
+    "steelskin": {
+      "name": "Steelskin",
+      "description": "The wielder's troop gains 2% damage resistance. Whenever their troop launches a combo attack, it takes 1.5% less damage for the next 10 seconds. This effect can stack up to 5 times.",
+      "rarity": "gold"
+    },
+    "flurry": {
+      "name": "Flurry",
+      "description": "The wielder's troop gains a 8% boost to combo attack damage dealt.",
+      "rarity": "gold"
+    },
+    "battleready": {
+      "name": "Battle Ready",
+      "description": "The wielder's troop gains a 15% boost to counterattack damage dealt while garrisoned in your city.",
+      "rarity": "gold"
+    },
+    "fortified": {
+      "name": "Fortified",
+      "description": "The wielder's troop gains 12.5% skill damage resistance, smite damage resistance, and combo attack damage resistance while garrisoned in your city.",
+      "rarity": "gold"
+    },
+    "chokepoint": {
+      "name": "Chokepoint",
+      "description": "While garrisoned in your city and surrounded, the wielder's troop takes less damage (damage reduction = 4% x number of surrounding troops, up to 5 troops).",
+      "rarity": "gold"
+    },
+    "steelheart": {
+      "name": "Steelheart",
+      "description": "The wielder's troop gains 7% damage resistance while garrisoned in your city.",
+      "rarity": "gold"
+    },
+    "vanquisher": {
+      "name": "Vanquisher",
+      "description": "The wielder's troop deals 40% more damage to Barbarian Troops.",
+      "rarity": "gold"
+    },
+    "selfheal": {
+      "name": "Self Heal",
+      "description": "Whenever the wielder's troop defeats a Barbarian Troop, it recovers a portion of its slightly wounded units (Healing Factor 1000).",
+      "rarity": "gold"
+    },
+    "brilliant": {
+      "name": "Brilliant",
+      "description": "The wielder's troop gains 25% extra EXP from defeating barbarians.",
+      "rarity": "gold"
+    },
+    "mountain": {
+      "name": "Mountain",
+      "description": "The wielder's troop takes 30% less damage from Barbarian Troops.",
+      "rarity": "gold"
+    },
+    "toppler": {
+      "name": "Toppler",
+      "description": "The wielder's troop gains a 5% boost to smite damage. Whenever their troop deals smite damage, the target troop takes 20% increased smite damage for the next 3 seconds. This effect can trigger multiple times in a single second (up to 5 times) before entering its cooldown. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "demolisher": {
+      "name": "Demolisher",
+      "description": "The wielder's troop gains a 5% boost to smite damage. Whenever their troop deals smite damage, it has a 75% chance to ignore 50% of the target's Defense. This effect can trigger multiple times in a single second (up to 5 times) before entering its cooldown. If it only triggers once, the wielder's troop gains 100 extra Rage. Cooldown: 10 seconds.",
+      "rarity": "gold"
+    },
+    "airtight": {
+      "name": "Airtight",
+      "description": "The wielder's troop gains 5% combo attack damage resistance. Whenever their troop deals smite damage, their troop takes 10% less damage for the next 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gold"
+    },
+    "thundering": {
+      "name": "Thundering",
+      "description": "The wielder's troop gains a 10% boost to smite damage dealt.",
+      "rarity": "gold"
+    },
+    "advantageadvanced": {
+      "name": "Advantage advanced",
+      "description": "The wielder's troop gains a 7% boost to skill damage dealt. When the wielder's troop deals skill damage, it deals 10% more if the hit target has 50% or more units remaining. If not, the target takes 2.5% more damage for the next 2 seconds.",
+      "rarity": "gold"
+    },
+    "indomitable": {
+      "name": "Indomitable",
+      "description": "The wielder's troop gains a 7% boost to skill damage dealt. For every 300 Rage the wielder has, their troop deals 1% more damage and takes 1% less damage (for up to 5% more/less). This buff is applied when your primary commander uses a skill and lasts for 3 seconds at a fixed value, regardless of subsequent changes in Rage.",
+      "rarity": "gold"
+    },
+    "maneuveratease": {
+      "name": "Maneuver at ease",
+      "description": "The wielder's troop gains 2% damage resistance and 2% smite damage resistance. Within 5 seconds after using an active skill, for every 3 instances of basic attack/counterattack damage dealt, the next basic attack will have its damage converted into direct damage instead. The direct damage is equal to 150% of the troop's basic attack Damage Factor. Cooldown: 1 second.",
+      "rarity": "gold"
+    },
+    "horsebackaction": {
+      "name": "Horseback action",
+      "description": "The wielder's troop gains a 12.5% boost to skill damage dealt.",
+      "rarity": "gold"
+    },
+    "battleready_blue": {
+      "name": "Battle-Ready",
+      "description": "Whenever the wielder's troop launches a basic attack, it has a 10% chance to consume 100 Rage to gain a 35% bonus to normal damage dealt for 2 seconds. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "evenkeeled": {
+      "name": "Even-Keeled",
+      "description": "The wielder's troop gains a 1.5% boost to normal damage dealt. Whenever their troop launches a basic attack, it has a 10% chance to reduce all incoming damage by 5% but also deal 10% less skill damage for the next 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "unswerving": {
+      "name": "Unswerving",
+      "description": "Increases the skill damage resistance of the wielder's troop by 4%.",
+      "rarity": "blue"
+    },
+    "forceful": {
+      "name": "Forceful",
+      "description": "The wielder's troop gains a 3% boost to normal damage dealt.",
+      "rarity": "blue"
+    },
+    "crazed": {
+      "name": "Crazed",
+      "description": "Whenever the wielder's troop deals direct damage, it gains 35 Rage. Cooldown: 2 seconds.",
+      "rarity": "blue"
+    },
+    "boilingblood": {
+      "name": "Boiling Blood",
+      "description": "The wielder's troop gains a 2% boost to skill damage dealt. Whenever the wielder's troop deals direct damage to its current target, their troop has a 30% chance to reduce all incoming skill damage by 5% for the next 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "defiant": {
+      "name": "Defiant",
+      "description": "Increases the normal damage resistance of the wielder's troop by 3%.",
+      "rarity": "blue"
+    },
+    "focusfire": {
+      "name": "Focus Fire",
+      "description": "The wielder's troop gains a 4% boost to skill damage dealt.",
+      "rarity": "blue"
+    },
+    "fulldraw": {
+      "name": "Full Draw",
+      "description": "Whenever the wielder's troop launches a ranged basic attack, it has a 10% chance to consume 50 Rage to gain a 25% bonus to ranged normal damage dealt for 2 seconds. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "bloodybolt": {
+      "name": "Bloody Bolt",
+      "description": "The wielder's troop gains a 2% boost to ranged normal damage dealt. While in ranged mode, their troop deals 5% more ranged normal damage to enemy troops with less than 50% units remaining.",
+      "rarity": "blue"
+    },
+    "tempered": {
+      "name": "Tempered",
+      "description": "Increases the skill damage resistance of the wielder's troop by 4%.",
+      "rarity": "blue"
+    },
+    "sharparrows": {
+      "name": "Sharp Arrows",
+      "description": "The wielder's troop gains a 4% boost to ranged normal damage dealt.",
+      "rarity": "blue"
+    },
+    "drumsofwar": {
+      "name": "Drums of war",
+      "description": "Whenever the wielder's troop launches a basic attack, it has a 10% chance to grant up to 3 nearby allied troops (including itself) a 15% bonus to Attack for 2 seconds. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "nullify": {
+      "name": "Nullify",
+      "description": "Increases the skill damage resistance of the wielder's troop by 2%. Whenever their troop takes damage, it has a 10% chance to reduce all incoming damage by 3% for the next 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "counterparry": {
+      "name": "Counter-Parry",
+      "description": "Increases the counterattack damage resistance of the wielder's troop by 4%.",
+      "rarity": "blue"
+    },
+    "persevering": {
+      "name": "Persevering",
+      "description": "Increases the normal damage resistance of the wielder's troop by 3%.",
+      "rarity": "blue"
+    },
+    "selfdefense": {
+      "name": "Self-Defense",
+      "description": "Whenever the wielder's troop launches a basic attack, it has a 10% chance to increase the strength of any shields it creates within the next 4 seconds by 10%. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "aegis": {
+      "name": "Aegis",
+      "description": "The wielder's troop gains a 2% boost to all shields it creates. Their troop takes 5% less skill damage while it has a shield.",
+      "rarity": "blue"
+    },
+    "reinforced": {
+      "name": "Reinforced",
+      "description": "The wielder's troop gains a 4% boost to all shields it creates.",
+      "rarity": "blue"
+    },
+    "tenacious": {
+      "name": "Tenacious",
+      "description": "Increases the damage resistance of the wielder's troop by 2%.",
+      "rarity": "blue"
+    },
+    "goldpanner": {
+      "name": "Gold Panner",
+      "description": "Increases the Gold gathering speed of the wielder's troop by 15%.",
+      "rarity": "blue"
+    },
+    "safeguard": {
+      "name": "Safeguard",
+      "description": "Reduces the number of severely wounded units in battle by 4%.",
+      "rarity": "blue"
+    },
+    "plentitude": {
+      "name": "Plentitude",
+      "description": "The wielder's troop receives an extra 3% resources after gathering.",
+      "rarity": "blue"
+    },
+    "sturdyback": {
+      "name": "Sturdy Back",
+      "description": "Increases the resource load of the wielder's troop by 12%.",
+      "rarity": "blue"
+    },
+    "entangling": {
+      "name": "Entangling",
+      "description": "The wielder's active skills reduce the March Speed of their current target by 10% for 5 seconds. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "armsrace": {
+      "name": "Arms Race",
+      "description": "Increases the wielder's Unit Capacity by 2%.",
+      "rarity": "blue"
+    },
+    "sprinter": {
+      "name": "Sprinter",
+      "description": "The wielder's troop gains a 20% bonus to March Speed for 10 seconds when departing buildings.",
+      "rarity": "blue"
+    },
+    "strider": {
+      "name": "Strider",
+      "description": "Increases the March Speed of the wielder's troop by 5%.",
+      "rarity": "blue"
+    },
+    "ironclad": {
+      "name": "Ironclad",
+      "description": "Whenever the wielder's troop receives a shield or is healed, the strength of any shields or healing it receives within the next 3 seconds is increased by 5%. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "strikeparry": {
+      "name": "Strike & parry",
+      "description": "The wielder's troop gains a 2% boost to counterattack damage dealt. Whenever their troop receives a shield, it also receives a damage-absorbing Mighty Shield for 3 seconds (Damage Factor 150). Whenever their troop is healed, it is Mighty Healed for a portion of its slightly wounded units (Healing Factor 150). Both effects use the same cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "unshakeable": {
+      "name": "Unshakeable",
+      "description": "Increases the skill damage resistance of the wielder's troop by 4%.",
+      "rarity": "blue"
+    },
+    "convalescing": {
+      "name": "Convalescing",
+      "description": "The wielder's troop gains a 3% boost to all healing it receives and a 3% boost to all shields it creates.",
+      "rarity": "blue"
+    },
+    "backinaction": {
+      "name": "Back In Action",
+      "description": "Whenever the wielder's troop is healed, the strength of said healing is increased by 8%. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "medic": {
+      "name": "Medic",
+      "description": "The wielder's troop gains a 2% boost to all healing it receives. Whenever their troop is healed, if it is healed again within the next 5 seconds, said healing is increased by 4%. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "riseup": {
+      "name": "Rise Up",
+      "description": "Increases the skill damage resistance of the wielder's troop by 4%.",
+      "rarity": "blue"
+    },
+    "refreshing": {
+      "name": "Refreshing",
+      "description": "The wielder's troop gains a 4% boost to all healing it receives.",
+      "rarity": "blue"
+    },
+    "fallback": {
+      "name": "Fall Back",
+      "description": "The wielder's troop gains 20% March Speed while routed.",
+      "rarity": "blue"
+    },
+    "spreadout": {
+      "name": "Spread Out",
+      "description": "When the wielder's troop takes skill damage from an AoE skill, the damage is reduced by 15%. Cooldown: 60 seconds (does not reset after exiting combat).",
+      "rarity": "blue"
+    },
+    "shocktroops": {
+      "name": "Shock Troops",
+      "description": "Increases the wielder's Unit Capacity by 2%.",
+      "rarity": "blue"
+    },
+    "mutualdefense": {
+      "name": "Mutual Defense",
+      "description": "If the wielder's troop is in a rally or garrison but is not the captain, the wielder's troop gains 2% severe wound resistance.",
+      "rarity": "blue"
+    },
+    "pummeler": {
+      "name": "Pummeler",
+      "description": "Whenever the wielder's troop launches a combo attack, it has a 80% chance to gain a 10% bonus to combo attack damage dealt for 2 seconds. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "causative": {
+      "name": "Causative",
+      "description": "The wielder's troop gains a 1.5% boost to combo attack damage dealt. Combo attacks launched by their troop are 8% more likely to trigger effects triggered by launching a basic attack.",
+      "rarity": "blue"
+    },
+    "determined": {
+      "name": "Determined",
+      "description": "The wielder's troop gains 1.5% damage resistance.",
+      "rarity": "blue"
+    },
+    "relentless": {
+      "name": "Relentless",
+      "description": "The wielder's troop gains a 3.5% boost to combo attack damage dealt.",
+      "rarity": "blue"
+    },
+    "vigilant": {
+      "name": "Vigilant",
+      "description": "The wielder's troop gains a 6% boost to counterattack damage dealt while garrisoned in your city.",
+      "rarity": "blue"
+    },
+    "resolute": {
+      "name": "Resolute",
+      "description": "The wielder's troop gains 5% skill damage resistance, smite damage resistance, and combo attack damage resistance while garrisoned in your city.",
+      "rarity": "blue"
+    },
+    "precautions": {
+      "name": "Precautions",
+      "description": "While garrisoned in your city and surrounded, the wielder's troop takes less damage (damage reduction = 2% x number of surrounding troops, up to 4 troops).",
+      "rarity": "blue"
+    },
+    "ironsides": {
+      "name": "Ironsides",
+      "description": "The wielder's troop gains 3% damage resistance while garrisoned in your city.",
+      "rarity": "blue"
+    },
+    "overwhelm": {
+      "name": "Overwhelm",
+      "description": "The wielder's troop deals 15% more damage to Barbarian Troops.",
+      "rarity": "blue"
+    },
+    "selftend": {
+      "name": "Self Tend",
+      "description": "Whenever the wielder's troop defeats a Barbarian Troop, it recovers a portion of its slightly wounded units (Healing Factor 400).",
+      "rarity": "blue"
+    },
+    "stone": {
+      "name": "Stone",
+      "description": "The wielder's troop takes 12% less damage from Barbarian Troops.",
+      "rarity": "blue"
+    },
+    "imploder": {
+      "name": "Imploder",
+      "description": "Whenever the wielder's troop deals smite damage, the target troop loses 20% Defense for the next 2 seconds. This effect can trigger multiple times in a single second (up to 3 times) before entering its cooldown. Cooldown: 5 seconds.",
+      "rarity": "blue"
+    },
+    "raider": {
+      "name": "Raider",
+      "description": "The wielder's troop gains a 2% boost to smite damage. Whenever their troop deals smite damage, it has a 50% chance to gain Rage 20% faster for the next 3 seconds. Cooldown: 10 seconds.",
+      "rarity": "blue"
+    },
+    "hardheaded": {
+      "name": "Hardheaded",
+      "description": "The wielder's troop gains 4% combo attack damage resistance.",
+      "rarity": "blue"
+    },
+    "rattling": {
+      "name": "Rattling",
+      "description": "The wielder's troop gains a 4% boost to smite damage dealt.",
+      "rarity": "blue"
+    },
+    "fury": {
+      "name": "Fury",
+      "description": "When the wielder's troop deals skill damage, it ignores 10% of the enemy troop's Defense. This effect can be triggered up to 3 times per second. Cooldown: 2 seconds.",
+      "rarity": "blue"
+    },
+    "soar": {
+      "name": "Soar",
+      "description": "The wielder's troop gains a 2% skill damage boost. For every 600 Rage gained, the wielder's troop gains a 4% bonus to all damage dealt and 2% reduction to all damage taken for the next 3 seconds.",
+      "rarity": "blue"
+    },
+    "ballista": {
+      "name": "Ballista",
+      "description": "The wielder's troop gains 1.5% damage resistance and 1.5% smite damage resistance.",
+      "rarity": "blue"
+    },
+    "divinestaff": {
+      "name": "Divine Staff",
+      "description": "The wielder's troop gains a 5% boost to skill damage dealt.",
+      "rarity": "blue"
+    },
+    "astute_blue": {
+      "name": "Astute",
+      "description": "The wielder's troop gains 10% extra EXP from defeating barbarians.",
+      "rarity": "blue"
+    }
+  }
+}
