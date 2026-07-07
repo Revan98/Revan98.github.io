@@ -36,13 +36,171 @@ function normalizeNumericId(value) {
   return /^\d+$/.test(id) ? id : null;
 }
 
+function iconPath(name, kind) {
+  const folder = kind === "commander" ? "commanders" : "equipment";
+  return `icons/${folder}/${encodeURIComponent(String(name).trim())}.webp`;
+}
+
+let itemsData = { items: {} };
+let commandersData = { commanders: {} };
+let inscriptionsData = { inscriptions: {} };
+let inscriptionsByName = {};
+
+async function loadEquipRefData() {
+  try {
+    const [itemsRes, commandersRes, inscriptionsRes] = await Promise.all([
+      fetch("data/items.json"),
+      fetch("data/commanders.json"),
+      fetch("data/inscriptions.json"),
+    ]);
+    itemsData = await itemsRes.json();
+    commandersData = await commandersRes.json();
+    inscriptionsData = await inscriptionsRes.json();
+
+    inscriptionsByName = {};
+    for (const [key, info] of Object.entries(inscriptionsData.inscriptions || {})) {
+      const nameKey = String(info.name || key).trim().toLowerCase();
+      inscriptionsByName[nameKey] = { key, ...info };
+    }
+  } catch (e) {
+    console.error("loadEquipRefData:", e);
+  }
+}
+
+function getItemInfo(itemCode) {
+  const key = String(itemCode ?? "").trim();
+  return (itemsData.items && itemsData.items[key]) || null;
+}
+
+function getCommanderInfo(commCode) {
+  const key = String(commCode ?? "").trim();
+  return (commandersData.commanders && commandersData.commanders[key]) || null;
+}
+
+function getInscriptionInfo(name) {
+  const key = String(name ?? "").trim().toLowerCase();
+  return inscriptionsByName[key] || null;
+}
+
+function getAllInscriptionNames() {
+  return Object.values(inscriptionsByName)
+    .map(i => i.name)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function buildTooltipHtml(code, kind) {
+  if (!code) return "";
+  const key = String(code).trim();
+  if (!key) return "";
+
+  if (kind === "commander") {
+    const info = getCommanderInfo(key);
+    const name = info ? info.name : key;
+    return `<div class="tt-name">${escapeHtml(name)}</div>`;
+  }
+
+  if (kind === "inscription") {
+    const info = getInscriptionInfo(key);
+    if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
+    const parts = [`<div class="tt-name">${escapeHtml(info.name || key)}</div>`];
+    if (info.rarity) {
+      parts.push(`<div class="tt-slot">${escapeHtml(info.rarity)}</div>`);
+    }
+    if (info.description) {
+      parts.push(`<div class="tt-desc">${escapeHtml(String(info.description))}</div>`);
+    }
+    return parts.join("");
+  }
+
+  const info = getItemInfo(key);
+  if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
+
+  const parts = [`<div class="tt-name">${escapeHtml(info.name || key)}</div>`];
+
+  if (info.slot) {
+    parts.push(`<div class="tt-slot">${escapeHtml(info.slot)}</div>`);
+  }
+
+  const stats = Array.isArray(info.stats) ? info.stats : (info.stats ? [info.stats] : []);
+  if (stats.length) {
+    parts.push(`<ul class="tt-stats">${stats.map(s => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`);
+  }
+
+  const descArr = Array.isArray(info.description) ? info.description : (info.description ? [info.description] : []);
+  if (descArr.length) {
+    parts.push(`<div class="tt-desc">${descArr.map(d => escapeHtml(String(d))).join("<br>")}</div>`);
+  }
+
+  return parts.join("");
+}
+
+function initEquipTooltip() {
+  const tip = document.createElement("div");
+  tip.className = "equip-tooltip";
+  tip.style.display = "none";
+  document.body.appendChild(tip);
+
+  let activeEl = null;
+
+  function positionTip(x, y) {
+    const margin = 14;
+    const rect = tip.getBoundingClientRect();
+    let left = x + margin;
+    let top = y + margin;
+
+    if (left + rect.width > window.innerWidth - 8) {
+      left = x - rect.width - margin;
+    }
+    if (top + rect.height > window.innerHeight - 8) {
+      top = y - rect.height - margin;
+    }
+    left = Math.max(8, left);
+    top = Math.max(8, top);
+
+    tip.style.left = `${left}px`;
+    tip.style.top = `${top}px`;
+  }
+
+  document.addEventListener("mouseover", (e) => {
+    const el = e.target.closest("[data-tip-code]");
+    if (!el) return;
+    activeEl = el;
+
+    const html = buildTooltipHtml(el.dataset.tipCode, el.dataset.tipKind);
+    if (!html) return;
+
+    tip.innerHTML = html;
+    tip.style.display = "block";
+    positionTip(e.clientX, e.clientY);
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!activeEl || tip.style.display === "none") return;
+    positionTip(e.clientX, e.clientY);
+  });
+
+  document.addEventListener("mouseout", (e) => {
+    const el = e.target.closest("[data-tip-code]");
+    if (!el || el !== activeEl) return;
+    if (el.contains(e.relatedTarget)) return;
+    activeEl = null;
+    tip.style.display = "none";
+  });
+
+  document.addEventListener("scroll", () => {
+    tip.style.display = "none";
+    activeEl = null;
+  }, true);
+}
+initEquipTooltip();
+
 (async () => {
   try {
     SQL = await initSqlJs({
       locateFile: f => `https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/${f}`,
     });
   } catch (e) { console.error("sql.js init failed:", e); }
-  await loadIconManifest();
+  await Promise.all([loadIconManifest(), loadEquipRefData()]);
 })();
 
 const SCHEMA_SQL = `
@@ -570,22 +728,9 @@ function loadGovernor() {
   renderPairsGrid();
   loadArmaments(safeGovId);
 }
-const ARM_ABILITY_TIERS = (() => {
-  const gold = new Set(["Destructive","Straight to the point","Invincible","Fearless","Hunter","Unstoppable","Balanced","Intrepid","Sharpshooter","Drilled","Merciless","Astute","Influential leader","Loaded","Civilized","Fixed","Cocoon","Inviolable","Crowned","Rounded","Rich","Battlements","Moneyed","Transporter","Enmeshed","Logistical","Unassailed","Winged","Irreproachable","Cautious","Shield Bash","Rock Solid","Avenger","Guarding light","Turn the corner","Panacea","Hasty Retreat","Blast Shield","Full Force","United Front","Thrasher","Butterfly effect","Steelskin","Flurry","Battle Ready","Fortified","Chokepoint","Steelheart","Vanquisher","Self Heal","Brilliant","Mountain","Toppler","Demolisher","Airtight","Thundering","Advantage advanced","Indomitable","Maneuver at ease","Horseback action"]);
-  const blue = new Set(["Battle-Ready","Even-Keeled","Unswerving","Forceful","Crazed","Boiling Blood","Defiant","Focus Fire","Full Draw","Bloody Bolt","Tempered","Sharp Arrows","Drums of war","Nullify","Counter-Parry","Persevering","Self-Defense","Aegis","Reinforced","Tenacious","Gold Panner","Safeguard","Plentitude","Sturdy Back","Entangling","Arms Race","Sprinter","Strider","Ironclad","Strike & parry","Unshakeable","Convalescing","Back In Action","Medic","Rise Up","Refreshing","Fall Back","Spread Out","Shock Troops","Mutual Defense","Pummeler","Causative","Determined","Relentless","Vigilant","Resolute","Precautions","Ironsides","Overwhelm","Self Tend","Stone","Imploder","Raider","Hardheaded","Rattling","Fury","Soar","Ballista","Divine Staff"]);
-  const gray = new Set(["Warcry", "Well Clad", "Robust", "Swift", "Payback", "Onslaught", "Retaliato....", "Enraged", "Valiant", "Iron Wall", "Bellicose", "Pulverize", "Breaker", "Furious", "Ward", "Phalanx", "Hurried", "Tremors", "Calm", "Loosed", "Brutal", "Armored", "Fit", "Fine Horse", "Annexer", "Warhunger", "Alert", "Devious", "Fearsome", "Evasive", "Requital", "Respite", "Guarded", "Embattled", "Vengeful", "Patronage", "Primed", "Uplifting", "Spirited", "Bluster", "Infamy", "Shielded", "Hardy", "Haste", "Pacifier", "Militant", "Resistant", "Daring", "Elite", "Evasive", "Smite", "Enduring", "Artisan", "Rapacious", "Guardians", "Counterer", "Deflecter", "Watchmen", "Lineshot", "Spiked", "Metallics", "Vitality", "Galloping", "Cleanser", "Striker", "Rebuff", "Brawler", "Warflames", "Eclipsed", "Brave", "Strategic", "Desperado", "Cohesive", "Pursuer", "Assertive", "Wary", "Siegework", "Sentries", "Ballistics"]);
-  return { gold, blue, gray };
-})();
-
 function getArmTier(name) {
-  const n = String(name).trim();
-  if (ARM_ABILITY_TIERS.gold.has(n)) return "gold";
-  if (ARM_ABILITY_TIERS.blue.has(n)) return "blue";
-  if (ARM_ABILITY_TIERS.gray.has(n)) return "gray";
-  const lower = n.toLowerCase();
-  for (const v of ARM_ABILITY_TIERS.gold) if (v.toLowerCase() === lower) return "gold";
-  for (const v of ARM_ABILITY_TIERS.blue) if (v.toLowerCase() === lower) return "blue";
-  for (const v of ARM_ABILITY_TIERS.gray) if (v.toLowerCase() === lower) return "gray";
+  const info = getInscriptionInfo(name);
+  return info ? info.rarity : "gray";
 }
 
 function renderArmamentsGrid() {
@@ -602,7 +747,7 @@ function renderArmamentsGrid() {
           .filter(v => !isArmEmpty(v))
           .map(v => {
             const tier = getArmTier(String(v));
-            return `<span class="eq-arm-ins eq-arm-ins--${tier}">${escapeHtml(String(v))}</span>`;
+            return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
           }).join("")
       : "";
 
@@ -1120,12 +1265,16 @@ function renderSlotGrid() {
     const hasItem = !!d.item;
     const card    = document.createElement("div");
     card.className = "eq-slot-card" + (hasItem ? " has-item" : "");
+    if (hasItem) {
+      card.dataset.tipCode = d.item;
+      card.dataset.tipKind = "item";
+    }
 
     card.innerHTML = `
       <span class="eq-slot-label">${escapeHtml(slot.label)}</span>
       <div class="eq-slot-img-box">
         ${hasItem
-          ? `<img src="icons/${encodeURIComponent(d.item)}.webp" alt="${escapeHtml(d.item)}" loading="lazy"
+          ? `<img src="${iconPath(d.item, "item")}" alt="${escapeHtml(d.item)}" loading="lazy"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
              <div class="eq-slot-placeholder" style="display:none;">?</div>`
           : `<div class="eq-slot-placeholder">+</div>`}
@@ -1156,11 +1305,15 @@ function renderPairsGrid() {
       const hasComm = !!name;
       const card    = document.createElement("div");
       card.className = "eq-pair-card" + (hasComm ? " has-item" : "");
+      if (hasComm) {
+        card.dataset.tipCode = name;
+        card.dataset.tipKind = "commander";
+      }
 
       card.innerHTML = `
         <div class="eq-pair-img-box">
           ${hasComm
-            ? `<img src="icons/${encodeURIComponent(name)}.webp" alt="${escapeHtml(name)}" loading="lazy"
+            ? `<img src="${iconPath(name, "commander")}" alt="${escapeHtml(name)}" loading="lazy"
                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                <div class="eq-slot-placeholder" style="display:none;">?</div>`
             : `<div class="eq-slot-placeholder">+</div>`}
@@ -1370,11 +1523,14 @@ function renderPickerItems(filter) {
   }
 
   pickerBody.innerHTML = "";
+  const tipKind = pickerTarget?.type === "pair" ? "commander" : "item";
   for (const name of list) {
     const div = document.createElement("div");
     div.className = "eq-picker-item" + (name === pickerSelectedItem ? " selected" : "");
+    div.dataset.tipCode = name;
+    div.dataset.tipKind = tipKind;
     div.innerHTML = `
-      <img src="icons/${encodeURIComponent(name)}.webp" alt="${escapeHtml(name)}" loading="lazy"
+      <img src="${iconPath(name, tipKind)}" alt="${escapeHtml(name)}" loading="lazy"
            onerror="this.style.display='none'">
       <span class="eq-picker-item-name">${escapeHtml(name)}</span>`;
     div.addEventListener("click", () => selectPickerItem(name));
@@ -1417,7 +1573,7 @@ function openDetailPopup(marchIdx, slotKey) {
   const slot   = EQUIP_SLOTS.find(s => s.key === slotKey);
   detailSlotTitle.textContent = `${slot?.label ?? slotKey} — March ${marchIdx + 1}`;
   detailItemName.textContent  = d.item;
-  detailImg.src               = `icons/${encodeURIComponent(d.item)}.webp`;
+  detailImg.src               = iconPath(d.item, "item");
   detailImg.alt               = d.item;
   detailImg.onerror           = () => { detailImg.style.display = "none"; };
   detailImg.style.display     = "";
@@ -1595,8 +1751,6 @@ document.getElementById("armModalClear").addEventListener("click", () => {
 });
 document.getElementById("armModalName").addEventListener("input", renderArmSetBonus);
 
-const ALL_INSCRIPTIONS = [...ARM_ABILITY_TIERS.gold, ...ARM_ABILITY_TIERS.blue, ...ARM_ABILITY_TIERS.gray].sort((a, b) => a.localeCompare(b));
-
 let insPickerSelected = [];
 
 function renderInsChosenList() {
@@ -1609,7 +1763,7 @@ function renderInsChosenList() {
   }
   list.innerHTML = vals.map(v => {
     const tier = getArmTier(v);
-    return `<span class="eq-arm-ins eq-arm-ins--${tier}">${escapeHtml(v)}</span>`;
+    return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
   }).join("");
 }
 
@@ -1631,7 +1785,7 @@ function closeInsPicker() {
 function renderInsPickerList(filter) {
   const q    = filter.toLowerCase();
   const body = document.getElementById("insPickerBody");
-  let list   = ALL_INSCRIPTIONS;
+  let list   = getAllInscriptionNames();
   if (q) list = list.filter(n => n.toLowerCase().includes(q));
 
   body.innerHTML = "";
@@ -1644,6 +1798,8 @@ function renderInsPickerList(filter) {
     pill.type      = "button";
     pill.className = `eq-ins-pill eq-ins-pill--${tier}${checked ? " selected" : ""}`;
     pill.textContent = name;
+    pill.dataset.tipCode = name;
+    pill.dataset.tipKind = "inscription";
     pill.addEventListener("click", () => toggleInsPick(name, pill));
     wrap.appendChild(pill);
   }
@@ -1668,7 +1824,7 @@ function renderInsPickerFooter() {
   const wrap = document.getElementById("insPickerSelectedWrap");
   wrap.innerHTML = insPickerSelected.map(v => {
     const tier = getArmTier(v);
-    return `<span class="eq-arm-ins eq-arm-ins--${tier}">${escapeHtml(v)}</span>`;
+    return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
   }).join("");
 }
 
