@@ -1,4 +1,3 @@
-// ── Helpers ────────────────────────────────────────────────────────
 function normalizeNumericId(value) {
   const id = String(value ?? "").trim();
   return /^\d+$/.test(id) ? id : null;
@@ -34,14 +33,12 @@ function pairStack(l1, b1, s1, l2, b2, s2, show) {
   </div>`;
 }
 
-// ── Name search ────────────────────────────────────────────────────
 function searchByName(query) {
   const q = query.trim().toLowerCase();
   if (!q || q.length < 2) return [];
   const results = [];
   const seen = new Set();
 
-  // Search kvk.db governors table
   if (db) {
     try {
       const res = db.exec(`
@@ -59,7 +56,6 @@ function searchByName(query) {
     } catch(e) { console.warn("Name search (kvk.db):", e); }
   }
 
-  // Search scans db governors table
   if (scansDb) {
     try {
       const res = scansDb.exec(`
@@ -77,7 +73,6 @@ function searchByName(query) {
     } catch(e) { console.warn("Name search (scans.db):", e); }
   }
 
-  // Sort: prefix matches first
   results.sort((a, b) => {
     const al = a.name.toLowerCase(), bl = b.name.toLowerCase();
     const aStarts = al.startsWith(q), bStarts = bl.startsWith(q);
@@ -150,8 +145,8 @@ function buildTooltipHtml(code, kind) {
     if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
     const rarityClass = String(info.rarity || "gold").toLowerCase();
     const parts = [`<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`];
-    if (info.rarity) {
-      parts.push(`<div class="tt-slot">${escapeHtml(info.rarity)}</div>`);
+    if (info.type) {
+      parts.push(`<div class="tt-slot">${escapeHtml(info.type)}</div>`);
     }
     if (info.description) {
       parts.push(`<div class="tt-desc">${escapeHtml(String(info.description))}</div>`);
@@ -268,7 +263,6 @@ function loadScanStats(govId) {
   const safeId = normalizeNumericId(govId);
   if (!safeId) return null;
   try {
-    // Get newest snapshot
     const snapRes = scansDb.exec(`SELECT snapshot_id, snapshot_date FROM snapshots ORDER BY snapshot_date DESC LIMIT 1`);
     if (!snapRes.length || !snapRes[0].values.length) return null;
     const [snapId, snapDate] = snapRes[0].values[0];
@@ -304,10 +298,6 @@ function ensureSchema() {
   });
 }
 
-// ── Kingdom auto-detection ─────────────────────────────────────────
-// Find which kingdom has the most recent data for this governor ID.
-// Searches across all snapshots (not just is_last) so players who
-// dropped out of the final snapshot are still found.
 function detectKingdom(govId) {
   const safeId = normalizeNumericId(govId);
   if (!safeId) return null;
@@ -321,15 +311,10 @@ function detectKingdom(govId) {
     LIMIT 1
   `);
   if (res.length && res[0].values.length) return res[0].values[0][0];
-  // Fallback: governors table alone
   const g = db.exec(`SELECT kingdom FROM governors WHERE governor_id='${safeId}' LIMIT 1`);
   return (g.length && g[0].values.length) ? g[0].values[0][0] : null;
 }
 
-// ── Data loaders ───────────────────────────────────────────────────
-
-// Returns the most recent snapshot this specific governor appears in
-// (falls back from is_last of latest KvK to any snapshot they exist in).
 function getBestSnapshotForGov(govId, kd) {
   const safeId = normalizeNumericId(govId);
   if (!safeId || !kd) return null;
@@ -344,7 +329,6 @@ function getBestSnapshotForGov(govId, kd) {
   `);
   return (res.length && res[0].values.length) ? res[0].values[0][0] : null;
 }
-
 
 function loadGovernorInfo(govId, kd) {
   const safeId = normalizeNumericId(govId);
@@ -537,7 +521,6 @@ function loadArmaments(govId) {
   } catch(e) { return null; }
 }
 
-// ── Equipment rendering ────────────────────────────────────────────
 const EQUIP_SLOTS = [
   {key:"helm",label:"Helm",id:"helmet"},{key:"chest",label:"Chest",id:"chest"},
   {key:"weapon",label:"Weapon",id:"weapon"},{key:"gloves",label:"Gloves",id:"gloves"},
@@ -608,7 +591,6 @@ function renderPairBox(name) {
   return `<div class="equip-pair-box${empty?" equip-pair-box--empty":""}"${tipAttrs}>${imgTag}${fallback}</div>`;
 }
 
-
 function getAbilityTier(name) {
   if (!name) return "gray";
   const info = getInscriptionInfo(name);
@@ -672,8 +654,6 @@ function renderEquipmentGrid(govId) {
   grid.innerHTML = marchRows + renderArmamentSection(armRow) + renderPairsSection(row);
 }
 
-// ── Render player card ─────────────────────────────────────────────
-// ── Scan stat boxes ────────────────────────────────────────────────
 function renderScanStats(govId) {
   const el = document.getElementById("pc-scan-stats");
   const data = loadScanStats(govId);
@@ -730,12 +710,10 @@ function renderPlayerCard(govId) {
     try {
       const kd = detectKingdom(safeId);
 
-      // If not found in kvk.db at all, check scans_2247.db as fallback
       if (!kd) {
         const scanData = loadScanStats(safeId);
         if (!scanData) { showState("search"); showError(`No data found for ID ${safeId}.`); return; }
 
-        // Show scan-only card — name from scans governors table
         document.getElementById("pc-name").textContent = scanData.name || safeId;
         document.getElementById("pc-id").textContent = safeId;
         document.getElementById("pc-type-badge").className = "pc-type-badge";
@@ -752,20 +730,17 @@ function renderPlayerCard(govId) {
 
         renderScanStats(safeId);
 
-        // Hide all kvk-only sections
         document.getElementById("section-history").style.display = "none";
         document.getElementById("pc-farm-owner-section").style.display = "none";
         document.getElementById("pc-farms-section").style.display = "none";
         document.getElementById("pc-farm-kvk-section").style.display = "none";
 
-        // Still try equipment
         renderEquipmentGrid(safeId);
         initCollapsibleSections();
         showState("card");
         return;
       }
 
-      // Restore history section visibility in case it was hidden by a previous scan-only search
       document.getElementById("section-history").style.display = "";
 
       const info = loadGovernorInfo(safeId, kd);
@@ -781,10 +756,9 @@ function renderPlayerCard(govId) {
       const history = loadGovHistory(safeId, kd);
       const hasFarmRollup = isMain && farmIds.length > 0;
 
-      // Identity
       document.getElementById("pc-name").textContent = info.name || safeId;
       document.getElementById("pc-id").textContent = safeId;
-      // Inject CH span once if not already in DOM
+
       if (!document.getElementById("pc-ch")) {
         const chSpan = document.createElement("span");
         chSpan.id = "pc-ch";
@@ -796,14 +770,10 @@ function renderPlayerCard(govId) {
       chEl.textContent = ch ? `CH ${ch}` : "";
       chEl.style.display = ch ? "" : "none";
 
-
-      // Scan stat boxes (from scans_2247.db)
       renderScanStats(safeId);
 
-      // History table
       renderHistoryTable(history);
 
-      // Farm owner
       if (farmOwner) {
         document.getElementById("pc-farm-owner-section").style.display = "";
         document.getElementById("pc-farm-owner-table").innerHTML = renderSimpleTable(
@@ -814,7 +784,6 @@ function renderPlayerCard(govId) {
         document.getElementById("pc-farm-owner-section").style.display = "none";
       }
 
-      // Farm accounts table
       if (farms.length) {
         document.getElementById("pc-farms-section").style.display = "";
         document.getElementById("pc-farms-table").innerHTML = renderSimpleTable(
@@ -825,7 +794,6 @@ function renderPlayerCard(govId) {
         document.getElementById("pc-farms-section").style.display = "none";
       }
 
-      // Farm KvK stats
       if (farmKvK.length) {
         document.getElementById("pc-farm-kvk-section").style.display = "";
         renderFarmKvKSection(farmKvK);
@@ -833,12 +801,8 @@ function renderPlayerCard(govId) {
         document.getElementById("pc-farm-kvk-section").style.display = "none";
       }
 
-      // Equipment
       renderEquipmentGrid(safeId);
-
-      // Init collapsible section toggles
       initCollapsibleSections();
-
       showState("card");
     } catch(err) {
       console.error(err);
@@ -881,7 +845,7 @@ function renderFarmKvKSection(rows) {
   const kvkKeys = Object.keys(grouped);
   let html = "";
   kvkKeys.forEach((kvkName, idx) => {
-    const isOpen = idx === kvkKeys.length - 1; // most recent KvK open by default
+    const isOpen = idx === kvkKeys.length - 1;
     const trs = grouped[kvkName].map(r=>`<tr>
       <td class="col-label">${escapeHtml(r.name)}</td>
       <td class="col-mono">${escapeHtml(String(r.id))}</td>
@@ -904,7 +868,6 @@ function renderFarmKvKSection(rows) {
   });
   container.innerHTML = html;
 
-  // Attach click handlers for per-KvK collapsible groups
   container.querySelectorAll(".pc-farm-kvk-label").forEach(label => {
     label.addEventListener("click", () => {
       label.closest(".pc-farm-kvk-group").classList.toggle("is-open");
@@ -912,15 +875,12 @@ function renderFarmKvKSection(rows) {
   });
 }
 
-// ── Collapsible sections ───────────────────────────────────────────
 function initCollapsibleSections() {
-  // Collapse all sections by default
   document.querySelectorAll(".pc-section.is-collapsible").forEach(section => {
     section.classList.remove("is-open");
   });
 
   document.querySelectorAll(".pc-section-title.is-toggle").forEach(title => {
-    // Remove old listener by cloning
     const fresh = title.cloneNode(true);
     title.parentNode.replaceChild(fresh, title);
     fresh.addEventListener("click", () => {
@@ -929,7 +889,6 @@ function initCollapsibleSections() {
   });
 }
 
-// ── UI state management ────────────────────────────────────────────
 function showState(state) {
   document.getElementById("search-state").style.display  = state==="search" ? "" : "none";
   document.getElementById("loading-state").style.display = state==="loading" ? "" : "none";
@@ -945,7 +904,6 @@ function showError(msg) {
   el.style.display = "block";
 }
 
-// ── Theme ──────────────────────────────────────────────────────────
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
@@ -964,7 +922,6 @@ function initTheme() {
 }
 themeToggle.addEventListener("change", ()=>applyTheme(themeToggle.checked?"dark":"light"));
 
-// ── Navbar ─────────────────────────────────────────────────────────
 const navbar = document.getElementById("navbar");
 window.addEventListener("scroll", ()=>navbar.classList.toggle("scrolled",window.scrollY>10));
 const hamburger = document.getElementById("hamburger");
@@ -973,13 +930,11 @@ hamburger.addEventListener("click",()=>{ navLinks.classList.toggle("show"); hamb
 document.addEventListener("click",e=>{ if (!hamburger.contains(e.target)&&!navLinks.contains(e.target)) { navLinks.classList.remove("show"); hamburger.classList.remove("open"); }});
 navLinks.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>{ navLinks.classList.remove("show"); hamburger.classList.remove("open"); }));
 
-// ── Back button ────────────────────────────────────────────────────
 document.getElementById("back-btn").addEventListener("click",()=>{
   showState("search");
   document.getElementById("player-id-input").focus();
 });
 
-// ── Init ───────────────────────────────────────────────────────────
 initTheme();
 initEquipTooltip();
 
@@ -992,7 +947,6 @@ dbLoadEl.style.display = "flex";
 searchBtn.disabled = true;
 
 loadDatabase().then(async (SQL) => {
-  // Also load scans DB in background — non-blocking, failures are silent
   await loadScansDatabase(SQL);
 
   dbReady = true;
@@ -1000,7 +954,6 @@ loadDatabase().then(async (SQL) => {
   searchBtn.disabled = false;
   inputEl.focus();
 
-  // Support ?govId= or ?id= in URL for direct linking
   const params = new URLSearchParams(window.location.search);
   const directId = normalizeNumericId(params.get("govId") || params.get("id"));
   if (directId) {
@@ -1021,7 +974,6 @@ function doSearch() {
     document.getElementById("search-error").style.display = "none";
     renderPlayerCard(val);
   } else {
-    // Name search — if there's exactly one match, load it; otherwise show suggestions
     const matches = searchByName(val);
     if (!matches.length) { showError(`No player found matching "${val}".`); return; }
     if (matches.length === 1) {
@@ -1034,7 +986,6 @@ function doSearch() {
   }
 }
 
-// ── Autocomplete suggestions ───────────────────────────────────────
 const suggestionsEl = document.getElementById("name-suggestions");
 let activeSuggestionIdx = -1;
 
@@ -1100,5 +1051,4 @@ inputEl.addEventListener("keydown", e => {
 });
 
 inputEl.addEventListener("blur", () => { setTimeout(hideSuggestions, 150); });
-
 searchBtn.addEventListener("click", doSearch);
