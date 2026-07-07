@@ -473,6 +473,14 @@ body.dark #backToTop:hover {
   font-size: 0.92rem;
   margin-bottom: 2px;
 }
+.equip-tooltip .tt-name.tt-rarity-gold   { color: #f2b632; }
+.equip-tooltip .tt-name.tt-rarity-purple { color: #a855f7; }
+.equip-tooltip .tt-name.tt-rarity-blue   { color: #3b82f6; }
+.equip-tooltip .tt-name.tt-rarity-green  { color: #22c55e; }
+.equip-tooltip .tt-name.tt-rarity-gray,
+.equip-tooltip .tt-name.tt-rarity-unknown {
+  color: #9ca3af;
+}
 .equip-tooltip .tt-slot {
   opacity: 0.55;
   text-transform: uppercase;
