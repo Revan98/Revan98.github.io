@@ -454,3 +454,51 @@ body.dark #backToTop:hover {
   opacity: 0.55; 
   font-size: 0.875rem; 
 }
+.equip-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 260px;
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--text-color);
+}
+.equip-tooltip .tt-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 2px;
+}
+.equip-tooltip .tt-slot {
+  opacity: 0.55;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+  margin-bottom: 6px;
+}
+.equip-tooltip .tt-stats {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.equip-tooltip .tt-stats li {
+  opacity: 0.9;
+}
+.equip-tooltip .tt-stats li::before {
+  content: "• ";
+  opacity: 0.5;
+}
+.equip-tooltip .tt-desc {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--table-border);
+  opacity: 0.75;
+  font-style: italic;
+}
