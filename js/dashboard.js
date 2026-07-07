@@ -19,6 +19,33 @@ function buildNumericInList(values) {
 
 let db;
 
+let itemsData = { items: {} };
+let commandersData = { commanders: {} };
+let inscriptionsData = { inscriptions: {} };
+let inscriptionsByName = {};
+
+async function loadEquipRefData() {
+  try {
+    const [itemsRes, commandersRes, inscriptionsRes] = await Promise.all([
+      fetch("data/items.json"),
+      fetch("data/commanders.json"),
+      fetch("data/inscriptions.json"),
+    ]);
+    itemsData = await itemsRes.json();
+    commandersData = await commandersRes.json();
+    inscriptionsData = await inscriptionsRes.json();
+
+    inscriptionsByName = {};
+    for (const [key, info] of Object.entries(inscriptionsData.inscriptions || {})) {
+      const nameKey = String(info.name || key).trim().toLowerCase();
+      inscriptionsByName[nameKey] = { key, ...info };
+    }
+  } catch (e) {
+    console.error("loadEquipRefData:", e);
+  }
+}
+loadEquipRefData();
+
 async function loadDatabase() {
   const SQL = await initSqlJs({
     locateFile: (file) =>
@@ -845,7 +872,68 @@ document.addEventListener("DOMContentLoaded", () => {
       link.classList.add("active");
     }
   });
+
+  initEquipTooltip();
 });
+
+function initEquipTooltip() {
+  const tip = document.createElement("div");
+  tip.className = "equip-tooltip";
+  tip.style.display = "none";
+  document.body.appendChild(tip);
+
+  let activeEl = null;
+
+  function positionTip(x, y) {
+    const margin = 14;
+    const rect = tip.getBoundingClientRect();
+    let left = x + margin;
+    let top = y + margin;
+
+    if (left + rect.width > window.innerWidth - 8) {
+      left = x - rect.width - margin;
+    }
+    if (top + rect.height > window.innerHeight - 8) {
+      top = y - rect.height - margin;
+    }
+    left = Math.max(8, left);
+    top = Math.max(8, top);
+
+    tip.style.left = `${left}px`;
+    tip.style.top = `${top}px`;
+  }
+
+  document.addEventListener("mouseover", (e) => {
+    const el = e.target.closest("[data-tip-code]");
+    if (!el) return;
+    activeEl = el;
+
+    const html = buildTooltipHtml(el.dataset.tipCode, el.dataset.tipKind);
+    if (!html) return;
+
+    tip.innerHTML = html;
+    tip.style.display = "block";
+    positionTip(e.clientX, e.clientY);
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!activeEl || tip.style.display === "none") return;
+    positionTip(e.clientX, e.clientY);
+  });
+
+  document.addEventListener("mouseout", (e) => {
+    const el = e.target.closest("[data-tip-code]");
+    if (!el || el !== activeEl) return;
+    if (el.contains(e.relatedTarget)) return;
+    activeEl = null;
+    tip.style.display = "none";
+  });
+
+  document.addEventListener("scroll", () => {
+    tip.style.display = "none";
+    activeEl = null;
+  }, true);
+}
 
 function renderCollapsibleSection(title, content, defaultOpen = false) {
   // Use a stable incrementing counter instead of Math.random() for predictable IDs
@@ -1334,6 +1422,11 @@ function loadGovernorArmaments(govId) {
   } catch(e) { console.error("loadGovernorArmaments:", e); return null; }
 }
 
+function iconPath(name, kind) {
+  const folder = kind === "commander" ? "commanders" : "equipment";
+  return `icons/${folder}/${encodeURIComponent(String(name).trim())}.webp`;
+}
+
 function isEmptyVal(v) {
   if (v === null || v === undefined || v === "") return true;
   const s = String(v).trim().toLowerCase();
@@ -1372,9 +1465,69 @@ function renderSlotPlaceholderIcon(slotId) {
   return `<svg class="equip-placeholder-icon" viewBox="0 0 16 16" aria-hidden="true">${icons[slotId] || icons.accessory}</svg>`;
 }
 
+function getItemInfo(itemCode) {
+  const key = String(itemCode ?? "").trim();
+  return (itemsData.items && itemsData.items[key]) || null;
+}
+
+function getCommanderInfo(commCode) {
+  const key = String(commCode ?? "").trim();
+  return (commandersData.commanders && commandersData.commanders[key]) || null;
+}
+
+function getInscriptionInfo(name) {
+  const key = String(name ?? "").trim().toLowerCase();
+  return inscriptionsByName[key] || null;
+}
+
+function buildTooltipHtml(code, kind) {
+  if (isEmptyVal(code)) return "";
+  const key = String(code).trim();
+
+  if (kind === "commander") {
+    const info = getCommanderInfo(key);
+    const name = info ? info.name : key;
+    return `<div class="tt-name">${escapeHtml(name)}</div>`;
+  }
+
+  if (kind === "inscription") {
+    const info = getInscriptionInfo(key);
+    if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
+    const parts = [`<div class="tt-name">${escapeHtml(info.name || key)}</div>`];
+    if (info.rarity) {
+      parts.push(`<div class="tt-slot">${escapeHtml(info.rarity)}</div>`);
+    }
+    if (info.description) {
+      parts.push(`<div class="tt-desc">${escapeHtml(String(info.description))}</div>`);
+    }
+    return parts.join("");
+  }
+
+  const info = getItemInfo(key);
+  if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
+
+  const parts = [`<div class="tt-name">${escapeHtml(info.name || key)}</div>`];
+
+  if (info.slot) {
+    parts.push(`<div class="tt-slot">${escapeHtml(info.slot)}</div>`);
+  }
+
+  const stats = Array.isArray(info.stats) ? info.stats : (info.stats ? [info.stats] : []);
+  if (stats.length) {
+    parts.push(`<ul class="tt-stats">${stats.map(s => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`);
+  }
+
+  const descArr = Array.isArray(info.description) ? info.description : (info.description ? [info.description] : []);
+  if (descArr.length) {
+    parts.push(`<div class="tt-desc">${descArr.map(d => escapeHtml(String(d))).join("<br>")}</div>`);
+  }
+
+  return parts.join("");
+}
+
 function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
   const isEmpty = isEmptyVal(itemName);
-  const imgSrc  = isEmpty ? null : `icons/${encodeURIComponent(String(itemName).trim())}.webp`;
+  const imgSrc  = isEmpty ? null : iconPath(itemName, "item");
   const rarity  = getEquipmentRarity(itemName);
   const lvlText = (!isEmpty && !isEmptyVal(lvl)) ? lvl : "—";
   const talText = (!isEmpty && !isEmptyVal(tal)) ? tal : "—";
@@ -1384,9 +1537,10 @@ function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
             style="width:100%;height:100%;object-fit:contain;border-radius:2px;">`
     : "";
   const fallback = `<div class="equip-placeholder" style="display:${imgSrc ? "none" : "flex"};">${renderSlotPlaceholderIcon(slot.id)}</div>`;
+  const tipAttrs = isEmpty ? "" : ` data-tip-code="${escapeHtml(String(itemName).trim())}" data-tip-kind="item"`;
   return `
     <div class="equip-slot" id="${slot.id}_${marchIdx}">
-      <div class="equip-box equip-box--framed rarity-${rarity}">${imgTag}${fallback}</div>
+      <div class="equip-box equip-box--framed rarity-${rarity}"${tipAttrs}>${imgTag}${fallback}</div>
       <div class="equip-meta">
         <span class="equip-lvl">Awk: ${lvlText}</span>
         <span class="equip-tal">Talent: ${talText}</span>
@@ -1396,15 +1550,15 @@ function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
 
 function renderPairBox(name) {
   const isEmpty = isEmptyVal(name);
-  const imgSrc  = isEmpty ? null : `icons/${encodeURIComponent(String(name).trim())}.webp`;
+  const imgSrc  = isEmpty ? null : iconPath(name, "commander");
   const imgTag  = imgSrc
     ? `<img src="${imgSrc}" alt="${escapeHtml(String(name))}" loading="lazy"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
             style="width:100%;height:100%;object-fit:contain;border-radius:2px;">`
     : "";
   const fallback = `<span style="display:${imgSrc ? "none" : "flex"};width:100%;height:100%;align-items:center;justify-content:center;font-size:9px;opacity:0.35;">—</span>`;
-  const title = isEmpty ? "" : ` `;
-  return `<div class="equip-box equip-pair-box${isEmpty ? " equip-pair-box--empty" : ""}"${title}>${imgTag}${fallback}</div>`;
+  const tipAttrs = isEmpty ? "" : ` data-tip-code="${escapeHtml(String(name).trim())}" data-tip-kind="commander"`;
+  return `<div class="equip-box equip-pair-box${isEmpty ? " equip-pair-box--empty" : ""}"${tipAttrs}>${imgTag}${fallback}</div>`;
 }
 
 function renderPairsSection(row) {
@@ -1428,21 +1582,10 @@ function renderPairsSection(row) {
       ${pairRows}
     </div>`;
 }
-const ABILITY_TIERS = (() => {
-  const gold = new Set(["Destructive","Straight to the point","Invincible","Fearless","Hunter","Unstoppable","Balanced","Intrepid","Sharpshooter","Drilled","Merciless","Astute","Influential leader","Loaded","Civilized","Fixed","Cocoon","Inviolable","Crowned","Rounded","Rich","Battlements","Moneyed","Transporter","Enmeshed","Logistical","Unassailed","Winged","Irreproachable","Cautious","Shield Bash","Rock Solid","Avenger","Guarding light","Turn the corner","Panacea","Hasty Retreat","Blast Shield","Full Force","United Front","Thrasher","Butterfly effect","Steelskin","Flurry","Battle Ready","Fortified","Chokepoint","Steelheart","Vanquisher","Self Heal","Brilliant","Mountain","Toppler","Demolisher","Airtight","Thundering","Advantage advanced","Indomitable","Maneuver at ease","Horseback action"]);
-  const blue = new Set(["Battle-Ready","Even-Keeled","Unswerving","Forceful","Crazed","Boiling Blood","Defiant","Focus Fire","Full Draw","Bloody Bolt","Tempered","Sharp Arrows","Drums of war","Nullify","Counter-Parry","Persevering","Self-Defense","Aegis","Reinforced","Tenacious","Gold Panner","Safeguard","Plentitude","Sturdy Back","Entangling","Arms Race","Sprinter","Strider","Ironclad","Strike & parry","Unshakeable","Convalescing","Back In Action","Medic","Rise Up","Refreshing","Fall Back","Spread Out","Shock Troops","Mutual Defense","Pummeler","Causative","Determined","Relentless","Vigilant","Resolute","Precautions","Ironsides","Overwhelm","Self Tend","Stone","Imploder","Raider","Hardheaded","Rattling","Fury","Soar","Ballista","Divine Staff"]);
-  return { gold, blue };
-})();
-
 function getAbilityTier(name) {
   if (!name) return "gray";
-  const n = String(name).trim();
-  if (ABILITY_TIERS.gold.has(n)) return "gold";
-  if (ABILITY_TIERS.blue.has(n)) return "blue";
-  const lower = n.toLowerCase();
-  for (const v of ABILITY_TIERS.gold) if (v.toLowerCase() === lower) return "gold";
-  for (const v of ABILITY_TIERS.blue) if (v.toLowerCase() === lower) return "blue";
-  return "gray";
+  const info = getInscriptionInfo(name);
+  return info ? info.rarity : "gray";
 }
 
 function renderArmamentRow(armRow) {
@@ -1462,7 +1605,7 @@ function renderArmamentRow(armRow) {
 	  .filter(v => !isEmptyVal(v))
 	  .map(v => {
 		const tier = getAbilityTier(String(v));
-		return `<span class="arm-ins tier-${tier}">${escapeHtml(String(v))}</span>`;
+		return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
 	  })
 	  .join("");
 
