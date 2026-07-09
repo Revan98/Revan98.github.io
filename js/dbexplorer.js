@@ -1,40 +1,5 @@
 "use strict";
 
-/* ===================== Theme + nav (same pattern as other pages) ===================== */
-
-const THEME_KEY   = "theme";
-const themeToggle = document.getElementById("toggle-theme");
-
-function applyTheme(t) {
-  document.body.classList.remove("light", "dark");
-  document.body.classList.add(t);
-  localStorage.setItem(THEME_KEY, t);
-}
-function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  const theme = (saved === "light" || saved === "dark") ? saved
-    : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  applyTheme(theme);
-  themeToggle.checked = theme === "dark";
-}
-themeToggle.addEventListener("change", () => applyTheme(themeToggle.checked ? "dark" : "light"));
-initTheme();
-
-const hamburger = document.getElementById("hamburger");
-const navLinks  = document.getElementById("nav-links");
-hamburger.addEventListener("click", () => {
-  navLinks.classList.toggle("show");
-  hamburger.classList.toggle("open");
-});
-document.addEventListener("click", e => {
-  if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
-    navLinks.classList.remove("show");
-    hamburger.classList.remove("open");
-  }
-});
-
-/* ===================== sql.js init ===================== */
-
 let SQL = null;
 let db  = null;
 
@@ -48,8 +13,6 @@ let db  = null;
     showLoadError("Could not load the SQLite engine. Check your connection and reload the page.");
   }
 })();
-
-/* ===================== Elements ===================== */
 
 const loadState     = document.getElementById("load-state");
 const explorerState = document.getElementById("explorer-state");
@@ -83,17 +46,13 @@ const dbxRunQueryBtn  = document.getElementById("dbx-run-query");
 const dbxQueryError   = document.getElementById("dbx-query-error");
 const dbxQueryResult  = document.getElementById("dbx-query-result");
 
-/* ===================== State ===================== */
-
-let allTables   = [];     // [{name, rowCount}]
+let allTables   = [];
 let activeTable = null;
-let tableInfoCache = {};  // name -> [{cid,name,type,pk}]
+let tableInfoCache = {};
 let currentPage = 1;
 const PAGE_SIZE = 100;
 let rowSearchTerm = "";
 let sortState = { col: null, dir: "asc" };
-
-/* ===================== File loading ===================== */
 
 dbxDrop.addEventListener("click", () => dbxFileInput.click());
 dbxDrop.addEventListener("dragover", e => { e.preventDefault(); dbxDrop.classList.add("dragover"); });
@@ -134,11 +93,7 @@ async function loadFile(file) {
 
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    // sql.js operates on an in-memory copy of the bytes; nothing is ever written back
-    // to the original file, and we never call db.export() to persist changes, so this
-    // is effectively read-only from the user's perspective.
     const candidate = new SQL.Database(bytes);
-    // sanity check it's a real sqlite db with at least the master table
     candidate.exec("SELECT name FROM sqlite_master LIMIT 1");
 
     db = candidate;
@@ -175,8 +130,6 @@ function closeDatabase() {
   dbxDataContent.style.display = "none";
 }
 
-/* ===================== Table list ===================== */
-
 function loadTableList() {
   const res = db.exec(`
     SELECT name, type FROM sqlite_master
@@ -190,7 +143,7 @@ function loadTableList() {
     try {
       const c = db.exec(`SELECT COUNT(*) FROM "${name.replace(/"/g, '""')}"`);
       rowCount = c[0]?.values?.[0]?.[0] ?? null;
-    } catch (e) { /* leave null if it fails (e.g. weird view) */ }
+    } catch (e) {}
     return { name, type, rowCount };
   });
 
@@ -234,8 +187,6 @@ function selectTable(name) {
   if (tabPanels.schema.classList.contains("active")) renderSchemaForActive();
 }
 
-/* ===================== Tabs ===================== */
-
 dbxTabs.addEventListener("click", e => {
   const btn = e.target.closest(".dbx-tab");
   if (!btn) return;
@@ -248,8 +199,6 @@ function switchTab(tab) {
   if (tab === "schema") renderSchemaForActive();
 }
 
-/* ===================== Table info helper ===================== */
-
 function getTableInfo(name) {
   if (tableInfoCache[name]) return tableInfoCache[name];
   const res = db.exec(`PRAGMA table_info("${name.replace(/"/g, '""')}")`);
@@ -259,8 +208,6 @@ function getTableInfo(name) {
   tableInfoCache[name] = cols;
   return cols;
 }
-
-/* ===================== Data tab ===================== */
 
 function renderDataTab() {
   if (!activeTable) return;
@@ -429,8 +376,6 @@ function inferColumnsFromSelect(table) {
   } catch (e) { return []; }
 }
 
-/* ===================== Schema tab ===================== */
-
 function renderSchemaForActive() {
   if (!activeTable) {
     dbxSchemaContent.innerHTML = `<div class="dbx-empty-hint">Select a table on the left to see its schema.</div>`;
@@ -486,11 +431,7 @@ function renderSchemaForActive() {
   `;
 }
 
-/* ===================== Query tab ===================== */
-
 const ALLOWED_QUERY_PREFIX = /^\s*(SELECT|WITH|PRAGMA|EXPLAIN)\b/i;
-// blocks any statement-altering keyword appearing anywhere, including after a semicolon
-// (i.e. stacked statements), as a defense-in-depth measure on top of the read-only DB handle.
 const FORBIDDEN_KEYWORDS = /\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|REPLACE|ATTACH|DETACH|VACUUM|REINDEX|TRIGGER)\b/i;
 
 dbxRunQueryBtn.addEventListener("click", runUserQuery);
@@ -543,8 +484,6 @@ function showQueryError(msg) {
 function renderQueryStyleError(target, e) {
   target.innerHTML = `<div class="search-error" style="margin:10px 0;">${escapeHtml(e.message || String(e))}</div>`;
 }
-
-/* ===================== Utils ===================== */
 
 function escapeHtml(str) {
   return String(str)
