@@ -39,7 +39,6 @@ let resultsGridApi = null;
   const importSettingsFile = document.getElementById("import-settings-file");
   const clearMinBtn = document.getElementById("clear-min-dkp");
 
-  const themeToggle = document.querySelector("#toggle-theme");
   const ignoreChEl = document.getElementById("ignore-ch");
 
   let powerRanges = [];
@@ -832,71 +831,13 @@ let resultsGridApi = null;
     });
   });
 
-  const THEME_KEY = "theme";
-
-  function applyTheme(theme) {
-    document.body.classList.remove("light", "dark");
-    document.body.classList.add(theme);
-    document.body.setAttribute("data-ag-theme-mode", theme);
-    localStorage.setItem(THEME_KEY, theme);
-
+  document.addEventListener("themechange", (e) => {
+    const theme = e.detail.theme;
     const agTheme =
       theme === "dark"
         ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
         : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
     if (powerGridApi) powerGridApi.setGridOption("theme", agTheme);
     if (resultsGridApi) resultsGridApi.setGridOption("theme", agTheme);
-  }
-
-  function initTheme() {
-    const saved = localStorage.getItem(THEME_KEY);
-
-    let theme;
-    if (saved === "light" || saved === "dark") {
-      theme = saved;
-    } else {
-      theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-    }
-
-    applyTheme(theme);
-    themeToggle.checked = theme === "dark";
-  }
-
-  themeToggle.addEventListener("change", () => {
-    applyTheme(themeToggle.checked ? "dark" : "light");
-  });
-
-  initTheme();
-
-  const hamburger = document.getElementById("hamburger");
-  const navLinks = document.getElementById("nav-links");
-  hamburger.addEventListener("click", () => {
-    navLinks.classList.toggle("show");
-    hamburger.classList.toggle("open");
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
-      navLinks.classList.remove("show");
-      hamburger.classList.remove("open");
-    }
-  });
-
-  navLinks.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      navLinks.classList.remove("show");
-      hamburger.classList.remove("open");
-    });
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const current = location.pathname.split("/").pop();
-    document.querySelectorAll(".nav-links a").forEach((link) => {
-      if (link.getAttribute("href") === current) {
-        link.classList.add("active");
-      }
-    });
   });
 })();
