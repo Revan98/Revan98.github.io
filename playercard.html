@@ -7,40 +7,80 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/shared.css">
+  <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/playercard.css">
 </head>
 <body>
 
-  <header class="navbar" id="navbar">
-    <div class="nav-container">
-      <button class="hamburger" id="hamburger" aria-label="Menu">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="icon-menu" viewBox="0 0 16 16">
-          <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-        </svg>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="icon-close" viewBox="0 0 16 16">
-          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-        </svg>
-      </button>
+  <nav class="sidebar" id="sidebar">
+    <div class="nav-links" id="nav-links">
+      <a href="index.html">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4 3 5-6 5 6 4-3-2 10H5L3 8z"/><path d="M5 21h14"/></svg>
+        </span>
+        <span class="nav-label">KD Select</span>
+      </a>
+      <a href="dashboard.html">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15l4-5"/><circle cx="12" cy="15" r="1"/></svg>
+        </span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="playercard.html">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="11" r="1.8"/><path d="M5.5 16c.5-1.6 1.8-2.4 3-2.4s2.5.8 3 2.4"/><path d="M14 9h5M14 12h5M14 15h3"/></svg>
+        </span>
+        <span class="nav-label">Player Card</span>
+      </a>
+      <a href="dbexplorer.html">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>
+        </span>
+        <span class="nav-label">DB Explorer</span>
+      </a>
+      <a href="compare.html">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="16" rx="1.5"/><rect x="14" y="4" width="7" height="16" rx="1.5"/></svg>
+        </span>
+        <span class="nav-label">Compare</span>
+      </a>
+      <a href="dkp.html">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01"/></svg>
+        </span>
+        <span class="nav-label">DKP Calculator</span>
+      </a>
+      <a href="merge.html">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M6 8.2V15.8"/><path d="M18 8.2c0 6-6 6-10 7.6"/></svg>
+        </span>
+        <span class="nav-label">Merge</span>
+      </a>
+      <a href="equipment.html">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.8-3 8.4-7 9-4-.6-7-4.2-7-9V6l7-3z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>
+        </span>
+        <span class="nav-label">Equipment</span>
+      </a>
+    </div>
 
-      <div class="nav-links" id="nav-links">
-        <a href="index.html">KD Select</a>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="playercard.html" class="active">Player Card</a>
-      </div>
-
-      <label class="theme-toggle">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun" viewBox="0 0 16 16">
+    <label class="theme-toggle">
+      <input type="checkbox" id="toggle-theme">
+      <span class="theme-icon icon-sun">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
           <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
         </svg>
-        <input type="checkbox" id="toggle-theme">
-        <span class="toggle-slider"></span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16">
+      </span>
+      <span class="theme-icon icon-moon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
           <path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278M4.858 1.311A7.27 7.27 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.32 7.32 0 0 0 5.205-2.162q-.506.063-1.029.063c-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286"/>
         </svg>
-      </label>
-    </div>
-  </header>
+      </span>
+      <span class="nav-label">Theme</span>
+    </label>
+  </nav>
 
+  <div class="page-wrapper">
   <main class="page-main">
     <div class="pc-container">
 
@@ -203,8 +243,10 @@
       <span>Player Card.</span>
     </div>
   </footer>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/sql-wasm.js"></script>
+  <script src="js/navbar.js"></script>
   <script src="js/playercard.js"></script>
 </body>
 </html>
