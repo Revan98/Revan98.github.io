@@ -458,41 +458,6 @@ async function createDatabase() {
   }
 }
 
-const THEME_KEY   = "theme";
-const themeToggle = document.getElementById("toggle-theme");
-
-function applyTheme(t) {
-  document.body.classList.remove("light", "dark");
-  document.body.classList.add(t);
-  localStorage.setItem(THEME_KEY, t);
-}
-function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  const theme = (saved === "light" || saved === "dark") ? saved
-    : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  applyTheme(theme);
-  themeToggle.checked = theme === "dark";
-}
-themeToggle.addEventListener("change", () => applyTheme(themeToggle.checked ? "dark" : "light"));
-initTheme();
-
-const hamburger = document.getElementById("hamburger");
-const navLinks  = document.getElementById("nav-links");
-hamburger.addEventListener("click", () => {
-  navLinks.classList.toggle("show");
-  hamburger.classList.toggle("open");
-});
-document.addEventListener("click", e => {
-  if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
-    navLinks.classList.remove("show");
-    hamburger.classList.remove("open");
-  }
-});
-document.querySelectorAll(".nav-links a").forEach(link => {
-  if (link.getAttribute("href") === location.pathname.split("/").pop())
-    link.classList.add("active");
-});
-
 const dbFileInput = document.getElementById("dbFileInput");
 const dbFileName  = document.getElementById("dbFileName");
 const dbStatus    = document.getElementById("dbStatus");
