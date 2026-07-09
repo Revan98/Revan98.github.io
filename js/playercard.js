@@ -904,38 +904,11 @@ function showError(msg) {
   el.style.display = "block";
 }
 
-const THEME_KEY = "theme";
-const themeToggle = document.getElementById("toggle-theme");
-
-function applyTheme(theme) {
-  document.body.classList.remove("light","dark");
-  document.body.classList.add(theme);
-  localStorage.setItem(THEME_KEY, theme);
-}
-
-function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  const theme = (saved==="light"||saved==="dark") ? saved :
-    (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  applyTheme(theme);
-  themeToggle.checked = theme==="dark";
-}
-themeToggle.addEventListener("change", ()=>applyTheme(themeToggle.checked?"dark":"light"));
-
-const navbar = document.getElementById("navbar");
-window.addEventListener("scroll", ()=>navbar.classList.toggle("scrolled",window.scrollY>10));
-const hamburger = document.getElementById("hamburger");
-const navLinks  = document.getElementById("nav-links");
-hamburger.addEventListener("click",()=>{ navLinks.classList.toggle("show"); hamburger.classList.toggle("open"); });
-document.addEventListener("click",e=>{ if (!hamburger.contains(e.target)&&!navLinks.contains(e.target)) { navLinks.classList.remove("show"); hamburger.classList.remove("open"); }});
-navLinks.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>{ navLinks.classList.remove("show"); hamburger.classList.remove("open"); }));
-
 document.getElementById("back-btn").addEventListener("click",()=>{
   showState("search");
   document.getElementById("player-id-input").focus();
 });
 
-initTheme();
 initEquipTooltip();
 
 const dbLoadEl = document.getElementById("db-loading");
