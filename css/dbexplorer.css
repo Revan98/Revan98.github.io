@@ -1,5 +1,3 @@
-/* ===== DB Explorer ===== */
-
 .dbx-container {
   width: 100%;
   max-width: 1200px;
@@ -7,7 +5,6 @@
   padding: 0 20px;
 }
 
-/* ---- Load state ---- */
 .dbx-load-state {
   max-width: 560px;
   margin: 3rem auto 0;
@@ -102,7 +99,6 @@
   text-align: left;
 }
 
-/* ---- Top bar ---- */
 .dbx-topbar {
   display: flex;
   align-items: center;
@@ -139,7 +135,6 @@
   gap: 6px;
 }
 
-/* ---- Layout ---- */
 .dbx-layout {
   display: grid;
   grid-template-columns: 230px 1fr;
@@ -150,7 +145,6 @@
   .dbx-layout { grid-template-columns: 1fr; }
 }
 
-/* ---- Sidebar ---- */
 .dbx-sidebar {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
@@ -231,7 +225,6 @@
   padding: 6px 4px;
 }
 
-/* ---- Main panel / tabs ---- */
 .dbx-main {
   min-width: 0;
 }
@@ -271,7 +264,6 @@
   font-size: 0.9rem;
 }
 
-/* ---- Data toolbar ---- */
 .dbx-data-toolbar {
   display: flex;
   align-items: center;
@@ -308,7 +300,6 @@
   white-space: nowrap;
 }
 
-/* ---- Tables ---- */
 .dbx-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--table-border);
@@ -365,7 +356,6 @@
   vertical-align: middle;
 }
 
-/* ---- Pagination ---- */
 .dbx-pagination {
   display: flex;
   align-items: center;
@@ -396,7 +386,6 @@
   margin: 0 6px;
 }
 
-/* ---- Schema tab ---- */
 .dbx-schema-table {
   margin-bottom: 18px;
 }
@@ -425,7 +414,6 @@
   margin-top: 10px;
 }
 
-/* ---- Query tab ---- */
 .dbx-query-area {
   display: flex;
   flex-direction: column;
@@ -455,7 +443,6 @@
   opacity: 0.55;
 }
 
-/* ---- Responsive: file info wrap on mobile ---- */
 @media (max-width: 480px) {
   .dbx-topbar { flex-direction: column; align-items: flex-start; }
 }
