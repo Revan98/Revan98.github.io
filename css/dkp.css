@@ -1,0 +1,15 @@
+#result-table {
+  display: none;
+  width: 100%;
+}
+
+.file-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+p {
+  margin-bottom: 5px;
+}

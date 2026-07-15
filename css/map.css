@@ -1,0 +1,2258 @@
+.map-page {
+  --planner-accent-soft: color-mix(in srgb, var(--chart-line) 14%, var(--table-bg));
+  --planner-accent-softer: color-mix(in srgb, var(--chart-line) 7%, var(--table-bg));
+  --planner-header-bg: var(--table-bg);
+  --planner-header-text: var(--text-color);
+  --planner-cell-bg: var(--table-bg);
+  --planner-cell-alt: var(--table-stripe-even);
+  --planner-cell-strong: color-mix(in srgb, var(--chart-line) 18%, var(--table-bg));
+  min-height: 100vh;
+  padding: 4px;
+}
+
+.map-shell {
+  width: 100%;
+  min-height: calc(100vh - 8px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.map-tabs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+.map-tab {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.map-tab.active {
+  border-color: var(--chart-line);
+  background: rgba(11, 116, 209, 0.13);
+}
+
+.backup-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.backup-import {
+  min-height: 38px;
+}
+
+body.dark .map-tab.active {
+  background: rgba(255, 152, 0, 0.14);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.map-toolbar,
+.map-panel,
+.map-detail,
+.player-panel,
+.map-player-panel,
+.team-board-card {
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.05);
+}
+
+.team-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 14px;
+  height: calc(100vh - 66px);
+  min-height: 520px;
+  align-items: start;
+}
+
+.team-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.player-panel {
+  padding: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: calc(100vh - 66px);
+  min-height: 520px;
+}
+
+.map-player-panel {
+  padding: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: calc(100vh - 66px);
+  min-height: 520px;
+}
+
+.panel-title-row,
+.team-board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-title-row h1,
+.team-board-header h2 {
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.player-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.csv-row {
+  display: flex;
+  gap: 8px;
+}
+
+.csv-btn {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--table-border);
+  background: var(--button-primary-bg);
+  color: #fff;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.csv-btn input {
+  display: none;
+}
+
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 3px;
+  flex: 1 1 0;
+  min-height: 60px;
+}
+
+.player-card {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 6px 8px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 9px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: grab;
+  text-align: left;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.player-role-btns {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.player-card.coordinator {
+  border-color: var(--chart-line);
+  box-shadow: inset 3px 0 0 var(--chart-line);
+}
+
+.player-card:active {
+  cursor: grabbing;
+}
+
+.map-player-panel .player-card.map-draggable {
+  cursor: grab;
+}
+
+.map-player-panel .player-card.map-draggable:active {
+  cursor: grabbing;
+}
+
+.map-player-panel .player-card {
+  cursor: default;
+}
+
+.map-player-panel .player-card:active {
+  cursor: default;
+}
+
+.player-slot {
+  min-width: 34px;
+  height: 24px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 116, 209, 0.15);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0 7px;
+}
+
+body.dark .player-slot {
+  background: rgba(255, 152, 0, 0.16);
+}
+
+.player-name {
+  display: block;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.player-id,
+.slot-player-id {
+  color: var(--text-color);
+  opacity: 0.6;
+  font-size: 0.78rem;
+}
+
+.player-coordinator,
+.player-remove,
+.slot-clear {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.player-coordinator,
+.player-gl-btn,
+.player-rl-btn {
+  height: 22px;
+  min-width: 24px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.player-coordinator {
+  font-weight: 900;
+}
+
+.player-coordinator.active {
+  background: var(--chart-line);
+  border-color: var(--chart-line);
+  color: #fff;
+}
+
+.player-coordinator:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+
+.player-map-badge {
+  min-width: 74px;
+  color: var(--chart-line);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+.team-board-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.team-board-card.embedded {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.team-board-header {
+  padding: 12px 16px;
+  background: var(--planner-header-bg);
+  color: var(--planner-header-text);
+  border-bottom: 1px solid var(--table-border);
+}
+
+.lane-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.overview-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lane-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.lane-control button {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.team-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(190px, 1fr));
+  align-items: start;
+  overflow: auto;
+}
+
+.lane-column {
+  min-width: 190px;
+  border-right: 1px solid var(--table-border);
+}
+
+.lane-column:last-child {
+  border-right: none;
+}
+
+.lane-title {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--planner-header-text);
+  background: var(--planner-header-bg);
+  border-bottom: 1px solid var(--table-border);
+  font-style: italic;
+  font-weight: 800;
+  font-size: 0.86rem;
+}
+
+.lane-title input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: center;
+  font: inherit;
+  font-style: inherit;
+  outline: none;
+  padding: 0 8px;
+}
+
+.lane-title input:focus {
+  background: var(--planner-accent-soft);
+}
+
+.lane-slot {
+  display: grid;
+  grid-template-columns: 64px minmax(130px, 1fr);
+  min-height: 48px;
+  border-top: 1px solid var(--table-border);
+}
+
+.slot-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--table-border);
+  font-weight: 900;
+  color: var(--text-color);
+}
+
+.slot-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 7px 9px;
+  color: var(--text-color);
+  opacity: 0.62;
+  font-style: italic;
+}
+
+.slot-drop.filled {
+  justify-content: space-between;
+  color: var(--text-color);
+  opacity: 1;
+  font-style: normal;
+}
+
+
+
+
+
+.slot-drop.drag-over {
+  outline: 2px solid var(--chart-line);
+  outline-offset: -3px;
+}
+
+.lane-a .lane-slot,
+.lane-b .lane-slot,
+.lane-c .lane-slot,
+.lane-d .lane-slot { background: var(--planner-cell-bg); }
+.lane-a .lane-slot:nth-child(even),
+.lane-b .lane-slot:nth-child(even),
+.lane-c .lane-slot:nth-child(even),
+.lane-d .lane-slot:nth-child(even) { background: var(--planner-cell-alt); }
+.lane-a .lane-slot:nth-child(n+6),
+.lane-b .lane-slot:nth-child(n+6),
+.lane-c .lane-slot:nth-child(n+6),
+.lane-d .lane-slot:nth-child(n+6) { background: var(--planner-accent-softer); }
+
+.lane-plan-card {
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--table-bg);
+  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.05);
+}
+
+.planning-topbar {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 8px;
+  background: var(--table-bg);
+  border-bottom: 1px solid var(--table-border);
+}
+
+.lane-plan-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.lane-plan-tab {
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--table-border);
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.lane-plan-tab.active {
+  border-color: var(--chart-line);
+  background: rgba(11, 116, 209, 0.13);
+}
+
+body.dark .lane-plan-tab.active {
+  background: rgba(255, 152, 0, 0.14);
+}
+
+.ark-skills-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--table-border);
+  flex-shrink: 0;
+}
+
+.ark-skills-card span {
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.ark-skill-slots {
+  display: flex;
+  gap: 6px;
+}
+
+.ark-skill-slot {
+  width: 42px;
+  height: 42px;
+  border: 1px dashed var(--table-border);
+  border-radius: 6px;
+  background: var(--table-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ark-skill-slot.filled {
+  border-style: solid;
+  border-color: var(--chart-line);
+}
+
+.ark-skill-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.skill-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.skill-modal-overlay[hidden] {
+  display: none;
+}
+
+.skill-modal {
+  width: min(860px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: auto;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--table-bg);
+  color: var(--text-color);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+}
+
+.skill-modal-header,
+.skill-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--table-border);
+}
+
+.skill-modal-header h2 {
+  font-size: 1.05rem;
+}
+
+.skill-modal-close {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.skill-modal-actions span {
+  color: var(--text-color);
+  opacity: 0.68;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+  padding: 14px;
+}
+
+.skill-option {
+  min-height: 120px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.skill-option img {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.skill-option.selected {
+  border-color: var(--chart-line);
+  box-shadow: inset 0 0 0 2px var(--chart-line);
+}
+
+.skill-option:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.stage-modal {
+  width: min(680px, 100%);
+}
+
+.stage-manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+.stage-manager-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.stage-manager-index {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--planner-accent-soft);
+  color: var(--text-color);
+  font-weight: 900;
+}
+
+.stage-manager-row input {
+  min-height: 38px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  padding: 8px 10px;
+  font: inherit;
+  outline: none;
+}
+
+.stage-manager-row input:focus {
+  border-color: var(--chart-line);
+}
+
+.stage-manager-row .detail-delete:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+}
+
+.lane-plan-title {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--planner-header-bg);
+  color: var(--planner-header-text);
+  border-bottom: 1px solid var(--table-border);
+  font-size: 1rem;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.lane-plan-scroll {
+  overflow-x: auto;
+}
+
+.lane-plan-table {
+  width: 100%;
+  min-width: 1180px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.lane-plan-table th,
+.lane-plan-table td {
+  border: 1px solid var(--table-border);
+}
+
+.lane-plan-table thead th {
+  height: 40px;
+  background: var(--planner-header-bg);
+  color: var(--planner-header-text);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.lane-plan-table tbody th {
+  width: 70px;
+  background: var(--planner-accent-softer);
+  color: var(--text-color);
+  font-weight: 900;
+  text-align: center;
+}
+
+.lane-plan-table tbody tr:nth-child(n+5) th,
+.lane-plan-table tbody tr:nth-child(n+5) .lane-plan-player {
+  background: var(--planner-accent-soft);
+}
+
+.lane-plan-table td {
+  background: var(--planner-cell-bg);
+  color: var(--text-color);
+  vertical-align: stretch;
+}
+
+.lane-plan-player {
+  width: 150px;
+  background: var(--planner-accent-softer);
+  text-align: center;
+  font-style: italic;
+  color: var(--text-color);
+  opacity: 0.75;
+}
+
+.lane-plan-table textarea {
+  width: 100%;
+  height: 60px; /* explicit default; JS overrides with saved value */
+  min-height: 60px;
+  box-sizing: border-box;
+  border: 0;
+  resize: vertical;
+  padding: 8px 8px 14px; /* extra bottom padding so text clears the handle */
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-align: center;
+  line-height: 1.28;
+  outline: none;
+  /* Custom resize grip — three dots stacked at the bottom-right */
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px, transparent 1.5px);
+  background-size: 3px 3px, 3px 3px, 3px 3px;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-position: calc(100% - 8px) calc(100% - 4px),
+                       calc(100% - 8px) calc(100% - 9px),
+                       calc(100% - 8px) calc(100% - 14px);
+  cursor: auto;
+}
+
+/* Show a highlighted resize zone when the cursor is near the bottom edge */
+.lane-plan-table td {
+  position: relative;
+}
+
+.lane-plan-table textarea:focus {
+  background-color: var(--planner-accent-softer);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px, transparent 1.5px);
+  background-size: 3px 3px, 3px 3px, 3px 3px;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-position: calc(100% - 8px) calc(100% - 4px),
+                       calc(100% - 8px) calc(100% - 9px),
+                       calc(100% - 8px) calc(100% - 14px);
+}
+
+/* Resize-handle pill — sits at the very bottom of each textarea cell */
+.lane-plan-table td::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 4px;
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in srgb, var(--text-color) 18%, transparent);
+  pointer-events: none;
+  transition: background 0.15s, width 0.15s;
+}
+
+.lane-plan-table td:has(textarea:hover)::after,
+.lane-plan-table td:has(textarea:focus)::after {
+  background: color-mix(in srgb, var(--chart-line) 55%, transparent);
+  width: 44px;
+}
+
+/* plan-player styles moved to bottom of file */
+
+.lane-plan-notes {
+  padding: 12px 14px;
+  border-top: 1px solid var(--table-border);
+}
+
+.lane-plan-notes strong {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--text-color);
+  font-size: 0.8rem;
+}
+
+.lane-plan-notes textarea {
+  width: 100%;
+  min-height: 74px;
+  resize: vertical;
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  padding: 9px 10px 18px; /* extra bottom for handle clearance */
+  background: var(--bg-color);
+  color: var(--text-color);
+  font: inherit;
+  line-height: 1.4;
+  outline: none;
+  /* Grip dots — 2×3 grid at bottom-right */
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px);
+  background-size: 3px 3px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 14px) calc(100% - 5px),
+                       calc(100% - 14px) calc(100% - 10px),
+                       calc(100% - 9px)  calc(100% - 5px),
+                       calc(100% - 9px)  calc(100% - 10px),
+                       calc(100% - 4px)  calc(100% - 5px),
+                       calc(100% - 4px)  calc(100% - 10px);
+}
+
+.lane-plan-notes textarea:hover {
+  border-color: color-mix(in srgb, var(--chart-line) 45%, var(--table-border));
+}
+
+.lane-plan-notes textarea:focus {
+  border-color: var(--chart-line);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
+                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px);
+  background-size: 3px 3px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 14px) calc(100% - 5px),
+                       calc(100% - 14px) calc(100% - 10px),
+                       calc(100% - 9px)  calc(100% - 5px),
+                       calc(100% - 9px)  calc(100% - 10px),
+                       calc(100% - 4px)  calc(100% - 5px),
+                       calc(100% - 4px)  calc(100% - 10px);
+}
+
+.map-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px;
+}
+
+.map-toolbar.merged {
+  flex-wrap: wrap;
+}
+
+.map-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-width: 0;
+}
+
+.map-title-group h1 {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.map-coords {
+  color: var(--text-color);
+  opacity: 0.6;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.map-input {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--table-border);
+  background: var(--bg-color);
+  color: var(--text-color);
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.map-input:focus {
+  border-color: var(--chart-line);
+}
+
+.map-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.map-icon-btn,
+.map-pin-btn,
+.filter-chip,
+.marker-row,
+.detail-delete,
+.detail-reset {
+  border: 1px solid var(--table-border);
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+}
+
+.map-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.map-pin-btn {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.map-stage-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 2px;
+}
+
+.map-section-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 2px;
+}
+
+.map-section-toggle {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+  opacity: 0.58;
+}
+
+.map-section-toggle.active {
+  opacity: 1;
+  border-color: var(--chart-line);
+  background: var(--planner-accent-soft);
+}
+
+.map-stage-btn {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.map-stage-btn.active {
+  border-color: var(--chart-line);
+  background: var(--planner-accent-soft);
+}
+
+.map-stage-btn.add {
+  min-width: 38px;
+  padding: 0;
+  font-size: 1.1rem;
+}
+
+.map-stage-select {
+  min-height: 38px;
+  max-width: 220px;
+  padding: 0 10px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-size: 0.86rem;
+  font-weight: 800;
+  outline: none;
+}
+
+.map-stage-select:focus {
+  border-color: var(--chart-line);
+}
+
+.map-pin-btn.active,
+.filter-chip.active,
+.marker-row.active {
+  border-color: var(--chart-line);
+  background: rgba(11, 116, 209, 0.13);
+}
+
+body.dark .map-pin-btn.active,
+body.dark .filter-chip.active,
+body.dark .marker-row.active {
+  background: rgba(255, 152, 0, 0.14);
+}
+
+.map-content {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 4px;
+  align-items: stretch;
+  min-height: 0;
+  flex: 1;
+}
+
+.map-panel,
+.map-detail,
+.map-player-panel {
+  padding: 14px;
+  overflow: hidden;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.filter-chip {
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.marker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 585px;
+  overflow: auto;
+  padding-right: 3px;
+}
+
+.marker-row {
+  width: 100%;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: left;
+}
+
+.marker-row strong,
+.detail-name {
+  display: block;
+  font-size: 0.93rem;
+  line-height: 1.25;
+}
+
+.marker-row span,
+.detail-type,
+.detail-location,
+.detail-note,
+.detail-empty {
+  color: var(--text-color);
+  opacity: 0.65;
+  font-size: 0.8rem;
+}
+
+.map-stage {
+  position: relative;
+  height: calc(100vh - 66px);
+  min-height: 520px;
+  border-radius: 8px;
+  border: 1px solid var(--table-border);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(58, 131, 196, 0.2), transparent 28%),
+    radial-gradient(circle at 82% 72%, rgba(233, 111, 82, 0.16), transparent 30%),
+    #10151c;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.map-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.map-viewport.dragging {
+  cursor: grabbing;
+}
+
+.map-viewport.drop-target {
+  outline: 3px dashed var(--chart-line);
+  outline-offset: -4px;
+}
+
+.map-layer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(calc((100vh - 76px) * 1.3333), calc(100% - 8px));
+  aspect-ratio: 600 / 450;
+  transform-origin: center center;
+  user-select: none;
+}
+
+.map-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.4));
+  pointer-events: none;
+}
+
+.marker-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.map-marker {
+  display: none;
+}
+
+.map-marker {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #fff;
+  border-radius: 50% 50% 50% 6px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -100%) rotate(-45deg);
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.34);
+  transition: transform 0.16s, box-shadow 0.16s, opacity 0.16s;
+}
+
+.map-marker::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.map-marker:hover,
+.map-marker.active {
+  transform: translate(-50%, -100%) rotate(-45deg) scale(1.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  z-index: 5;
+}
+
+.map-marker.hidden {
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.map-marker.editable {
+  cursor: move;
+}
+
+.map-label {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, 0);
+  z-index: 4;
+}
+
+.map-label::before,
+.map-label::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.map-label::before {
+  inset: 0;
+  border: 2px solid #070707;
+  border-radius: 50%;
+}
+
+.map-label.shape-bubble-left::after {
+  left: -14%;
+  top: 55%;
+  width: 24%;
+  height: 18%;
+  border-left: 2px solid #070707;
+  border-bottom: 2px solid #070707;
+  transform: skewX(-28deg) rotate(18deg);
+}
+
+.map-label.shape-bubble-right::after {
+  right: -14%;
+  top: 55%;
+  width: 24%;
+  height: 18%;
+  border-right: 2px solid #070707;
+  border-bottom: 2px solid #070707;
+  transform: skewX(28deg) rotate(-18deg);
+}
+
+.map-label.shape-bubble-top::after {
+  left: 48%;
+  top: -17%;
+  width: 18%;
+  height: 24%;
+  border-left: 2px solid #070707;
+  border-top: 2px solid #070707;
+  transform: skewY(-28deg) rotate(12deg);
+}
+
+.map-label.shape-bubble-bottom::after {
+  left: 40%;
+  bottom: -17%;
+  width: 18%;
+  height: 24%;
+  border-left: 2px solid #070707;
+  border-bottom: 2px solid #070707;
+  transform: skewY(28deg) rotate(-12deg);
+}
+
+.map-label-text {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 48px;
+  min-height: 22px;
+  /* Inset padding so text stays inside the ellipse curve (~18% each side horizontally,
+     use auto top/bottom via flex on the container instead) */
+  padding: 10% 20%;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #050505;
+  text-shadow: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1.3;
+  text-align: center;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  resize: none;
+  overflow: hidden;
+  outline: none;
+  font-family: inherit;
+}
+
+.map-label-text:not([readonly]) {
+  border-color: var(--chart-line);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--chart-line) 60%, transparent);
+  cursor: text;
+  overflow: auto;
+}
+
+.map-label-resize {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  background: var(--chart-line);
+  cursor: nwse-resize;
+}
+
+.label-context-menu {
+  position: fixed;
+  z-index: 11000;
+  min-width: 150px;
+  padding: 6px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--table-bg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.map-roles-divider {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-color);
+  opacity: 0.55;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--table-border);
+  flex-shrink: 0;
+}
+
+.map-roles-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  flex: 1 1 0;
+  min-height: 80px;
+  padding-right: 3px;
+}
+
+.map-roles-panel .roles-panel-title {
+  display: none;
+}
+  width: 100%;
+  min-height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 800;
+  text-align: left;
+  padding: 0 10px;
+}
+
+.label-context-menu button:hover {
+  background: var(--planner-accent-soft);
+}
+
+.marker-obelisk { background: #2f8fae; }
+.marker-shrine { background: #5aa36b; }
+.marker-altar { background: #8b6ac8; }
+.marker-outpost { background: #d89a3d; }
+.marker-custom { background: #e3b729; color: #2d2410; }
+.marker-anubis { background: #5c6f77; }
+
+.map-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-badge {
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.detail-name {
+  font-size: 1.25rem;
+  margin-bottom: 3px;
+}
+
+.detail-note {
+  line-height: 1.45;
+}
+
+.detail-note-label {
+  color: var(--text-color);
+  opacity: 0.62;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.detail-note-editor {
+  width: 100%;
+  min-height: 150px;
+  resize: vertical;
+  padding: 10px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--table-border);
+  background: var(--bg-color);
+  color: var(--text-color);
+  font: inherit;
+  line-height: 1.4;
+  outline: none;
+}
+
+.detail-note-editor:focus {
+  border-color: var(--chart-line);
+}
+
+.detail-location {
+  border-top: 1px solid var(--table-border);
+  padding-top: 12px;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.detail-delete,
+.detail-reset {
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-weight: 700;
+}
+
+.detail-delete {
+  background: var(--button-secondary-bg);
+  color: #fff;
+}
+
+.map-icon-btn:hover,
+.map-pin-btn:hover,
+.filter-chip:hover,
+.marker-row:hover {
+  border-color: var(--chart-line);
+}
+
+@media (max-width: 1100px) {
+  .map-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .team-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .player-list {
+    max-height: 320px;
+  }
+
+  .map-actions {
+    justify-content: flex-start;
+  }
+
+  .map-content {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .map-panel {
+    order: 2;
+  }
+
+  .map-stage {
+    min-height: 58vh;
+  }
+
+  .map-detail {
+    order: 3;
+  }
+
+  .marker-list {
+    max-height: 260px;
+  }
+}
+
+@media (max-width: 640px) {
+  .map-shell {
+    width: 100%;
+  }
+
+  .map-tabs,
+  .player-form,
+  .team-board-header,
+  .planning-topbar,
+  .ark-skills-card {
+    flex-wrap: wrap;
+  }
+
+  .ark-skills-card {
+    width: 100%;
+  }
+
+  .ark-skill-slots {
+    flex-wrap: wrap;
+  }
+
+  .player-form {
+    grid-template-columns: 1fr;
+  }
+
+  .team-board {
+    grid-template-columns: repeat(4, minmax(170px, 1fr));
+  }
+
+  .map-title-group,
+  .map-actions {
+    flex-wrap: wrap;
+  }
+
+  .map-title-group h1 {
+    width: 100%;
+  }
+
+  .map-stage {
+    min-height: 430px;
+  }
+
+  .map-layer {
+    width: 112%;
+  }
+}
+/* Lane plan main content area */
+.lane-plan-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Role tags in lane plan table cells */
+.lane-plan-role-cell {
+  vertical-align: top;
+  padding: 6px 8px !important;
+  min-width: 160px;
+}
+
+.role-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 24px;
+  padding: 3px 4px;
+  border-radius: 6px;
+  transition: outline 0.1s;
+}
+
+.role-tags-wrap.drag-over {
+  outline: 2px solid var(--chart-line);
+  outline-offset: -2px;
+  background: var(--planner-accent-softer);
+}
+
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--planner-accent-soft);
+  border: 1px solid var(--chart-line);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+.role-tag-remove {
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  opacity: 0.6;
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.role-tag-remove:hover {
+  opacity: 1;
+  background: var(--button-secondary-bg);
+  color: #fff;
+}
+
+.role-manual-input {
+  width: 100%;
+  margin-top: 4px;
+  padding: 4px 6px;
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.78rem;
+  outline: none;
+}
+
+.role-manual-input:focus {
+  border-color: var(--chart-line);
+}
+
+.role-manual-input::placeholder {
+  opacity: 0.45;
+  font-style: italic;
+}
+
+@media (max-width: 1100px) {
+
+
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.05);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+}
+
+.roles-panel-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.roles-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.roles-group-title {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-color);
+  opacity: 0.55;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--table-border);
+}
+
+.roles-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.role-chip {
+  padding: 7px 10px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: grab;
+  user-select: none;
+  transition: border-color 0.14s, background 0.14s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.role-chip:hover {
+  border-color: var(--chart-line);
+  background: var(--planner-accent-soft);
+}
+
+.role-chip.dragging {
+  opacity: 0.5;
+}
+
+/* Slot role cell */
+.slot-role {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 5px 8px;
+  border-left: 1px solid var(--table-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 0;
+  transition: outline 0.1s;
+}
+
+.slot-role.drag-over {
+  outline: 2px solid var(--chart-line);
+  outline-offset: -2px;
+}
+
+.slot-role span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.slot-role-empty {
+  opacity: 0.45;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.slot-role.has-role {
+  background: var(--planner-accent-softer);
+}
+
+.slot-role-clear {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--table-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.slot-role-clear:hover {
+  background: var(--button-secondary-bg);
+  border-color: var(--button-secondary-bg);
+  color: #fff;
+}
+
+/* ── Scrollbars: player list & roles panel ─────────────────────────── */
+.player-list,
+.map-roles-panel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--table-border) transparent;
+}
+
+.player-list::-webkit-scrollbar,
+.map-roles-panel::-webkit-scrollbar {
+  width: 5px;
+}
+
+.player-list::-webkit-scrollbar-track,
+.map-roles-panel::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 999px;
+}
+
+.player-list::-webkit-scrollbar-thumb,
+.map-roles-panel::-webkit-scrollbar-thumb {
+  background: var(--table-border);
+  border-radius: 999px;
+}
+
+.player-list::-webkit-scrollbar-thumb:hover,
+.map-roles-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--chart-line);
+}
+
+/* ── GL / RL buttons in player list ──────────────────────────────────────── */
+
+.player-gl-btn.active {
+  background: #5aa36b;
+  border-color: #5aa36b;
+  color: #fff;
+}
+
+.player-rl-btn.active {
+  background: #8b6ac8;
+  border-color: #8b6ac8;
+  color: #fff;
+}
+
+/* GL/RL card borders */
+.player-card.garrison-leader {
+  border-color: #5aa36b;
+  box-shadow: inset 3px 0 0 #5aa36b;
+}
+
+.player-card.rally-leader {
+  border-color: #8b6ac8;
+  box-shadow: inset 3px 0 0 #8b6ac8;
+}
+
+/* Plan player GL/RL — multi-badge support */
+.plan-player {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 6px;
+}
+
+.plan-player.coordinator {
+  box-shadow: inset 4px 0 0 var(--chart-line);
+}
+
+.plan-player.garrison-leader {
+  box-shadow: inset 4px 0 0 #5aa36b;
+}
+
+.plan-player.rally-leader {
+  box-shadow: inset 4px 0 0 #8b6ac8;
+}
+
+.plan-player.coordinator.garrison-leader,
+.plan-player.coordinator.rally-leader,
+.plan-player.coordinator.garrison-leader.rally-leader {
+  box-shadow: inset 4px 0 0 var(--chart-line);
+}
+
+.plan-player-name-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
+.plan-player-name {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.plan-badges-inline {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.plan-player-roles {
+  font-size: 0.65rem;
+  opacity: 0.65;
+  font-weight: 600;
+  white-space: nowrap;
+  font-style: italic;
+}
+
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  min-width: 18px;
+  padding: 0 3px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 900;
+  font-style: normal;
+  flex-shrink: 0;
+}
+
+.plan-badge.badge-c {
+  background: var(--chart-line);
+}
+
+.plan-badge.badge-gl {
+  background: #5aa36b;
+}
+
+.plan-badge.badge-rl {
+  background: #8b6ac8;
+}
+
+/* ── Stage column preview in Manage Stages modal ─────────────────────────── */
+.stage-cols-preview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 0.74rem;
+}
+
+.stage-col-pill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--chart-line);
+  background: color-mix(in srgb, var(--chart-line) 12%, var(--table-bg));
+  color: var(--text-color);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.stage-col-pill.fixed {
+  border-color: var(--table-border);
+  background: var(--bg-color);
+  opacity: 0.6;
+  font-weight: 500;
+}
+
+.stage-col-arrow {
+  color: var(--text-color);
+  opacity: 0.35;
+  font-size: 0.7rem;
+}
+
+/* Slot player GL/RL — multi-badge support */
+.slot-player {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.slot-player.garrison-leader,
+.slot-player.rally-leader,
+.slot-player.coordinator {
+  position: relative;
+  padding-left: 10px;
+}
+
+.slot-player.coordinator::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 4px;
+  border-radius: 4px;
+  background: var(--chart-line);
+}
+
+.slot-player.garrison-leader::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 4px;
+  border-radius: 4px;
+  background: #5aa36b;
+}
+
+.slot-player.rally-leader::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 4px;
+  border-radius: 4px;
+  background: #8b6ac8;
+}
+
+/* Priority: coordinator colour wins */
+.slot-player.coordinator.garrison-leader::before,
+.slot-player.coordinator.rally-leader::before,
+.slot-player.coordinator.garrison-leader.rally-leader::before {
+  background: var(--chart-line);
+}
+
+.slot-player-name-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.slot-player-name {
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-player-roles {
+  font-size: 0.62rem;
+  opacity: 0.62;
+  font-weight: 600;
+  white-space: nowrap;
+  font-style: italic;
+}
+
+.slot-badges-inline {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.slot-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 15px;
+  min-width: 17px;
+  padding: 0 3px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.slot-badge.badge-c {
+  background: var(--chart-line);
+}
+
+.slot-badge.badge-gl {
+  background: #5aa36b;
+}
+
+.slot-badge.badge-rl {
+  background: #8b6ac8;
+}
+
+/* ── Lane plan tab: wrap with per-lane stages gear button ─────────────────── */
+.lane-plan-tab-wrap {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.lane-plan-tab-wrap.active {
+  border-color: var(--chart-line);
+  background: var(--planner-accent-soft);
+}
+
+.lane-plan-tab-wrap .lane-plan-tab {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.lane-tab-stages-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 30px;
+  border: none;
+  border-left: 1px solid var(--table-border);
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  opacity: 0.55;
+  transition: opacity 0.14s, background 0.14s;
+  flex-shrink: 0;
+}
+
+.lane-tab-stages-btn:hover {
+  opacity: 1;
+  background: var(--planner-accent-soft);
+}
+
+/* ── Lane plan title bar with Manage Stages button ────────────────────────── */
+.lane-plan-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  min-height: 40px;
+  background: var(--planner-header-bg);
+  color: var(--planner-header-text);
+  border-bottom: 1px solid var(--table-border);
+  gap: 10px;
+}
+
+.lane-plan-title-text {
+  font-size: 1rem;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.lane-stages-btn {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  padding: 0 10px;
+  min-height: 30px;
+}
+
+/* ── Lane stages modal overlay (inline in lanePlanWrap) ───────────────────── */
+.lane-stages-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.lane-stages-modal-overlay[hidden] {
+  display: none;
+}
+
+/* ── Cell colour picker popover ───────────────────────────────────────────── */
+.cell-color-picker {
+  position: fixed;
+  z-index: 20000;
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
+  padding: 10px;
+  min-width: 196px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cell-color-picker-title {
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-color);
+  opacity: 0.55;
+}
+
+.cell-color-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+
+.cell-color-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  border: 1.5px solid var(--table-border);
+  cursor: pointer;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  transition: transform 0.1s, border-color 0.1s;
+}
+
+.cell-color-swatch:hover {
+  transform: scale(1.18);
+  border-color: var(--chart-line);
+  z-index: 1;
+}
+
+.cell-color-swatch.active {
+  border-color: var(--chart-line);
+  box-shadow: 0 0 0 2px var(--chart-line);
+}
+
+.cell-color-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--table-border);
+}
+
+.cell-color-custom-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.cell-color-custom-input {
+  width: 32px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+  padding: 2px;
+  cursor: pointer;
+  background: var(--bg-color);
+}
+
+/* Right-click hint cursor on drop cells */
+.lane-plan-drop-cell textarea {
+  color: inherit;
+}
+.lane-plan-drop-cell {
+  cursor: context-menu;
+}
+
+/* ── Table column resize (resizable th via CSS resize) ───────────────────── */
+.lane-plan-table {
+  table-layout: fixed;
+}
+
+.lane-plan-table thead th {
+  position: relative;
+  overflow: hidden;
+  resize: horizontal;
+  min-width: 60px;
+  box-sizing: border-box;
+}
