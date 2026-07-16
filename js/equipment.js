@@ -1,35 +1,40 @@
 "use strict";
 
 const EQUIP_SLOTS = [
-  { key: "helm",          label: "Helm"      },
-  { key: "chest",         label: "Chest"     },
-  { key: "weapon",        label: "Weapon"    },
-  { key: "gloves",        label: "Gloves"    },
-  { key: "legs",          label: "Legs"      },
-  { key: "boots",         label: "Boots"     },
-  { key: "accessory",     label: "Accessory" },
-  { key: "accessory_sec", label: "Acc. 2"    },
+  { key: "helm", label: "Helm" },
+  { key: "chest", label: "Chest" },
+  { key: "weapon", label: "Weapon" },
+  { key: "gloves", label: "Gloves" },
+  { key: "legs", label: "Legs" },
+  { key: "boots", label: "Boots" },
+  { key: "accessory", label: "Accessory" },
+  { key: "accessory_sec", label: "Acc. 2" },
 ];
 
 const MARCH_COUNT = 12;
-const PAIR_COUNT  = 12;
+const PAIR_COUNT = 12;
 
-let SQL    = null;
-let db     = null;
+let SQL = null;
+let db = null;
 
-let currentMarch   = 1;
-let activeTab      = "equipment";
+let currentMarch = 1;
+let activeTab = "equipment";
 
 const marchData = Array.from({ length: MARCH_COUNT }, () =>
-  Object.fromEntries(EQUIP_SLOTS.map(s => [s.key, { item: "", awk: "", tal: "" }]))
+  Object.fromEntries(
+    EQUIP_SLOTS.map((s) => [s.key, { item: "", awk: "", tal: "" }]),
+  ),
 );
 
-const pairsData = Array.from({ length: PAIR_COUNT }, () => ({ comm1: "", comm2: "" }));
+const pairsData = Array.from({ length: PAIR_COUNT }, () => ({
+  comm1: "",
+  comm2: "",
+}));
 
-let pickerTarget       = null;
+let pickerTarget = null;
 let pickerSelectedItem = "";
-let allIconNames       = [];
-let allCommNames       = [];
+let allIconNames = [];
+let allCommNames = [];
 
 function normalizeNumericId(value) {
   const id = String(value ?? "").trim();
@@ -43,7 +48,7 @@ function searchByName(query) {
   try {
     const res = db.exec(`
       SELECT DISTINCT governor_id, name FROM governors
-      WHERE lower(name) LIKE '%${q.replace(/'/g,"''")}%'
+      WHERE lower(name) LIKE '%${q.replace(/'/g, "''")}%'
       ORDER BY name
       LIMIT 20
     `);
@@ -52,11 +57,15 @@ function searchByName(query) {
         results.push({ id: String(id), name: name || String(id) });
       });
     }
-  } catch (e) { console.warn("Name search:", e); }
+  } catch (e) {
+    console.warn("Name search:", e);
+  }
 
   results.sort((a, b) => {
-    const al = a.name.toLowerCase(), bl = b.name.toLowerCase();
-    const aStarts = al.startsWith(q), bStarts = bl.startsWith(q);
+    const al = a.name.toLowerCase(),
+      bl = b.name.toLowerCase();
+    const aStarts = al.startsWith(q),
+      bStarts = bl.startsWith(q);
     if (aStarts && !bStarts) return -1;
     if (!aStarts && bStarts) return 1;
     return al.localeCompare(bl);
@@ -86,8 +95,12 @@ async function loadEquipRefData() {
     inscriptionsData = await inscriptionsRes.json();
 
     inscriptionsByName = {};
-    for (const [key, info] of Object.entries(inscriptionsData.inscriptions || {})) {
-      const nameKey = String(info.name || key).trim().toLowerCase();
+    for (const [key, info] of Object.entries(
+      inscriptionsData.inscriptions || {},
+    )) {
+      const nameKey = String(info.name || key)
+        .trim()
+        .toLowerCase();
       inscriptionsByName[nameKey] = { key, ...info };
     }
   } catch (e) {
@@ -106,13 +119,15 @@ function getCommanderInfo(commCode) {
 }
 
 function getInscriptionInfo(name) {
-  const key = String(name ?? "").trim().toLowerCase();
+  const key = String(name ?? "")
+    .trim()
+    .toLowerCase();
   return inscriptionsByName[key] || null;
 }
 
 function getAllInscriptionNames() {
   return Object.values(inscriptionsByName)
-    .map(i => i.name)
+    .map((i) => i.name)
     .sort((a, b) => a.localeCompare(b));
 }
 
@@ -131,12 +146,16 @@ function buildTooltipHtml(code, kind) {
     const info = getInscriptionInfo(key);
     if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
     const rarityClass = String(info.rarity || "gold").toLowerCase();
-    const parts = [`<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`];
+    const parts = [
+      `<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`,
+    ];
     if (info.type) {
       parts.push(`<div class="tt-slot">${escapeHtml(info.type)}</div>`);
     }
     if (info.description) {
-      parts.push(`<div class="tt-desc">${escapeHtml(String(info.description))}</div>`);
+      parts.push(
+        `<div class="tt-desc">${escapeHtml(String(info.description))}</div>`,
+      );
     }
     return parts.join("");
   }
@@ -145,20 +164,34 @@ function buildTooltipHtml(code, kind) {
   if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
 
   const rarityClass = String(info.rarity || "gold").toLowerCase();
-  const parts = [`<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`];
+  const parts = [
+    `<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`,
+  ];
 
   if (info.slot) {
     parts.push(`<div class="tt-slot">${escapeHtml(info.slot)}</div>`);
   }
 
-  const stats = Array.isArray(info.stats) ? info.stats : (info.stats ? [info.stats] : []);
+  const stats = Array.isArray(info.stats)
+    ? info.stats
+    : info.stats
+      ? [info.stats]
+      : [];
   if (stats.length) {
-    parts.push(`<ul class="tt-stats">${stats.map(s => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`);
+    parts.push(
+      `<ul class="tt-stats">${stats.map((s) => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`,
+    );
   }
 
-  const descArr = Array.isArray(info.description) ? info.description : (info.description ? [info.description] : []);
+  const descArr = Array.isArray(info.description)
+    ? info.description
+    : info.description
+      ? [info.description]
+      : [];
   if (descArr.length) {
-    parts.push(`<div class="tt-desc">${descArr.map(d => escapeHtml(String(d))).join("<br>")}</div>`);
+    parts.push(
+      `<div class="tt-desc">${descArr.map((d) => escapeHtml(String(d))).join("<br>")}</div>`,
+    );
   }
 
   return parts.join("");
@@ -217,19 +250,25 @@ function initEquipTooltip() {
     tip.style.display = "none";
   });
 
-  document.addEventListener("scroll", () => {
-    tip.style.display = "none";
-    activeEl = null;
-  }, true);
+  document.addEventListener(
+    "scroll",
+    () => {
+      tip.style.display = "none";
+      activeEl = null;
+    },
+    true,
+  );
 }
 initEquipTooltip();
 
 (async () => {
   try {
     SQL = await initSqlJs({
-      locateFile: f => `https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/${f}`,
+      locateFile: (f) => `https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/${f}`,
     });
-  } catch (e) { console.error("sql.js init failed:", e); }
+  } catch (e) {
+    console.error("sql.js init failed:", e);
+  }
   await Promise.all([loadIconManifest(), loadEquipRefData()]);
 })();
 
@@ -434,50 +473,63 @@ CREATE TABLE IF NOT EXISTS farm_accounts (
   main_id INTEGER
 );
 `;
- 
-document.getElementById("createDbBtn").addEventListener("click", createDatabase);
- 
+
+document
+  .getElementById("createDbBtn")
+  .addEventListener("click", createDatabase);
+
 async function createDatabase() {
   const btn = document.getElementById("createDbBtn");
   const origHtml = btn.innerHTML;
- 
+
   if (!SQL) {
     btn.textContent = "Loading sql.js…";
     btn.disabled = true;
-    for (let i = 0; i < 50 && !SQL; i++) await new Promise(r => setTimeout(r, 100));
+    for (let i = 0; i < 50 && !SQL; i++)
+      await new Promise((r) => setTimeout(r, 100));
     btn.disabled = false;
     btn.innerHTML = origHtml;
-    if (!SQL) { alert("sql.js failed to load. Cannot create database."); return; }
+    if (!SQL) {
+      alert("sql.js failed to load. Cannot create database.");
+      return;
+    }
   }
- 
+
   try {
     btn.textContent = "Creating…";
     btn.disabled = true;
- 
+
     const newDb = new SQL.Database();
     newDb.run("PRAGMA foreign_keys = ON;");
- 
-    const stmts = SCHEMA_SQL.split(";").map(s => s.trim()).filter(s => s.length > 0);
+
+    const stmts = SCHEMA_SQL.split(";")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
     for (const stmt of stmts) {
-      try { newDb.run(stmt + ";"); } catch (e) { }
+      try {
+        newDb.run(stmt + ";");
+      } catch (e) {}
     }
     ensureEquipmentMarchColumns(newDb);
- 
+
     const bytes = newDb.export();
-    const blob  = new Blob([bytes], { type: "application/octet-stream" });
-    const url   = URL.createObjectURL(blob);
-    const a     = document.createElement("a");
-    a.href     = url;
+    const blob = new Blob([bytes], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
     a.download = "kvk.db";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
- 
+
     newDb.close();
- 
+
     btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/></svg> Created!`;
-    setTimeout(() => { btn.innerHTML = origHtml; btn.disabled = false; }, 2500);
+    setTimeout(() => {
+      btn.innerHTML = origHtml;
+      btn.disabled = false;
+    }, 2500);
   } catch (e) {
     console.error("createDatabase:", e);
     btn.innerHTML = origHtml;
@@ -486,7 +538,7 @@ async function createDatabase() {
   }
 }
 
-const THEME_KEY   = "theme";
+const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
 function applyTheme(t) {
@@ -496,48 +548,54 @@ function applyTheme(t) {
 }
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
-  const theme = (saved === "light" || saved === "dark") ? saved
-    : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  const theme =
+    saved === "light" || saved === "dark"
+      ? saved
+      : window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
   applyTheme(theme);
   themeToggle.checked = theme === "dark";
 }
-themeToggle.addEventListener("change", () => applyTheme(themeToggle.checked ? "dark" : "light"));
+themeToggle.addEventListener("change", () =>
+  applyTheme(themeToggle.checked ? "dark" : "light"),
+);
 initTheme();
 
 const hamburger = document.getElementById("hamburger");
-const navLinks  = document.getElementById("nav-links");
+const navLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => {
   navLinks.classList.toggle("show");
   hamburger.classList.toggle("open");
 });
-document.addEventListener("click", e => {
+document.addEventListener("click", (e) => {
   if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
     navLinks.classList.remove("show");
     hamburger.classList.remove("open");
   }
 });
-document.querySelectorAll(".nav-links a").forEach(link => {
+document.querySelectorAll(".nav-links a").forEach((link) => {
   if (link.getAttribute("href") === location.pathname.split("/").pop())
     link.classList.add("active");
 });
 
 const dbFileInput = document.getElementById("dbFileInput");
-const dbFileName  = document.getElementById("dbFileName");
-const dbStatus    = document.getElementById("dbStatus");
-const loadGovBtn  = document.getElementById("loadGovBtn");
-const saveBtn     = document.getElementById("saveBtn");
-const newGovBtn   = document.getElementById("newGovBtn");
-const downloadDbBtn  = document.getElementById("downloadDbBtn");
-const unsavedBadge   = document.getElementById("unsavedBadge");
-const farmFileInput    = document.getElementById("farmFileInput");
-const farmImportBtn    = document.getElementById("farmImportBtn");
+const dbFileName = document.getElementById("dbFileName");
+const dbStatus = document.getElementById("dbStatus");
+const loadGovBtn = document.getElementById("loadGovBtn");
+const saveBtn = document.getElementById("saveBtn");
+const newGovBtn = document.getElementById("newGovBtn");
+const downloadDbBtn = document.getElementById("downloadDbBtn");
+const unsavedBadge = document.getElementById("unsavedBadge");
+const farmFileInput = document.getElementById("farmFileInput");
+const farmImportBtn = document.getElementById("farmImportBtn");
 const farmImportStatus = document.getElementById("farmImportStatus");
-const kvkFileInput     = document.getElementById("kvkFileInput");
-const kvkImportBtn     = document.getElementById("kvkImportBtn");
-const kvkImportStatus  = document.getElementById("kvkImportStatus");
-const kvkKingdomInput  = document.getElementById("kvkKingdomInput");
-const kvkNumberInput   = document.getElementById("kvkNumberInput");
-const kvkNameInput     = document.getElementById("kvkNameInput");
+const kvkFileInput = document.getElementById("kvkFileInput");
+const kvkImportBtn = document.getElementById("kvkImportBtn");
+const kvkImportStatus = document.getElementById("kvkImportStatus");
+const kvkKingdomInput = document.getElementById("kvkKingdomInput");
+const kvkNumberInput = document.getElementById("kvkNumberInput");
+const kvkNameInput = document.getElementById("kvkNameInput");
 
 let dbDirty = false;
 
@@ -551,13 +609,15 @@ function markClean() {
   if (unsavedBadge) unsavedBadge.style.display = "none";
 }
 
-window.addEventListener("beforeunload", e => {
+window.addEventListener("beforeunload", (e) => {
   if (!dbDirty) return;
   e.preventDefault();
   e.returnValue = "";
 });
 
-document.getElementById("dbFileLabel").addEventListener("click", () => dbFileInput.click());
+document
+  .getElementById("dbFileLabel")
+  .addEventListener("click", () => dbFileInput.click());
 
 dbFileInput.addEventListener("change", async () => {
   const file = dbFileInput.files[0];
@@ -573,8 +633,8 @@ dbFileInput.addEventListener("change", async () => {
     ensureAppSchema();
     setDbStatus("✓ Loaded", "ok");
     loadGovBtn.disabled = false;
-    saveBtn.disabled    = false;
-    newGovBtn.disabled  = false;
+    saveBtn.disabled = false;
+    newGovBtn.disabled = false;
     downloadDbBtn.disabled = false;
     updateImportButtons();
     preloadIconsFromDb();
@@ -582,8 +642,8 @@ dbFileInput.addEventListener("change", async () => {
     setDbStatus("✗ Invalid DB", "err");
     db = null;
     loadGovBtn.disabled = true;
-    saveBtn.disabled    = true;
-    newGovBtn.disabled  = true;
+    saveBtn.disabled = true;
+    newGovBtn.disabled = true;
     downloadDbBtn.disabled = true;
     updateImportButtons();
     console.error(e);
@@ -592,14 +652,18 @@ dbFileInput.addEventListener("change", async () => {
 
 function setDbStatus(msg, cls) {
   dbStatus.textContent = msg;
-  dbStatus.className   = "eq-db-status" + (cls ? " " + cls : "");
+  dbStatus.className = "eq-db-status" + (cls ? " " + cls : "");
 }
 
 function updateImportButtons() {
-  if (farmImportBtn) farmImportBtn.disabled = !db || !farmFileInput?.files?.length;
+  if (farmImportBtn)
+    farmImportBtn.disabled = !db || !farmFileInput?.files?.length;
   if (kvkImportBtn) {
-    kvkImportBtn.disabled = !db || !kvkFileInput?.files?.length ||
-      !kvkKingdomInput?.value.trim() || !Number(kvkNumberInput?.value);
+    kvkImportBtn.disabled =
+      !db ||
+      !kvkFileInput?.files?.length ||
+      !kvkKingdomInput?.value.trim() ||
+      !Number(kvkNumberInput?.value);
   }
 }
 
@@ -611,32 +675,47 @@ function setImportStatus(el, msg, cls) {
 
 function ensureAppSchema() {
   if (!db) return;
-  const stmts = SCHEMA_SQL.split(";").map(s => s.trim()).filter(Boolean);
+  const stmts = SCHEMA_SQL.split(";")
+    .map((s) => s.trim())
+    .filter(Boolean);
   for (const stmt of stmts) {
-    try { db.run(stmt + ";"); } catch (e) { console.warn("schema update skipped:", e); }
+    try {
+      db.run(stmt + ";");
+    } catch (e) {
+      console.warn("schema update skipped:", e);
+    }
   }
   try {
     const cols = db.exec("PRAGMA table_info(stats)");
-    const existing = new Set(cols.length ? cols[0].values.map(r => r[1]) : []);
+    const existing = new Set(
+      cols.length ? cols[0].values.map((r) => r[1]) : [],
+    );
     [
       ["sum_min_dkp", "INTEGER"],
       ["sum_dkp", "INTEGER"],
       ["sum_dkp_percent", "REAL"],
     ].forEach(([name, type]) => {
-      if (!existing.has(name)) db.run(`ALTER TABLE stats ADD COLUMN ${name} ${type}`);
+      if (!existing.has(name))
+        db.run(`ALTER TABLE stats ADD COLUMN ${name} ${type}`);
     });
-  } catch (e) { console.warn("stats migration skipped:", e); }
+  } catch (e) {
+    console.warn("stats migration skipped:", e);
+  }
   ensureEquipmentMarchColumns(db);
 }
 
 function ensureEquipmentMarchColumns(targetDb = db) {
   if (!targetDb) return;
   try {
-    const table = targetDb.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='equipment'");
+    const table = targetDb.exec(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='equipment'",
+    );
     if (!table.length || !table[0].values.length) return;
 
     const cols = targetDb.exec("PRAGMA table_info(equipment)");
-    const existing = new Set(cols.length ? cols[0].values.map(r => r[1]) : []);
+    const existing = new Set(
+      cols.length ? cols[0].values.map((r) => r[1]) : [],
+    );
 
     for (let mi = 7; mi < MARCH_COUNT; mi++) {
       for (const slot of EQUIP_SLOTS) {
@@ -666,10 +745,10 @@ kvkNameInput?.addEventListener("input", updateImportButtons);
 farmImportBtn?.addEventListener("click", importFarmAccounts);
 kvkImportBtn?.addEventListener("click", importKvkWorkbook);
 
-const govIdInput   = document.getElementById("govIdInput");
+const govIdInput = document.getElementById("govIdInput");
 const govNameInput = document.getElementById("govNameInput");
-const saveStatus   = document.getElementById("saveStatus");
-const govBadge     = document.getElementById("govBadge");
+const saveStatus = document.getElementById("saveStatus");
+const govBadge = document.getElementById("govBadge");
 
 loadGovBtn.addEventListener("click", loadGovernor);
 
@@ -678,19 +757,24 @@ let govIdActiveSuggestionIdx = -1;
 
 function showGovIdSuggestions(matches) {
   govIdActiveSuggestionIdx = -1;
-  govIdSuggestionsEl.innerHTML = matches.map((m, i) =>
-    `<div class="name-suggestion-item" data-id="${escapeHtml(m.id)}" data-idx="${i}">
+  govIdSuggestionsEl.innerHTML = matches
+    .map(
+      (m, i) =>
+        `<div class="name-suggestion-item" data-id="${escapeHtml(m.id)}" data-idx="${i}">
       <span class="name-suggestion-name">${escapeHtml(m.name)}</span>
       <span class="name-suggestion-id">${escapeHtml(m.id)}</span>
-    </div>`
-  ).join("");
+    </div>`,
+    )
+    .join("");
   govIdSuggestionsEl.style.display = "block";
-  govIdSuggestionsEl.querySelectorAll(".name-suggestion-item").forEach(item => {
-    item.addEventListener("mousedown", e => {
-      e.preventDefault();
-      selectGovIdSuggestion(item.dataset.id);
+  govIdSuggestionsEl
+    .querySelectorAll(".name-suggestion-item")
+    .forEach((item) => {
+      item.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        selectGovIdSuggestion(item.dataset.id);
+      });
     });
-  });
 }
 
 function hideGovIdSuggestions() {
@@ -708,16 +792,24 @@ function selectGovIdSuggestion(id) {
 govIdInput.addEventListener("input", () => {
   if (!db) return;
   const val = govIdInput.value.trim();
-  if (!val || normalizeNumericId(val) || val.length < 2) { hideGovIdSuggestions(); return; }
+  if (!val || normalizeNumericId(val) || val.length < 2) {
+    hideGovIdSuggestions();
+    return;
+  }
   const matches = searchByName(val);
   if (matches.length) showGovIdSuggestions(matches);
   else hideGovIdSuggestions();
 });
 
-govIdInput.addEventListener("keydown", e => {
+govIdInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
-    if (govIdSuggestionsEl.style.display !== "none" && govIdActiveSuggestionIdx >= 0) {
-      const items = govIdSuggestionsEl.querySelectorAll(".name-suggestion-item");
+    if (
+      govIdSuggestionsEl.style.display !== "none" &&
+      govIdActiveSuggestionIdx >= 0
+    ) {
+      const items = govIdSuggestionsEl.querySelectorAll(
+        ".name-suggestion-item",
+      );
       selectGovIdSuggestion(items[govIdActiveSuggestionIdx].dataset.id);
       return;
     }
@@ -730,7 +822,10 @@ govIdInput.addEventListener("keydown", e => {
   if (!items.length) return;
   if (e.key === "ArrowDown") {
     e.preventDefault();
-    govIdActiveSuggestionIdx = Math.min(govIdActiveSuggestionIdx + 1, items.length - 1);
+    govIdActiveSuggestionIdx = Math.min(
+      govIdActiveSuggestionIdx + 1,
+      items.length - 1,
+    );
   } else if (e.key === "ArrowUp") {
     e.preventDefault();
     govIdActiveSuggestionIdx = Math.max(govIdActiveSuggestionIdx - 1, -1);
@@ -740,17 +835,22 @@ govIdInput.addEventListener("keydown", e => {
   } else {
     return;
   }
-  items.forEach((item, i) => item.classList.toggle("is-active", i === govIdActiveSuggestionIdx));
-  if (govIdActiveSuggestionIdx >= 0) items[govIdActiveSuggestionIdx].scrollIntoView({ block: "nearest" });
+  items.forEach((item, i) =>
+    item.classList.toggle("is-active", i === govIdActiveSuggestionIdx),
+  );
+  if (govIdActiveSuggestionIdx >= 0)
+    items[govIdActiveSuggestionIdx].scrollIntoView({ block: "nearest" });
 });
 
-govIdInput.addEventListener("blur", () => { setTimeout(hideGovIdSuggestions, 150); });
+govIdInput.addEventListener("blur", () => {
+  setTimeout(hideGovIdSuggestions, 150);
+});
 
 newGovBtn.addEventListener("click", () => {
   if (!db) return;
   clearAllData();
   hideGovIdSuggestions();
-  govIdInput.value   = "";
+  govIdInput.value = "";
   govNameInput.value = "";
   setGovBadge("new");
   renderActiveTab();
@@ -762,14 +862,14 @@ function clearAllData() {
   for (let mi = 0; mi < MARCH_COUNT; mi++)
     for (const s of EQUIP_SLOTS)
       marchData[mi][s.key] = { item: "", awk: "", tal: "" };
-  for (let n = 0; n < PAIR_COUNT; n++)
-    pairsData[n] = { comm1: "", comm2: "" };
+  for (let n = 0; n < PAIR_COUNT; n++) pairsData[n] = { comm1: "", comm2: "" };
   armamentsRow = null;
 }
 
 function setGovBadge(type) {
-  govBadge.className   = "eq-gov-badge" + (type ? " " + type : "");
-  govBadge.textContent = type === "new" ? "New Governor" : type === "loaded" ? "Loaded" : "";
+  govBadge.className = "eq-gov-badge" + (type ? " " + type : "");
+  govBadge.textContent =
+    type === "new" ? "New Governor" : type === "loaded" ? "Loaded" : "";
 }
 
 const ARM_SLOTS = [
@@ -783,12 +883,21 @@ const ARM_SLOTS = [
   { prefix: "arm8", label: "Arm 8" },
 ];
 
-const ARM_INS_KEYS  = ["_ins","_ins2","_ins3","_ins4","_ins5","_ins6","_ins7","_ins8"];
+const ARM_INS_KEYS = [
+  "_ins",
+  "_ins2",
+  "_ins3",
+  "_ins4",
+  "_ins5",
+  "_ins6",
+  "_ins7",
+  "_ins8",
+];
 const ARM_STAT_DEFS = [
-  { nameKey: "_stat_name",   valKey: "_stat"   },
-  { nameKey: "_stat2_name2", valKey: "_stat2"  },
-  { nameKey: "_stat3_name3", valKey: "_stat3"  },
-  { nameKey: "_stat4_name4", valKey: "_stat4"  },
+  { nameKey: "_stat_name", valKey: "_stat" },
+  { nameKey: "_stat2_name2", valKey: "_stat2" },
+  { nameKey: "_stat3_name3", valKey: "_stat3" },
+  { nameKey: "_stat4_name4", valKey: "_stat4" },
 ];
 
 let armamentsRow = null;
@@ -799,12 +908,18 @@ function loadArmaments(govId) {
   if (!db) return;
   if (!safeGovId) return;
   try {
-    const t = db.exec(`SELECT name FROM sqlite_master WHERE type='table' AND name='armaments'`);
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='armaments'`,
+    );
     if (!t.length || !t[0].values.length) return;
-    const res = db.exec(`SELECT * FROM armaments WHERE player_id=${safeGovId} LIMIT 1`);
+    const res = db.exec(
+      `SELECT * FROM armaments WHERE player_id=${safeGovId} LIMIT 1`,
+    );
     if (!res.length || !res[0].values.length) return;
     const row = {};
-    res[0].columns.forEach((c, i) => { row[c] = res[0].values[0][i]; });
+    res[0].columns.forEach((c, i) => {
+      row[c] = res[0].values[0][i];
+    });
     armamentsRow = row;
   } catch (e) {
     console.warn("armaments load failed:", e);
@@ -851,15 +966,24 @@ function loadGovernorById(safeGovId) {
   setGovBadge("");
 
   try {
-    const res = db.exec("SELECT name FROM governors WHERE governor_id = ? LIMIT 1", [safeGovId]);
+    const res = db.exec(
+      "SELECT name FROM governors WHERE governor_id = ? LIMIT 1",
+      [safeGovId],
+    );
     if (res.length && res[0].values.length)
       govNameInput.value = res[0].values[0][0] ?? "";
-  } catch (e) { /* ok */ }
+  } catch (e) {
+    /* ok */
+  }
 
   try {
-    const tbl = db.exec(`SELECT name FROM sqlite_master WHERE type='table' AND name='equipment'`);
+    const tbl = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='equipment'`,
+    );
     if (tbl.length && tbl[0].values.length) {
-      const eqRes = db.exec(`SELECT * FROM equipment WHERE player_id=${safeGovId} LIMIT 1`);
+      const eqRes = db.exec(
+        `SELECT * FROM equipment WHERE player_id=${safeGovId} LIMIT 1`,
+      );
       if (eqRes.length && eqRes[0].values.length) {
         const row = zipRow(eqRes[0]);
         populateMarchData(row);
@@ -867,10 +991,15 @@ function loadGovernorById(safeGovId) {
         setGovBadge("loaded");
       } else {
         setGovBadge("new");
-        showSaveStatus("No equipment record found — starting fresh for this ID.", "info");
+        showSaveStatus(
+          "No equipment record found — starting fresh for this ID.",
+          "info",
+        );
       }
     }
-  } catch (e) { console.error("loadGovernor:", e); }
+  } catch (e) {
+    console.error("loadGovernor:", e);
+  }
 
   renderSlotGrid();
   renderPairsGrid();
@@ -886,25 +1015,33 @@ function renderArmamentsGrid() {
   grid.innerHTML = "";
 
   for (const arm of ARM_SLOTS) {
-    const name    = armamentsRow ? armamentsRow[arm.prefix] : null;
+    const name = armamentsRow ? armamentsRow[arm.prefix] : null;
     const isEmpty = isArmEmpty(name);
 
-    const inscriptions = (!isEmpty && armamentsRow)
-      ? ARM_INS_KEYS
-          .map(k => armamentsRow[`${arm.prefix}${k}`])
-          .filter(v => !isArmEmpty(v))
-          .map(v => {
-            const tier = getArmTier(String(v));
-            return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
-          }).join("")
-      : "";
+    const inscriptions =
+      !isEmpty && armamentsRow
+        ? ARM_INS_KEYS.map((k) => armamentsRow[`${arm.prefix}${k}`])
+            .filter((v) => !isArmEmpty(v))
+            .map((v) => {
+              const tier = getArmTier(String(v));
+              return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
+            })
+            .join("")
+        : "";
 
-    const stats = (!isEmpty && armamentsRow)
-      ? ARM_STAT_DEFS
-          .filter(s => !isArmEmpty(armamentsRow[`${arm.prefix}${s.nameKey}`]) && !isArmEmpty(armamentsRow[`${arm.prefix}${s.valKey}`]))
-          .map(s => `<span class="eq-arm-stat-tag"><span class="eq-arm-stat-name">${escapeHtml(String(armamentsRow[`${arm.prefix}${s.nameKey}`]))}</span><span class="eq-arm-stat-val">${escapeHtml(String(armamentsRow[`${arm.prefix}${s.valKey}`]))}%</span></span>`)
-          .join("")
-      : "";
+    const stats =
+      !isEmpty && armamentsRow
+        ? ARM_STAT_DEFS.filter(
+            (s) =>
+              !isArmEmpty(armamentsRow[`${arm.prefix}${s.nameKey}`]) &&
+              !isArmEmpty(armamentsRow[`${arm.prefix}${s.valKey}`]),
+          )
+            .map(
+              (s) =>
+                `<span class="eq-arm-stat-tag"><span class="eq-arm-stat-name">${escapeHtml(String(armamentsRow[`${arm.prefix}${s.nameKey}`]))}</span><span class="eq-arm-stat-val">${escapeHtml(String(armamentsRow[`${arm.prefix}${s.valKey}`]))}%</span></span>`,
+            )
+            .join("")
+        : "";
 
     const div = document.createElement("div");
     div.className = "eq-arm-card" + (isEmpty ? " eq-arm-card--empty" : "");
@@ -914,14 +1051,16 @@ function renderArmamentsGrid() {
         <span class="eq-arm-name${isEmpty ? " eq-arm-name--empty" : ""}">${isEmpty ? "— empty —" : escapeHtml(String(name))}</span>
         <button class="eq-arm-edit-btn" title="${isEmpty ? "Add armament" : "Edit armament"}">${isEmpty ? "+" : "✎"}</button>
       </div>
-      ${stats        ? `<div class="eq-arm-stats-row">${stats}</div>` : ""}
+      ${stats ? `<div class="eq-arm-stats-row">${stats}</div>` : ""}
       ${inscriptions ? `<div class="eq-arm-ins-row">${inscriptions}</div>` : ""}
     `;
-    div.querySelector(".eq-arm-edit-btn").addEventListener("click", e => {
+    div.querySelector(".eq-arm-edit-btn").addEventListener("click", (e) => {
       e.stopPropagation();
       openArmamentEditor(arm.prefix, arm.label);
     });
-    div.addEventListener("click", () => openArmamentEditor(arm.prefix, arm.label));
+    div.addEventListener("click", () =>
+      openArmamentEditor(arm.prefix, arm.label),
+    );
     grid.appendChild(div);
   }
 }
@@ -953,12 +1092,12 @@ function populateMarchData(row) {
   for (let mi = 0; mi < MARCH_COUNT; mi++)
     for (const slot of EQUIP_SLOTS) {
       const item = row[colKey(slot.key, mi)];
-      const awk  = row[lvlKey(slot.key, mi)];
-      const tal  = row[talKey(slot.key, mi)];
+      const awk = row[lvlKey(slot.key, mi)];
+      const tal = row[talKey(slot.key, mi)];
       marchData[mi][slot.key] = {
         item: isEmpty(item) ? "" : String(item),
-        awk:  isEmpty(awk)  ? "" : String(awk),
-        tal:  isEmpty(tal)  ? "" : String(tal),
+        awk: isEmpty(awk) ? "" : String(awk),
+        tal: isEmpty(tal) ? "" : String(tal),
       };
     }
 }
@@ -979,39 +1118,75 @@ saveBtn.addEventListener("click", saveGovernor);
 function saveGovernor() {
   if (!db) return;
   const safeGovId = normalizeNumericId(govIdInput.value);
-  const name  = govNameInput.value.trim() || "none";
-  if (!safeGovId) { showSaveStatus("Enter a numeric Governor ID first.", "err"); return; }
+  const name = govNameInput.value.trim() || "none";
+  if (!safeGovId) {
+    showSaveStatus("Enter a numeric Governor ID first.", "err");
+    return;
+  }
   const govId = Number(safeGovId);
 
   try {
     ensureGovernorRow(govId, name);
 
     const colsRes = db.exec(`PRAGMA table_info(equipment)`);
-    if (!colsRes.length) { showSaveStatus("No equipment table in DB.", "err"); return; }
-    const existingCols = new Set(colsRes[0].values.map(r => r[1]));
+    if (!colsRes.length) {
+      showSaveStatus("No equipment table in DB.", "err");
+      return;
+    }
+    const existingCols = new Set(colsRes[0].values.map((r) => r[1]));
 
     const setCols = [];
-    const vals    = [];
+    const vals = [];
 
     for (let mi = 0; mi < MARCH_COUNT; mi++) {
       for (const slot of EQUIP_SLOTS) {
-        const d  = marchData[mi][slot.key];
-        pushIfExists(setCols, vals, existingCols, colKey(slot.key, mi), d.item || "none");
-        pushIfExists(setCols, vals, existingCols, lvlKey(slot.key, mi), d.awk ? Number(d.awk) : null);
-        pushIfExists(setCols, vals, existingCols, talKey(slot.key, mi), d.tal || "none");
+        const d = marchData[mi][slot.key];
+        pushIfExists(
+          setCols,
+          vals,
+          existingCols,
+          colKey(slot.key, mi),
+          d.item || "none",
+        );
+        pushIfExists(
+          setCols,
+          vals,
+          existingCols,
+          lvlKey(slot.key, mi),
+          d.awk ? Number(d.awk) : null,
+        );
+        pushIfExists(
+          setCols,
+          vals,
+          existingCols,
+          talKey(slot.key, mi),
+          d.tal || "none",
+        );
       }
     }
 
     for (let n = 0; n < PAIR_COUNT; n++) {
-      pushIfExists(setCols, vals, existingCols, `pair${n + 1}_comm1`, pairsData[n].comm1 || "none");
-      pushIfExists(setCols, vals, existingCols, `pair${n + 1}_comm2`, pairsData[n].comm2 || "none");
+      pushIfExists(
+        setCols,
+        vals,
+        existingCols,
+        `pair${n + 1}_comm1`,
+        pairsData[n].comm1 || "none",
+      );
+      pushIfExists(
+        setCols,
+        vals,
+        existingCols,
+        `pair${n + 1}_comm2`,
+        pairsData[n].comm2 || "none",
+      );
     }
-	
+
     if (armamentsRow) {
       try {
         const armCols = db.exec(`PRAGMA table_info(armaments)`);
         if (armCols.length) {
-          const existArmCols = new Set(armCols[0].values.map(r => r[1]));
+          const existArmCols = new Set(armCols[0].values.map((r) => r[1]));
           const armSetCols = [];
           const armSetVals = [];
 
@@ -1031,40 +1206,53 @@ function saveGovernor() {
             for (const s of ARM_STAT_DEFS) {
               const nk = `${p}${s.nameKey}`;
               const vk = `${p}${s.valKey}`;
-              if (existArmCols.has(nk)) { armSetCols.push(nk); armSetVals.push(armamentsRow[nk] ?? "none"); }
-              if (existArmCols.has(vk)) { armSetCols.push(vk); armSetVals.push(armamentsRow[vk] ?? null); }
+              if (existArmCols.has(nk)) {
+                armSetCols.push(nk);
+                armSetVals.push(armamentsRow[nk] ?? "none");
+              }
+              if (existArmCols.has(vk)) {
+                armSetCols.push(vk);
+                armSetVals.push(armamentsRow[vk] ?? null);
+              }
             }
           }
 
           const armUpsertCols = ["player_id", "name", ...armSetCols];
           const armUpsertVals = [govId, name, ...armSetVals];
-          const armPh         = armUpsertVals.map(() => "?").join(", ");
-          const armUpdateSet  = armSetCols.map(c => `${c}=excluded.${c}`).join(", ");
+          const armPh = armUpsertVals.map(() => "?").join(", ");
+          const armUpdateSet = armSetCols
+            .map((c) => `${c}=excluded.${c}`)
+            .join(", ");
 
           db.run(
             `INSERT INTO armaments (${armUpsertCols.join(", ")}) VALUES (${armPh})
              ON CONFLICT(player_id) DO UPDATE SET name=excluded.name${armUpdateSet ? ", " + armUpdateSet : ""}`,
-            armUpsertVals
+            armUpsertVals,
           );
         }
-      } catch (e) { console.warn("armaments save failed:", e); }
+      } catch (e) {
+        console.warn("armaments save failed:", e);
+      }
     }
 
     const upsertCols = ["player_id", "name", ...setCols];
     const upsertVals = [govId, name, ...vals];
-    const ph         = upsertVals.map(() => "?").join(", ");
-    const updateSet  = setCols.map(c => `${c}=excluded.${c}`).join(", ");
+    const ph = upsertVals.map(() => "?").join(", ");
+    const updateSet = setCols.map((c) => `${c}=excluded.${c}`).join(", ");
 
     db.run(
       `INSERT INTO equipment (${upsertCols.join(", ")}) VALUES (${ph})
        ON CONFLICT(player_id) DO UPDATE SET name=excluded.name${updateSet ? ", " + updateSet : ""}`,
-      upsertVals
+      upsertVals,
     );
 
     downloadDbBtn.disabled = false;
     markDirty();
     setGovBadge("loaded");
-    showSaveStatus("✓ Governor saved (in memory) — download the database when you're done.", "ok");
+    showSaveStatus(
+      "✓ Governor saved (in memory) — download the database when you're done.",
+      "ok",
+    );
   } catch (e) {
     console.error("saveGovernor:", e);
     showSaveStatus("Error: " + e.message, "err");
@@ -1079,43 +1267,55 @@ downloadDbBtn.addEventListener("click", () => {
 });
 
 function pushIfExists(cols, vals, existingCols, col, val) {
-  if (existingCols.has(col)) { cols.push(col); vals.push(val); }
+  if (existingCols.has(col)) {
+    cols.push(col);
+    vals.push(val);
+  }
 }
 
 function ensureGovernorRow(govId, name) {
   try {
-    const t = db.exec(`SELECT name FROM sqlite_master WHERE type='table' AND name='governors'`);
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='governors'`,
+    );
     if (!t.length || !t[0].values.length) return;
     db.run(
       `INSERT INTO governors (governor_id, kingdom, name) VALUES (?, ?, ?)
        ON CONFLICT(governor_id, kingdom) DO UPDATE SET name=excluded.name`,
-      [String(govId), "", name]
+      [String(govId), "", name],
     );
-  } catch (e) { console.warn("ensureGovernorRow:", e); }
+  } catch (e) {
+    console.warn("ensureGovernorRow:", e);
+  }
 }
 
 function downloadDb() {
   const exported = db.export();
-  const blob     = new Blob([exported], { type: "application/octet-stream" });
-  const url      = URL.createObjectURL(blob);
-  const a        = document.createElement("a");
-  a.href         = url;
-  a.download     = dbFileInput.files[0]?.name || "kvk.db";
+  const blob = new Blob([exported], { type: "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = dbFileInput.files[0]?.name || "kvk.db";
   a.click();
   URL.revokeObjectURL(url);
 }
 
 function showSaveStatus(msg, cls) {
   saveStatus.textContent = msg;
-  saveStatus.className   = "eq-save-status" + (cls ? " " + cls : "");
+  saveStatus.className = "eq-save-status" + (cls ? " " + cls : "");
   clearTimeout(saveStatus._t);
   if (msg && (cls === "ok" || cls === "info"))
-    saveStatus._t = setTimeout(() => { saveStatus.textContent = ""; saveStatus.className = "eq-save-status"; }, 5000);
+    saveStatus._t = setTimeout(() => {
+      saveStatus.textContent = "";
+      saveStatus.className = "eq-save-status";
+    }, 5000);
 }
 
 function requireWorkbookLibrary() {
   if (window.XLSX) return true;
-  alert("Excel importer failed to load. Check your internet connection and reload the page.");
+  alert(
+    "Excel importer failed to load. Check your internet connection and reload the page.",
+  );
   return false;
 }
 
@@ -1208,7 +1408,7 @@ async function importFarmAccounts() {
               importToInt(row.ch),
               importToText(row.acc_type, ""),
               importToInt(row.main_id),
-            ]
+            ],
           );
           imported++;
         }
@@ -1220,10 +1420,18 @@ async function importFarmAccounts() {
     }
 
     markDirty();
-    setImportStatus(farmImportStatus, `Imported ${imported} farm account${imported === 1 ? "" : "s"} — remember to download the database when you're done.`, "ok");
+    setImportStatus(
+      farmImportStatus,
+      `Imported ${imported} farm account${imported === 1 ? "" : "s"} — remember to download the database when you're done.`,
+      "ok",
+    );
   } catch (e) {
     console.error("importFarmAccounts:", e);
-    setImportStatus(farmImportStatus, "Farm import failed: " + e.message, "err");
+    setImportStatus(
+      farmImportStatus,
+      "Farm import failed: " + e.message,
+      "err",
+    );
   } finally {
     updateImportButtons();
   }
@@ -1237,7 +1445,11 @@ async function importKvkWorkbook() {
   const kvkNumber = importToInt(kvkNumberInput.value);
   const kvkName = kvkNameInput.value.trim() || "KvK";
   if (!kingdom || !kvkNumber) {
-    setImportStatus(kvkImportStatus, "Enter kingdom and KvK number first.", "err");
+    setImportStatus(
+      kvkImportStatus,
+      "Enter kingdom and KvK number first.",
+      "err",
+    );
     return;
   }
 
@@ -1255,18 +1467,21 @@ async function importKvkWorkbook() {
     try {
       let kvkRows = db.exec(
         "SELECT id FROM kvks WHERE kingdom = ? AND kvk_number = ?",
-        [kingdom, kvkNumber]
+        [kingdom, kvkNumber],
       );
-      let kvkId = kvkRows.length && kvkRows[0].values.length ? kvkRows[0].values[0][0] : null;
+      let kvkId =
+        kvkRows.length && kvkRows[0].values.length
+          ? kvkRows[0].values[0][0]
+          : null;
 
       if (!kvkId) {
         db.run(
           "INSERT INTO kvks (kingdom, kvk_number, name, is_latest) VALUES (?, ?, ?, 0)",
-          [kingdom, kvkNumber, kvkName]
+          [kingdom, kvkNumber, kvkName],
         );
         kvkRows = db.exec(
           "SELECT id FROM kvks WHERE kingdom = ? AND kvk_number = ?",
-          [kingdom, kvkNumber]
+          [kingdom, kvkNumber],
         );
         kvkId = kvkRows[0].values[0][0];
       } else {
@@ -1283,11 +1498,11 @@ async function importKvkWorkbook() {
 
         db.run(
           "INSERT OR IGNORE INTO snapshots (kvk_id, snapshot_date) VALUES (?, ?)",
-          [kvkId, snapshotDate]
+          [kvkId, snapshotDate],
         );
         const snapRows = db.exec(
           "SELECT id FROM snapshots WHERE kvk_id = ? AND snapshot_date = ?",
-          [kvkId, snapshotDate]
+          [kvkId, snapshotDate],
         );
         const snapshotId = snapRows[0].values[0][0];
         lastSnapshotId = snapshotId;
@@ -1301,7 +1516,7 @@ async function importKvkWorkbook() {
           db.run(
             `INSERT OR IGNORE INTO governors (governor_id, kingdom, name)
              VALUES (?, ?, ?)`,
-            [String(governorId), kingdom, name]
+            [String(governorId), kingdom, name],
           );
 
           db.run(
@@ -1331,20 +1546,43 @@ async function importKvkWorkbook() {
               importToInt(rowValue(row, headers, "Min DKP")),
               importToInt(rowValue(row, headers, "DKP")),
               importToFloat(rowValue(row, headers, "DKP%")),
-              importToInt(rowValue(row, headers, "Sum Min DKP", rowValue(row, headers, "Min DKP"))),
-              importToInt(rowValue(row, headers, "Sum DKP", rowValue(row, headers, "DKP"))),
-              importToFloat(rowValue(row, headers, "Sum DKP%", rowValue(row, headers, "DKP%"))),
+              importToInt(
+                rowValue(
+                  row,
+                  headers,
+                  "Sum Min DKP",
+                  rowValue(row, headers, "Min DKP"),
+                ),
+              ),
+              importToInt(
+                rowValue(
+                  row,
+                  headers,
+                  "Sum DKP",
+                  rowValue(row, headers, "DKP"),
+                ),
+              ),
+              importToFloat(
+                rowValue(
+                  row,
+                  headers,
+                  "Sum DKP%",
+                  rowValue(row, headers, "DKP%"),
+                ),
+              ),
               importToText(rowValue(row, headers, "Vacation", "NO"), "NO"),
               importToText(rowValue(row, headers, "Status", "OK"), "OK"),
               importToInt(rowValue(row, headers, "Acclaim")),
-            ]
+            ],
           );
           statCount++;
         }
       }
 
       if (lastSnapshotId) {
-        db.run("UPDATE snapshots SET is_last = 1 WHERE id = ?", [lastSnapshotId]);
+        db.run("UPDATE snapshots SET is_last = 1 WHERE id = ?", [
+          lastSnapshotId,
+        ]);
       }
       db.run("UPDATE kvks SET is_latest = 1 WHERE id = ?", [kvkId]);
       db.run("COMMIT");
@@ -1354,7 +1592,11 @@ async function importKvkWorkbook() {
     }
 
     markDirty();
-    setImportStatus(kvkImportStatus, `Imported ${snapshotCount} snapshot${snapshotCount === 1 ? "" : "s"} and ${statCount} stat row${statCount === 1 ? "" : "s"} — remember to download the database when you're done.`, "ok");
+    setImportStatus(
+      kvkImportStatus,
+      `Imported ${snapshotCount} snapshot${snapshotCount === 1 ? "" : "s"} and ${statCount} stat row${statCount === 1 ? "" : "s"} — remember to download the database when you're done.`,
+      "ok",
+    );
   } catch (e) {
     console.error("importKvkWorkbook:", e);
     setImportStatus(kvkImportStatus, "KvK import failed: " + e.message, "err");
@@ -1363,14 +1605,21 @@ async function importKvkWorkbook() {
   }
 }
 
-document.querySelectorAll(".eq-section-tab").forEach(btn => {
+document.querySelectorAll(".eq-section-tab").forEach((btn) => {
   btn.addEventListener("click", () => {
     activeTab = btn.dataset.tab;
 
-    document.querySelectorAll(".eq-section-tab").forEach(b =>
-      b.classList.toggle("active", b === btn));
+    document
+      .querySelectorAll(".eq-section-tab")
+      .forEach((b) => b.classList.toggle("active", b === btn));
 
-    for (const tabName of ["equipment", "pairs", "armaments", "farmImport", "kvkImport"]) {
+    for (const tabName of [
+      "equipment",
+      "pairs",
+      "armaments",
+      "farmImport",
+      "kvkImport",
+    ]) {
       const panel = document.getElementById(`${tabName}Panel`);
       if (panel) panel.style.display = activeTab === tabName ? "" : "none";
     }
@@ -1383,7 +1632,8 @@ function renderActiveTab() {
   if (activeTab === "equipment") renderSlotGrid();
   else if (activeTab === "pairs") renderPairsGrid();
   else if (activeTab === "armaments") renderArmamentsGrid();
-  else if (activeTab === "farmImport" || activeTab === "kvkImport") updateImportButtons();
+  else if (activeTab === "farmImport" || activeTab === "kvkImport")
+    updateImportButtons();
 }
 
 function renderMarchTabs() {
@@ -1402,24 +1652,25 @@ function renderMarchTabs() {
 
 renderMarchTabs();
 
-document.getElementById("marchTabs").addEventListener("click", e => {
+document.getElementById("marchTabs").addEventListener("click", (e) => {
   const tab = e.target.closest(".eq-tab");
   if (!tab) return;
   currentMarch = Number(tab.dataset.march);
-  document.querySelectorAll("#marchTabs .eq-tab").forEach(t =>
-    t.classList.toggle("active", t === tab));
+  document
+    .querySelectorAll("#marchTabs .eq-tab")
+    .forEach((t) => t.classList.toggle("active", t === tab));
   renderSlotGrid();
 });
 
 function renderSlotGrid() {
   const grid = document.getElementById("slotGrid");
-  const mi   = currentMarch - 1;
+  const mi = currentMarch - 1;
   grid.innerHTML = "";
 
   for (const slot of EQUIP_SLOTS) {
-    const d       = marchData[mi][slot.key];
+    const d = marchData[mi][slot.key];
     const hasItem = !!d.item;
-    const card    = document.createElement("div");
+    const card = document.createElement("div");
     card.className = "eq-slot-card" + (hasItem ? " has-item" : "");
     if (hasItem) {
       card.dataset.tipCode = d.item;
@@ -1429,11 +1680,13 @@ function renderSlotGrid() {
     card.innerHTML = `
       <span class="eq-slot-label">${escapeHtml(slot.label)}</span>
       <div class="eq-slot-img-box">
-        ${hasItem
-          ? `<img src="${iconPath(d.item, "item")}" alt="${escapeHtml(d.item)}" loading="lazy"
+        ${
+          hasItem
+            ? `<img src="${iconPath(d.item, "item")}" alt="${escapeHtml(d.item)}" loading="lazy"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
              <div class="eq-slot-placeholder" style="display:none;">?</div>`
-          : `<div class="eq-slot-placeholder">+</div>`}
+            : `<div class="eq-slot-placeholder">+</div>`
+        }
       </div>
       <span class="eq-slot-item-name">${hasItem ? escapeHtml(d.item) : "—"}</span>
       <div class="eq-slot-stats">
@@ -1441,7 +1694,9 @@ function renderSlotGrid() {
         <span class="eq-slot-stat${hasItem && d.tal ? " filled" : ""}">Tal: ${hasItem && d.tal ? escapeHtml(d.tal) : "—"}</span>
       </div>`;
 
-    card.addEventListener("click", () => openPicker({ type: "equip", marchIdx: mi, slotKey: slot.key }));
+    card.addEventListener("click", () =>
+      openPicker({ type: "equip", marchIdx: mi, slotKey: slot.key }),
+    );
     grid.appendChild(card);
   }
 }
@@ -1451,15 +1706,15 @@ function renderPairsGrid() {
   grid.innerHTML = "";
 
   for (let n = 0; n < PAIR_COUNT; n++) {
-    const p   = pairsData[n];
+    const p = pairsData[n];
     const row = document.createElement("div");
     row.className = "eq-pair-row";
     row.innerHTML = `<span class="eq-pair-label">Pair ${n + 1}</span>`;
 
     for (const slot of ["comm1", "comm2"]) {
-      const name    = p[slot];
+      const name = p[slot];
       const hasComm = !!name;
-      const card    = document.createElement("div");
+      const card = document.createElement("div");
       card.className = "eq-pair-card" + (hasComm ? " has-item" : "");
       if (hasComm) {
         card.dataset.tipCode = name;
@@ -1468,23 +1723,25 @@ function renderPairsGrid() {
 
       card.innerHTML = `
         <div class="eq-pair-img-box">
-          ${hasComm
-            ? `<img src="${iconPath(name, "commander")}" alt="${escapeHtml(name)}" loading="lazy"
+          ${
+            hasComm
+              ? `<img src="${iconPath(name, "commander")}" alt="${escapeHtml(name)}" loading="lazy"
                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                <div class="eq-slot-placeholder" style="display:none;">?</div>`
-            : `<div class="eq-slot-placeholder">+</div>`}
+              : `<div class="eq-slot-placeholder">+</div>`
+          }
         </div>
         <span class="eq-pair-comm-name">${hasComm ? escapeHtml(name) : "—"}</span>
         ${hasComm ? `<button class="eq-pair-clear" title="Clear this commander">×</button>` : ""}`;
 
-      card.addEventListener("click", ev => {
+      card.addEventListener("click", (ev) => {
         if (ev.target.classList.contains("eq-pair-clear")) return;
         openPicker({ type: "pair", pairIdx: n, slot });
       });
 
       const clearBtn = card.querySelector(".eq-pair-clear");
       if (clearBtn) {
-        clearBtn.addEventListener("click", ev => {
+        clearBtn.addEventListener("click", (ev) => {
           ev.stopPropagation();
           pairsData[n][slot] = "";
           renderPairsGrid();
@@ -1502,13 +1759,13 @@ renderSlotGrid();
 renderPairsGrid();
 
 const EQUIP_PREFIX_MAP = {
-  helm:          "h",
-  chest:         "c",
-  weapon:        "w",
-  gloves:        "g",
-  legs:          "l",
-  boots:         "b",
-  accessory:     "a",
+  helm: "h",
+  chest: "c",
+  weapon: "w",
+  gloves: "g",
+  legs: "l",
+  boots: "b",
+  accessory: "a",
   accessory_sec: "a",
 };
 const EQUIP_ICON_RE = /^[hcwglba]\d/i;
@@ -1520,7 +1777,7 @@ function isEquipIcon(name) {
 function iconsForSlot(slotKey) {
   const prefix = EQUIP_PREFIX_MAP[slotKey];
   if (!prefix) return allIconNames;
-  return allIconNames.filter(n => n.charAt(0).toLowerCase() === prefix);
+  return allIconNames.filter((n) => n.charAt(0).toLowerCase() === prefix);
 }
 
 async function loadIconManifest() {
@@ -1529,11 +1786,11 @@ async function loadIconManifest() {
     const res = await fetch("icons/manifest.json");
     if (res.ok) {
       const all = await res.json();
-      allIconNames = all.filter(n => isEquipIcon(n)).sort();
-      allCommNames = all.filter(n => !isEquipIcon(n)).sort();
+      allIconNames = all.filter((n) => isEquipIcon(n)).sort();
+      allCommNames = all.filter((n) => !isEquipIcon(n)).sort();
       return;
     }
-  } catch (e) { }
+  } catch (e) {}
 
   if (!db) return;
   _scrapeIconsFromDb();
@@ -1548,38 +1805,49 @@ function _scrapeIconsFromDb() {
   try {
     const cols = db.exec(`PRAGMA table_info(equipment)`);
     if (!cols.length) return;
-    const itemCols = cols[0].values.map(r => r[1]).filter(c =>
-      !c.endsWith("_lvl") && !c.includes("_tal") &&
-      !["player_id","name","acc_type"].includes(c) && !c.startsWith("pair") &&
-      !/_(lvl|tal)_\d+$/.test(c));
+    const itemCols = cols[0].values
+      .map((r) => r[1])
+      .filter(
+        (c) =>
+          !c.endsWith("_lvl") &&
+          !c.includes("_tal") &&
+          !["player_id", "name", "acc_type"].includes(c) &&
+          !c.startsWith("pair") &&
+          !/_(lvl|tal)_\d+$/.test(c),
+      );
     if (!itemCols.length) return;
 
     const pairCols = [];
-    for (let n = 1; n <= 12; n++) pairCols.push(`pair${n}_comm1`, `pair${n}_comm2`);
+    for (let n = 1; n <= 12; n++)
+      pairCols.push(`pair${n}_comm1`, `pair${n}_comm2`);
 
     const equipNames = new Set();
-    const commNames  = new Set();
+    const commNames = new Set();
 
-    const res = db.exec(`SELECT ${[...itemCols, ...pairCols].join(",")} FROM equipment LIMIT 500`);
+    const res = db.exec(
+      `SELECT ${[...itemCols, ...pairCols].join(",")} FROM equipment LIMIT 500`,
+    );
     if (res.length) {
       const allCols = res[0].columns;
       const pairSet = new Set(pairCols);
-      res[0].values.forEach(row =>
+      res[0].values.forEach((row) =>
         row.forEach((v, i) => {
-          if (!v || ["none","0"].includes(String(v).toLowerCase())) return;
+          if (!v || ["none", "0"].includes(String(v).toLowerCase())) return;
           const name = String(v).trim();
           if (pairSet.has(allCols[i])) {
             commNames.add(name);
           } else {
             if (isEquipIcon(name)) equipNames.add(name);
           }
-        })
+        }),
       );
     }
 
     allIconNames = [...equipNames].sort();
     allCommNames = [...commNames].sort();
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    /* ignore */
+  }
 }
 
 async function preloadIconsFromDb() {
@@ -1587,24 +1855,28 @@ async function preloadIconsFromDb() {
   _scrapeIconsFromDb();
 }
 
-const pickerOverlay  = document.getElementById("pickerOverlay");
-const pickerBody     = document.getElementById("pickerBody");
-const pickerSearch   = document.getElementById("pickerSearch");
-const pickerClose    = document.getElementById("pickerClose");
+const pickerOverlay = document.getElementById("pickerOverlay");
+const pickerBody = document.getElementById("pickerBody");
+const pickerSearch = document.getElementById("pickerSearch");
+const pickerClose = document.getElementById("pickerClose");
 const pickerClearBtn = document.getElementById("pickerClearBtn");
-const pickerSlotLabel= document.getElementById("pickerSlotLabel");
+const pickerSlotLabel = document.getElementById("pickerSlotLabel");
 
-pickerClose.addEventListener("click",   closePicker);
+pickerClose.addEventListener("click", closePicker);
 pickerClearBtn.addEventListener("click", clearPickerSlot);
-pickerOverlay.addEventListener("click",  e => { if (e.target === pickerOverlay) closePicker(); });
-pickerSearch.addEventListener("input",   () => renderPickerItems(pickerSearch.value.trim()));
+pickerOverlay.addEventListener("click", (e) => {
+  if (e.target === pickerOverlay) closePicker();
+});
+pickerSearch.addEventListener("input", () =>
+  renderPickerItems(pickerSearch.value.trim()),
+);
 
 async function openPicker(target) {
   pickerTarget = target;
   pickerSearch.value = "";
 
   if (target.type === "equip") {
-    const slot = EQUIP_SLOTS.find(s => s.key === target.slotKey);
+    const slot = EQUIP_SLOTS.find((s) => s.key === target.slotKey);
     pickerSlotLabel.textContent = `– ${slot?.label ?? target.slotKey} · March ${target.marchIdx + 1}`;
     pickerSelectedItem = marchData[target.marchIdx][target.slotKey].item;
     await loadIconManifest();
@@ -1629,7 +1901,11 @@ function closePicker() {
 function clearPickerSlot() {
   if (!pickerTarget) return;
   if (pickerTarget.type === "equip") {
-    marchData[pickerTarget.marchIdx][pickerTarget.slotKey] = { item: "", awk: "", tal: "" };
+    marchData[pickerTarget.marchIdx][pickerTarget.slotKey] = {
+      item: "",
+      awk: "",
+      tal: "",
+    };
     closePicker();
     renderSlotGrid();
   } else {
@@ -1657,7 +1933,11 @@ function renderPickerItems(filter) {
     const prefix = EQUIP_PREFIX_MAP[pickerTarget.slotKey];
     for (let mi = 0; mi < MARCH_COUNT; mi++)
       for (const s of EQUIP_SLOTS)
-        if (marchData[mi][s.key].item && (!prefix || marchData[mi][s.key].item.charAt(0).toLowerCase() === prefix))
+        if (
+          marchData[mi][s.key].item &&
+          (!prefix ||
+            marchData[mi][s.key].item.charAt(0).toLowerCase() === prefix)
+        )
           candidates.add(marchData[mi][s.key].item);
   } else if (pickerTarget?.type === "pair") {
     for (let n = 0; n < PAIR_COUNT; n++) {
@@ -1667,7 +1947,7 @@ function renderPickerItems(filter) {
   }
 
   let list = [...candidates].sort((a, b) => a.localeCompare(b));
-  if (q) list = list.filter(n => n.toLowerCase().includes(q));
+  if (q) list = list.filter((n) => n.toLowerCase().includes(q));
 
   if (!list.length) {
     pickerBody.innerHTML = `<div class="eq-picker-empty">${
@@ -1682,7 +1962,8 @@ function renderPickerItems(filter) {
   const tipKind = pickerTarget?.type === "pair" ? "commander" : "item";
   for (const name of list) {
     const div = document.createElement("div");
-    div.className = "eq-picker-item" + (name === pickerSelectedItem ? " selected" : "");
+    div.className =
+      "eq-picker-item" + (name === pickerSelectedItem ? " selected" : "");
     div.dataset.tipCode = name;
     div.dataset.tipKind = tipKind;
     div.innerHTML = `
@@ -1702,7 +1983,9 @@ function selectPickerItem(name) {
   if (pickerTarget.type === "equip") {
     const existing = marchData[pickerTarget.marchIdx][pickerTarget.slotKey];
     marchData[pickerTarget.marchIdx][pickerTarget.slotKey] = {
-      item: name, awk: existing.awk, tal: existing.tal,
+      item: name,
+      awk: existing.awk,
+      tal: existing.tal,
     };
     openDetailPopup(pickerTarget.marchIdx, pickerTarget.slotKey);
   } else {
@@ -1711,77 +1994,88 @@ function selectPickerItem(name) {
   }
 }
 
-const detailPopup    = document.getElementById("detailPopup");
+const detailPopup = document.getElementById("detailPopup");
 const detailBackdrop = document.getElementById("detailBackdrop");
-const detailImg      = document.getElementById("detailImg");
+const detailImg = document.getElementById("detailImg");
 const detailItemName = document.getElementById("detailItemName");
-const detailAwk      = document.getElementById("detailAwk");
-const detailTal      = document.getElementById("detailTal");
-const detailSlotTitle= document.getElementById("detailSlotTitle");
-const detailClose    = document.getElementById("detailClose");
-const detailConfirm  = document.getElementById("detailConfirm");
+const detailAwk = document.getElementById("detailAwk");
+const detailTal = document.getElementById("detailTal");
+const detailSlotTitle = document.getElementById("detailSlotTitle");
+const detailClose = document.getElementById("detailClose");
+const detailConfirm = document.getElementById("detailConfirm");
 
 let detailTarget = null;
 
 function openDetailPopup(marchIdx, slotKey) {
   detailTarget = { marchIdx, slotKey };
-  const d      = marchData[marchIdx][slotKey];
-  const slot   = EQUIP_SLOTS.find(s => s.key === slotKey);
+  const d = marchData[marchIdx][slotKey];
+  const slot = EQUIP_SLOTS.find((s) => s.key === slotKey);
   detailSlotTitle.textContent = `${slot?.label ?? slotKey} — March ${marchIdx + 1}`;
-  detailItemName.textContent  = d.item;
-  detailImg.src               = iconPath(d.item, "item");
-  detailImg.alt               = d.item;
-  detailImg.onerror           = () => { detailImg.style.display = "none"; };
-  detailImg.style.display     = "";
-  detailAwk.value             = d.awk ?? "";
+  detailItemName.textContent = d.item;
+  detailImg.src = iconPath(d.item, "item");
+  detailImg.alt = d.item;
+  detailImg.onerror = () => {
+    detailImg.style.display = "none";
+  };
+  detailImg.style.display = "";
+  detailAwk.value = d.awk ?? "";
 
   const talVal = (d.tal ?? "").toLowerCase();
   setTalentBtn(talVal === "yes" ? "yes" : talVal === "no" ? "no" : "");
 
-  detailPopup.style.display    = "block";
+  detailPopup.style.display = "block";
   detailBackdrop.style.display = "block";
   detailAwk.focus();
 }
 
 function closeDetailPopup() {
-  detailPopup.style.display    = "none";
+  detailPopup.style.display = "none";
   detailBackdrop.style.display = "none";
   detailTarget = null;
 }
 
-detailClose.addEventListener("click",    closeDetailPopup);
+detailClose.addEventListener("click", closeDetailPopup);
 detailBackdrop.addEventListener("click", closeDetailPopup);
 
 function setTalentBtn(val) {
   detailTal.value = val;
-  document.getElementById("talBtnYes").classList.toggle("active", val === "yes");
-  document.getElementById("talBtnNo").classList.toggle("active",  val === "no");
+  document
+    .getElementById("talBtnYes")
+    .classList.toggle("active", val === "yes");
+  document.getElementById("talBtnNo").classList.toggle("active", val === "no");
 }
-document.getElementById("talBtnYes").addEventListener("click", () => setTalentBtn("yes"));
-document.getElementById("talBtnNo").addEventListener("click",  () => setTalentBtn("no"));
+document
+  .getElementById("talBtnYes")
+  .addEventListener("click", () => setTalentBtn("yes"));
+document
+  .getElementById("talBtnNo")
+  .addEventListener("click", () => setTalentBtn("no"));
 
 detailConfirm.addEventListener("click", () => {
   if (!detailTarget) return;
-  marchData[detailTarget.marchIdx][detailTarget.slotKey].awk = detailAwk.value.trim();
-  marchData[detailTarget.marchIdx][detailTarget.slotKey].tal = detailTal.value.trim();
+  marchData[detailTarget.marchIdx][detailTarget.slotKey].awk =
+    detailAwk.value.trim();
+  marchData[detailTarget.marchIdx][detailTarget.slotKey].tal =
+    detailTal.value.trim();
   closeDetailPopup();
   renderSlotGrid();
 });
 
-document.addEventListener("keydown", e => {
+document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
-    if (document.getElementById("armModalOverlay").classList.contains("open")) closeArmamentEditor();
+    if (document.getElementById("armModalOverlay").classList.contains("open"))
+      closeArmamentEditor();
     else if (detailPopup.style.display === "block") closeDetailPopup();
     else closePicker();
   }
 });
 
 let armEditorPrefix = null;
-let armEditorLabel  = null;
+let armEditorLabel = null;
 
 function openArmamentEditor(prefix, label) {
   armEditorPrefix = prefix;
-  armEditorLabel  = label;
+  armEditorLabel = label;
 
   if (!armamentsRow) armamentsRow = { player_id: null };
 
@@ -1789,18 +2083,26 @@ function openArmamentEditor(prefix, label) {
 
   document.getElementById("armModalTitle").textContent = `Edit ${label}`;
 
-  document.getElementById("armModalName").value = isArmEmpty(row[prefix]) ? "" : String(row[prefix]);
+  document.getElementById("armModalName").value = isArmEmpty(row[prefix])
+    ? ""
+    : String(row[prefix]);
 
   ARM_STAT_DEFS.forEach((s, i) => {
     const nk = `${prefix}${s.nameKey}`;
     const vk = `${prefix}${s.valKey}`;
-    document.getElementById(`armStatName${i}`).value = isArmEmpty(row[nk]) ? "" : String(row[nk]);
-    document.getElementById(`armStatVal${i}`).value  = isArmEmpty(row[vk]) ? "" : String(row[vk]);
+    document.getElementById(`armStatName${i}`).value = isArmEmpty(row[nk])
+      ? ""
+      : String(row[nk]);
+    document.getElementById(`armStatVal${i}`).value = isArmEmpty(row[vk])
+      ? ""
+      : String(row[vk]);
   });
 
   ARM_INS_KEYS.forEach((k, i) => {
     const v = row[`${prefix}${k}`];
-    document.getElementById(`armIns${i}`).value = isArmEmpty(v) ? "" : String(v);
+    document.getElementById(`armIns${i}`).value = isArmEmpty(v)
+      ? ""
+      : String(v);
   });
   renderInsChosenList();
 
@@ -1830,7 +2132,7 @@ function saveArmamentEditor() {
     const nv = document.getElementById(`armStatName${i}`).value.trim();
     const vv = document.getElementById(`armStatVal${i}`).value.trim();
     armamentsRow[`${prefix}${s.nameKey}`] = nv || "none";
-    armamentsRow[`${prefix}${s.valKey}`]  = vv ? parseFloat(vv) : null;
+    armamentsRow[`${prefix}${s.valKey}`] = vv ? parseFloat(vv) : null;
   });
 
   ARM_INS_KEYS.forEach((k, i) => {
@@ -1843,20 +2145,69 @@ function saveArmamentEditor() {
 }
 
 const ARM_SET_BONUSES = {
-  "Pincer":  { name: "Pincer Formation", bonus: "The user's troop deals 10% more smite damage." },
-  "Wedge":   { name: "Wedge Formation",  bonus: "The user's troop deals 5% more skill damage." },
-  "Delta":   { name: "Delta Formation",  bonus: "The user's troop deals 10% more combo attack damage." },
-  "Tercio":  { name: "Tercio Formation", bonus: "When the user is garrisoned in your city, all unit-specific attribute bonuses (Attack/Defense/Health) from the user's armaments will apply to all unit types." },
-  "Double Line":  { name: "Double Line Formation", bonus: "If the user's troop is marching towards barbarians, it gains 10% March Speed." },
-  "Staggered":  { name: "Staggered Formation", bonus: "The user's troop gains 15% March Speed when marching to join a rallied army or garrison." },
-  "Circle":  { name: "Circle Formation", bonus: "All healing the user's troop receives is increased by 5%." },
-  "Tetsudo":  { name: "Tetsudo Formation", bonus: "The user's troop takes 5% less damage while it has a shield. All healing their troop receives is increased by 2.5%." },
-  "Triple Line":  { name: "Triple Line Formation", bonus: "Increases the March Speed of the user's troop by 5%." },  
-  "Line":  { name: "Line Formation", bonus: "Increases the Food, Wood, Stone, and Gold Gathering Speed of the user's troop by 10%." },
-  "Hollow Square":  { name: "Hollow Square Formation", bonus: "The user's troop takes 2% less damage." },
-  "Echelon":  { name: "Echelon Formation", bonus: "When the user's troop grants percentage-based buffs to other troops, their effects are multiplied by 1.2, with a maximum increase of up to 5% of their original value." },
-  "V":  { name: "V Formation", bonus: "The user's troop can switch to ranged mode, allowing it to launch 1 ranged basic attack per second. If your city is in a War Frenzy, your troops in ranged mode will automatically launch ranged attacks against enemies within their attack range that are attacking a friendly or allied troop. Only commanders with the Engineering talent tag can use their active skills while in V formation." },
-  "Arch":  { name: "Arch Formation", bonus: "The user's troop deals 5% more normal damage." },
+  Pincer: {
+    name: "Pincer Formation",
+    bonus: "The user's troop deals 10% more smite damage.",
+  },
+  Wedge: {
+    name: "Wedge Formation",
+    bonus: "The user's troop deals 5% more skill damage.",
+  },
+  Delta: {
+    name: "Delta Formation",
+    bonus: "The user's troop deals 10% more combo attack damage.",
+  },
+  Tercio: {
+    name: "Tercio Formation",
+    bonus:
+      "When the user is garrisoned in your city, all unit-specific attribute bonuses (Attack/Defense/Health) from the user's armaments will apply to all unit types.",
+  },
+  "Double Line": {
+    name: "Double Line Formation",
+    bonus:
+      "If the user's troop is marching towards barbarians, it gains 10% March Speed.",
+  },
+  Staggered: {
+    name: "Staggered Formation",
+    bonus:
+      "The user's troop gains 15% March Speed when marching to join a rallied army or garrison.",
+  },
+  Circle: {
+    name: "Circle Formation",
+    bonus: "All healing the user's troop receives is increased by 5%.",
+  },
+  Tetsudo: {
+    name: "Tetsudo Formation",
+    bonus:
+      "The user's troop takes 5% less damage while it has a shield. All healing their troop receives is increased by 2.5%.",
+  },
+  "Triple Line": {
+    name: "Triple Line Formation",
+    bonus: "Increases the March Speed of the user's troop by 5%.",
+  },
+  Line: {
+    name: "Line Formation",
+    bonus:
+      "Increases the Food, Wood, Stone, and Gold Gathering Speed of the user's troop by 10%.",
+  },
+  "Hollow Square": {
+    name: "Hollow Square Formation",
+    bonus: "The user's troop takes 2% less damage.",
+  },
+  Echelon: {
+    name: "Echelon Formation",
+    bonus:
+      "When the user's troop grants percentage-based buffs to other troops, their effects are multiplied by 1.2, with a maximum increase of up to 5% of their original value.",
+  },
+  V: {
+    name: "V Formation",
+    bonus:
+      "The user's troop can switch to ranged mode, allowing it to launch 1 ranged basic attack per second. If your city is in a War Frenzy, your troops in ranged mode will automatically launch ranged attacks against enemies within their attack range that are attacking a friendly or allied troop. Only commanders with the Engineering talent tag can use their active skills while in V formation.",
+  },
+  Arch: {
+    name: "Arch Formation",
+    bonus: "The user's troop deals 5% more normal damage.",
+  },
 };
 
 function renderArmSetBonus() {
@@ -1865,9 +2216,12 @@ function renderArmSetBonus() {
 
   const counts = {};
   for (const arm of ARM_SLOTS) {
-    const v = armEditorPrefix === arm.prefix
-      ? document.getElementById("armModalName")?.value.trim()
-      : (armamentsRow ? armamentsRow[arm.prefix] : null);
+    const v =
+      armEditorPrefix === arm.prefix
+        ? document.getElementById("armModalName")?.value.trim()
+        : armamentsRow
+          ? armamentsRow[arm.prefix]
+          : null;
     if (!isArmEmpty(v)) {
       const key = String(v).trim();
       counts[key] = (counts[key] || 0) + 1;
@@ -1884,20 +2238,25 @@ function renderArmSetBonus() {
       ${bonus ? `<span class="eq-arm-set-bonus">${active ? "✓ " : ""}${escapeHtml(bonus.bonus)}</span>` : ""}
     </div>`;
   }
-  preview.innerHTML = html || `<span class="eq-arm-set-none">No active set bonuses</span>`;
+  preview.innerHTML =
+    html || `<span class="eq-arm-set-none">No active set bonuses</span>`;
 }
 
-document.getElementById("armModalOverlay").addEventListener("click", e => {
+document.getElementById("armModalOverlay").addEventListener("click", (e) => {
   if (e.target === e.currentTarget) closeArmamentEditor();
 });
-document.getElementById("armModalClose").addEventListener("click", closeArmamentEditor);
-document.getElementById("armModalSave").addEventListener("click", saveArmamentEditor);
+document
+  .getElementById("armModalClose")
+  .addEventListener("click", closeArmamentEditor);
+document
+  .getElementById("armModalSave")
+  .addEventListener("click", saveArmamentEditor);
 document.getElementById("armModalClear").addEventListener("click", () => {
   if (!armEditorPrefix) return;
   document.getElementById("armModalName").value = "";
   ARM_STAT_DEFS.forEach((_, i) => {
     document.getElementById(`armStatName${i}`).value = "";
-    document.getElementById(`armStatVal${i}`).value  = "";
+    document.getElementById(`armStatVal${i}`).value = "";
   });
   ARM_INS_KEYS.forEach((_, i) => {
     document.getElementById(`armIns${i}`).value = "";
@@ -1905,28 +2264,34 @@ document.getElementById("armModalClear").addEventListener("click", () => {
   renderInsChosenList();
   renderArmSetBonus();
 });
-document.getElementById("armModalName").addEventListener("input", renderArmSetBonus);
+document
+  .getElementById("armModalName")
+  .addEventListener("input", renderArmSetBonus);
 
 let insPickerSelected = [];
 
 function renderInsChosenList() {
   const list = document.getElementById("insChosenList");
   if (!list) return;
-  const vals = ARM_INS_KEYS.map((_, i) => document.getElementById(`armIns${i}`).value).filter(Boolean);
+  const vals = ARM_INS_KEYS.map(
+    (_, i) => document.getElementById(`armIns${i}`).value,
+  ).filter(Boolean);
   if (!vals.length) {
     list.innerHTML = `<span class="eq-ins-none">None selected</span>`;
     return;
   }
-  list.innerHTML = vals.map(v => {
-    const tier = getArmTier(v);
-    return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
-  }).join("");
+  list.innerHTML = vals
+    .map((v) => {
+      const tier = getArmTier(v);
+      return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
+    })
+    .join("");
 }
 
 function openInsPicker() {
-  insPickerSelected = ARM_INS_KEYS
-    .map((_, i) => document.getElementById(`armIns${i}`).value)
-    .filter(Boolean);
+  insPickerSelected = ARM_INS_KEYS.map(
+    (_, i) => document.getElementById(`armIns${i}`).value,
+  ).filter(Boolean);
 
   renderInsPickerList("");
   renderInsPickerFooter();
@@ -1939,19 +2304,19 @@ function closeInsPicker() {
 }
 
 function renderInsPickerList(filter) {
-  const q    = filter.toLowerCase();
+  const q = filter.toLowerCase();
   const body = document.getElementById("insPickerBody");
-  let list   = getAllInscriptionNames();
-  if (q) list = list.filter(n => n.toLowerCase().includes(q));
+  let list = getAllInscriptionNames();
+  if (q) list = list.filter((n) => n.toLowerCase().includes(q));
 
   body.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "eq-ins-pill-grid";
   for (const name of list) {
-    const tier    = getArmTier(name);
+    const tier = getArmTier(name);
     const checked = insPickerSelected.includes(name);
-    const pill    = document.createElement("button");
-    pill.type      = "button";
+    const pill = document.createElement("button");
+    pill.type = "button";
     pill.className = `eq-ins-pill eq-ins-pill--${tier}${checked ? " selected" : ""}`;
     pill.textContent = name;
     pill.dataset.tipCode = name;
@@ -1976,12 +2341,15 @@ function toggleInsPick(name, el) {
 }
 
 function renderInsPickerFooter() {
-  document.getElementById("insPickerCount").textContent = `(${insPickerSelected.length}/8)`;
+  document.getElementById("insPickerCount").textContent =
+    `(${insPickerSelected.length}/8)`;
   const wrap = document.getElementById("insPickerSelectedWrap");
-  wrap.innerHTML = insPickerSelected.map(v => {
-    const tier = getArmTier(v);
-    return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
-  }).join("");
+  wrap.innerHTML = insPickerSelected
+    .map((v) => {
+      const tier = getArmTier(v);
+      return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
+    })
+    .join("");
 }
 
 function confirmInsPicker() {
@@ -1992,18 +2360,36 @@ function confirmInsPicker() {
   closeInsPicker();
 }
 
-document.getElementById("openInsPickerBtn").addEventListener("click", openInsPicker);
-document.getElementById("insPickerClose").addEventListener("click",   closeInsPicker);
-document.getElementById("insPickerConfirm").addEventListener("click", confirmInsPicker);
-document.getElementById("insPickerSearch").addEventListener("input",  e => renderInsPickerList(e.target.value.trim()));
-document.getElementById("insPickerOverlay").addEventListener("click", e => {
+document
+  .getElementById("openInsPickerBtn")
+  .addEventListener("click", openInsPicker);
+document
+  .getElementById("insPickerClose")
+  .addEventListener("click", closeInsPicker);
+document
+  .getElementById("insPickerConfirm")
+  .addEventListener("click", confirmInsPicker);
+document
+  .getElementById("insPickerSearch")
+  .addEventListener("input", (e) => renderInsPickerList(e.target.value.trim()));
+document.getElementById("insPickerOverlay").addEventListener("click", (e) => {
   if (e.target === e.currentTarget) closeInsPicker();
 });
 
 function escapeHtml(str) {
   if (str == null) return "";
-  return String(str).replace(/[&<>"'`=/]/g, s => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;",
-    "/":"&#x2F;","`":"&#x60;","=":"&#x3D;",
-  }[s]));
+  return String(str).replace(
+    /[&<>"'`=/]/g,
+    (s) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+        "/": "&#x2F;",
+        "`": "&#x60;",
+        "=": "&#x3D;",
+      })[s],
+  );
 }
