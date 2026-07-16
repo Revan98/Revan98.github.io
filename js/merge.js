@@ -155,7 +155,8 @@ async function doMerge() {
     const sourceIdColumn = document.getElementById("sourceIdColumn").value;
     const mergeColumn = document.getElementById("mergeColumn").value;
 
-    if (!idColumn || !sourceIdColumn || !mergeColumn) return alert("Please select columns first.");
+    if (!idColumn || !sourceIdColumn || !mergeColumn)
+      return alert("Please select columns first.");
 
     progressEl.value = 10;
 
@@ -201,10 +202,9 @@ function exportToXlsx(rows) {
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Merged");
-  XLSX.writeFile(
-    wb,
-    `merge-${getExportTimestamp()}.xlsx`, { compression: true }
-  );
+  XLSX.writeFile(wb, `merge-${getExportTimestamp()}.xlsx`, {
+    compression: true,
+  });
 }
 
 function exportToCsv(rows) {
