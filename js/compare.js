@@ -1,4 +1,4 @@
- let comparedResults = { matching: [], nonMatching: [] };
+let comparedResults = { matching: [], nonMatching: [] };
 const progressEl = document.getElementById("progressBar");
 const resultsInfo = document.getElementById("compare-results-info");
 const themeToggle = document.getElementById("toggle-theme");
@@ -170,10 +170,9 @@ function exportToXlsx(data, name) {
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Compare");
-  XLSX.writeFile(
-    wb,
-    `${name}--${getExportTimestamp()}.xlsx`, { compression: true }
-  );
+  XLSX.writeFile(wb, `${name}--${getExportTimestamp()}.xlsx`, {
+    compression: true,
+  });
 }
 
 function exportToCsv(data, name) {
