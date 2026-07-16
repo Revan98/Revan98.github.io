@@ -527,6 +527,8 @@ const dbStatus    = document.getElementById("dbStatus");
 const loadGovBtn  = document.getElementById("loadGovBtn");
 const saveBtn     = document.getElementById("saveBtn");
 const newGovBtn   = document.getElementById("newGovBtn");
+const downloadDbBtn  = document.getElementById("downloadDbBtn");
+const unsavedBadge   = document.getElementById("unsavedBadge");
 const farmFileInput    = document.getElementById("farmFileInput");
 const farmImportBtn    = document.getElementById("farmImportBtn");
 const farmImportStatus = document.getElementById("farmImportStatus");
@@ -537,6 +539,24 @@ const kvkKingdomInput  = document.getElementById("kvkKingdomInput");
 const kvkNumberInput   = document.getElementById("kvkNumberInput");
 const kvkNameInput     = document.getElementById("kvkNameInput");
 
+let dbDirty = false;
+
+function markDirty() {
+  dbDirty = true;
+  if (unsavedBadge) unsavedBadge.style.display = "inline-block";
+}
+
+function markClean() {
+  dbDirty = false;
+  if (unsavedBadge) unsavedBadge.style.display = "none";
+}
+
+window.addEventListener("beforeunload", e => {
+  if (!dbDirty) return;
+  e.preventDefault();
+  e.returnValue = "";
+});
+
 document.getElementById("dbFileLabel").addEventListener("click", () => dbFileInput.click());
 
 dbFileInput.addEventListener("change", async () => {
@@ -544,6 +564,7 @@ dbFileInput.addEventListener("change", async () => {
   if (!file) return;
   dbFileName.textContent = file.name;
   setDbStatus("Loading…", "");
+  markClean();
 
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -554,6 +575,7 @@ dbFileInput.addEventListener("change", async () => {
     loadGovBtn.disabled = false;
     saveBtn.disabled    = false;
     newGovBtn.disabled  = false;
+    downloadDbBtn.disabled = false;
     updateImportButtons();
     preloadIconsFromDb();
   } catch (e) {
@@ -562,6 +584,7 @@ dbFileInput.addEventListener("change", async () => {
     loadGovBtn.disabled = true;
     saveBtn.disabled    = true;
     newGovBtn.disabled  = true;
+    downloadDbBtn.disabled = true;
     updateImportButtons();
     console.error(e);
   }
@@ -1038,14 +1061,22 @@ function saveGovernor() {
       upsertVals
     );
 
-    downloadDb();
+    downloadDbBtn.disabled = false;
+    markDirty();
     setGovBadge("loaded");
-    showSaveStatus("✓ Saved & downloaded!", "ok");
+    showSaveStatus("✓ Governor saved (in memory) — download the database when you're done.", "ok");
   } catch (e) {
     console.error("saveGovernor:", e);
     showSaveStatus("Error: " + e.message, "err");
   }
 }
+
+downloadDbBtn.addEventListener("click", () => {
+  if (!db) return;
+  downloadDb();
+  markClean();
+  showSaveStatus("✓ Database downloaded!", "ok");
+});
 
 function pushIfExists(cols, vals, existingCols, col, val) {
   if (existingCols.has(col)) { cols.push(col); vals.push(val); }
@@ -1188,8 +1219,8 @@ async function importFarmAccounts() {
       throw e;
     }
 
-    downloadDb();
-    setImportStatus(farmImportStatus, `Imported ${imported} farm account${imported === 1 ? "" : "s"} and downloaded the database.`, "ok");
+    markDirty();
+    setImportStatus(farmImportStatus, `Imported ${imported} farm account${imported === 1 ? "" : "s"} — remember to download the database when you're done.`, "ok");
   } catch (e) {
     console.error("importFarmAccounts:", e);
     setImportStatus(farmImportStatus, "Farm import failed: " + e.message, "err");
@@ -1322,8 +1353,8 @@ async function importKvkWorkbook() {
       throw e;
     }
 
-    downloadDb();
-    setImportStatus(kvkImportStatus, `Imported ${snapshotCount} snapshot${snapshotCount === 1 ? "" : "s"} and ${statCount} stat row${statCount === 1 ? "" : "s"}. Database downloaded.`, "ok");
+    markDirty();
+    setImportStatus(kvkImportStatus, `Imported ${snapshotCount} snapshot${snapshotCount === 1 ? "" : "s"} and ${statCount} stat row${statCount === 1 ? "" : "s"} — remember to download the database when you're done.`, "ok");
   } catch (e) {
     console.error("importKvkWorkbook:", e);
     setImportStatus(kvkImportStatus, "KvK import failed: " + e.message, "err");
