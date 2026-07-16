@@ -36,8 +36,12 @@ async function loadEquipRefData() {
     inscriptionsData = await inscriptionsRes.json();
 
     inscriptionsByName = {};
-    for (const [key, info] of Object.entries(inscriptionsData.inscriptions || {})) {
-      const nameKey = String(info.name || key).trim().toLowerCase();
+    for (const [key, info] of Object.entries(
+      inscriptionsData.inscriptions || {},
+    )) {
+      const nameKey = String(info.name || key)
+        .trim()
+        .toLowerCase();
       inscriptionsByName[nameKey] = { key, ...info };
     }
   } catch (e) {
@@ -66,7 +70,8 @@ function ensureDashboardSchema() {
     ["sum_dkp", "INTEGER"],
     ["sum_dkp_percent", "REAL"],
   ].forEach(([name, type]) => {
-    if (!existing.has(name)) db.run(`ALTER TABLE stats ADD COLUMN ${name} ${type}`);
+    if (!existing.has(name))
+      db.run(`ALTER TABLE stats ADD COLUMN ${name} ${type}`);
   });
 }
 
@@ -261,10 +266,18 @@ const DKP_EXPORT_COLUMNS = [
   { headerName: "Deads gained", field: "deadsDiff" },
   { headerName: "Min DKP", field: "minDkp" },
   { headerName: "DKP", field: "dkp" },
-  { headerName: "DKP%", field: "dkpPercent", valueFormatter: (p) => formatCsvPercent(p.value) },
+  {
+    headerName: "DKP%",
+    field: "dkpPercent",
+    valueFormatter: (p) => formatCsvPercent(p.value),
+  },
   { headerName: "Sum Min DKP", field: "sumMinDkp" },
   { headerName: "Sum DKP", field: "sumDkp" },
-  { headerName: "Sum DKP%", field: "sumDkpPercent", valueFormatter: (p) => formatCsvPercent(p.value) },
+  {
+    headerName: "Sum DKP%",
+    field: "sumDkpPercent",
+    valueFormatter: (p) => formatCsvPercent(p.value),
+  },
   { headerName: "Vacation", field: "vacation" },
   { headerName: "Status", field: "status" },
   { headerName: "T4 Kills", field: "t4" },
@@ -283,7 +296,8 @@ const DKP_EXPORT_COLUMNS = [
 
 function getExportFileName() {
   const kd = getKDFromURL() || "dkp";
-  const lastSheet = SheetCache.sheetsList?.[SheetCache.sheetsList.length - 1] || "export";
+  const lastSheet =
+    SheetCache.sheetsList?.[SheetCache.sheetsList.length - 1] || "export";
   return `DKP_${kd}_${String(lastSheet).replaceAll("-", "_")}.csv`;
 }
 
@@ -342,15 +356,15 @@ const gridOptions = {
   theme: agGrid.themeQuartz,
   rowData: [],
   columnDefs: [
-	  {
-	    headerName: "#",
-	    valueGetter: "node.rowIndex + 1",
-	    width: 55,
-	    sortable: false,
-	    filter: false,
-	    pinned: "left",
-	    getQuickFilterText: () => "",
-	  },	  
+    {
+      headerName: "#",
+      valueGetter: "node.rowIndex + 1",
+      width: 55,
+      sortable: false,
+      filter: false,
+      pinned: "left",
+      getQuickFilterText: () => "",
+    },
     {
       headerName: "Name",
       field: "name",
@@ -428,7 +442,8 @@ const gridOptions = {
       minWidth: 125,
       sortable: false,
       cellClass: "metric-stack-cell",
-      cellRenderer: (p) => renderDeadsPowerDiffStack(p.value, p.data?.powerDiff),
+      cellRenderer: (p) =>
+        renderDeadsPowerDiffStack(p.value, p.data?.powerDiff),
       tooltipValueGetter: (p) =>
         `Starting deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}\nStarting Power: ${Number(p.data?.power || 0).toLocaleString("en-US")}`,
 
@@ -458,8 +473,7 @@ const gridOptions = {
       minWidth: 130,
       cellClass: "metric-stack-cell",
       comparator: (a, b, nodeA, nodeB) =>
-        (Number(nodeA.data?.sumDkp) || 0) -
-        (Number(nodeB.data?.sumDkp) || 0),
+        (Number(nodeA.data?.sumDkp) || 0) - (Number(nodeB.data?.sumDkp) || 0),
       tooltipValueGetter: () => "with farms\nwithout farms",
       cellRenderer: (p) =>
         renderMetricStack(p.value, p.data?.sumDkp, formatNumber),
@@ -511,11 +525,15 @@ function onFilterTextBoxChanged() {
   gridApi.setGridOption("quickFilterText", input.value);
 }
 
-document.getElementById("export-csv-btn")?.addEventListener("click", exportDkpCsv);
+document
+  .getElementById("export-csv-btn")
+  ?.addEventListener("click", exportDkpCsv);
 
 function copyTop18() {
   const allRows = [];
-  gridApi.forEachNode((node) => { if (node.data) allRows.push(node.data); });
+  gridApi.forEachNode((node) => {
+    if (node.data) allRows.push(node.data);
+  });
 
   if (!allRows.length) {
     alert("No data loaded yet.");
@@ -528,23 +546,29 @@ function copyTop18() {
     .map((row, i) => `${i + 1}. ${row.id} ${row.name}`)
     .join("\n");
 
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById("copy-top18-btn");
-    const original = btn.innerHTML;
-    btn.textContent = "✓ Copied!";
-    btn.disabled = true;
-    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
-  }).catch(() => {
-    // Fallback for older browsers
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    document.body.removeChild(ta);
-  });
+  navigator.clipboard
+    .writeText(text)
+    .then(() => {
+      const btn = document.getElementById("copy-top18-btn");
+      const original = btn.innerHTML;
+      btn.textContent = "✓ Copied!";
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.disabled = false;
+      }, 2000);
+    })
+    .catch(() => {
+      // Fallback for older browsers
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    });
 }
 
 document.getElementById("copy-top18-btn")?.addEventListener("click", copyTop18);
@@ -689,17 +713,16 @@ function updateChart(governorId) {
 
   const labels = SheetCache.sheetsList.map(formatSheetDate);
   const datasets = buildChartDatasets(governorId);
-	const canvas = document.querySelector("#modal-chart");
-	if (!canvas) return;
-	
-	const ctx = canvas.getContext("2d");
+  const canvas = document.querySelector("#modal-chart");
+  if (!canvas) return;
 
+  const ctx = canvas.getContext("2d");
 
-	if (inlineChart) {
-	  inlineChart.destroy();
-	  inlineChart = null;
-	}
-	createChart(ctx, labels, datasets);
+  if (inlineChart) {
+    inlineChart.destroy();
+    inlineChart = null;
+  }
+  createChart(ctx, labels, datasets);
 }
 
 loadAllSheetsCache().then(() => {
@@ -929,16 +952,22 @@ function initEquipTooltip() {
     tip.style.display = "none";
   });
 
-  document.addEventListener("scroll", () => {
-    tip.style.display = "none";
-    activeEl = null;
-  }, true);
+  document.addEventListener(
+    "scroll",
+    () => {
+      tip.style.display = "none";
+      activeEl = null;
+    },
+    true,
+  );
 }
 
 function renderCollapsibleSection(title, content, defaultOpen = false) {
   // Use a stable incrementing counter instead of Math.random() for predictable IDs
-  const id = "sec_" + (renderCollapsibleSection._counter = (renderCollapsibleSection._counter || 0) + 1);
-
+  const id =
+    "sec_" +
+    (renderCollapsibleSection._counter =
+      (renderCollapsibleSection._counter || 0) + 1);
 
   return `
     <div class="collapsible-section">
@@ -996,9 +1025,7 @@ function loadGovHistory(govId) {
   const safeGovId = normalizeNumericId(govId);
   if (!kd || !safeGovId) return [];
   const isMainAccount = resolveFarmMainId(safeGovId) === safeGovId;
-  const farmIds = isMainAccount
-    ? getGovernorFarmIds(safeGovId)
-    : [];
+  const farmIds = isMainAccount ? getGovernorFarmIds(safeGovId) : [];
   const farmIdList = buildNumericInList(farmIds);
 
   const kvksRes = db.exec(`
@@ -1254,7 +1281,15 @@ function renderMaybeRollupStack(baseValue, sumValue, formatter, showRollup) {
     : formatter(baseValue);
 }
 
-function renderPairedDiffStack(firstLabel, firstBase, firstSum, secondLabel, secondBase, secondSum, showRollup = true) {
+function renderPairedDiffStack(
+  firstLabel,
+  firstBase,
+  firstSum,
+  secondLabel,
+  secondBase,
+  secondSum,
+  showRollup = true,
+) {
   return `
     <div class="modal-pair-stack">
       <div class="modal-pair-line">
@@ -1371,14 +1406,14 @@ function renderFarmsTable(rows) {
 }
 
 const EQUIP_SLOTS = [
-  { key: "helm",          label: "Helm",      id: "helmet"       },
-  { key: "chest",         label: "Chest",     id: "chest"        },
-  { key: "weapon",        label: "Weapon",    id: "weapon"       },
-  { key: "gloves",        label: "Gloves",    id: "gloves"       },
-  { key: "legs",          label: "Legs",      id: "legs"         },
-  { key: "boots",         label: "Boots",     id: "boots"        },
-  { key: "accessory",     label: "Acc.",      id: "accessory"    },
-  { key: "accessory_sec", label: "Acc. 2",    id: "accessory_sec"},
+  { key: "helm", label: "Helm", id: "helmet" },
+  { key: "chest", label: "Chest", id: "chest" },
+  { key: "weapon", label: "Weapon", id: "weapon" },
+  { key: "gloves", label: "Gloves", id: "gloves" },
+  { key: "legs", label: "Legs", id: "legs" },
+  { key: "boots", label: "Boots", id: "boots" },
+  { key: "accessory", label: "Acc.", id: "accessory" },
+  { key: "accessory_sec", label: "Acc. 2", id: "accessory_sec" },
 ];
 
 const ARM_SLOTS = [
@@ -1397,14 +1432,23 @@ function loadGovernorEquipment(govId) {
   if (!safeGovId) return null;
 
   try {
-    const t = db.exec(`SELECT name FROM sqlite_master WHERE type='table' AND name='equipment'`);
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='equipment'`,
+    );
     if (!t.length || !t[0].values.length) return null;
-    const res = db.exec(`SELECT * FROM equipment WHERE player_id=${safeGovId} LIMIT 1`);
+    const res = db.exec(
+      `SELECT * FROM equipment WHERE player_id=${safeGovId} LIMIT 1`,
+    );
     if (!res.length || !res[0].values.length) return null;
     const row = {};
-    res[0].columns.forEach((c, i) => { row[c] = res[0].values[0][i]; });
+    res[0].columns.forEach((c, i) => {
+      row[c] = res[0].values[0][i];
+    });
     return row;
-  } catch(e) { console.error("loadGovernorEquipment:", e); return null; }
+  } catch (e) {
+    console.error("loadGovernorEquipment:", e);
+    return null;
+  }
 }
 
 function loadGovernorArmaments(govId) {
@@ -1412,14 +1456,23 @@ function loadGovernorArmaments(govId) {
   if (!safeGovId) return null;
 
   try {
-    const t = db.exec(`SELECT name FROM sqlite_master WHERE type='table' AND name='armaments'`);
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='armaments'`,
+    );
     if (!t.length || !t[0].values.length) return null;
-    const res = db.exec(`SELECT * FROM armaments WHERE player_id=${safeGovId} LIMIT 1`);
+    const res = db.exec(
+      `SELECT * FROM armaments WHERE player_id=${safeGovId} LIMIT 1`,
+    );
     if (!res.length || !res[0].values.length) return null;
     const row = {};
-    res[0].columns.forEach((c, i) => { row[c] = res[0].values[0][i]; });
+    res[0].columns.forEach((c, i) => {
+      row[c] = res[0].values[0][i];
+    });
     return row;
-  } catch(e) { console.error("loadGovernorArmaments:", e); return null; }
+  } catch (e) {
+    console.error("loadGovernorArmaments:", e);
+    return null;
+  }
 }
 
 function iconPath(name, kind) {
@@ -1434,7 +1487,7 @@ function isEmptyVal(v) {
 }
 
 function isMarchEmpty(row, suffix) {
-  return EQUIP_SLOTS.every(slot => {
+  return EQUIP_SLOTS.every((slot) => {
     const colKey = suffix ? `${slot.key}_${suffix}` : slot.key;
     return isEmptyVal(row[colKey]);
   });
@@ -1476,7 +1529,9 @@ function getCommanderInfo(commCode) {
 }
 
 function getInscriptionInfo(name) {
-  const key = String(name ?? "").trim().toLowerCase();
+  const key = String(name ?? "")
+    .trim()
+    .toLowerCase();
   return inscriptionsByName[key] || null;
 }
 
@@ -1494,12 +1549,16 @@ function buildTooltipHtml(code, kind) {
     const info = getInscriptionInfo(key);
     if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
     const rarityClass = String(info.rarity || "gold").toLowerCase();
-    const parts = [`<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`];
+    const parts = [
+      `<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`,
+    ];
     if (info.type) {
       parts.push(`<div class="tt-slot">${escapeHtml(info.type)}</div>`);
     }
     if (info.description) {
-      parts.push(`<div class="tt-desc">${escapeHtml(String(info.description))}</div>`);
+      parts.push(
+        `<div class="tt-desc">${escapeHtml(String(info.description))}</div>`,
+      );
     }
     return parts.join("");
   }
@@ -1508,20 +1567,34 @@ function buildTooltipHtml(code, kind) {
   if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
 
   const rarityClass = String(info.rarity || "gold").toLowerCase();
-  const parts = [`<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`];
+  const parts = [
+    `<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`,
+  ];
 
   if (info.slot) {
     parts.push(`<div class="tt-slot">${escapeHtml(info.slot)}</div>`);
   }
 
-  const stats = Array.isArray(info.stats) ? info.stats : (info.stats ? [info.stats] : []);
+  const stats = Array.isArray(info.stats)
+    ? info.stats
+    : info.stats
+      ? [info.stats]
+      : [];
   if (stats.length) {
-    parts.push(`<ul class="tt-stats">${stats.map(s => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`);
+    parts.push(
+      `<ul class="tt-stats">${stats.map((s) => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`,
+    );
   }
 
-  const descArr = Array.isArray(info.description) ? info.description : (info.description ? [info.description] : []);
+  const descArr = Array.isArray(info.description)
+    ? info.description
+    : info.description
+      ? [info.description]
+      : [];
   if (descArr.length) {
-    parts.push(`<div class="tt-desc">${descArr.map(d => escapeHtml(String(d))).join("<br>")}</div>`);
+    parts.push(
+      `<div class="tt-desc">${descArr.map((d) => escapeHtml(String(d))).join("<br>")}</div>`,
+    );
   }
 
   return parts.join("");
@@ -1529,17 +1602,19 @@ function buildTooltipHtml(code, kind) {
 
 function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
   const isEmpty = isEmptyVal(itemName);
-  const imgSrc  = isEmpty ? null : iconPath(itemName, "item");
-  const rarity  = getEquipmentRarity(itemName);
-  const lvlText = (!isEmpty && !isEmptyVal(lvl)) ? lvl : "—";
-  const talText = (!isEmpty && !isEmptyVal(tal)) ? tal : "—";
-  const imgTag  = imgSrc
+  const imgSrc = isEmpty ? null : iconPath(itemName, "item");
+  const rarity = getEquipmentRarity(itemName);
+  const lvlText = !isEmpty && !isEmptyVal(lvl) ? lvl : "—";
+  const talText = !isEmpty && !isEmptyVal(tal) ? tal : "—";
+  const imgTag = imgSrc
     ? `<img src="${imgSrc}" alt="${escapeHtml(String(itemName))}" loading="lazy"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
             style="width:100%;height:100%;object-fit:contain;border-radius:2px;">`
     : "";
   const fallback = `<div class="equip-placeholder" style="display:${imgSrc ? "none" : "flex"};">${renderSlotPlaceholderIcon(slot.id)}</div>`;
-  const tipAttrs = isEmpty ? "" : ` data-tip-code="${escapeHtml(String(itemName).trim())}" data-tip-kind="item"`;
+  const tipAttrs = isEmpty
+    ? ""
+    : ` data-tip-code="${escapeHtml(String(itemName).trim())}" data-tip-kind="item"`;
   return `
     <div class="equip-slot" id="${slot.id}_${marchIdx}">
       <div class="equip-box equip-box--framed rarity-${rarity}"${tipAttrs}>${imgTag}${fallback}</div>
@@ -1552,14 +1627,16 @@ function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
 
 function renderPairBox(name) {
   const isEmpty = isEmptyVal(name);
-  const imgSrc  = isEmpty ? null : iconPath(name, "commander");
-  const imgTag  = imgSrc
+  const imgSrc = isEmpty ? null : iconPath(name, "commander");
+  const imgTag = imgSrc
     ? `<img src="${imgSrc}" alt="${escapeHtml(String(name))}" loading="lazy"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
             style="width:100%;height:100%;object-fit:contain;border-radius:2px;">`
     : "";
   const fallback = `<span style="display:${imgSrc ? "none" : "flex"};width:100%;height:100%;align-items:center;justify-content:center;font-size:9px;opacity:0.35;">—</span>`;
-  const tipAttrs = isEmpty ? "" : ` data-tip-code="${escapeHtml(String(name).trim())}" data-tip-kind="commander"`;
+  const tipAttrs = isEmpty
+    ? ""
+    : ` data-tip-code="${escapeHtml(String(name).trim())}" data-tip-kind="commander"`;
   return `<div class="equip-box equip-pair-box${isEmpty ? " equip-pair-box--empty" : ""}"${tipAttrs}>${imgTag}${fallback}</div>`;
 }
 
@@ -1570,7 +1647,7 @@ function renderPairsSection(row) {
     const comm1 = row[`pair${n}_comm1`];
     const comm2 = row[`pair${n}_comm2`];
     if (isEmptyVal(comm1) && isEmptyVal(comm2)) continue;
-    const boxes = [comm1, comm2].map(c => renderPairBox(c)).join("");
+    const boxes = [comm1, comm2].map((c) => renderPairBox(c)).join("");
     pairRows += `
       <div class="equip-pair-row">
         <span class="equip-label">Pair ${n}</span>
@@ -1591,44 +1668,59 @@ function getAbilityTier(name) {
 }
 
 function renderArmamentRow(armRow) {
-  if (!armRow) return `
+  if (!armRow)
+    return `
     <div class="equip-arm-section">
       <div class="equip-arm-label">Armaments</div>
       <div class="gov-modal-empty" style="padding:1rem 0;">No armament data found.</div>
     </div>`;
 
-  const arms = ARM_SLOTS.map(arm => {
+  const arms = ARM_SLOTS.map((arm) => {
     const name = armRow[arm.prefix];
     if (isEmptyVal(name)) return "";
 
-    const insKeys = ["_ins","_ins2","_ins3","_ins4","_ins5","_ins6","_ins7","_ins8"];
-	const inscriptions = insKeys
-	  .map(k => armRow[`${arm.prefix}${k}`])
-	  .filter(v => !isEmptyVal(v))
-	  .map(v => {
-		const tier = getAbilityTier(String(v));
-		return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
-	  })
-	  .join("");
+    const insKeys = [
+      "_ins",
+      "_ins2",
+      "_ins3",
+      "_ins4",
+      "_ins5",
+      "_ins6",
+      "_ins7",
+      "_ins8",
+    ];
+    const inscriptions = insKeys
+      .map((k) => armRow[`${arm.prefix}${k}`])
+      .filter((v) => !isEmptyVal(v))
+      .map((v) => {
+        const tier = getAbilityTier(String(v));
+        return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
+      })
+      .join("");
 
     const statSlots = [
-      { n: `${arm.prefix}_stat_name`,   v: `${arm.prefix}_stat`   },
-      { n: `${arm.prefix}_stat2_name2`, v: `${arm.prefix}_stat2`  },
-      { n: `${arm.prefix}_stat3_name3`, v: `${arm.prefix}_stat3`  },
-      { n: `${arm.prefix}_stat4_name4`, v: `${arm.prefix}_stat4`  },
+      { n: `${arm.prefix}_stat_name`, v: `${arm.prefix}_stat` },
+      { n: `${arm.prefix}_stat2_name2`, v: `${arm.prefix}_stat2` },
+      { n: `${arm.prefix}_stat3_name3`, v: `${arm.prefix}_stat3` },
+      { n: `${arm.prefix}_stat4_name4`, v: `${arm.prefix}_stat4` },
     ];
     const statsHtml = statSlots
-      .filter(s => !isEmptyVal(armRow[s.n]) && !isEmptyVal(armRow[s.v]))
-      .map(s => `<span class="arm-stat">${escapeHtml(String(armRow[s.n]))}: <b>${escapeHtml(String(armRow[s.v]))}</b></span>`)
+      .filter((s) => !isEmptyVal(armRow[s.n]) && !isEmptyVal(armRow[s.v]))
+      .map(
+        (s) =>
+          `<span class="arm-stat">${escapeHtml(String(armRow[s.n]))}: <b>${escapeHtml(String(armRow[s.v]))}</b></span>`,
+      )
       .join("");
 
     return `
       <div class="arm-card">
         <div class="arm-name">${escapeHtml(String(name))}</div>
 		${inscriptions ? `<div class="arm-ins-group">${inscriptions}</div>` : ""}
-		${statsHtml    ? `<div class="arm-stats">${statsHtml}</div>`         : ""}
+		${statsHtml ? `<div class="arm-stats">${statsHtml}</div>` : ""}
       </div>`;
-  }).filter(Boolean).join("");
+  })
+    .filter(Boolean)
+    .join("");
 
   return `
     <div class="equip-arm-section">
@@ -1638,7 +1730,9 @@ function renderArmamentRow(armRow) {
 }
 
 function renderEmptyEquipmentMarch(marchNum = 1) {
-  const slotBoxes = EQUIP_SLOTS.map(slot => renderEquipBox(slot, "", "", "", marchNum)).join("");
+  const slotBoxes = EQUIP_SLOTS.map((slot) =>
+    renderEquipBox(slot, "", "", "", marchNum),
+  ).join("");
   return `
     <div class="equip-march-row equip-march-row--empty">
       <span class="equip-label">March ${marchNum}</span>
@@ -1647,7 +1741,7 @@ function renderEmptyEquipmentMarch(marchNum = 1) {
 }
 
 function renderEquipmentSection(govId) {
-  const row    = govId ? loadGovernorEquipment(govId) : null;
+  const row = govId ? loadGovernorEquipment(govId) : null;
   const armRow = govId ? loadGovernorArmaments(govId) : null;
 
   if (!row) {
@@ -1658,18 +1752,37 @@ function renderEquipmentSection(govId) {
     );
   }
 
-  const MARCH_SUFFIXES = ["", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+  const MARCH_SUFFIXES = [
+    "",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+  ];
   let marchRows = "";
 
   MARCH_SUFFIXES.forEach((suffix, idx) => {
     const marchNum = idx + 1;
     if (isMarchEmpty(row, suffix)) return;
 
-    const slotBoxes = EQUIP_SLOTS.map(slot => {
+    const slotBoxes = EQUIP_SLOTS.map((slot) => {
       const colKey = suffix ? `${slot.key}_${suffix}` : slot.key;
       const lvlKey = suffix ? `${slot.key}_lvl_${suffix}` : `${slot.key}_lvl`;
       const talKey = suffix ? `${slot.key}_tal_${suffix}` : `${slot.key}_tal`;
-      return renderEquipBox(slot, row[colKey], row[lvlKey], row[talKey], marchNum);
+      return renderEquipBox(
+        slot,
+        row[colKey],
+        row[lvlKey],
+        row[talKey],
+        marchNum,
+      );
     }).join("");
 
     marchRows += `
@@ -1687,7 +1800,6 @@ function renderEquipmentSection(govId) {
     false,
   );
 }
-
 
 function renderFarmKvKTable(rows) {
   if (!rows.length)
@@ -1771,16 +1883,20 @@ function openGovModal(govId, govName) {
 
   setTimeout(() => {
     const safeRender = (label, fn) => {
-      try { return fn(); }
-      catch(e) { console.error("[modal:" + label + "]", e); return ""; }
+      try {
+        return fn();
+      } catch (e) {
+        console.error("[modal:" + label + "]", e);
+        return "";
+      }
     };
     try {
       const history = loadGovHistory(govId);
       const farmOwner = loadFarmOwner(govId);
-      const farms   = loadGovernorFarms(govId);
+      const farms = loadGovernorFarms(govId);
       const farmIds = farms.map((f) => f.id);
       const farmKvK = loadFarmKvKStats(farmIds);
-	  const chartSection = `
+      const chartSection = `
 	    <div class="modal-chart-section">
 	      <div class="modal-chart" style="height:400px;">
 	        <canvas id="modal-chart"></canvas>
@@ -1791,16 +1907,22 @@ function openGovModal(govId, govName) {
         '<div class="modal-controls">' +
         '  <button onclick="expandAllSections()">Expand All</button>' +
         '  <button onclick="collapseAllSections()">Collapse All</button>' +
-        '</div>' +
-		chartSection +
+        "</div>" +
+        chartSection +
         safeRender("farmOwner", () => renderFarmOwnerInfo(farmOwner)) +
-        safeRender("history",   () => renderCollapsibleSection("Governor History", renderModalTable(history), false)) +
-        safeRender("farms",     () => renderFarmsTable(farms)) +
-        safeRender("farmKvK",   () => renderFarmKvKTable(farmKvK)) +
+        safeRender("history", () =>
+          renderCollapsibleSection(
+            "Governor History",
+            renderModalTable(history),
+            false,
+          ),
+        ) +
+        safeRender("farms", () => renderFarmsTable(farms)) +
+        safeRender("farmKvK", () => renderFarmKvKTable(farmKvK)) +
         safeRender("equipment", () => renderEquipmentSection(govId));
-	setTimeout(() => {
-	  updateChart(govId);
-	}, 0);
+      setTimeout(() => {
+        updateChart(govId);
+      }, 0);
     } catch (err) {
       console.error("openGovModal:", err);
       body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(err))}</div>`;
@@ -1817,24 +1939,40 @@ function loadAllFarmsGrouped() {
   `);
   if (!mainsRes.length) return [];
 
-  return mainsRes[0].values.map(m => {
-    const mainId = normalizeNumericId(m[0]);
-    if (!mainId) return null;
+  return mainsRes[0].values
+    .map((m) => {
+      const mainId = normalizeNumericId(m[0]);
+      if (!mainId) return null;
 
-    const farmsRes = db.exec(`
+      const farmsRes = db.exec(`
       SELECT player_id, name, power, killpoints, deads, ch
       FROM farm_accounts
       WHERE main_id=${mainId} AND acc_type='farm'
       ORDER BY power DESC
     `);
-    const farms = farmsRes.length ? farmsRes[0].values.map(f => ({
-      id: f[0], name: f[1], power: f[2], killpoints: f[3], deads: f[4], ch: f[5]
-    })) : [];
-    return {
-      main: { id: mainId, name: m[1], power: m[2], killpoints: m[3], deads: m[4], ch: m[5] },
-      farms
-    };
-  }).filter(Boolean);
+      const farms = farmsRes.length
+        ? farmsRes[0].values.map((f) => ({
+            id: f[0],
+            name: f[1],
+            power: f[2],
+            killpoints: f[3],
+            deads: f[4],
+            ch: f[5],
+          }))
+        : [];
+      return {
+        main: {
+          id: mainId,
+          name: m[1],
+          power: m[2],
+          killpoints: m[3],
+          deads: m[4],
+          ch: m[5],
+        },
+        farms,
+      };
+    })
+    .filter(Boolean);
 }
 
 function closeGovModal() {
