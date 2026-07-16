@@ -2,9 +2,7 @@
   "items": {
     "a1b": {
       "name": "Savage Totem",
-      "stats": [
-        "Damage to Barbarians +10%"
-      ],
+      "stats": ["Damage to Barbarians +10%"],
       "description": [],
       "slot": "Accessory",
       "rarity": "Blue"
@@ -102,27 +100,21 @@
     },
     "a1p": {
       "name": "Peter's Sickle",
-      "stats": [
-        "Gathering Speed +10%"
-      ],
+      "stats": ["Gathering Speed +10%"],
       "description": "",
       "slot": "Accessory",
       "rarity": "Purple"
     },
     "a5p": {
       "name": "The Bard's Pendant",
-      "stats": [
-        "Get extra resources from gathering +5%"
-      ],
+      "stats": ["Get extra resources from gathering +5%"],
       "description": "",
       "slot": "Accessory",
       "rarity": "Purple"
     },
     "a2p": {
       "name": "Wind Scars",
-      "stats": [
-        "March Speed (Infantry) +8%"
-      ],
+      "stats": ["March Speed (Infantry) +8%"],
       "description": "",
       "slot": "Accessory",
       "rarity": "Purple"
@@ -143,36 +135,28 @@
     },
     "a6p": {
       "name": "Crimson Ring",
-      "stats": [
-        "Commander EXP Gain +15%"
-      ],
+      "stats": ["Commander EXP Gain +15%"],
       "description": "",
       "slot": "Accessory",
       "rarity": "Purple"
     },
     "a7p": {
       "name": "Ancient Stratagems",
-      "stats": [
-        "Unit Capacity +3%"
-      ],
+      "stats": ["Unit Capacity +3%"],
       "description": "",
       "slot": "Accessory",
       "rarity": "Purple"
     },
     "a3b": {
       "name": "Call of the Loyal",
-      "stats": [
-        "March Speed +5%"
-      ],
+      "stats": ["March Speed +5%"],
       "description": "",
       "slot": "Accessory",
       "rarity": "Blue"
     },
     "a2b": {
       "name": "Lohar's Bone Necklace",
-      "stats": [
-        "Commander EXP Gain +10%"
-      ],
+      "stats": ["Commander EXP Gain +10%"],
       "description": "",
       "slot": "Accessory",
       "rarity": "Blue"
@@ -190,40 +174,28 @@
     },
     "b3p": {
       "name": "Frost Treads",
-      "stats": [
-        "Infantry Defense +5.5%",
-        "Damage to Barbarians +5%"
-      ],
+      "stats": ["Infantry Defense +5.5%", "Damage to Barbarians +5%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Purple"
     },
     "b4p": {
       "name": "Knight's Winter Sabatons",
-      "stats": [
-        "Siege Unit Health +5.5%",
-        "Damage to Barbarians +5%"
-      ],
+      "stats": ["Siege Unit Health +5.5%", "Damage to Barbarians +5%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Purple"
     },
     "b2p": {
       "name": "Flame Treads",
-      "stats": [
-        "Archer Health +5.5%",
-        "Cavalry Attack +3%"
-      ],
+      "stats": ["Archer Health +5.5%", "Cavalry Attack +3%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Purple"
     },
     "b2b": {
       "name": "The Scarlet Hounds",
-      "stats": [
-        "Infantry Health +4%",
-        "Commander EXP Gain +3%"
-      ],
+      "stats": ["Infantry Health +4%", "Commander EXP Gain +3%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Blue"
@@ -252,10 +224,7 @@
     },
     "b2gr": {
       "name": "Boots of Reverence",
-      "stats": [
-        "Infantry Attack +2.5%",
-        "Archer Defense +1%"
-      ],
+      "stats": ["Infantry Attack +2.5%", "Archer Defense +1%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Green"
@@ -273,20 +242,14 @@
     },
     "b1gray": {
       "name": "Sturdy Boots",
-      "stats": [
-        "Archer Defense +2%",
-        "Gathering Speed +1%"
-      ],
+      "stats": ["Archer Defense +2%", "Gathering Speed +1%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Gray"
     },
     "b1g": {
       "name": "Shio's Return",
-      "stats": [
-        "Infantry Defense +8%",
-        "Archer Health +5%"
-      ],
+      "stats": ["Infantry Defense +8%", "Archer Health +5%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -304,90 +267,63 @@
     },
     "b2g": {
       "name": "Commander's Boots",
-      "stats": [
-        "Archer Attack +8%",
-        "Commander EXP Gain +5%"
-      ],
+      "stats": ["Archer Attack +8%", "Commander EXP Gain +5%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
     },
     "b4g": {
       "name": "Mountain Crushers",
-      "stats": [
-        "Cavalry Attack +8%",
-        "Archer Attack +5%"
-      ],
+      "stats": ["Cavalry Attack +8%", "Archer Attack +5%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
     },
     "b3g": {
       "name": "Sturdy Boots of the Eternal Empire",
-      "stats": [
-        "Infantry Defense +7.5%",
-        "Cavalry Defense +3%"
-      ],
+      "stats": ["Infantry Defense +7.5%", "Cavalry Defense +3%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
     },
     "b6g": {
       "name": "Dragon's Breath Boots",
-      "stats": [
-        "Archer Defense +7.5%",
-        "Infantry Defense +3%"
-      ],
+      "stats": ["Archer Defense +7.5%", "Infantry Defense +3%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
     },
     "b5g": {
       "name": "Boots of the Hellish Wasteland",
-      "stats": [
-        "Cavalry Health +7.5%",
-        "Archer Attack +3%"
-      ],
+      "stats": ["Cavalry Health +7.5%", "Archer Attack +3%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
     },
     "b7g": {
       "name": "Roaring Wolf's Claws",
-      "stats": [
-        "Siege Unit Defense +10%",
-        "March Speed (Siege Units) +3%"
-      ],
+      "stats": ["Siege Unit Defense +10%", "March Speed (Siege Units) +3%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
     },
     "b8g": {
       "name": "Greaves of the Glorious Goddess",
-      "stats": [
-        "Troop Health +6%",
-        "March Speed (Siege Units) +2%"
-      ],
+      "stats": ["Troop Health +6%", "March Speed (Siege Units) +2%"],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
     },
     "l3p": {
       "name": "Karuak's Humility",
-      "stats": [
-        "Infantry Health +8%",
-        "Cavalry Attack +5%"
-      ],
+      "stats": ["Infantry Health +8%", "Cavalry Attack +5%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Purple"
     },
     "l5p": {
       "name": "Knight's Triumphant Tassets",
-      "stats": [
-        "Siege Unit Defense +8%",
-        "Damage to Barbarians +5%"
-      ],
+      "stats": ["Siege Unit Defense +8%", "Damage to Barbarians +5%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Purple"
@@ -438,20 +374,14 @@
     },
     "l1gr": {
       "name": "Vanguard Greaves",
-      "stats": [
-        "Cavalry Attack +4%",
-        "Cavalry Health +1%"
-      ],
+      "stats": ["Cavalry Attack +4%", "Cavalry Health +1%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Green"
     },
     "l1gray": {
       "name": "Coarse Breeches",
-      "stats": [
-        "Cavalry Attack +3%",
-        "Gathering Speed +1%"
-      ],
+      "stats": ["Cavalry Attack +3%", "Gathering Speed +1%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Gray"
@@ -480,30 +410,21 @@
     },
     "l5g": {
       "name": "Dragon's Breath Tassets",
-      "stats": [
-        "Archer Attack +11%",
-        "Cavalry Attack +5%"
-      ],
+      "stats": ["Archer Attack +11%", "Cavalry Attack +5%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
     },
     "l2g": {
       "name": "Greaves of the Eternal Empire",
-      "stats": [
-        "Infantry Attack +11%",
-        "Archer Defense +5%"
-      ],
+      "stats": ["Infantry Attack +11%", "Archer Defense +5%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
     },
     "l6g": {
       "name": "Tassets of the Hellish Wasteland",
-      "stats": [
-        "Cavalry Attack +11%",
-        "Infantry Defense +5%"
-      ],
+      "stats": ["Cavalry Attack +11%", "Infantry Defense +5%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
@@ -532,30 +453,21 @@
     },
     "l7g": {
       "name": "Lone Wolf's Leather Tassets",
-      "stats": [
-        "Siege Unit Health +14.5%",
-        "March Speed (Siege Units) +4%"
-      ],
+      "stats": ["Siege Unit Health +14.5%", "March Speed (Siege Units) +4%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
     },
     "l9g": {
       "name": "Chausses of the Glorious Goddess",
-      "stats": [
-        "Troop Health +8%",
-        "March Speed (Archers) +2%"
-      ],
+      "stats": ["Troop Health +8%", "March Speed (Archers) +2%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
     },
     "l1p": {
       "name": "Fanatic's Tassets",
-      "stats": [
-        "Archer Defense +8%",
-        "Cavalry Defense +5%"
-      ],
+      "stats": ["Archer Defense +8%", "Cavalry Defense +5%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Purple"
@@ -573,10 +485,7 @@
     },
     "l4": {
       "name": "Revival Greaves",
-      "stats": [
-        "Archer Defense +7.5%",
-        "Cavalry Attack +5%"
-      ],
+      "stats": ["Archer Defense +7.5%", "Cavalry Attack +5%"],
       "description": "",
       "slot": "Legs",
       "rarity": "Purple"
@@ -605,10 +514,7 @@
     },
     "g1p": {
       "name": "Iset's Sufferance",
-      "stats": [
-        "Cavalry Attack +3%",
-        "Cavalry Health +3%"
-      ],
+      "stats": ["Cavalry Attack +3%", "Cavalry Health +3%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Purple"
@@ -626,10 +532,7 @@
     },
     "g5p": {
       "name": "Knight's Battleworn Gauntlets",
-      "stats": [
-        "Siege Unit Defense +5.5%",
-        "March Speed (Siege Units) +2%"
-      ],
+      "stats": ["Siege Unit Defense +5.5%", "March Speed (Siege Units) +2%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Purple"
@@ -669,10 +572,7 @@
     },
     "g1gr": {
       "name": "Leather Gloves",
-      "stats": [
-        "Archer Health +2.5%",
-        "Infantry Defense +1%"
-      ],
+      "stats": ["Archer Health +2.5%", "Infantry Defense +1%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Green"
@@ -690,9 +590,7 @@
     },
     "g1gray": {
       "name": "Cloth Gloves",
-      "stats": [
-        "Infantry Defense +2%"
-      ],
+      "stats": ["Infantry Defense +2%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gray"
@@ -710,80 +608,56 @@
     },
     "g2g": {
       "name": "Sacred Grips",
-      "stats": [
-        "Infantry Defense +8%",
-        "Archer Attack +5%"
-      ],
+      "stats": ["Infantry Defense +8%", "Archer Attack +5%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
     },
     "g3g": {
       "name": "Ian's Choice",
-      "stats": [
-        "Archer Attack +8%",
-        "Commander EXP Gain +5%"
-      ],
+      "stats": ["Archer Attack +8%", "Commander EXP Gain +5%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
     },
     "g1g": {
       "name": "Vambraces of the Eternal Empire",
-      "stats": [
-        "Infantry Defense +7.5%",
-        "Cavalry Attack +3%"
-      ],
+      "stats": ["Infantry Defense +7.5%", "Cavalry Attack +3%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
     },
     "g6g": {
       "name": "Armband of the Hellish Wasteland",
-      "stats": [
-        "Cavalry Defense +7.5%",
-        "Archer Health +3%"
-      ],
+      "stats": ["Cavalry Defense +7.5%", "Archer Health +3%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
     },
     "g5g": {
       "name": "Dragon's Breath Vambraces",
-      "stats": [
-        "Archer Attack +7.5%",
-        "Infantry Attack +3%"
-      ],
+      "stats": ["Archer Attack +7.5%", "Infantry Attack +3%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
     },
     "g4g": {
       "name": "Navar's Control",
-      "stats": [
-        "Cavalry Health +8%",
-        "Infantry Defense +5%"
-      ],
+      "stats": ["Cavalry Health +8%", "Infantry Defense +5%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
     },
     "g7g": {
       "name": "Wailing Wolf's Gauntlets",
-      "stats": [
-        "Siege Unit Defense +10%",
-        "March Speed (Siege Units) +3%"
-      ],
+      "stats": ["Siege Unit Defense +10%", "March Speed (Siege Units) +3%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
     },
     "g8g": {
       "name": "Gauntlets of the Glorious Goddess",
-      "stats": [
-        "Troop Defense +6%",
-        "March Speed (Siege Units) +2%"
-      ],
+      "stats": ["Troop Defense +6%", "March Speed (Siege Units) +2%"],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -812,10 +686,7 @@
     },
     "c5p": {
       "name": "Knight's Valorous Cloak",
-      "stats": [
-        "Siege Unit Attack +8%",
-        "March Speed (Siege Units) +2%"
-      ],
+      "stats": ["Siege Unit Attack +8%", "March Speed (Siege Units) +2%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Purple"
@@ -855,10 +726,7 @@
     },
     "c2gr": {
       "name": "Milanese Plate",
-      "stats": [
-        "Cavalry Defense +4%",
-        "Archer Attack +2%"
-      ],
+      "stats": ["Cavalry Defense +4%", "Archer Attack +2%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Green"
@@ -876,9 +744,7 @@
     },
     "c1gray": {
       "name": "Chain Mail",
-      "stats": [
-        "Archer Attack +3%"
-      ],
+      "stats": ["Archer Attack +3%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Gray"
@@ -918,10 +784,7 @@
     },
     "c6g": {
       "name": "Dragon's Breath Plate",
-      "stats": [
-        "Archer Health +11%",
-        "Cavalry Defense +5%"
-      ],
+      "stats": ["Archer Health +11%", "Cavalry Defense +5%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
@@ -939,70 +802,49 @@
     },
     "c5g": {
       "name": "Heavy Armor of the Hellish Wasteland",
-      "stats": [
-        "Cavalry Health +11%",
-        "Infantry Attack +5%"
-      ],
+      "stats": ["Cavalry Health +11%", "Infantry Attack +5%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
     },
     "c3g": {
       "name": "Plate of the Eternal Empire",
-      "stats": [
-        "Infantry Attack +11%",
-        "Archer Defense +5%"
-      ],
+      "stats": ["Infantry Attack +11%", "Archer Defense +5%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
     },
     "c7g": {
       "name": "Vigilant Wolf's Leather Armor",
-      "stats": [
-        "Siege Unit Attack +14.5%",
-        "March Speed (Siege Units) +4%"
-      ],
+      "stats": ["Siege Unit Attack +14.5%", "March Speed (Siege Units) +4%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
     },
     "c8g": {
       "name": "Plate of the Glorious Goddess",
-      "stats": [
-        "Troop Defense +8%",
-        "March Speed (Infantry) +2%"
-      ],
+      "stats": ["Troop Defense +8%", "March Speed (Infantry) +2%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
     },
     "c3p": {
       "name": "Dark Lord's Blessing",
-      "stats": [
-        "Cavalry Defense +8%",
-        "Archer Attack +5%"
-      ],
+      "stats": ["Cavalry Defense +8%", "Archer Attack +5%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Purple"
     },
     "c4p": {
       "name": "Revival Plate",
-      "stats": [
-        "Archer Attack +7.5%",
-        "Cavalry Defense +5%"
-      ],
+      "stats": ["Archer Attack +7.5%", "Cavalry Defense +5%"],
       "description": "",
       "slot": "Chest",
       "rarity": "Purple"
     },
     "h1p": {
       "name": "Revival Helm",
-      "stats": [
-        "Archer Defense +7.5%",
-        "Infantry Defense +5%"
-      ],
+      "stats": ["Archer Defense +7.5%", "Infantry Defense +5%"],
       "description": "",
       "slot": "Helm",
       "rarity": "Purple"
@@ -1042,10 +884,7 @@
     },
     "h14p": {
       "name": "Knight's Steel Diadem",
-      "stats": [
-        "Siege Unit Health +8%",
-        "March Speed (Siege Units) +2%"
-      ],
+      "stats": ["Siege Unit Health +8%", "March Speed (Siege Units) +2%"],
       "description": "",
       "slot": "Helm",
       "rarity": "Purple"
@@ -1107,9 +946,7 @@
     },
     "h1gray": {
       "name": "Iron Helm",
-      "stats": [
-        "Infantry Attack +3%"
-      ],
+      "stats": ["Infantry Attack +3%"],
       "description": "",
       "slot": "Helm",
       "rarity": "Gray"
@@ -1149,30 +986,21 @@
     },
     "h4g": {
       "name": "Pride of the Khan",
-      "stats": [
-        "Cavalry Defense +15%",
-        "Archer Health +8%"
-      ],
+      "stats": ["Cavalry Defense +15%", "Archer Health +8%"],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
     },
     "h5g": {
       "name": "Helm of the Conqueror",
-      "stats": [
-        "Infantry Defense +15%",
-        "Cavalry Health +8%"
-      ],
+      "stats": ["Infantry Defense +15%", "Cavalry Health +8%"],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
     },
     "h6g": {
       "name": "Ancestral Mask of Night",
-      "stats": [
-        "Archer Attack +15%",
-        "Infantry Attack +8%"
-      ],
+      "stats": ["Archer Attack +15%", "Infantry Attack +8%"],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -1190,20 +1018,14 @@
     },
     "h7g": {
       "name": "Fierce Wolf's Helmet",
-      "stats": [
-        "Siege Unit Attack +14.5%",
-        "March Speed (Siege Units) +4%"
-      ],
+      "stats": ["Siege Unit Attack +14.5%", "March Speed (Siege Units) +4%"],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
     },
     "h8g": {
       "name": "Diadem of the Glorious Goddess",
-      "stats": [
-        "Troop Attack +8%",
-        "March Speed (Cavalry) +2%"
-      ],
+      "stats": ["Troop Attack +8%", "March Speed (Cavalry) +2%"],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -1254,10 +1076,7 @@
     },
     "w2gr": {
       "name": "Vanguard Halberd",
-      "stats": [
-        "Cavalry Defense +5%",
-        "Cavalry Health +4%"
-      ],
+      "stats": ["Cavalry Defense +5%", "Cavalry Health +4%"],
       "description": "",
       "slot": "Weapon",
       "rarity": "Green"
@@ -1275,10 +1094,7 @@
     },
     "w1gray": {
       "name": "Sharp Longsword",
-      "stats": [
-        "Cavalry Defense +5%",
-        "Gathering Speed +2%"
-      ],
+      "stats": ["Cavalry Defense +5%", "Gathering Speed +2%"],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gray"
@@ -1296,10 +1112,7 @@
     },
     "w4g": {
       "name": "Sacred Dominion",
-      "stats": [
-        "Cavalry Attack +25%",
-        "Archer Defense +5%"
-      ],
+      "stats": ["Cavalry Attack +25%", "Archer Defense +5%"],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1328,20 +1141,14 @@
     },
     "w2g": {
       "name": "Hammer of the Sun and Moon",
-      "stats": [
-        "Infantry Attack +25%",
-        "Archer Health +5%"
-      ],
+      "stats": ["Infantry Attack +25%", "Archer Health +5%"],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
     },
     "w6g": {
       "name": "The Hydra's Blast",
-      "stats": [
-        "Archer Defense +25%",
-        "Cavalry Defense +5%"
-      ],
+      "stats": ["Archer Defense +25%", "Cavalry Defense +5%"],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1359,30 +1166,21 @@
     },
     "w8g": {
       "name": "Twilight Epiphany",
-      "stats": [
-        "Siege Unit Attack +25%",
-        "March Speed (Siege Units) +6%"
-      ],
+      "stats": ["Siege Unit Attack +25%", "March Speed (Siege Units) +6%"],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
     },
     "w10g": {
       "name": "Scepter of the Glorious Goddess",
-      "stats": [
-        "Troop Attack +15%",
-        "March Speed (Infantry) +3%"
-      ],
+      "stats": ["Troop Attack +15%", "March Speed (Infantry) +3%"],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
     },
     "w14p": {
       "name": "Knight's Oathsworn Bow",
-      "stats": [
-        "Siege Unit Attack +13%",
-        "March Speed (Siege Units) +2%"
-      ],
+      "stats": ["Siege Unit Attack +13%", "March Speed (Siege Units) +2%"],
       "description": "",
       "slot": "Weapon",
       "rarity": "Purple"
