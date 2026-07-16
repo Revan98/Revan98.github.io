@@ -120,16 +120,16 @@ let resultsGridApi = null;
   }
 
   function getExportTimestamp() {
-	const now = new Date();
-	const dd = String(now.getDate()).padStart(2, "0");
-	const mm = String(now.getMonth() + 1).padStart(2, "0");
-	const yyyy = now.getFullYear();
-	const HH = String(now.getHours()).padStart(2, "0");
-	const MM = String(now.getMinutes()).padStart(2, "0");
-	const uuid = crypto.randomUUID().split("-")[0];
-	return `${dd}-${mm}-${yyyy}-T${HH}-${MM}-${uuid}`;
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, "0");
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const yyyy = now.getFullYear();
+    const HH = String(now.getHours()).padStart(2, "0");
+    const MM = String(now.getMinutes()).padStart(2, "0");
+    const uuid = crypto.randomUUID().split("-")[0];
+    return `${dd}-${mm}-${yyyy}-T${HH}-${MM}-${uuid}`;
   }
-	
+
   function validatePowerRange(newItem, ranges, editingIdx = null) {
     const others = ranges.filter((_, i) => i !== editingIdx);
 
@@ -300,8 +300,7 @@ let resultsGridApi = null;
           ["ch", "city hall", "cityhall", "city hall level"].includes(key)
         )
           normalized.CH = val;
-		else if (["acclaim"].includes(key))
-		  normalized["Acclaim"] = val;
+        else if (["acclaim"].includes(key)) normalized["Acclaim"] = val;
         else normalized[k] = val;
       });
       return normalized;
@@ -664,10 +663,9 @@ let resultsGridApi = null;
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "DKP");
-    XLSX.writeFile(
-      wb,
-      `dkp-${getExportTimestamp()}.xlsx`, { compression: true }
-    );
+    XLSX.writeFile(wb, `dkp-${getExportTimestamp()}.xlsx`, {
+      compression: true,
+    });
   }
   function exportToCsv(rows) {
     if (!rows) return alert("No results to export.");
