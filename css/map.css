@@ -1,11 +1,23 @@
 .map-page {
-  --planner-accent-soft: color-mix(in srgb, var(--chart-line) 14%, var(--table-bg));
-  --planner-accent-softer: color-mix(in srgb, var(--chart-line) 7%, var(--table-bg));
+  --planner-accent-soft: color-mix(
+    in srgb,
+    var(--chart-line) 14%,
+    var(--table-bg)
+  );
+  --planner-accent-softer: color-mix(
+    in srgb,
+    var(--chart-line) 7%,
+    var(--table-bg)
+  );
   --planner-header-bg: var(--table-bg);
   --planner-header-text: var(--text-color);
   --planner-cell-bg: var(--table-bg);
   --planner-cell-alt: var(--table-stripe-even);
-  --planner-cell-strong: color-mix(in srgb, var(--chart-line) 18%, var(--table-bg));
+  --planner-cell-strong: color-mix(
+    in srgb,
+    var(--chart-line) 18%,
+    var(--table-bg)
+  );
   min-height: 100vh;
   padding: 4px;
 }
@@ -434,10 +446,6 @@ body.dark .player-slot {
   font-style: normal;
 }
 
-
-
-
-
 .slot-drop.drag-over {
   outline: 2px solid var(--chart-line);
   outline-offset: -3px;
@@ -446,15 +454,21 @@ body.dark .player-slot {
 .lane-a .lane-slot,
 .lane-b .lane-slot,
 .lane-c .lane-slot,
-.lane-d .lane-slot { background: var(--planner-cell-bg); }
+.lane-d .lane-slot {
+  background: var(--planner-cell-bg);
+}
 .lane-a .lane-slot:nth-child(even),
 .lane-b .lane-slot:nth-child(even),
 .lane-c .lane-slot:nth-child(even),
-.lane-d .lane-slot:nth-child(even) { background: var(--planner-cell-alt); }
-.lane-a .lane-slot:nth-child(n+6),
-.lane-b .lane-slot:nth-child(n+6),
-.lane-c .lane-slot:nth-child(n+6),
-.lane-d .lane-slot:nth-child(n+6) { background: var(--planner-accent-softer); }
+.lane-d .lane-slot:nth-child(even) {
+  background: var(--planner-cell-alt);
+}
+.lane-a .lane-slot:nth-child(n + 6),
+.lane-b .lane-slot:nth-child(n + 6),
+.lane-c .lane-slot:nth-child(n + 6),
+.lane-d .lane-slot:nth-child(n + 6) {
+  background: var(--planner-accent-softer);
+}
 
 .lane-plan-card {
   border: 1px solid var(--table-border);
@@ -749,8 +763,8 @@ body.dark .lane-plan-tab.active {
   text-align: center;
 }
 
-.lane-plan-table tbody tr:nth-child(n+5) th,
-.lane-plan-table tbody tr:nth-child(n+5) .lane-plan-player {
+.lane-plan-table tbody tr:nth-child(n + 5) th,
+.lane-plan-table tbody tr:nth-child(n + 5) .lane-plan-player {
   background: var(--planner-accent-soft);
 }
 
@@ -771,12 +785,12 @@ body.dark .lane-plan-tab.active {
 
 .lane-plan-table textarea {
   width: 100%;
-  height: 60px; /* explicit default; JS overrides with saved value */
+  height: 60px;
   min-height: 60px;
   box-sizing: border-box;
   border: 0;
   resize: vertical;
-  padding: 8px 8px 14px; /* extra bottom padding so text clears the handle */
+  padding: 8px 8px 14px;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -785,36 +799,67 @@ body.dark .lane-plan-tab.active {
   text-align: center;
   line-height: 1.28;
   outline: none;
-  /* Custom resize grip — three dots stacked at the bottom-right */
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px, transparent 1.5px);
-  background-size: 3px 3px, 3px 3px, 3px 3px;
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--text-color) 35%, transparent) 1.5px,
+      transparent 1.5px
+    );
+  background-size:
+    3px 3px,
+    3px 3px,
+    3px 3px;
   background-repeat: no-repeat, no-repeat, no-repeat;
-  background-position: calc(100% - 8px) calc(100% - 4px),
-                       calc(100% - 8px) calc(100% - 9px),
-                       calc(100% - 8px) calc(100% - 14px);
+  background-position:
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 8px) calc(100% - 9px),
+    calc(100% - 8px) calc(100% - 14px);
   cursor: auto;
 }
 
-/* Show a highlighted resize zone when the cursor is near the bottom edge */
 .lane-plan-table td {
   position: relative;
 }
 
 .lane-plan-table textarea:focus {
   background-color: var(--planner-accent-softer);
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px, transparent 1.5px);
-  background-size: 3px 3px, 3px 3px, 3px 3px;
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--chart-line) 60%, transparent) 1.5px,
+      transparent 1.5px
+    );
+  background-size:
+    3px 3px,
+    3px 3px,
+    3px 3px;
   background-repeat: no-repeat, no-repeat, no-repeat;
-  background-position: calc(100% - 8px) calc(100% - 4px),
-                       calc(100% - 8px) calc(100% - 9px),
-                       calc(100% - 8px) calc(100% - 14px);
+  background-position:
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 8px) calc(100% - 9px),
+    calc(100% - 8px) calc(100% - 14px);
 }
 
-/* Resize-handle pill — sits at the very bottom of each textarea cell */
 .lane-plan-table td::after {
   content: "";
   position: absolute;
@@ -826,7 +871,9 @@ body.dark .lane-plan-tab.active {
   border-radius: 2px 2px 0 0;
   background: color-mix(in srgb, var(--text-color) 18%, transparent);
   pointer-events: none;
-  transition: background 0.15s, width 0.15s;
+  transition:
+    background 0.15s,
+    width 0.15s;
 }
 
 .lane-plan-table td:has(textarea:hover)::after,
@@ -834,8 +881,6 @@ body.dark .lane-plan-tab.active {
   background: color-mix(in srgb, var(--chart-line) 55%, transparent);
   width: 44px;
 }
-
-/* plan-player styles moved to bottom of file */
 
 .lane-plan-notes {
   padding: 12px 14px;
@@ -855,27 +900,52 @@ body.dark .lane-plan-tab.active {
   resize: vertical;
   border: 1px solid var(--table-border);
   border-radius: 6px;
-  padding: 9px 10px 18px; /* extra bottom for handle clearance */
+  padding: 9px 10px 18px;
   background: var(--bg-color);
   color: var(--text-color);
   font: inherit;
   line-height: 1.4;
   outline: none;
-  /* Grip dots — 2×3 grid at bottom-right */
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px, transparent 1.5px);
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--text-color) 30%, transparent) 1.5px,
+      transparent 1.5px
+    );
   background-size: 3px 3px;
   background-repeat: no-repeat;
-  background-position: calc(100% - 14px) calc(100% - 5px),
-                       calc(100% - 14px) calc(100% - 10px),
-                       calc(100% - 9px)  calc(100% - 5px),
-                       calc(100% - 9px)  calc(100% - 10px),
-                       calc(100% - 4px)  calc(100% - 5px),
-                       calc(100% - 4px)  calc(100% - 10px);
+  background-position:
+    calc(100% - 14px) calc(100% - 5px),
+    calc(100% - 14px) calc(100% - 10px),
+    calc(100% - 9px) calc(100% - 5px),
+    calc(100% - 9px) calc(100% - 10px),
+    calc(100% - 4px) calc(100% - 5px),
+    calc(100% - 4px) calc(100% - 10px);
 }
 
 .lane-plan-notes textarea:hover {
@@ -884,20 +954,46 @@ body.dark .lane-plan-tab.active {
 
 .lane-plan-notes textarea:focus {
   border-color: var(--chart-line);
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px),
-                    radial-gradient(circle, color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px, transparent 1.5px);
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--chart-line) 70%, transparent) 1.5px,
+      transparent 1.5px
+    );
   background-size: 3px 3px;
   background-repeat: no-repeat;
-  background-position: calc(100% - 14px) calc(100% - 5px),
-                       calc(100% - 14px) calc(100% - 10px),
-                       calc(100% - 9px)  calc(100% - 5px),
-                       calc(100% - 9px)  calc(100% - 10px),
-                       calc(100% - 4px)  calc(100% - 5px),
-                       calc(100% - 4px)  calc(100% - 10px);
+  background-position:
+    calc(100% - 14px) calc(100% - 5px),
+    calc(100% - 14px) calc(100% - 10px),
+    calc(100% - 9px) calc(100% - 5px),
+    calc(100% - 9px) calc(100% - 10px),
+    calc(100% - 4px) calc(100% - 5px),
+    calc(100% - 4px) calc(100% - 10px);
 }
 
 .map-toolbar {
@@ -966,7 +1062,10 @@ body.dark .lane-plan-tab.active {
   background: var(--bg-color);
   color: var(--text-color);
   cursor: pointer;
-  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+  transition:
+    border-color 0.18s,
+    background 0.18s,
+    transform 0.18s;
 }
 
 .map-icon-btn {
@@ -1145,8 +1244,16 @@ body.dark .marker-row.active {
   border-radius: 8px;
   border: 1px solid var(--table-border);
   background:
-    radial-gradient(circle at 20% 20%, rgba(58, 131, 196, 0.2), transparent 28%),
-    radial-gradient(circle at 82% 72%, rgba(233, 111, 82, 0.16), transparent 30%),
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(58, 131, 196, 0.2),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 82% 72%,
+      rgba(233, 111, 82, 0.16),
+      transparent 30%
+    ),
     #10151c;
   overflow: hidden;
   touch-action: none;
@@ -1210,7 +1317,10 @@ body.dark .marker-row.active {
   transform: translate(-50%, -100%) rotate(-45deg);
   cursor: pointer;
   box-shadow: 0 5px 14px rgba(0, 0, 0, 0.34);
-  transition: transform 0.16s, box-shadow 0.16s, opacity 0.16s;
+  transition:
+    transform 0.16s,
+    box-shadow 0.16s,
+    opacity 0.16s;
 }
 
 .map-marker::after {
@@ -1305,8 +1415,6 @@ body.dark .marker-row.active {
   height: 100%;
   min-width: 48px;
   min-height: 22px;
-  /* Inset padding so text stays inside the ellipse curve (~18% each side horizontally,
-     use auto top/bottom via flex on the container instead) */
   padding: 10% 20%;
   border: 0;
   border-radius: 50%;
@@ -1330,7 +1438,8 @@ body.dark .marker-row.active {
 
 .map-label-text:not([readonly]) {
   border-color: var(--chart-line);
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--chart-line) 60%, transparent);
+  box-shadow: inset 0 0 0 2px
+    color-mix(in srgb, var(--chart-line) 60%, transparent);
   cursor: text;
   overflow: auto;
 }
@@ -1383,28 +1492,30 @@ body.dark .marker-row.active {
 .map-roles-panel .roles-panel-title {
   display: none;
 }
-  width: 100%;
-  min-height: 34px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-color);
-  cursor: pointer;
-  font-weight: 800;
-  text-align: left;
-  padding: 0 10px;
-}
 
 .label-context-menu button:hover {
   background: var(--planner-accent-soft);
 }
 
-.marker-obelisk { background: #2f8fae; }
-.marker-shrine { background: #5aa36b; }
-.marker-altar { background: #8b6ac8; }
-.marker-outpost { background: #d89a3d; }
-.marker-custom { background: #e3b729; color: #2d2410; }
-.marker-anubis { background: #5c6f77; }
+.marker-obelisk {
+  background: #2f8fae;
+}
+.marker-shrine {
+  background: #5aa36b;
+}
+.marker-altar {
+  background: #8b6ac8;
+}
+.marker-outpost {
+  background: #d89a3d;
+}
+.marker-custom {
+  background: #e3b729;
+  color: #2d2410;
+}
+.marker-anubis {
+  background: #5c6f77;
+}
 
 .map-detail {
   display: flex;
@@ -1573,14 +1684,13 @@ body.dark .marker-row.active {
     width: 112%;
   }
 }
-/* Lane plan main content area */
+
 .lane-plan-main {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-/* Role tags in lane plan table cells */
 .lane-plan-role-cell {
   vertical-align: top;
   padding: 6px 8px !important;
@@ -1662,20 +1772,6 @@ body.dark .marker-row.active {
   font-style: italic;
 }
 
-@media (max-width: 1100px) {
-
-
-  background: var(--table-bg);
-  border: 1px solid var(--table-border);
-  border-radius: 8px;
-  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.05);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow: auto;
-}
-
 .roles-panel-title {
   font-size: 1.15rem;
   font-weight: 800;
@@ -1715,7 +1811,9 @@ body.dark .marker-row.active {
   font-weight: 700;
   cursor: grab;
   user-select: none;
-  transition: border-color 0.14s, background 0.14s;
+  transition:
+    border-color 0.14s,
+    background 0.14s;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1730,7 +1828,6 @@ body.dark .marker-row.active {
   opacity: 0.5;
 }
 
-/* Slot role cell */
 .slot-role {
   display: flex;
   align-items: center;
@@ -1790,7 +1887,6 @@ body.dark .marker-row.active {
   color: #fff;
 }
 
-/* ── Scrollbars: player list & roles panel ─────────────────────────── */
 .player-list,
 .map-roles-panel {
   scrollbar-width: thin;
@@ -1819,8 +1915,6 @@ body.dark .marker-row.active {
   background: var(--chart-line);
 }
 
-/* ── GL / RL buttons in player list ──────────────────────────────────────── */
-
 .player-gl-btn.active {
   background: #5aa36b;
   border-color: #5aa36b;
@@ -1844,7 +1938,6 @@ body.dark .marker-row.active {
   box-shadow: inset 3px 0 0 #8b6ac8;
 }
 
-/* Plan player GL/RL — multi-badge support */
 .plan-player {
   display: inline-flex;
   flex-direction: column;
@@ -1924,7 +2017,6 @@ body.dark .marker-row.active {
   background: #8b6ac8;
 }
 
-/* ── Stage column preview in Manage Stages modal ─────────────────────────── */
 .stage-cols-preview {
   display: flex;
   align-items: center;
@@ -1958,7 +2050,6 @@ body.dark .marker-row.active {
   font-size: 0.7rem;
 }
 
-/* Slot player GL/RL — multi-badge support */
 .slot-player {
   display: flex;
   flex-direction: column;
@@ -2006,7 +2097,6 @@ body.dark .marker-row.active {
   background: #8b6ac8;
 }
 
-/* Priority: coordinator colour wins */
 .slot-player.coordinator.garrison-leader::before,
 .slot-player.coordinator.rally-leader::before,
 .slot-player.coordinator.garrison-leader.rally-leader::before {
@@ -2069,7 +2159,6 @@ body.dark .marker-row.active {
   background: #8b6ac8;
 }
 
-/* ── Lane plan tab: wrap with per-lane stages gear button ─────────────────── */
 .lane-plan-tab-wrap {
   display: inline-flex;
   align-items: center;
@@ -2102,7 +2191,9 @@ body.dark .marker-row.active {
   cursor: pointer;
   font-size: 0.85rem;
   opacity: 0.55;
-  transition: opacity 0.14s, background 0.14s;
+  transition:
+    opacity 0.14s,
+    background 0.14s;
   flex-shrink: 0;
 }
 
@@ -2111,7 +2202,6 @@ body.dark .marker-row.active {
   background: var(--planner-accent-soft);
 }
 
-/* ── Lane plan title bar with Manage Stages button ────────────────────────── */
 .lane-plan-title-bar {
   display: flex;
   align-items: center;
@@ -2137,7 +2227,6 @@ body.dark .marker-row.active {
   min-height: 30px;
 }
 
-/* ── Lane stages modal overlay (inline in lanePlanWrap) ───────────────────── */
 .lane-stages-modal-overlay {
   position: fixed;
   inset: 0;
@@ -2153,7 +2242,6 @@ body.dark .marker-row.active {
   display: none;
 }
 
-/* ── Cell colour picker popover ───────────────────────────────────────────── */
 .cell-color-picker {
   position: fixed;
   z-index: 20000;
@@ -2194,7 +2282,9 @@ body.dark .marker-row.active {
   align-items: center;
   justify-content: center;
   color: var(--text-color);
-  transition: transform 0.1s, border-color 0.1s;
+  transition:
+    transform 0.1s,
+    border-color 0.1s;
 }
 
 .cell-color-swatch:hover {
@@ -2236,7 +2326,6 @@ body.dark .marker-row.active {
   background: var(--bg-color);
 }
 
-/* Right-click hint cursor on drop cells */
 .lane-plan-drop-cell textarea {
   color: inherit;
 }
@@ -2244,7 +2333,6 @@ body.dark .marker-row.active {
   cursor: context-menu;
 }
 
-/* ── Table column resize (resizable th via CSS resize) ───────────────────── */
 .lane-plan-table {
   table-layout: fixed;
 }
