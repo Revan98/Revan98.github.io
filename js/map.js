@@ -1,24 +1,164 @@
 const MAP_MARKERS = [
-  { id: "blue-1-obelisk", name: "Blue 1 - Obelisk", type: "obelisk", x: 11.7, y: 41.1, note: "Obelisk, +20/m." },
-  { id: "blue-2-shrine-war", name: "Blue 2 - Shrine of War", type: "shrine", x: 28.0, y: 47.3, note: "Shrine of War, +80/m." },
-  { id: "blue-3-sky-altar", name: "Blue 3 - Sky Altar", type: "altar", x: 13.0, y: 58.4, note: "Sky Altar, +150/m." },
-  { id: "blue-4-obelisk", name: "Blue 4 - Obelisk", type: "obelisk", x: 53.0, y: 12.8, note: "Obelisk, +20/m." },
-  { id: "blue-5-shrine-life", name: "Blue 5 - Shrine of Life", type: "shrine", x: 67.5, y: 15.6, note: "Shrine of Life, +80/m." },
-  { id: "blue-6-desert-altar", name: "Blue 6 - Desert Altar", type: "altar", x: 54.0, y: 29.8, note: "Desert Altar, +150/m." },
-  { id: "red-1-obelisk", name: "Red 1 - Obelisk", type: "obelisk", x: 41.4, y: 78.2, note: "Obelisk, +20/m." },
-  { id: "red-2-shrine-life", name: "Red 2 - Shrine of Life", type: "shrine", x: 25.0, y: 75.3, note: "Shrine of Life, +80/m." },
-  { id: "red-3-desert-altar", name: "Red 3 - Desert Altar", type: "altar", x: 41.2, y: 59.8, note: "Desert Altar, +150/m." },
-  { id: "red-4-obelisk", name: "Red 4 - Obelisk", type: "obelisk", x: 84.7, y: 45.1, note: "Obelisk, +20/m." },
-  { id: "red-5-shrine-war", name: "Red 5 - Shrine of War", type: "shrine", x: 67.3, y: 41.5, note: "Shrine of War, +80/m." },
-  { id: "red-6-sky-altar", name: "Red 6 - Sky Altar", type: "altar", x: 80.8, y: 27.9, note: "Sky Altar, +150/m." },
-  { id: "yellow-1-outpost-seth", name: "Red 1 - Outpost of Seth", type: "outpost", x: 61.6, y: 58.3, note: "Outpost of Seth, +80/m." },
-  { id: "yellow-2-outpost-seth", name: "Red 2 - Outpost of Seth", type: "outpost", x: 78.2, y: 57.7, note: "Outpost of Seth, +50/m." },
-  { id: "yellow-3-outpost-seth", name: "Red 3 - Outpost of Seth", type: "outpost", x: 61.9, y: 73.1, note: "Outpost of Seth, +30/m." },
-  { id: "yellow-4-outpost-iset", name: "Blue 1 - Outpost of Iset", type: "outpost", x: 33.9, y: 30.3, note: "Outpost of Iset, +50/m." },
-  { id: "yellow-5-outpost-iset", name: "Blue 2 - Outpost of Iset", type: "outpost", x: 18.3, y: 27.2, note: "Outpost of Iset, +30/m." },
-  { id: "yellow-6-outpost-iset", name: "Blue 3 - Outpost of Iset", type: "outpost", x: 34.4, y: 16.0, note: "Outpost of Iset, +50/m." },
-  { id: "bottom-anubis", name: "Anubis 1", type: "anubis", x: 9.3, y: 89.1, note: "Anubis boss." },
-  { id: "top-anubis", name: "Anubis 2", type: "anubis", x: 91.4, y: 10.0, note: "Anubis boss." },
+  {
+    id: "blue-1-obelisk",
+    name: "Blue 1 - Obelisk",
+    type: "obelisk",
+    x: 11.7,
+    y: 41.1,
+    note: "Obelisk, +20/m.",
+  },
+  {
+    id: "blue-2-shrine-war",
+    name: "Blue 2 - Shrine of War",
+    type: "shrine",
+    x: 28.0,
+    y: 47.3,
+    note: "Shrine of War, +80/m.",
+  },
+  {
+    id: "blue-3-sky-altar",
+    name: "Blue 3 - Sky Altar",
+    type: "altar",
+    x: 13.0,
+    y: 58.4,
+    note: "Sky Altar, +150/m.",
+  },
+  {
+    id: "blue-4-obelisk",
+    name: "Blue 4 - Obelisk",
+    type: "obelisk",
+    x: 53.0,
+    y: 12.8,
+    note: "Obelisk, +20/m.",
+  },
+  {
+    id: "blue-5-shrine-life",
+    name: "Blue 5 - Shrine of Life",
+    type: "shrine",
+    x: 67.5,
+    y: 15.6,
+    note: "Shrine of Life, +80/m.",
+  },
+  {
+    id: "blue-6-desert-altar",
+    name: "Blue 6 - Desert Altar",
+    type: "altar",
+    x: 54.0,
+    y: 29.8,
+    note: "Desert Altar, +150/m.",
+  },
+  {
+    id: "red-1-obelisk",
+    name: "Red 1 - Obelisk",
+    type: "obelisk",
+    x: 41.4,
+    y: 78.2,
+    note: "Obelisk, +20/m.",
+  },
+  {
+    id: "red-2-shrine-life",
+    name: "Red 2 - Shrine of Life",
+    type: "shrine",
+    x: 25.0,
+    y: 75.3,
+    note: "Shrine of Life, +80/m.",
+  },
+  {
+    id: "red-3-desert-altar",
+    name: "Red 3 - Desert Altar",
+    type: "altar",
+    x: 41.2,
+    y: 59.8,
+    note: "Desert Altar, +150/m.",
+  },
+  {
+    id: "red-4-obelisk",
+    name: "Red 4 - Obelisk",
+    type: "obelisk",
+    x: 84.7,
+    y: 45.1,
+    note: "Obelisk, +20/m.",
+  },
+  {
+    id: "red-5-shrine-war",
+    name: "Red 5 - Shrine of War",
+    type: "shrine",
+    x: 67.3,
+    y: 41.5,
+    note: "Shrine of War, +80/m.",
+  },
+  {
+    id: "red-6-sky-altar",
+    name: "Red 6 - Sky Altar",
+    type: "altar",
+    x: 80.8,
+    y: 27.9,
+    note: "Sky Altar, +150/m.",
+  },
+  {
+    id: "yellow-1-outpost-seth",
+    name: "Red 1 - Outpost of Seth",
+    type: "outpost",
+    x: 61.6,
+    y: 58.3,
+    note: "Outpost of Seth, +80/m.",
+  },
+  {
+    id: "yellow-2-outpost-seth",
+    name: "Red 2 - Outpost of Seth",
+    type: "outpost",
+    x: 78.2,
+    y: 57.7,
+    note: "Outpost of Seth, +50/m.",
+  },
+  {
+    id: "yellow-3-outpost-seth",
+    name: "Red 3 - Outpost of Seth",
+    type: "outpost",
+    x: 61.9,
+    y: 73.1,
+    note: "Outpost of Seth, +30/m.",
+  },
+  {
+    id: "yellow-4-outpost-iset",
+    name: "Blue 1 - Outpost of Iset",
+    type: "outpost",
+    x: 33.9,
+    y: 30.3,
+    note: "Outpost of Iset, +50/m.",
+  },
+  {
+    id: "yellow-5-outpost-iset",
+    name: "Blue 2 - Outpost of Iset",
+    type: "outpost",
+    x: 18.3,
+    y: 27.2,
+    note: "Outpost of Iset, +30/m.",
+  },
+  {
+    id: "yellow-6-outpost-iset",
+    name: "Blue 3 - Outpost of Iset",
+    type: "outpost",
+    x: 34.4,
+    y: 16.0,
+    note: "Outpost of Iset, +50/m.",
+  },
+  {
+    id: "bottom-anubis",
+    name: "Anubis 1",
+    type: "anubis",
+    x: 9.3,
+    y: 89.1,
+    note: "Anubis boss.",
+  },
+  {
+    id: "top-anubis",
+    name: "Anubis 2",
+    type: "anubis",
+    x: 91.4,
+    y: 10.0,
+    note: "Anubis boss.",
+  },
 ];
 
 const TYPE_LABELS = {
@@ -241,7 +381,12 @@ hamburger?.addEventListener("click", () => {
 
 document.addEventListener("click", (e) => {
   hideLabelContextMenu();
-  if (hamburger && navLinks && !hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+  if (
+    hamburger &&
+    navLinks &&
+    !hamburger.contains(e.target) &&
+    !navLinks.contains(e.target)
+  ) {
     navLinks.classList.remove("show");
     hamburger.classList.remove("open");
   }
@@ -263,9 +408,12 @@ function applyTheme(theme) {
 
 function initTheme() {
   const saved = localStorage.getItem("theme");
-  const theme = saved === "light" || saved === "dark"
-    ? saved
-    : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  const theme =
+    saved === "light" || saved === "dark"
+      ? saved
+      : window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
 
   applyTheme(theme);
   if (themeToggle) themeToggle.checked = theme === "dark";
@@ -292,8 +440,13 @@ function getMarkers() {
 function getVisibleMarkers() {
   const search = mapSearch?.value.trim().toLowerCase() || "";
   return getMarkers().filter((marker) => {
-    const matchesType = currentFilter === "all" || marker.type === currentFilter;
-    const matchesSearch = !search || `${marker.name} ${TYPE_LABELS[marker.type]} ${marker.note}`.toLowerCase().includes(search);
+    const matchesType =
+      currentFilter === "all" || marker.type === currentFilter;
+    const matchesSearch =
+      !search ||
+      `${marker.name} ${TYPE_LABELS[marker.type]} ${marker.note}`
+        .toLowerCase()
+        .includes(search);
     return matchesType && matchesSearch;
   });
 }
@@ -392,7 +545,10 @@ function renderLabelSectionControls() {
     button.type = "button";
     button.className = `map-section-toggle${visibleLabelSections[section.key] ? " active" : ""}`;
     button.textContent = section.label;
-    button.setAttribute("aria-pressed", String(Boolean(visibleLabelSections[section.key])));
+    button.setAttribute(
+      "aria-pressed",
+      String(Boolean(visibleLabelSections[section.key])),
+    );
     button.title = `${section.label} labels`;
     button.addEventListener("click", () => {
       visibleLabelSections[section.key] = !visibleLabelSections[section.key];
@@ -430,7 +586,7 @@ function getLabelSection(label) {
   if (x > 48 && y < 48) return "midTop";
 
   // MID BOTTOM: diagonal central band around the ruins
-  if (y < 62 && x > 22 && (x - y) > -28) return "midBottom";
+  if (y < 62 && x > 22 && x - y > -28) return "midBottom";
 
   // BOTTOM: explicit bounds from black outline — x < 52, y > 48
   if (x < 42 && y > 48) return "bottom";
@@ -499,15 +655,18 @@ function renderDetail() {
     return;
   }
 
-  const deleteButton = marker.type === "custom"
-    ? `<button class="detail-delete" id="deletePinBtn" type="button">Delete Pin</button>`
-    : "";
-  const resetButton = marker.locked && markerPositions[marker.id]
-    ? `<button class="detail-reset" id="resetMarkerBtn" type="button">Reset Position</button>`
-    : "";
-  const actions = deleteButton || resetButton
-    ? `<div class="detail-actions">${resetButton}${deleteButton}</div>`
-    : "";
+  const deleteButton =
+    marker.type === "custom"
+      ? `<button class="detail-delete" id="deletePinBtn" type="button">Delete Pin</button>`
+      : "";
+  const resetButton =
+    marker.locked && markerPositions[marker.id]
+      ? `<button class="detail-reset" id="resetMarkerBtn" type="button">Reset Position</button>`
+      : "";
+  const actions =
+    deleteButton || resetButton
+      ? `<div class="detail-actions">${resetButton}${deleteButton}</div>`
+      : "";
 
   mapDetail.innerHTML = `
     <span class="detail-badge marker-${marker.type}">${TYPE_LABELS[marker.type]}</span>
@@ -651,7 +810,9 @@ function moveSelectedMarker(event) {
 function moveSelectedLabel(event) {
   if (!labelDragState) return;
   const point = getMapPoint(event);
-  const label = getMapLabels().find((item) => item.id === labelDragState.labelId);
+  const label = getMapLabels().find(
+    (item) => item.id === labelDragState.labelId,
+  );
   if (!label) return;
   label.x = Number(Math.min(100, Math.max(0, point.x)).toFixed(1));
   label.y = Number(Math.min(100, Math.max(0, point.y)).toFixed(1));
@@ -666,12 +827,27 @@ function moveSelectedLabel(event) {
 
 function resizeSelectedLabel(event) {
   if (!labelResizeState) return;
-  const label = getMapLabels().find((item) => item.id === labelResizeState.labelId);
+  const label = getMapLabels().find(
+    (item) => item.id === labelResizeState.labelId,
+  );
   if (!label) return;
-  const deltaXPct = ((event.clientX - labelResizeState.startX) / labelResizeState.layerWidth) * 100;
-  const deltaYPct = ((event.clientY - labelResizeState.startY) / labelResizeState.layerHeight) * 100;
-  label.width = Number(Math.min(42, Math.max(4, labelResizeState.startWidth + deltaXPct)).toFixed(1));
-  label.height = Number(Math.min(24, Math.max(2.4, labelResizeState.startHeight + deltaYPct)).toFixed(1));
+  const deltaXPct =
+    ((event.clientX - labelResizeState.startX) / labelResizeState.layerWidth) *
+    100;
+  const deltaYPct =
+    ((event.clientY - labelResizeState.startY) / labelResizeState.layerHeight) *
+    100;
+  label.width = Number(
+    Math.min(42, Math.max(4, labelResizeState.startWidth + deltaXPct)).toFixed(
+      1,
+    ),
+  );
+  label.height = Number(
+    Math.min(
+      24,
+      Math.max(2.4, labelResizeState.startHeight + deltaYPct),
+    ).toFixed(1),
+  );
   if (labelResizeState.element) {
     labelResizeState.element.style.width = `${label.width}%`;
     labelResizeState.element.style.height = `${label.height}%`;
@@ -683,7 +859,8 @@ function updateCoords(event) {
   const point = getMapPoint(event);
   const x = Math.min(100, Math.max(0, point.x));
   const y = Math.min(100, Math.max(0, point.y));
-  if (mapCoords) mapCoords.textContent = `X ${x.toFixed(1)} / Y ${y.toFixed(1)}`;
+  if (mapCoords)
+    mapCoords.textContent = `X ${x.toFixed(1)} / Y ${y.toFixed(1)}`;
 }
 
 function addCustomPin(event) {
@@ -747,8 +924,24 @@ function getViewportCenterMapPoint() {
   const viewportRect = mapViewport.getBoundingClientRect();
   const layerRect = mapLayer.getBoundingClientRect();
   return {
-    x: Math.min(100, Math.max(0, ((viewportRect.left + viewportRect.width / 2 - layerRect.left) / layerRect.width) * 100)),
-    y: Math.min(100, Math.max(0, ((viewportRect.top + viewportRect.height / 2 - layerRect.top) / layerRect.height) * 100)),
+    x: Math.min(
+      100,
+      Math.max(
+        0,
+        ((viewportRect.left + viewportRect.width / 2 - layerRect.left) /
+          layerRect.width) *
+          100,
+      ),
+    ),
+    y: Math.min(
+      100,
+      Math.max(
+        0,
+        ((viewportRect.top + viewportRect.height / 2 - layerRect.top) /
+          layerRect.height) *
+          100,
+      ),
+    ),
   };
 }
 
@@ -792,12 +985,17 @@ async function exportCurrentStagePng() {
   const exportScale = getExportScale(canvas);
   ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-  getMapLabels().filter(isLabelVisible).forEach((label) => drawExportLabel(ctx, canvas, label, exportScale));
+  getMapLabels()
+    .filter(isLabelVisible)
+    .forEach((label) => drawExportLabel(ctx, canvas, label, exportScale));
 
   canvas.toBlob((blob) => {
     if (!blob) return;
     const stage = getActiveMapStage();
-    downloadBlob(blob, `ark-map-${slugify(stage.name)}-${formatDateForFile(new Date())}.png`);
+    downloadBlob(
+      blob,
+      `ark-map-${slugify(stage.name)}-${formatDateForFile(new Date())}.png`,
+    );
   }, "image/png");
 }
 
@@ -828,7 +1026,14 @@ function drawExportMarker(ctx, canvas, marker, scale = 1) {
   ctx.fillStyle = color;
   ctx.strokeStyle = "#ffffff";
   ctx.lineWidth = 2 * scale;
-  roundedRectPath(ctx, -markerSize / 2, -markerSize / 2, markerSize, markerSize, markerRadius);
+  roundedRectPath(
+    ctx,
+    -markerSize / 2,
+    -markerSize / 2,
+    markerSize,
+    markerSize,
+    markerRadius,
+  );
   ctx.fill();
   ctx.stroke();
   ctx.restore();
@@ -842,23 +1047,51 @@ function drawExportMarker(ctx, canvas, marker, scale = 1) {
 function drawExportLabel(ctx, canvas, label, scale = 1) {
   const x = (label.x / 100) * canvas.width;
   const y = (label.y / 100) * canvas.height;
-  const width = Math.max(48 * scale, ((label.width || DEFAULT_LABEL_WIDTH) / 100) * canvas.width);
-  const height = Math.max(22 * scale, ((label.height || DEFAULT_LABEL_HEIGHT) / 100) * canvas.height);
+  const width = Math.max(
+    48 * scale,
+    ((label.width || DEFAULT_LABEL_WIDTH) / 100) * canvas.width,
+  );
+  const height = Math.max(
+    22 * scale,
+    ((label.height || DEFAULT_LABEL_HEIGHT) / 100) * canvas.height,
+  );
   const fontSize = 13.2 * scale;
   const paddingX = 5 * scale;
   const paddingY = 3 * scale;
   const lineHeight = 13.625 * scale;
   ctx.font = `800 ${fontSize}px system-ui, sans-serif`;
-  const maxLines = Math.max(1, Math.floor((height - paddingY * 2) / lineHeight));
-  const lines = wrapCanvasText(ctx, label.text, width - paddingX * 2).slice(0, maxLines);
+  const maxLines = Math.max(
+    1,
+    Math.floor((height - paddingY * 2) / lineHeight),
+  );
+  const lines = wrapCanvasText(ctx, label.text, width - paddingX * 2).slice(
+    0,
+    maxLines,
+  );
   const left = x - width / 2;
 
   ctx.save();
   ctx.strokeStyle = "#050505";
   ctx.lineWidth = 2 * scale;
-  drawExportBubblePath(ctx, left, y, width, height, label.shape || "bubble-left", 6 * scale);
+  drawExportBubblePath(
+    ctx,
+    left,
+    y,
+    width,
+    height,
+    label.shape || "bubble-left",
+    6 * scale,
+  );
   ctx.stroke();
-  drawExportBubblePath(ctx, left + 1 * scale, y + 1 * scale, width - 2 * scale, height - 2 * scale, label.shape || "bubble-left", 5 * scale);
+  drawExportBubblePath(
+    ctx,
+    left + 1 * scale,
+    y + 1 * scale,
+    width - 2 * scale,
+    height - 2 * scale,
+    label.shape || "bubble-left",
+    5 * scale,
+  );
   ctx.clip();
   ctx.fillStyle = "#050505";
   ctx.shadowColor = "transparent";
@@ -879,21 +1112,61 @@ function drawExportBubblePath(ctx, x, y, width, height, shape, radius) {
   const tail = Math.min(width, height) * 0.22;
   ctx.beginPath();
   if (shape === "oval") {
-    ctx.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      x + width / 2,
+      y + height / 2,
+      width / 2,
+      height / 2,
+      0,
+      0,
+      Math.PI * 2,
+    );
   } else if (shape === "bubble-right") {
-    ctx.ellipse(x + width * 0.48, y + height / 2, width * 0.48, height * 0.48, 0, Math.PI * 0.15, Math.PI * 1.85);
+    ctx.ellipse(
+      x + width * 0.48,
+      y + height / 2,
+      width * 0.48,
+      height * 0.48,
+      0,
+      Math.PI * 0.15,
+      Math.PI * 1.85,
+    );
     ctx.lineTo(x + width + tail, y + height * 0.56);
     ctx.lineTo(x + width * 0.91, y + height * 0.72);
   } else if (shape === "bubble-top") {
-    ctx.ellipse(x + width / 2, y + height * 0.54, width * 0.48, height * 0.46, 0, Math.PI * 1.15, Math.PI * 0.85);
+    ctx.ellipse(
+      x + width / 2,
+      y + height * 0.54,
+      width * 0.48,
+      height * 0.46,
+      0,
+      Math.PI * 1.15,
+      Math.PI * 0.85,
+    );
     ctx.lineTo(x + width * 0.55, y - tail);
     ctx.lineTo(x + width * 0.38, y + height * 0.09);
   } else if (shape === "bubble-bottom") {
-    ctx.ellipse(x + width / 2, y + height * 0.46, width * 0.48, height * 0.46, 0, Math.PI * 0.85, Math.PI * 2.15);
+    ctx.ellipse(
+      x + width / 2,
+      y + height * 0.46,
+      width * 0.48,
+      height * 0.46,
+      0,
+      Math.PI * 0.85,
+      Math.PI * 2.15,
+    );
     ctx.lineTo(x + width * 0.45, y + height + tail);
     ctx.lineTo(x + width * 0.62, y + height * 0.91);
   } else {
-    ctx.ellipse(x + width * 0.52, y + height / 2, width * 0.48, height * 0.48, 0, Math.PI * 1.15, Math.PI * 0.85);
+    ctx.ellipse(
+      x + width * 0.52,
+      y + height / 2,
+      width * 0.48,
+      height * 0.48,
+      0,
+      Math.PI * 1.15,
+      Math.PI * 0.85,
+    );
     ctx.lineTo(x - tail, y + height * 0.56);
     ctx.lineTo(x + width * 0.09, y + height * 0.72);
   }
@@ -901,7 +1174,9 @@ function drawExportBubblePath(ctx, x, y, width, height, shape, radius) {
 }
 
 function wrapCanvasText(ctx, text, maxWidth) {
-  const words = String(text || "").split(/\s+/).filter(Boolean);
+  const words = String(text || "")
+    .split(/\s+/)
+    .filter(Boolean);
   const lines = [];
   let line = "";
   words.forEach((word) => {
@@ -949,14 +1224,16 @@ function roundedRectPath(ctx, x, y, width, height, radius) {
 }
 
 function getMarkerColor(type) {
-  return {
-    obelisk: "#2f8fae",
-    shrine: "#5aa36b",
-    altar: "#8b6ac8",
-    outpost: "#d89a3d",
-    custom: "#e3b729",
-    anubis: "#5c6f77",
-  }[type] || "#0b74d1";
+  return (
+    {
+      obelisk: "#2f8fae",
+      shrine: "#5aa36b",
+      altar: "#8b6ac8",
+      outpost: "#d89a3d",
+      custom: "#e3b729",
+      anubis: "#5c6f77",
+    }[type] || "#0b74d1"
+  );
 }
 
 function downloadBlob(blob, filename) {
@@ -981,7 +1258,12 @@ function formatDateForFile(date) {
 }
 
 function slugify(value) {
-  return String(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "stage";
+  return (
+    String(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") || "stage"
+  );
 }
 
 function deleteMapLabel(labelId) {
@@ -1002,13 +1284,17 @@ function showLabelContextMenu(x, y, labelId) {
     <button type="button" data-action="edit">Edit Label</button>
     <button type="button" data-action="delete">Delete Label</button>
   `;
-  labelContextMenu.querySelector('[data-action="edit"]').addEventListener("click", () => {
-    hideLabelContextMenu();
-    startLabelEdit(labelId);
-  });
-  labelContextMenu.querySelector('[data-action="delete"]').addEventListener("click", () => {
-    deleteMapLabel(labelId);
-  });
+  labelContextMenu
+    .querySelector('[data-action="edit"]')
+    .addEventListener("click", () => {
+      hideLabelContextMenu();
+      startLabelEdit(labelId);
+    });
+  labelContextMenu
+    .querySelector('[data-action="delete"]')
+    .addEventListener("click", () => {
+      deleteMapLabel(labelId);
+    });
   document.body.appendChild(labelContextMenu);
 }
 
@@ -1071,11 +1357,18 @@ function loadMapStages(legacyPins = []) {
         id: String(stage.id || `stage-${index + 1}`),
         name: normalizeDefaultStageName(stage.name, index),
         labels: Array.isArray(stage.labels) ? stage.labels : [],
-        pins: Array.isArray(stage.pins) ? stage.pins : index === 0 ? legacyPins : [],
+        pins: Array.isArray(stage.pins)
+          ? stage.pins
+          : index === 0
+            ? legacyPins
+            : [],
       }));
     }
     const oldLabels = JSON.parse(localStorage.getItem(MAP_LABELS_KEY) || "[]");
-    return getDefaultMapStages(Array.isArray(oldLabels) ? oldLabels : [], legacyPins);
+    return getDefaultMapStages(
+      Array.isArray(oldLabels) ? oldLabels : [],
+      legacyPins,
+    );
   } catch {
     return getDefaultMapStages([], legacyPins);
   }
@@ -1083,7 +1376,10 @@ function loadMapStages(legacyPins = []) {
 
 function normalizeDefaultStageName(name, index) {
   const defaultNames = ["Before First Ark", "6 mins until Ark", "No Ark"];
-  if (index < defaultNames.length && (!name || /^Stage [1-3]$/.test(String(name)))) {
+  if (
+    index < defaultNames.length &&
+    (!name || /^Stage [1-3]$/.test(String(name)))
+  ) {
     return defaultNames[index];
   }
   return String(name || `Stage ${index + 1}`);
@@ -1100,7 +1396,8 @@ function saveMapLabels() {
 async function getSqlJs() {
   if (!sqlJsPromise) {
     sqlJsPromise = initSqlJs({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/${file}`,
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/${file}`,
     });
   }
   return sqlJsPromise;
@@ -1138,7 +1435,7 @@ async function exportStateDb() {
 
   downloadBlob(
     new Blob([db.export()], { type: "application/octet-stream" }),
-    `ark-planner-backup-${formatDateForFile(new Date())}.db`
+    `ark-planner-backup-${formatDateForFile(new Date())}.db`,
   );
   db.close();
 }
@@ -1216,7 +1513,6 @@ function renderMapStageControls() {
     });
     mapStageSwitcher.appendChild(button);
   });
-
 }
 
 function addMapStage() {
@@ -1259,10 +1555,14 @@ function renderStageManager() {
   });
 
   stageManagerList.querySelectorAll("[data-stage-name]").forEach((input) => {
-    input.addEventListener("input", () => renameMapStage(input.dataset.stageName, input.value));
+    input.addEventListener("input", () =>
+      renameMapStage(input.dataset.stageName, input.value),
+    );
   });
   stageManagerList.querySelectorAll("[data-stage-delete]").forEach((button) => {
-    button.addEventListener("click", () => deleteMapStage(button.dataset.stageDelete));
+    button.addEventListener("click", () =>
+      deleteMapStage(button.dataset.stageDelete),
+    );
   });
 }
 
@@ -1281,7 +1581,8 @@ function deleteMapStage(stageId) {
   if (index < 3) return;
   mapStages.splice(index, 1);
   if (activeMapStageId === stageId) {
-    activeMapStageId = mapStages[Math.min(index, mapStages.length - 1)]?.id || "stage-1";
+    activeMapStageId =
+      mapStages[Math.min(index, mapStages.length - 1)]?.id || "stage-1";
   }
   saveMapStages();
   renderStageManager();
@@ -1293,8 +1594,14 @@ function deleteMapStage(stageId) {
 
 function loadMarkerPositions() {
   try {
-    const positions = JSON.parse(localStorage.getItem(MARKER_POSITIONS_KEY) || "{}");
-    return positions && typeof positions === "object" && !Array.isArray(positions) ? positions : {};
+    const positions = JSON.parse(
+      localStorage.getItem(MARKER_POSITIONS_KEY) || "{}",
+    );
+    return positions &&
+      typeof positions === "object" &&
+      !Array.isArray(positions)
+      ? positions
+      : {};
   } catch {
     return {};
   }
@@ -1307,7 +1614,9 @@ function saveMarkerPositions() {
 function loadMarkerNotes() {
   try {
     const notes = JSON.parse(localStorage.getItem(MARKER_NOTES_KEY) || "{}");
-    return notes && typeof notes === "object" && !Array.isArray(notes) ? notes : {};
+    return notes && typeof notes === "object" && !Array.isArray(notes)
+      ? notes
+      : {};
   } catch {
     return {};
   }
@@ -1320,8 +1629,11 @@ function loadVisibleLabelSections() {
   }, {});
 
   try {
-    const parsed = JSON.parse(localStorage.getItem(MAP_LABEL_SECTIONS_KEY) || "null");
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return defaults;
+    const parsed = JSON.parse(
+      localStorage.getItem(MAP_LABEL_SECTIONS_KEY) || "null",
+    );
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+      return defaults;
     return MAP_LABEL_SECTIONS.reduce((sections, section) => {
       sections[section.key] = parsed[section.key] !== false;
       return sections;
@@ -1332,7 +1644,10 @@ function loadVisibleLabelSections() {
 }
 
 function saveVisibleLabelSections() {
-  localStorage.setItem(MAP_LABEL_SECTIONS_KEY, JSON.stringify(visibleLabelSections));
+  localStorage.setItem(
+    MAP_LABEL_SECTIONS_KEY,
+    JSON.stringify(visibleLabelSections),
+  );
 }
 
 function saveMarkerNote(markerId, note) {
@@ -1378,10 +1693,19 @@ function loadTeamLayout() {
     return {
       rowCounts: { ...fallback.rowCounts, ...(parsed.rowCounts || {}) },
       laneNames: { ...fallback.laneNames, ...(parsed.laneNames || {}) },
-      coordinators: Array.isArray(parsed.coordinators) ? parsed.coordinators.slice(0, 5) : [],
-      garrisonLeaders: Array.isArray(parsed.garrisonLeaders) ? parsed.garrisonLeaders.slice(0, 10) : [],
-      rallyLeaders: Array.isArray(parsed.rallyLeaders) ? parsed.rallyLeaders.slice(0, 10) : [],
-      assignments: parsed.assignments && typeof parsed.assignments === "object" ? parsed.assignments : {},
+      coordinators: Array.isArray(parsed.coordinators)
+        ? parsed.coordinators.slice(0, 5)
+        : [],
+      garrisonLeaders: Array.isArray(parsed.garrisonLeaders)
+        ? parsed.garrisonLeaders.slice(0, 10)
+        : [],
+      rallyLeaders: Array.isArray(parsed.rallyLeaders)
+        ? parsed.rallyLeaders.slice(0, 10)
+        : [],
+      assignments:
+        parsed.assignments && typeof parsed.assignments === "object"
+          ? parsed.assignments
+          : {},
     };
   } catch {
     return getDefaultTeamLayout();
@@ -1415,8 +1739,18 @@ function renderTeamRolesPanel() {
 }
 
 function renderPlayerList() {
-  renderPlayerListInto(playerList, playerCount, "Add players or load a CSV", true);
-  renderPlayerListInto(mapPlayerList, mapPlayerCount, "Add players or load a CSV", true);
+  renderPlayerListInto(
+    playerList,
+    playerCount,
+    "Add players or load a CSV",
+    true,
+  );
+  renderPlayerListInto(
+    mapPlayerList,
+    mapPlayerCount,
+    "Add players or load a CSV",
+    true,
+  );
 }
 
 function renderPlayerListInto(container, countNode, emptyText, editable) {
@@ -1441,7 +1775,8 @@ function renderPlayerListInto(container, countNode, emptyText, editable) {
     const isCoordinator = teamLayout.coordinators.includes(player.id);
     const isGL = teamLayout.garrisonLeaders.includes(player.id);
     const isRL = teamLayout.rallyLeaders.includes(player.id);
-    const coordinatorLimitReached = teamLayout.coordinators.length >= 5 && !isCoordinator;
+    const coordinatorLimitReached =
+      teamLayout.coordinators.length >= 5 && !isCoordinator;
     const assignmentLabel = getPlayerAssignmentLabel(player.id);
     const row = document.createElement("div");
     row.className = `player-card${isCoordinator ? " coordinator" : ""}${isGL ? " garrison-leader" : ""}${isRL ? " rally-leader" : ""}${isMapPanel ? " map-draggable" : ""}`;
@@ -1451,11 +1786,15 @@ function renderPlayerListInto(container, countNode, emptyText, editable) {
       <span class="player-slot">${escapeHtml(assignmentLabel)}</span>
       <span class="player-info">
         <span class="player-name">${escapeHtml(player.name)}</span>
-        ${editable ? `<span class="player-role-btns">
+        ${
+          editable
+            ? `<span class="player-role-btns">
           <button class="player-coordinator${isCoordinator ? " active" : ""}" type="button" title="Toggle coordinator" aria-label="Toggle coordinator" ${coordinatorLimitReached ? "disabled" : ""}>C</button>
           <button class="player-gl-btn${isGL ? " active" : ""}" type="button" title="Toggle Garrison Leader" aria-label="Toggle GL">GL</button>
           <button class="player-rl-btn${isRL ? " active" : ""}" type="button" title="Toggle Rally Leader" aria-label="Toggle RL">RL</button>
-        </span>` : `<span class="player-map-badge">${isCoordinator ? "C" : isGL ? "GL" : isRL ? "RL" : ""}</span>`}
+        </span>`
+            : `<span class="player-map-badge">${isCoordinator ? "C" : isGL ? "GL" : isRL ? "RL" : ""}</span>`
+        }
       </span>
       ${editable ? `<button class="player-remove" type="button" title="Remove player" aria-label="Remove player">x</button>` : ""}
     `;
@@ -1471,23 +1810,35 @@ function renderPlayerListInto(container, countNode, emptyText, editable) {
       event.dataTransfer.effectAllowed = "copy";
     });
     if (editable) {
-      row.querySelector(".player-coordinator").addEventListener("click", () => toggleCoordinator(player.id));
-      row.querySelector(".player-gl-btn").addEventListener("click", () => toggleGarrisonLeader(player.id));
-      row.querySelector(".player-rl-btn").addEventListener("click", () => toggleRallyLeader(player.id));
-      row.querySelector(".player-remove").addEventListener("click", () => removePlayer(player.id));
+      row
+        .querySelector(".player-coordinator")
+        .addEventListener("click", () => toggleCoordinator(player.id));
+      row
+        .querySelector(".player-gl-btn")
+        .addEventListener("click", () => toggleGarrisonLeader(player.id));
+      row
+        .querySelector(".player-rl-btn")
+        .addEventListener("click", () => toggleRallyLeader(player.id));
+      row
+        .querySelector(".player-remove")
+        .addEventListener("click", () => removePlayer(player.id));
     }
     container.appendChild(row);
   });
 }
 
 function getPlayerAssignmentLabel(playerId) {
-  const slotId = Object.keys(teamLayout.assignments).find((slot) => teamLayout.assignments[slot] === playerId);
+  const slotId = Object.keys(teamLayout.assignments).find(
+    (slot) => teamLayout.assignments[slot] === playerId,
+  );
   if (!slotId) return "-";
   const [laneKey, rowNumber] = slotId.split("-");
   return `${laneKey.toUpperCase()}${rowNumber}`;
 }
 
-function renderLaneControls(container = document.getElementById("laneControls")) {
+function renderLaneControls(
+  container = document.getElementById("laneControls"),
+) {
   if (!container) return;
   const laneControls = container;
   laneControls.innerHTML = "";
@@ -1503,7 +1854,9 @@ function renderLaneControls(container = document.getElementById("laneControls"))
   });
 
   laneControls.querySelectorAll("button").forEach((button) => {
-    button.addEventListener("click", () => changeLaneRows(button.dataset.lane, Number(button.dataset.delta)));
+    button.addEventListener("click", () =>
+      changeLaneRows(button.dataset.lane, Number(button.dataset.delta)),
+    );
   });
 }
 
@@ -1542,11 +1895,16 @@ function renderTeamBoard(container = document.getElementById("teamBoard")) {
       event.preventDefault();
       slot.classList.add("drag-over");
     });
-    slot.addEventListener("dragleave", () => slot.classList.remove("drag-over"));
+    slot.addEventListener("dragleave", () =>
+      slot.classList.remove("drag-over"),
+    );
     slot.addEventListener("drop", (event) => {
       event.preventDefault();
       slot.classList.remove("drag-over");
-      assignPlayerToSlot(event.dataTransfer.getData("text/plain"), slot.dataset.slot);
+      assignPlayerToSlot(
+        event.dataTransfer.getData("text/plain"),
+        slot.dataset.slot,
+      );
     });
   });
 
@@ -1555,8 +1913,12 @@ function renderTeamBoard(container = document.getElementById("teamBoard")) {
   });
 
   container.querySelectorAll("[data-lane-name]").forEach((input) => {
-    input.addEventListener("change", () => renameLane(input.dataset.laneName, input.value));
-    input.addEventListener("blur", () => renameLane(input.dataset.laneName, input.value));
+    input.addEventListener("change", () =>
+      renameLane(input.dataset.laneName, input.value),
+    );
+    input.addEventListener("blur", () =>
+      renameLane(input.dataset.laneName, input.value),
+    );
   });
 
   applyAllCellColors("overview", container);
@@ -1610,10 +1972,16 @@ function addPlayer(name, id = "") {
 }
 
 function makePlayerId(name) {
-  const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "player";
+  const base =
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "player";
   let id = base;
   let index = 2;
-  while (teamPlayers.some((player) => player.id === id && player.name !== name)) {
+  while (
+    teamPlayers.some((player) => player.id === id && player.name !== name)
+  ) {
     id = `${base}-${index}`;
     index += 1;
   }
@@ -1622,9 +1990,15 @@ function makePlayerId(name) {
 
 function removePlayer(playerId) {
   teamPlayers = teamPlayers.filter((player) => player.id !== playerId);
-  teamLayout.coordinators = teamLayout.coordinators.filter((id) => id !== playerId);
-  teamLayout.garrisonLeaders = (teamLayout.garrisonLeaders || []).filter((id) => id !== playerId);
-  teamLayout.rallyLeaders = (teamLayout.rallyLeaders || []).filter((id) => id !== playerId);
+  teamLayout.coordinators = teamLayout.coordinators.filter(
+    (id) => id !== playerId,
+  );
+  teamLayout.garrisonLeaders = (teamLayout.garrisonLeaders || []).filter(
+    (id) => id !== playerId,
+  );
+  teamLayout.rallyLeaders = (teamLayout.rallyLeaders || []).filter(
+    (id) => id !== playerId,
+  );
   Object.entries(teamLayout.assignments).forEach(([slot, assignedId]) => {
     if (assignedId === playerId) delete teamLayout.assignments[slot];
   });
@@ -1635,7 +2009,9 @@ function removePlayer(playerId) {
 
 function toggleCoordinator(playerId) {
   if (teamLayout.coordinators.includes(playerId)) {
-    teamLayout.coordinators = teamLayout.coordinators.filter((id) => id !== playerId);
+    teamLayout.coordinators = teamLayout.coordinators.filter(
+      (id) => id !== playerId,
+    );
   } else if (teamLayout.coordinators.length < 5) {
     teamLayout.coordinators.push(playerId);
   }
@@ -1647,7 +2023,9 @@ function toggleCoordinator(playerId) {
 function toggleGarrisonLeader(playerId) {
   teamLayout.garrisonLeaders = teamLayout.garrisonLeaders || [];
   if (teamLayout.garrisonLeaders.includes(playerId)) {
-    teamLayout.garrisonLeaders = teamLayout.garrisonLeaders.filter((id) => id !== playerId);
+    teamLayout.garrisonLeaders = teamLayout.garrisonLeaders.filter(
+      (id) => id !== playerId,
+    );
   } else {
     teamLayout.garrisonLeaders.push(playerId);
   }
@@ -1658,7 +2036,9 @@ function toggleGarrisonLeader(playerId) {
 function toggleRallyLeader(playerId) {
   teamLayout.rallyLeaders = teamLayout.rallyLeaders || [];
   if (teamLayout.rallyLeaders.includes(playerId)) {
-    teamLayout.rallyLeaders = teamLayout.rallyLeaders.filter((id) => id !== playerId);
+    teamLayout.rallyLeaders = teamLayout.rallyLeaders.filter(
+      (id) => id !== playerId,
+    );
   } else {
     teamLayout.rallyLeaders.push(playerId);
   }
@@ -1706,7 +2086,10 @@ function clearSlot(slotId) {
 }
 
 function changeLaneRows(laneKey, delta) {
-  const nextCount = Math.min(15, Math.max(1, teamLayout.rowCounts[laneKey] + delta));
+  const nextCount = Math.min(
+    15,
+    Math.max(1, teamLayout.rowCounts[laneKey] + delta),
+  );
   teamLayout.rowCounts[laneKey] = nextCount;
 
   Object.keys(teamLayout.assignments).forEach((slotId) => {
@@ -1740,7 +2123,11 @@ function getDefaultLanePlans() {
 
 // ── Per-lane stages ────────────────────────────────────────────────────────────
 
-const DEFAULT_LANE_STAGE_NAMES = ["Before First Ark", "6 mins until Ark", "No Ark"];
+const DEFAULT_LANE_STAGE_NAMES = [
+  "Before First Ark",
+  "6 mins until Ark",
+  "No Ark",
+];
 
 function getDefaultLaneStagesForLane(laneKey) {
   return DEFAULT_LANE_STAGE_NAMES.map((name, i) => ({
@@ -1756,9 +2143,13 @@ function loadLaneStages() {
     const result = {};
     LANES.forEach((lane) => {
       const saved = parsed[lane.key];
-      result[lane.key] = Array.isArray(saved) && saved.length
-        ? saved.map((s, i) => ({ id: String(s.id || `lane-${lane.key}-stage-${i + 1}`), name: String(s.name || `Stage ${i + 1}`) }))
-        : getDefaultLaneStagesForLane(lane.key);
+      result[lane.key] =
+        Array.isArray(saved) && saved.length
+          ? saved.map((s, i) => ({
+              id: String(s.id || `lane-${lane.key}-stage-${i + 1}`),
+              name: String(s.name || `Stage ${i + 1}`),
+            }))
+          : getDefaultLaneStagesForLane(lane.key);
     });
     return result;
   } catch {
@@ -1780,7 +2171,10 @@ function getLaneStages(laneKey) {
 function addLaneStage(laneKey) {
   const stages = getLaneStages(laneKey);
   const nextNumber = stages.length + 1;
-  stages.push({ id: `lane-${laneKey}-stage-${Date.now()}`, name: `Stage ${nextNumber}` });
+  stages.push({
+    id: `lane-${laneKey}-stage-${Date.now()}`,
+    name: `Stage ${nextNumber}`,
+  });
   saveLaneStages();
   refreshLanePlanTable(laneKey);
 }
@@ -1802,7 +2196,9 @@ function renameLaneStage(laneKey, stageId, name) {
   // Just update the header text in the existing table, no full rebuild
   const planTable = document.getElementById("lanePlanTable");
   if (planTable) {
-    const th = planTable.querySelector(`thead th[data-col-id="stage-${stageId}"]`);
+    const th = planTable.querySelector(
+      `thead th[data-col-id="stage-${stageId}"]`,
+    );
     if (th) th.textContent = stage.name;
   }
 }
@@ -1822,7 +2218,9 @@ function refreshLanePlanTable(laneKey) {
   const thead = planTable.querySelector("thead tr");
   if (thead) {
     // Remove old stage headers (between Player and Teleport)
-    thead.querySelectorAll("th[data-col-id^='stage-']").forEach((th) => th.remove());
+    thead
+      .querySelectorAll("th[data-col-id^='stage-']")
+      .forEach((th) => th.remove());
     const teleportTh = thead.querySelector("th[data-col-id='teleport']");
     stages.forEach((stage) => {
       const th = document.createElement("th");
@@ -1839,8 +2237,12 @@ function refreshLanePlanTable(laneKey) {
       const rowNumber = idx + 1;
       const plan = lanePlans[laneKey].rows[rowNumber] || {};
       // Remove old stage cells
-      tr.querySelectorAll("td[data-drop-target='stage']").forEach((td) => td.remove());
-      const teleportTd = tr.querySelector("td[data-drop-target='field'][data-drop-field='teleport']");
+      tr.querySelectorAll("td[data-drop-target='stage']").forEach((td) =>
+        td.remove(),
+      );
+      const teleportTd = tr.querySelector(
+        "td[data-drop-target='field'][data-drop-field='teleport']",
+      );
       stages.forEach((stage) => {
         const td = document.createElement("td");
         td.className = "lane-plan-drop-cell";
@@ -1852,7 +2254,9 @@ function refreshLanePlanTable(laneKey) {
         ta.dataset.row = rowNumber;
         ta.textContent = getLanePlanStageValue(plan, stage);
         td.appendChild(ta);
-        tbody.insertBefore ? tr.insertBefore(td, teleportTd) : tr.appendChild(td);
+        tbody.insertBefore
+          ? tr.insertBefore(td, teleportTd)
+          : tr.appendChild(td);
       });
     });
   }
@@ -1860,7 +2264,9 @@ function refreshLanePlanTable(laneKey) {
   // Rebuild colgroup
   const colgroup = planTable.querySelector("colgroup");
   if (colgroup) {
-    colgroup.querySelectorAll("col[data-col-id^='stage-']").forEach((c) => c.remove());
+    colgroup
+      .querySelectorAll("col[data-col-id^='stage-']")
+      .forEach((c) => c.remove());
     const teleportCol = colgroup.querySelector("col[data-col-id='teleport']");
     stages.forEach((stage) => {
       const col = document.createElement("col");
@@ -1873,9 +2279,18 @@ function refreshLanePlanTable(laneKey) {
   planTable.style.minWidth = `${640 + stages.length * 230}px`;
 
   // Re-wire textarea listeners and restore heights
-  planTable.querySelectorAll("tbody textarea[data-plan-stage]").forEach((ta) => {
-    ta.addEventListener("input", () => updateLanePlanStageCell(laneKey, ta.dataset.row, ta.dataset.planStage, ta.value));
-  });
+  planTable
+    .querySelectorAll("tbody textarea[data-plan-stage]")
+    .forEach((ta) => {
+      ta.addEventListener("input", () =>
+        updateLanePlanStageCell(
+          laneKey,
+          ta.dataset.row,
+          ta.dataset.planStage,
+          ta.value,
+        ),
+      );
+    });
 
   // Drag-drop on new cells
   planTable.querySelectorAll("td[data-drop-target='stage']").forEach((cell) => {
@@ -1885,7 +2300,9 @@ function refreshLanePlanTable(laneKey) {
         cell.classList.add("drag-over");
       }
     });
-    cell.addEventListener("dragleave", () => cell.classList.remove("drag-over"));
+    cell.addEventListener("dragleave", () =>
+      cell.classList.remove("drag-over"),
+    );
     cell.addEventListener("drop", (event) => {
       event.preventDefault();
       cell.classList.remove("drag-over");
@@ -1914,8 +2331,12 @@ function refreshLanePlanTable(laneKey) {
 
 function loadTableColWidths() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(TABLE_COL_WIDTHS_KEY) || "null");
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    const parsed = JSON.parse(
+      localStorage.getItem(TABLE_COL_WIDTHS_KEY) || "null",
+    );
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : {};
   } catch {
     return {};
   }
@@ -1929,8 +2350,12 @@ function saveTableColWidths() {
 
 function loadCellColors() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(TABLE_CELL_COLORS_KEY) || "null");
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    const parsed = JSON.parse(
+      localStorage.getItem(TABLE_CELL_COLORS_KEY) || "null",
+    );
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : {};
   } catch {
     return {};
   }
@@ -1978,7 +2403,11 @@ function applyAllCellColors(laneKey, container) {
   const el = container || document.getElementById("lanePlanTable");
   if (!el) return;
   el.querySelectorAll("[data-color-row][data-color-col]").forEach((td) => {
-    const color = getCellColor(laneKey, td.dataset.colorRow, td.dataset.colorCol);
+    const color = getCellColor(
+      laneKey,
+      td.dataset.colorRow,
+      td.dataset.colorCol,
+    );
     applyCellColorToElement(td, color);
   });
 }
@@ -1987,22 +2416,39 @@ function applyAllCellColors(laneKey, container) {
 
 const CELL_COLOR_PALETTE = [
   "", // clear
-  "#d32f2f", "#e64a19", "#f57c00", "#f9a825",
-  "#388e3c", "#00796b", "#0288d1", "#1565c0",
-  "#6a1b9a", "#ad1457", "#4e342e", "#455a64",
+  "#d32f2f",
+  "#e64a19",
+  "#f57c00",
+  "#f9a825",
+  "#388e3c",
+  "#00796b",
+  "#0288d1",
+  "#1565c0",
+  "#6a1b9a",
+  "#ad1457",
+  "#4e342e",
+  "#455a64",
   // softer tints for readability
-  "#ffcdd2", "#ffe0b2", "#fff9c4", "#c8e6c9",
-  "#b3e5fc", "#bbdefb", "#e1bee7", "#f8bbd0",
+  "#ffcdd2",
+  "#ffe0b2",
+  "#fff9c4",
+  "#c8e6c9",
+  "#b3e5fc",
+  "#bbdefb",
+  "#e1bee7",
+  "#f8bbd0",
 ];
 
 function attachCellColorListeners(container, laneKey) {
-  container.querySelectorAll("[data-color-row][data-color-col]").forEach((td) => {
-    td.addEventListener("contextmenu", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      showCellColorPicker(event.clientX, event.clientY, laneKey, td);
+  container
+    .querySelectorAll("[data-color-row][data-color-col]")
+    .forEach((td) => {
+      td.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        showCellColorPicker(event.clientX, event.clientY, laneKey, td);
+      });
     });
-  });
 }
 
 function showCellColorPicker(x, y, laneKey, td) {
@@ -2018,7 +2464,8 @@ function showCellColorPicker(x, y, laneKey, td) {
   picker.innerHTML = `
     <div class="cell-color-picker-title">Cell colour</div>
     <div class="cell-color-swatches">
-      ${CELL_COLOR_PALETTE.map((color) => `
+      ${CELL_COLOR_PALETTE.map(
+        (color) => `
         <button type="button" class="cell-color-swatch${color === currentColor ? " active" : ""}"
           data-color="${color}"
           style="${color ? `background:${color}` : "background:var(--bg-color)"}"
@@ -2026,7 +2473,8 @@ function showCellColorPicker(x, y, laneKey, td) {
           aria-label="${color || "Clear colour"}">
           ${!color ? "✕" : ""}
         </button>
-      `).join("")}
+      `,
+      ).join("")}
     </div>
     <div class="cell-color-custom-row">
       <label class="cell-color-custom-label">Custom
@@ -2063,7 +2511,10 @@ function showCellColorPicker(x, y, laneKey, td) {
 
   // Close on outside click
   requestAnimationFrame(() => {
-    document.addEventListener("pointerdown", removeCellColorPickerOnOutside, { capture: true, once: true });
+    document.addEventListener("pointerdown", removeCellColorPickerOnOutside, {
+      capture: true,
+      once: true,
+    });
   });
 }
 
@@ -2073,7 +2524,10 @@ function removeCellColorPickerOnOutside(event) {
     removeCellColorPicker();
   } else if (picker) {
     // Re-attach for next outside click
-    document.addEventListener("pointerdown", removeCellColorPickerOnOutside, { capture: true, once: true });
+    document.addEventListener("pointerdown", removeCellColorPickerOnOutside, {
+      capture: true,
+      once: true,
+    });
   }
 }
 
@@ -2120,12 +2574,22 @@ function applyRowHeights(container, laneKey) {
     ta.style.height = saved;
     ta.style.minHeight = saved;
   };
-  container.querySelectorAll("textarea[data-row][data-plan-stage]").forEach((ta) => {
-    restore(ta, `${laneKey}::row-${ta.dataset.row}::stage-${ta.dataset.planStage}`);
-  });
-  container.querySelectorAll("textarea[data-row][data-plan-field]").forEach((ta) => {
-    restore(ta, `${laneKey}::row-${ta.dataset.row}::field-${ta.dataset.planField}`);
-  });
+  container
+    .querySelectorAll("textarea[data-row][data-plan-stage]")
+    .forEach((ta) => {
+      restore(
+        ta,
+        `${laneKey}::row-${ta.dataset.row}::stage-${ta.dataset.planStage}`,
+      );
+    });
+  container
+    .querySelectorAll("textarea[data-row][data-plan-field]")
+    .forEach((ta) => {
+      restore(
+        ta,
+        `${laneKey}::row-${ta.dataset.row}::field-${ta.dataset.planField}`,
+      );
+    });
 }
 
 function attachColResizeListeners(table, laneKey) {
@@ -2154,7 +2618,7 @@ function attachRowHeightListeners(container, laneKey) {
   // Track textarea height resizes via pointerup — fires only after the user
   // finishes dragging the resize handle, not on every content/layout change.
   const textareas = container.querySelectorAll(
-    "textarea[data-row][data-plan-stage], textarea[data-row][data-plan-field]"
+    "textarea[data-row][data-plan-stage], textarea[data-row][data-plan-field]",
   );
   textareas.forEach((ta) => {
     // Store the height at pointerdown so we can tell if it changed.
@@ -2184,7 +2648,10 @@ function loadLanePlans() {
     return LANES.reduce((plans, lane) => {
       plans[lane.key] = {
         notes: parsed[lane.key]?.notes ?? fallback[lane.key].notes,
-        rows: parsed[lane.key]?.rows && typeof parsed[lane.key].rows === "object" ? parsed[lane.key].rows : fallback[lane.key].rows,
+        rows:
+          parsed[lane.key]?.rows && typeof parsed[lane.key].rows === "object"
+            ? parsed[lane.key].rows
+            : fallback[lane.key].rows,
       };
       return plans;
     }, {});
@@ -2203,7 +2670,12 @@ function getLaneTableColumns(laneKey) {
   const stages = getLaneStages(laneKey);
   const cols = [
     { id: "player", label: "Player", fixed: true },
-    ...stages.map((s) => ({ id: `stage-${s.id}`, label: s.name, stageId: s.id, fixed: false })),
+    ...stages.map((s) => ({
+      id: `stage-${s.id}`,
+      label: s.name,
+      stageId: s.id,
+      fixed: false,
+    })),
     { id: "teleport", label: "Teleport", fixed: true },
     { id: "entering", label: "Entering Map", fixed: true },
   ];
@@ -2218,9 +2690,12 @@ function renderLaneStageManager(laneKey) {
   const colsPreview = document.getElementById("laneStageColsPreview");
   if (colsPreview) {
     const cols = getLaneTableColumns(laneKey);
-    colsPreview.innerHTML = cols.map((col) =>
-      `<span class="stage-col-pill${col.fixed ? " fixed" : ""}">${escapeHtml(col.label)}</span>`
-    ).join('<span class="stage-col-arrow">→</span>');
+    colsPreview.innerHTML = cols
+      .map(
+        (col) =>
+          `<span class="stage-col-pill${col.fixed ? " fixed" : ""}">${escapeHtml(col.label)}</span>`,
+      )
+      .join('<span class="stage-col-arrow">→</span>');
   }
 
   list.innerHTML = "";
@@ -2236,7 +2711,9 @@ function renderLaneStageManager(laneKey) {
     list.appendChild(row);
   });
   list.querySelectorAll("[data-lane-stage-name]").forEach((input) => {
-    input.addEventListener("input", () => renameLaneStage(laneKey, input.dataset.laneStageName, input.value));
+    input.addEventListener("input", () =>
+      renameLaneStage(laneKey, input.dataset.laneStageName, input.value),
+    );
   });
   list.querySelectorAll("[data-lane-stage-delete]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -2276,7 +2753,10 @@ function renderLanePlanTabs() {
     stagesBtn.type = "button";
     stagesBtn.className = "lane-tab-stages-btn";
     stagesBtn.title = `Manage stages for ${teamLayout.laneNames[lane.key]}`;
-    stagesBtn.setAttribute("aria-label", `Manage stages for ${teamLayout.laneNames[lane.key]}`);
+    stagesBtn.setAttribute(
+      "aria-label",
+      `Manage stages for ${teamLayout.laneNames[lane.key]}`,
+    );
     stagesBtn.textContent = "⚙";
     stagesBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -2313,20 +2793,34 @@ function renderLanePlan() {
   const rowCount = teamLayout.rowCounts[laneKey];
   lanePlans[laneKey] ||= { notes: "", rows: {} };
   const stages = getLaneStages(laneKey);
-  const stageHeaders = stages.map((stage) => `<th data-col-id="stage-${stage.id}">${escapeHtml(stage.name)}</th>`).join("");
+  const stageHeaders = stages
+    .map(
+      (stage) =>
+        `<th data-col-id="stage-${stage.id}">${escapeHtml(stage.name)}</th>`,
+    )
+    .join("");
 
   const rows = Array.from({ length: rowCount }, (_, index) => {
     const rowNumber = index + 1;
     const slotId = `${laneKey}-${rowNumber}`;
-    const player = teamPlayers.find((item) => item.id === teamLayout.assignments[slotId]);
+    const player = teamPlayers.find(
+      (item) => item.id === teamLayout.assignments[slotId],
+    );
     const plan = lanePlans[laneKey].rows[rowNumber] || {};
-    const stageCells = stages.map((stage) => `
+    const stageCells = stages
+      .map(
+        (stage) => `
         <td class="lane-plan-drop-cell" data-drop-target="stage" data-drop-stage="${stage.id}" data-drop-row="${rowNumber}"><textarea data-plan-stage="${stage.id}" data-row="${rowNumber}">${escapeHtml(getLanePlanStageValue(plan, stage))}</textarea></td>
-    `).join("");
+    `,
+      )
+      .join("");
     const rolesList = getPlanRoles(plan);
-    const rolesHtml = rolesList.map((r, ri) =>
-      `<span class="role-tag">${escapeHtml(r)}<button class="role-tag-remove" type="button" data-row="${rowNumber}" data-role-index="${ri}" aria-label="Remove role">×</button></span>`
-    ).join("");
+    const rolesHtml = rolesList
+      .map(
+        (r, ri) =>
+          `<span class="role-tag">${escapeHtml(r)}<button class="role-tag-remove" type="button" data-row="${rowNumber}" data-role-index="${ri}" aria-label="Remove role">×</button></span>`,
+      )
+      .join("");
     const slotColor = getCellColor("overview", slotId, "slot");
     const playerTdStyle = slotColor
       ? ` style="background:${slotColor};color:${isColorLight(slotColor) ? "#111" : ""}"`
@@ -2398,14 +2892,18 @@ function renderLanePlan() {
   document.getElementById("laneStagesBtn").addEventListener("click", () => {
     document.getElementById("laneStagesOverlay").hidden = false;
   });
-  document.getElementById("laneStagesModalClose").addEventListener("click", () => {
-    document.getElementById("laneStagesOverlay").hidden = true;
-  });
-  document.getElementById("laneStagesOverlay").addEventListener("click", (e) => {
-    if (e.target === document.getElementById("laneStagesOverlay")) {
+  document
+    .getElementById("laneStagesModalClose")
+    .addEventListener("click", () => {
       document.getElementById("laneStagesOverlay").hidden = true;
-    }
-  });
+    });
+  document
+    .getElementById("laneStagesOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target === document.getElementById("laneStagesOverlay")) {
+        document.getElementById("laneStagesOverlay").hidden = true;
+      }
+    });
   document.getElementById("addLaneStageBtn").addEventListener("click", () => {
     addLaneStage(laneKey);
     // renderLaneStageManager is called inside refreshLanePlanTable → no extra call needed
@@ -2428,7 +2926,9 @@ function renderLanePlan() {
       event.preventDefault();
       zone.classList.add("drag-over");
     });
-    zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+    zone.addEventListener("dragleave", () =>
+      zone.classList.remove("drag-over"),
+    );
     zone.addEventListener("drop", (event) => {
       event.preventDefault();
       zone.classList.remove("drag-over");
@@ -2464,15 +2964,33 @@ function renderLanePlan() {
   // Role tag remove buttons
   lanePlanWrap.querySelectorAll(".role-tag-remove").forEach((button) => {
     button.addEventListener("click", () => {
-      removeRoleFromRow(laneKey, button.dataset.row, Number(button.dataset.roleIndex));
+      removeRoleFromRow(
+        laneKey,
+        button.dataset.row,
+        Number(button.dataset.roleIndex),
+      );
     });
   });
 
   lanePlanWrap.querySelectorAll("[data-plan-stage]").forEach((input) => {
-    input.addEventListener("input", () => updateLanePlanStageCell(laneKey, input.dataset.row, input.dataset.planStage, input.value));
+    input.addEventListener("input", () =>
+      updateLanePlanStageCell(
+        laneKey,
+        input.dataset.row,
+        input.dataset.planStage,
+        input.value,
+      ),
+    );
   });
   lanePlanWrap.querySelectorAll("[data-plan-field]").forEach((input) => {
-    input.addEventListener("input", () => updateLanePlanCell(laneKey, input.dataset.row, input.dataset.planField, input.value));
+    input.addEventListener("input", () =>
+      updateLanePlanCell(
+        laneKey,
+        input.dataset.row,
+        input.dataset.planField,
+        input.value,
+      ),
+    );
   });
 
   // Role drop support on stage / teleport / entering cells
@@ -2483,7 +3001,9 @@ function renderLanePlan() {
         cell.classList.add("drag-over");
       }
     });
-    cell.addEventListener("dragleave", () => cell.classList.remove("drag-over"));
+    cell.addEventListener("dragleave", () =>
+      cell.classList.remove("drag-over"),
+    );
     cell.addEventListener("drop", (event) => {
       event.preventDefault();
       cell.classList.remove("drag-over");
@@ -2497,10 +3017,12 @@ function renderLanePlan() {
       textarea.dispatchEvent(new Event("input"));
     });
   });
-  document.getElementById("lanePlanNotes").addEventListener("input", (event) => {
-    lanePlans[laneKey].notes = event.target.value;
-    saveLanePlans();
-  });
+  document
+    .getElementById("lanePlanNotes")
+    .addEventListener("input", (event) => {
+      lanePlans[laneKey].notes = event.target.value;
+      saveLanePlans();
+    });
 }
 
 function getLanePlanStageValue(plan, stage) {
@@ -2520,7 +3042,8 @@ function getLanePlanStageValue(plan, stage) {
 function getPlanRoles(plan) {
   if (Array.isArray(plan.roles)) return plan.roles;
   // Legacy: single string stored in plan.role
-  if (plan.role && typeof plan.role === "string" && plan.role.trim()) return [plan.role.trim()];
+  if (plan.role && typeof plan.role === "string" && plan.role.trim())
+    return [plan.role.trim()];
   return [];
 }
 
@@ -2664,7 +3187,9 @@ function updateLanePlanStageCell(laneKey, rowNumber, stageId, value) {
 function loadArkSkills() {
   try {
     const skills = JSON.parse(localStorage.getItem(ARK_SKILLS_KEY) || "[]");
-    return Array.isArray(skills) ? skills.filter((skill) => ARK_SKILLS.includes(skill)).slice(0, 6) : [];
+    return Array.isArray(skills)
+      ? skills.filter((skill) => ARK_SKILLS.includes(skill)).slice(0, 6)
+      : [];
   } catch {
     return [];
   }
@@ -2748,7 +3273,10 @@ function parseCsvPlayers(text) {
       const first = columns[0].trim().toLowerCase();
       return index !== 0 || first !== "name";
     })
-    .map((columns) => ({ name: columns[0].trim(), id: columns[1]?.trim() || "" }))
+    .map((columns) => ({
+      name: columns[0].trim(),
+      id: columns[1]?.trim() || "",
+    }))
     .filter((player) => player.name);
 }
 
@@ -2777,17 +3305,25 @@ function parseCsvLine(line) {
 }
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  }[char]));
+  return String(value).replace(
+    /[&<>"']/g,
+    (char) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      })[char],
+  );
 }
 
-document.getElementById("zoomInBtn").addEventListener("click", () => zoomBy(0.15));
-document.getElementById("zoomOutBtn").addEventListener("click", () => zoomBy(-0.15));
+document
+  .getElementById("zoomInBtn")
+  .addEventListener("click", () => zoomBy(0.15));
+document
+  .getElementById("zoomOutBtn")
+  .addEventListener("click", () => zoomBy(-0.15));
 document.getElementById("resetViewBtn").addEventListener("click", resetView);
 
 tabButtons.forEach((button) => {
@@ -2934,10 +3470,14 @@ moveMarkersBtn?.addEventListener("click", () => {
 
 mapSearch?.addEventListener("input", render);
 mapStage.addEventListener("pointermove", updateCoords);
-mapStage.addEventListener("wheel", (event) => {
-  event.preventDefault();
-  zoomBy(event.deltaY > 0 ? -0.08 : 0.08);
-}, { passive: false });
+mapStage.addEventListener(
+  "wheel",
+  (event) => {
+    event.preventDefault();
+    zoomBy(event.deltaY > 0 ? -0.08 : 0.08);
+  },
+  { passive: false },
+);
 
 mapViewport.addEventListener("pointerdown", (event) => {
   if (addLabelMode) {
