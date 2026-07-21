@@ -25,3 +25,26 @@
   background: rgba(211, 211, 211, 0.2);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
+.kvk-select-heading {
+  text-align: center;
+  margin-bottom: -10px;
+}
+.kvk-select-heading h1 {
+  font-size: 1.6rem;
+}
+.kvk-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.kvk-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--button-primary-bg);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
