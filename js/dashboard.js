@@ -2,6 +2,11 @@ function getKDFromURL() {
   const params = new URLSearchParams(window.location.search);
   return normalizeNumericId(params.get("kd"));
 }
+
+function getKvkNumberFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return normalizeNumericId(params.get("kvk"));
+}
 function getSelectedSource() {
   const kd = getKDFromURL();
   if (!kd) return null;
@@ -86,8 +91,17 @@ async function loadAllSheetsCache() {
     return;
   }
 
-  const kvk = db.exec(`
-	  SELECT id
+  const kvkNumber = getKvkNumberFromURL();
+
+  const kvk = kvkNumber
+    ? db.exec(`
+	  SELECT id, kvk_number, name
+	  FROM kvks
+	  WHERE kingdom='${kd}' AND kvk_number=${kvkNumber}
+	  LIMIT 1
+	`)[0]
+    : db.exec(`
+	  SELECT id, kvk_number, name
 	  FROM kvks
 	  WHERE kingdom='${kd}'
 	  ORDER BY kvk_number DESC
@@ -95,11 +109,13 @@ async function loadAllSheetsCache() {
 	`)[0];
 
   if (!kvk) {
-    alert("No KVKingdom found in DB");
+    alert("No KvK found in DB for this kingdom/KvK selection");
     return;
   }
 
   const kvkId = kvk.values[0][0];
+  SheetCache.currentKvkNumber = kvk.values[0][1];
+  SheetCache.currentKvkName = kvk.values[0][2];
   const snaps = db.exec(`
     SELECT id, snapshot_date
     FROM snapshots
@@ -296,9 +312,12 @@ const DKP_EXPORT_COLUMNS = [
 
 function getExportFileName() {
   const kd = getKDFromURL() || "dkp";
+  const kvkPart = SheetCache.currentKvkNumber
+    ? `_kvk${SheetCache.currentKvkNumber}`
+    : "";
   const lastSheet =
     SheetCache.sheetsList?.[SheetCache.sheetsList.length - 1] || "export";
-  return `DKP_${kd}_${String(lastSheet).replaceAll("-", "_")}.csv`;
+  return `DKP_${kd}${kvkPart}_${String(lastSheet).replaceAll("-", "_")}.csv`;
 }
 
 function exportDkpCsv() {
@@ -893,6 +912,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".nav-links a").forEach((link) => {
     if (link.getAttribute("href") === current) {
       link.classList.add("active");
+      link.setAttribute("href", current + window.location.search);
     }
   });
 
