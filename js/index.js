@@ -1,5 +1,5 @@
 function selectKingdom(kd) {
-  window.location.href = "dashboard.html?kd=" + kd;
+  window.location.href = "selectkvk.html?kd=" + kd;
 }
 
 const navbar = document.getElementById("navbar");
