@@ -846,3 +846,40 @@ footer {
   scrollbar-width: thin;
   scrollbar-color: var(--table-border) var(--table-bg);
 }
+
+.settings-modal {
+  max-width: 440px;
+}
+.settings-modal-desc {
+  margin-bottom: 1.1rem;
+  line-height: 1.5;
+}
+.settings-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 0.9rem;
+}
+.settings-field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+.settings-field input {
+  width: 130px;
+  text-align: right;
+}
+.settings-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--table-border);
+}
+.settings-modal-actions-right {
+  display: flex;
+  gap: 10px;
+}
