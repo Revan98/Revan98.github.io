@@ -24,6 +24,82 @@ function buildNumericInList(values) {
 
 let db;
 
+const DKP_MULTIPLIER_KEY = "dkpMultipliers";
+const DEFAULT_DKP_MULTIPLIERS = { t4: 5, t5: 10, deads: 15 };
+
+function loadDkpMultipliers() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DKP_MULTIPLIER_KEY));
+    if (saved && typeof saved === "object") {
+      return {
+        t4: Number.isFinite(Number(saved.t4))
+          ? Number(saved.t4)
+          : DEFAULT_DKP_MULTIPLIERS.t4,
+        t5: Number.isFinite(Number(saved.t5))
+          ? Number(saved.t5)
+          : DEFAULT_DKP_MULTIPLIERS.t5,
+        deads: Number.isFinite(Number(saved.deads))
+          ? Number(saved.deads)
+          : DEFAULT_DKP_MULTIPLIERS.deads,
+      };
+    }
+  } catch (e) {
+    console.error("loadDkpMultipliers:", e);
+  }
+  return { ...DEFAULT_DKP_MULTIPLIERS };
+}
+
+function saveDkpMultipliers(mult) {
+  localStorage.setItem(DKP_MULTIPLIER_KEY, JSON.stringify(mult));
+}
+
+let dkpMultipliers = loadDkpMultipliers();
+document.addEventListener("DOMContentLoaded", () => {
+  const el = document.getElementById("multiplier-info");
+  if (el) {
+    el.textContent = `Multiplers T4 - ${dkpMultipliers.t4} points, T5 - ${dkpMultipliers.t5} points, Deads - ${dkpMultipliers.deads} points || Select a governor to view chart.`;
+  }
+});
+
+function computeDkp(t4Diff, t5Diff, deadsDiff) {
+  const t4 = Number(t4Diff) || 0;
+  const t5 = Number(t5Diff) || 0;
+  const deads = Number(deadsDiff) || 0;
+  return (
+    t4 * dkpMultipliers.t4 +
+    t5 * dkpMultipliers.t5 +
+    deads * dkpMultipliers.deads
+  );
+}
+
+function computeDkpPercent(minDkp, dkp) {
+  const min = Number(minDkp) || 0;
+  const d = Number(dkp) || 0;
+  return min !== 0 ? d / min : 0;
+}
+
+let farmMainMap = {};
+let mainFarmsMap = {};
+
+function loadFarmRelationships() {
+  farmMainMap = {};
+  mainFarmsMap = {};
+  const res = db.exec(
+    `SELECT player_id, main_id, acc_type FROM farm_accounts`,
+  );
+  if (!res.length) return;
+  res[0].values.forEach(([playerId, mainId, accType]) => {
+    const pid = normalizeNumericId(playerId);
+    const mid = normalizeNumericId(mainId);
+    if (!pid || !mid) return;
+    if (String(accType || "").toLowerCase() === "farm") {
+      farmMainMap[pid] = mid;
+      if (!mainFarmsMap[mid]) mainFarmsMap[mid] = [];
+      mainFarmsMap[mid].push(pid);
+    }
+  });
+}
+
 let itemsData = { items: {} };
 let commandersData = { commanders: {} };
 let inscriptionsData = { inscriptions: {} };
@@ -64,20 +140,7 @@ async function loadDatabase() {
   const res = await fetch("kvk.db");
   const buffer = await res.arrayBuffer();
   db = new SQL.Database(new Uint8Array(buffer));
-  ensureDashboardSchema();
-}
-
-function ensureDashboardSchema() {
-  const cols = db.exec("PRAGMA table_info(stats)");
-  const existing = new Set(cols.length ? cols[0].values.map((r) => r[1]) : []);
-  [
-    ["sum_min_dkp", "INTEGER"],
-    ["sum_dkp", "INTEGER"],
-    ["sum_dkp_percent", "REAL"],
-  ].forEach(([name, type]) => {
-    if (!existing.has(name))
-      db.run(`ALTER TABLE stats ADD COLUMN ${name} ${type}`);
-  });
+  loadFarmRelationships();
 }
 
 const SheetCache = {};
@@ -148,11 +211,6 @@ async function loadAllSheetsCache() {
       s.deads,
       s.deads_diff,
       s.min_dkp,
-      s.dkp,
-      s.dkp_percent,
-      coalesce(s.sum_min_dkp, s.min_dkp) AS sum_min_dkp,
-      coalesce(s.sum_dkp, s.dkp) AS sum_dkp,
-      coalesce(s.sum_dkp_percent, s.dkp_percent) AS sum_dkp_percent,
       coalesce(s.vacation, 'NO') AS vacation,
       coalesce(s.status, 'OK') AS status,
       s.acclaim
@@ -169,7 +227,6 @@ async function loadAllSheetsCache() {
 
   SheetCache.sheetsData = {};
 
-  // Batch-load all snapshot diff data in one query instead of one per snapshot
   const allSnapIds = snaps.values.map((r) => r[0]).join(",");
   if (allSnapIds) {
     const allDiffData = db.exec(`
@@ -186,7 +243,6 @@ async function loadAllSheetsCache() {
     `)[0];
 
     if (allDiffData) {
-      // Group rows by snapshot_id -> governor_id map
       const bySnap = {};
       allDiffData.values.forEach((r) => {
         const sid = r[0];
@@ -205,24 +261,19 @@ const COL_table = {
   ID: 0,
   NAME: 1,
   POWER: 2,
-  KP_DIFF: 5,
-  T4_DIFF: 7,
-  T5_DIFF: 9,
-  DEADS_DIFF: 11,
-  T4: 6,
-  T5: 8,
-  KP: 4,
-  DEADS: 10,
   POWER_DIFF: 3,
+  KP: 4,
+  KP_DIFF: 5,
+  T4: 6,
+  T4_DIFF: 7,
+  T5: 8,
+  T5_DIFF: 9,
+  DEADS: 10,
+  DEADS_DIFF: 11,
   MIN_DKP: 12,
-  DKP: 13,
-  DKP_PERCENT: 14,
-  SUM_MIN_DKP: 15,
-  SUM_DKP: 16,
-  SUM_DKP_PERCENT: 17,
-  VACATION: 18,
-  STATUS: 19,
-  ACCLAIM: 20,
+  VACATION: 13,
+  STATUS: 14,
+  ACCLAIM: 15,
 };
 
 let gridApi;
@@ -230,6 +281,7 @@ let gridApi;
 function buildRowDataFromSheet(rows) {
   return rows.map((r) => ({
     id: r[COL_table.ID],
+    _nid: normalizeNumericId(r[COL_table.ID]),
     name: r[COL_table.NAME],
     power: r[COL_table.POWER],
     powerDiff: r[COL_table.POWER_DIFF],
@@ -242,15 +294,45 @@ function buildRowDataFromSheet(rows) {
     deads: r[COL_table.DEADS],
     deadsDiff: r[COL_table.DEADS_DIFF],
     minDkp: r[COL_table.MIN_DKP],
-    dkp: r[COL_table.DKP],
-    dkpPercent: r[COL_table.DKP_PERCENT],
-    sumMinDkp: r[COL_table.SUM_MIN_DKP],
-    sumDkp: r[COL_table.SUM_DKP],
-    sumDkpPercent: r[COL_table.SUM_DKP_PERCENT],
     vacation: r[COL_table.VACATION],
     status: r[COL_table.STATUS],
     acclaim: r[COL_table.ACCLAIM],
   }));
+}
+
+function applyDkpRollups(rows) {
+  const dkpById = {};
+
+  rows.forEach((row) => {
+    row.dkp = computeDkp(row.t4Diff, row.t5Diff, row.deadsDiff);
+    row.dkpPercent = computeDkpPercent(row.minDkp, row.dkp);
+    if (row._nid) {
+      dkpById[row._nid] = {
+        dkp: row.dkp,
+        dkpPercent: row.dkpPercent,
+        minDkp: Number(row.minDkp) || 0,
+      };
+    }
+  });
+
+  rows.forEach((row) => {
+    let sumDkp = row.dkp;
+    let sumMinDkp = Number(row.minDkp) || 0;
+
+    const farmIds = row._nid ? mainFarmsMap[row._nid] || [] : [];
+    farmIds.forEach((farmId) => {
+      const farm = dkpById[farmId];
+      if (!farm) return;
+      sumDkp += farm.dkp;
+      sumMinDkp += farm.minDkp;
+    });
+
+    row.sumDkp = sumDkp;
+    row.sumMinDkp = sumMinDkp;
+    row.sumDkpPercent = computeDkpPercent(sumMinDkp, sumDkp);
+  });
+
+  return rows;
 }
 
 function formatNumber(value) {
@@ -578,7 +660,6 @@ function copyTop18() {
       }, 2000);
     })
     .catch(() => {
-      // Fallback for older browsers
       const ta = document.createElement("textarea");
       ta.value = text;
       ta.style.position = "fixed";
@@ -591,6 +672,94 @@ function copyTop18() {
 }
 
 document.getElementById("copy-top18-btn")?.addEventListener("click", copyTop18);
+
+function openSettingsModal() {
+  const overlay = document.getElementById("settingsModalOverlay");
+  const t4Input = document.getElementById("mult-t4");
+  const t5Input = document.getElementById("mult-t5");
+  const deadsInput = document.getElementById("mult-deads");
+  if (!overlay || !t4Input || !t5Input || !deadsInput) return;
+
+  t4Input.value = dkpMultipliers.t4;
+  t5Input.value = dkpMultipliers.t5;
+  deadsInput.value = dkpMultipliers.deads;
+
+  overlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeSettingsModal() {
+  const overlay = document.getElementById("settingsModalOverlay");
+  if (!overlay) return;
+  overlay.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function saveSettingsModal() {
+  const t4Input = document.getElementById("mult-t4");
+  const t5Input = document.getElementById("mult-t5");
+  const deadsInput = document.getElementById("mult-deads");
+  if (!t4Input || !t5Input || !deadsInput) return;
+
+  const parsed = {
+    t4: Number(t4Input.value),
+    t5: Number(t5Input.value),
+    deads: Number(deadsInput.value),
+  };
+
+  if (
+    !Number.isFinite(parsed.t4) ||
+    !Number.isFinite(parsed.t5) ||
+    !Number.isFinite(parsed.deads)
+  ) {
+    alert("Please enter valid numbers for all multipliers.");
+    return;
+  }
+
+  dkpMultipliers = parsed;
+  saveDkpMultipliers(dkpMultipliers);
+  refreshDkpDependentUI();
+  closeSettingsModal();
+}
+
+function resetSettingsModal() {
+  const t4Input = document.getElementById("mult-t4");
+  const t5Input = document.getElementById("mult-t5");
+  const deadsInput = document.getElementById("mult-deads");
+  if (!t4Input || !t5Input || !deadsInput) return;
+  t4Input.value = DEFAULT_DKP_MULTIPLIERS.t4;
+  t5Input.value = DEFAULT_DKP_MULTIPLIERS.t5;
+  deadsInput.value = DEFAULT_DKP_MULTIPLIERS.deads;
+}
+
+document
+  .getElementById("settings-btn")
+  ?.addEventListener("click", openSettingsModal);
+document
+  .getElementById("settingsModalClose")
+  ?.addEventListener("click", closeSettingsModal);
+document
+  .getElementById("settingsModalCancel")
+  ?.addEventListener("click", closeSettingsModal);
+document
+  .getElementById("settingsModalSave")
+  ?.addEventListener("click", saveSettingsModal);
+document
+  .getElementById("settingsModalReset")
+  ?.addEventListener("click", resetSettingsModal);
+document
+  .getElementById("settingsModalOverlay")
+  ?.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) closeSettingsModal();
+  });
+document.addEventListener("keydown", (e) => {
+  if (
+    e.key === "Escape" &&
+    document.getElementById("settingsModalOverlay")?.classList.contains("open")
+  ) {
+    closeSettingsModal();
+  }
+});
 
 let inlineChart = null;
 let selectedGovernorId = null;
@@ -624,8 +793,6 @@ function formatSheetDate(sheetName) {
   return sheetName;
 }
 
-// Column indices in the batched sheetsData rows:
-// [0]=snapshot_id, [1]=governor_id, [2]=kp_diff, [3]=power_diff, [4]=t4_diff, [5]=t5_diff, [6]=deads_diff
 const CHART_COL = {
   KP: 2,
   POWER_DIFF: 3,
@@ -744,20 +911,35 @@ function updateChart(governorId) {
   createChart(ctx, labels, datasets);
 }
 
-loadAllSheetsCache().then(() => {
-  const spinner = document.getElementById("loading-spinner");
+function updateMultiplierInfoText() {
+  const el = document.getElementById("multiplier-info");
+  if (!el) return;
+  el.textContent = `Multiplers T4 - ${dkpMultipliers.t4} points, T5 - ${dkpMultipliers.t5} points, Deads - ${dkpMultipliers.deads} points || Select a governor to view chart.`;
+}
 
+function refreshDkpDependentUI() {
+  updateMultiplierInfoText();
+  if (!SheetCache.lastSheetData) return;
   const rows = SheetCache.lastSheetData.rows;
-  const rowData = buildRowDataFromSheet(rows);
+  const rowData = applyDkpRollups(buildRowDataFromSheet(rows));
 
-  gridApi.setGridOption("rowData", rowData);
+  SheetCache.rowData = rowData;
+  if (gridApi) gridApi.setGridOption("rowData", rowData);
 
-  const sortedByDKP = [...rows]
-    .sort((a, b) => Number(b[COL_table.DKP]) - Number(a[COL_table.DKP]))
+  const sortedByDKP = [...rowData]
+    .sort((a, b) => Number(b.dkp || 0) - Number(a.dkp || 0))
     .slice(0, 3);
 
   renderTopPlayers(sortedByDKP);
   renderTotals(rows);
+
+  return rowData;
+}
+
+loadAllSheetsCache().then(() => {
+  const spinner = document.getElementById("loading-spinner");
+
+  refreshDkpDependentUI();
 
   spinner.style.display = "none";
   const gridEl = document.getElementById("myGrid");
@@ -782,8 +964,8 @@ function renderTopPlayers(players) {
                 </svg>
                 TOP${i + 1}
             </div>
-            <h3>${escapeHtml(p[1] ?? "")}</h3>
-            <p>ID: ${escapeHtml(p[0] ?? "")}</p>
+            <h3>${escapeHtml(p.name ?? "")}</h3>
+            <p>ID: ${escapeHtml(p.id ?? "")}</p>
         `;
     box.appendChild(el);
   });
@@ -983,7 +1165,6 @@ function initEquipTooltip() {
 }
 
 function renderCollapsibleSection(title, content, defaultOpen = false) {
-  // Use a stable incrementing counter instead of Math.random() for predictable IDs
   const id =
     "sec_" +
     (renderCollapsibleSection._counter =
@@ -1068,11 +1249,7 @@ function loadGovHistory(govId) {
     const snapId = snapRes[0].values[0][0];
     const statsRes = db.exec(`
       SELECT s.power_diff, s.kp_diff, s.t4_diff, s.t5_diff,
-             s.deads_diff, s.min_dkp, s.dkp, s.dkp_percent,
-             coalesce(s.sum_min_dkp, s.min_dkp) AS sum_min_dkp,
-             coalesce(s.sum_dkp, s.dkp) AS sum_dkp,
-             coalesce(s.sum_dkp_percent, s.dkp_percent) AS sum_dkp_percent,
-             s.acclaim
+             s.deads_diff, s.min_dkp, s.acclaim
       FROM stats s
       WHERE s.snapshot_id=${snapId}
         AND s.governor_id='${safeGovId}'
@@ -1081,26 +1258,45 @@ function loadGovHistory(govId) {
     if (!statsRes.length) continue;
 
     const r = statsRes[0].values[0];
-    let farmSums = null;
+    const dkp = computeDkp(r[2], r[3], r[4]);
+    const dkpPercent = computeDkpPercent(r[5], dkp);
+
+    const farmSums = {
+      power: 0,
+      kp: 0,
+      t4: 0,
+      t5: 0,
+      deads: 0,
+      minDkp: 0,
+      dkp: 0,
+      acclaim: 0,
+    };
     if (farmIdList) {
       const farmStatsRes = db.exec(`
-        SELECT
-          coalesce(sum(s.power_diff), 0),
-          coalesce(sum(s.kp_diff), 0),
-          coalesce(sum(s.t4_diff), 0),
-          coalesce(sum(s.t5_diff), 0),
-          coalesce(sum(s.deads_diff), 0),
-          coalesce(sum(s.min_dkp), 0),
-          coalesce(sum(s.dkp), 0),
-          coalesce(sum(s.dkp_percent), 0),
-          coalesce(sum(s.acclaim), 0)
+        SELECT s.power_diff, s.kp_diff, s.t4_diff, s.t5_diff,
+               s.deads_diff, s.min_dkp, s.acclaim
         FROM stats s
         WHERE s.snapshot_id=${snapId}
           AND CAST(s.governor_id AS INTEGER) IN (${farmIdList})
           AND upper(coalesce(s.vacation, 'NO')) != 'YES'
       `);
-      farmSums = farmStatsRes.length ? farmStatsRes[0].values[0] : null;
+      if (farmStatsRes.length) {
+        farmStatsRes[0].values.forEach((fr) => {
+          const fDkp = computeDkp(fr[2], fr[3], fr[4]);
+          farmSums.power += Number(fr[0]) || 0;
+          farmSums.kp += Number(fr[1]) || 0;
+          farmSums.t4 += Number(fr[2]) || 0;
+          farmSums.t5 += Number(fr[3]) || 0;
+          farmSums.deads += Number(fr[4]) || 0;
+          farmSums.minDkp += Number(fr[5]) || 0;
+          farmSums.dkp += fDkp;
+          farmSums.acclaim += Number(fr[6]) || 0;
+        });
+      }
     }
+
+    const sumMinDkp = Number(r[5] || 0) + farmSums.minDkp;
+    const sumDkp = dkp + farmSums.dkp;
 
     results.push({
       kvk: `KvK ${kvkNumber}`,
@@ -1111,18 +1307,18 @@ function loadGovHistory(govId) {
       t5Diff: r[3],
       deadsDiff: r[4],
       minDkp: r[5],
-      dkp: r[6],
-      dkpPercent: r[7],
-      acclaim: r[11],
-      sumPowerDiff: Number(r[0] || 0) + Number(farmSums?.[0] || 0),
-      sumKpDiff: Number(r[1] || 0) + Number(farmSums?.[1] || 0),
-      sumT4Diff: Number(r[2] || 0) + Number(farmSums?.[2] || 0),
-      sumT5Diff: Number(r[3] || 0) + Number(farmSums?.[3] || 0),
-      sumDeadsDiff: Number(r[4] || 0) + Number(farmSums?.[4] || 0),
-      sumMinDkp: Number(r[5] || 0) + Number(farmSums?.[5] || 0),
-      sumDkp: Number(r[6] || 0) + Number(farmSums?.[6] || 0),
-      sumDkpPercent: Number(r[7] || 0) + Number(farmSums?.[7] || 0),
-      sumAcclaim: Number(r[11] || 0) + Number(farmSums?.[8] || 0),
+      dkp,
+      dkpPercent,
+      acclaim: r[6],
+      sumPowerDiff: Number(r[0] || 0) + farmSums.power,
+      sumKpDiff: Number(r[1] || 0) + farmSums.kp,
+      sumT4Diff: Number(r[2] || 0) + farmSums.t4,
+      sumT5Diff: Number(r[3] || 0) + farmSums.t5,
+      sumDeadsDiff: Number(r[4] || 0) + farmSums.deads,
+      sumMinDkp,
+      sumDkp,
+      sumDkpPercent: computeDkpPercent(sumMinDkp, sumDkp),
+      sumAcclaim: Number(r[6] || 0) + farmSums.acclaim,
     });
   }
   return results;
@@ -1166,8 +1362,7 @@ function loadFarmKvKStats(farmIds) {
         s.t4_diff,
         s.t5_diff,
         s.deads_diff,
-        s.dkp,
-        s.dkp_percent,
+        s.min_dkp,
         s.acclaim
       FROM stats s
       JOIN governors g ON g.governor_id = s.governor_id
@@ -1175,13 +1370,14 @@ function loadFarmKvKStats(farmIds) {
       WHERE s.snapshot_id=${snapId}
         AND CAST(s.governor_id AS INTEGER) IN (${idList})
         AND upper(coalesce(s.vacation, 'NO')) != 'YES'
-      ORDER BY s.dkp DESC
     `);
 
     if (!statsRes.length) continue;
 
-    statsRes[0].values.forEach((r) => {
-      results.push({
+    const rowsWithDkp = statsRes[0].values.map((r) => {
+      const dkp = computeDkp(r[4], r[5], r[6]);
+      const dkpPercent = computeDkpPercent(r[7], dkp);
+      return {
         kvk: `KvK ${kvkNumber}`,
         name: r[0],
         id: r[1],
@@ -1190,11 +1386,14 @@ function loadFarmKvKStats(farmIds) {
         t4Diff: r[4],
         t5Diff: r[5],
         deadsDiff: r[6],
-        dkp: r[7],
-        dkpPercent: r[8],
-        acclaim: r[9],
-      });
+        dkp,
+        dkpPercent,
+        acclaim: r[8],
+      };
     });
+
+    rowsWithDkp.sort((a, b) => b.dkp - a.dkp);
+    results.push(...rowsWithDkp);
   }
 
   return results;
