@@ -19,6 +19,10 @@
   text-align: center;
   width: 180px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .player-rank {
   font-weight: bold;
@@ -38,36 +42,56 @@
   font-size: 15px;
   color: var(--text-color);
 }
-#top-players,
-#bottom-totals {
+.stats-row {
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 20px;
   margin-top: 20px;
+  margin-bottom: 10px;
 }
 @media (max-width: 991px) {
   .player-box,
-  .stat-box {
+  .stat-box,
+  .info-box {
     width: 100%;
     max-width: 260px;
   }
 }
-.info {
-  display: flex;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  width: 100%;
+.info-box {
   background: var(--table-bg);
-  font-size: 15px;
-  color: inherit;
-  min-height: 40px;
   border: 1px solid var(--table-border);
   border-radius: 10px;
-  padding: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  width: 185px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
+}
+.info-box-title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-color);
+}
+.info-box-formula {
+  margin: 5px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+.info-box-tip {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--text-color);
+  opacity: 0.75;
+  line-height: 1.4;
+  border-top: 1px solid var(--table-border);
+  padding-top: 8px;
 }
 .loading-spinner {
   width: 100%;
@@ -828,17 +852,14 @@ footer {
 .gov-modal-body::-webkit-scrollbar {
   width: 8px;
 }
-
 .gov-modal-body::-webkit-scrollbar-track {
   background: var(--table-bg);
   border-radius: 4px;
 }
-
 .gov-modal-body::-webkit-scrollbar-thumb {
   background: var(--table-border);
   border-radius: 4px;
 }
-
 .gov-modal-body::-webkit-scrollbar-thumb:hover {
   background: var(--chart-line);
 }
