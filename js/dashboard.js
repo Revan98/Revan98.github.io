@@ -469,6 +469,15 @@ const gridOptions = {
       getQuickFilterText: () => "",
     },
     {
+      headerName: "Acclaim",
+      field: "acclaim",
+      flex: 1,
+      minWidth: 100,
+      getQuickFilterText: () => "",
+
+      valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
+    },
+    {
       headerName: "Min DKP",
       field: "minDkp",
       getQuickFilterText: () => "",
@@ -510,15 +519,6 @@ const gridOptions = {
       tooltipValueGetter: () => "with farms\nwithout farms",
       cellRenderer: (p) =>
         renderMetricStack(p.value, p.data?.sumDkpPercent, formatPercent),
-    },
-    {
-      headerName: "Acclaim",
-      field: "acclaim",
-      flex: 1,
-      minWidth: 100,
-      getQuickFilterText: () => "",
-
-      valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
     },
     ...DKP_EXPORT_COLUMNS,
   ],
