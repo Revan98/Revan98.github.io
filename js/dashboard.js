@@ -467,7 +467,7 @@ const gridOptions = {
         renderDeadsPowerDiffStack(p.value, p.data?.powerDiff),
       tooltipValueGetter: (p) =>
         `Starting deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}\nStarting Power: ${Number(p.data?.power || 0).toLocaleString("en-US")}`,
- 
+
       getQuickFilterText: () => "",
     },
     {
@@ -770,57 +770,39 @@ loadAllSheetsCache().then(() => {
 });
 
 function renderTopPlayers(players) {
-  const box = document.querySelector("#top-players");
-  if (!box) return;
-  box.innerHTML = "";
+  const boxes = document.querySelectorAll("#top-players .player-box");
 
-  players.forEach((p, i) => {
-    const el = document.createElement("div");
-    el.className = "player-box";
-    el.innerHTML = `
-            <div class="player-rank">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-trophy-fill" viewBox="0 0 16 16">
-                    <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5q0 .807-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5m.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935m10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935"/>
-                </svg>
-                TOP${i + 1}
-            </div>
-            <h3>${escapeHtml(p[1] ?? "")}</h3>
-            <p>ID: ${escapeHtml(p[0] ?? "")}</p>
-        `;
-    box.appendChild(el);
+  boxes.forEach((box, i) => {
+    const p = players[i];
+    box.querySelector(".player-name").textContent = p ? p[1] ?? "" : "";
+    box.querySelector(".player-id").textContent = p ? `ID: ${p[0] ?? ""}` : "";
+    box.style.visibility = p ? "" : "hidden";
   });
 }
 function renderTotals(rows = []) {
-  const container = document.querySelector("#bottom-totals");
-  if (!container) return;
+  const sums = {
+    t4: 0,
+    t5: 0,
+    deads: 0,
+    kp: 0,
+  };
+  const cols = {
+    t4: COL_table.T4_DIFF,
+    t5: COL_table.T5_DIFF,
+    deads: COL_table.DEADS_DIFF,
+    kp: COL_table.KP_DIFF,
+  };
 
-  container.innerHTML = "";
-
-  const defs = [
-    { label: "Total T4 gained", col: COL_table.T4_DIFF },
-    { label: "Total T5 gained", col: COL_table.T5_DIFF },
-    { label: "Total Deads gained", col: COL_table.DEADS_DIFF },
-    { label: "Total KP", col: COL_table.KP_DIFF },
-  ];
-
-  defs.forEach(({ label, col }) => {
-    const sum = rows.reduce((acc, r) => acc + (Number(r[col]) || 0), 0);
-
-    const box = document.createElement("div");
-    box.className = "stat-box";
-
-    box.innerHTML = `
-            <h3>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sticky-fill" viewBox="0 0 16 16">
-                    <path d="M2.5 1A1.5 1.5 0 0 0 1 2.5v11A1.5 1.5 0 0 0 2.5 15h6.086a1.5 1.5 0 0 0 1.06-.44l4.915-4.914A1.5 1.5 0 0 0 15 8.586V2.5A1.5 1.5 0 0 0 13.5 1zm6 8.5a1 1 0 0 1 1-1h4.396a.25.25 0 0 1 .177.427l-5.146 5.146a.25.25 0 0 1-.427-.177z"/>
-                </svg>
-                ${escapeHtml(label)}
-            </h3>
-            <p>${Number(sum).toLocaleString()}</p>
-        `;
-
-    container.appendChild(box);
+  rows.forEach((r) => {
+    for (const key in cols) {
+      sums[key] += Number(r[cols[key]]) || 0;
+    }
   });
+
+  for (const key in sums) {
+    const el = document.querySelector(`.stat-box[data-stat="${key}"] .stat-value`);
+    if (el) el.textContent = sums[key].toLocaleString();
+  }
 }
 
 function escapeHtml(str) {
@@ -922,10 +904,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initEquipTooltip() {
-  const tip = document.createElement("div");
-  tip.className = "equip-tooltip";
-  tip.style.display = "none";
-  document.body.appendChild(tip);
+  const tip = document.getElementById("equipTooltip");
+  if (!tip) return;
 
   let activeEl = null;
 
