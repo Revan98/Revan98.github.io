@@ -459,13 +459,15 @@ const gridOptions = {
       field: "deadsDiff",
       flex: 1,
       minWidth: 125,
-      sortable: false,
       cellClass: "metric-stack-cell",
+      comparator: (a, b, nodeA, nodeB) =>
+        (Number(nodeA.data?.deadsDiff) || 0) -
+        (Number(nodeB.data?.deadsDiff) || 0),
       cellRenderer: (p) =>
         renderDeadsPowerDiffStack(p.value, p.data?.powerDiff),
       tooltipValueGetter: (p) =>
         `Starting deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}\nStarting Power: ${Number(p.data?.power || 0).toLocaleString("en-US")}`,
-
+ 
       getQuickFilterText: () => "",
     },
     {
