@@ -1109,6 +1109,54 @@
       "description": "The wielder's troop gains 10% extra EXP from defeating barbarians.",
       "rarity": "blue",
       "type": "Double Line"
-    }
+    },
+    "bludgeon": {
+      "name": "Bludgeon",
+      "description": "When the wielder's troop deals smite damage, there is a 60% chance to ignore 30% of the hit troop's Defense. This effect can be triggered up to 3 times per second. Cooldown: 5 seconds.",
+      "rarity": "blue",
+      "type": "Pincer II"
+    },
+    "dominate": {
+      "name": "Dominate",
+      "description": "The wielder's troop gains a 7% boost to smite damage dealt. When dealing smite damage, if the hit troop has more than 50% units remaining, the wielder's troop deals 20% more smite damage to it for 3 seconds; if not, the wielder's troop gains a 30% bonus to this instance of smite damage dealt. This effect can be triggered up to 5 times per second.Cooldown: 3 seconds.",
+      "rarity": "gold",
+      "type": "Pincer II"
+    },
+    "charge": {
+      "name": "Charge",
+      "description": "The wielder's troop gains a 3.5% boost to smite damage dealt. When dealing smite damage, the wielder's troop has a 50% chance to gain 30 extra Rage. This effect can be triggered up to 5 times per second. Cooldown: 2 second.",
+      "rarity": "blue",
+      "type": "Pincer II"
+    },
+    "cleaver": {
+      "name": "Cleaver",
+      "description": "The wielder's troop gains a 7% boost to smite damage dealt. When dealing smite damage, if the total Damage Factor for smite damage dealt this turn is greater than 2000: For every 200 Damage Factor exceeded, the wielder's troop ignores 5% of the target troop's Health when dealing smite damage for 5 seconds. At the same time, gain 2% Rage Gain Speed. This effect can stack up to 5 times, and its duration resets whenever it gains another stack.",
+      "rarity": "gold",
+      "type": "Pincer II"
+    },
+    "bolstered": {
+      "name": "Bolstered",
+      "description": "The wielder's troop gains 1% damage resistance, and an additional 3% combo attack damage resistance.",
+      "rarity": "blue",
+      "type": "Pincer II"
+    },
+    "nulwark": {
+      "name": "Bulwark",
+      "description": "The wielder's troop gains 2% damage resistance, and an additional 3% combo attack damage resistance. Whenever the wielder's troop is hit with a basic attack, it has a 50% chance to take 10% less damage and deal 20% more smite damage for 3 seconds. Cooldown: 5 seconds.",
+      "rarity": "gold",
+      "type": "Pincer II"
+    },
+    "vigor": {
+      "name": "Vigor",
+      "description": "The wielder's troop gains a 5% boost to smite damage dealt.",
+      "rarity": "blue",
+      "type": "Pincer II"
+    },
+    "tidebreaker": {
+      "name": "Tidereaker",
+      "description": "The wielder's troop gains a 12.5% boost to smite damage dealt.",
+      "rarity": "gold",
+      "type": "Pincer II"
+    },
   }
 }
