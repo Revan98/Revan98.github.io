@@ -772,10 +772,17 @@ loadAllSheetsCache().then(() => {
 function renderTopPlayers(players) {
   const boxes = document.querySelectorAll("#top-players .player-box");
 
-  boxes.forEach((box, i) => {
-    const p = players[i];
+  boxes.forEach((box) => {
+    const rank = Number(box.dataset.rank);
+    const p = players[rank - 1];
     box.querySelector(".player-name").textContent = p ? p[1] ?? "" : "";
     box.querySelector(".player-id").textContent = p ? `ID: ${p[0] ?? ""}` : "";
+    const dkpEl = box.querySelector(".player-dkp");
+    if (dkpEl) {
+      const dkpVal = p ? Number(p[COL_table.DKP]) : null;
+      dkpEl.textContent =
+        p && !Number.isNaN(dkpVal) ? `${dkpVal.toLocaleString()} DKP` : "";
+    }
     box.style.visibility = p ? "" : "hidden";
   });
 }
