@@ -77,7 +77,7 @@ function renderResultsAgGrid(rows) {
   const gridDiv = document.querySelector("#myGrid");
   gridDiv.style.display = "block";
   const gridOptions = {
-    theme: agGrid.themeQuartz,
+    theme: getAgTheme(getCurrentTheme()),
     columnDefs: buildColumnDefs(rows),
     rowData: rows,
     rowHeight: 40,
@@ -294,6 +294,22 @@ function exportToJson(rows) {
 
 const THEME_KEY = "theme";
 
+function getAgTheme(theme) {
+  return (
+    theme === "dark"
+      ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+      : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight)
+  ).withPart(agGrid.buttonStyleQuartz);
+}
+
+function getCurrentTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 function applyTheme(theme) {
   document.body.classList.remove("light", "dark");
   document.body.classList.add(theme);
@@ -303,11 +319,7 @@ function applyTheme(theme) {
   localStorage.setItem(THEME_KEY, theme);
 
   if (gridApi) {
-    const agTheme =
-      theme === "dark"
-        ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
-        : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
-    gridApi.setGridOption("theme", agTheme);
+    gridApi.setGridOption("theme", getAgTheme(theme));
   }
 }
 
