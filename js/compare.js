@@ -129,7 +129,7 @@ function buildDynamicColumnDefs(rows) {
 function createCompareGrid(containerId, rowData) {
   const columnDefs = buildDynamicColumnDefs(rowData);
   const gridOptions = {
-    theme: agGrid.themeQuartz,
+    theme: getAgTheme(getCurrentTheme()),
     columnDefs,
     rowData,
     defaultColDef: {
@@ -324,6 +324,22 @@ document.getElementById("export-json").addEventListener("click", () => {
 
 const THEME_KEY = "theme";
 
+function getAgTheme(theme) {
+  return (
+    theme === "dark"
+      ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+      : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight)
+  ).withPart(agGrid.buttonStyleQuartz);
+}
+
+function getCurrentTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 function applyTheme(theme) {
   document.body.classList.remove("light", "dark");
   document.body.classList.add(theme);
@@ -332,10 +348,7 @@ function applyTheme(theme) {
 
   localStorage.setItem(THEME_KEY, theme);
 
-  const agTheme =
-    theme === "dark"
-      ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
-      : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
+  const agTheme = getAgTheme(theme);
   if (matchingGridApi) matchingGridApi.setGridOption("theme", agTheme);
   if (nonMatchingGridApi) nonMatchingGridApi.setGridOption("theme", agTheme);
 }
