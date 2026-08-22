@@ -198,7 +198,7 @@ let resultsGridApi = null;
   ];
   function createPowerRangesGrid() {
     const gridOptions = {
-      theme: agGrid.themeQuartz,
+      theme: getAgTheme(getCurrentTheme()),
       columnDefs: powerRangeColumnDefs,
       rowData: powerRanges,
       rowHeight: 42,
@@ -658,7 +658,7 @@ let resultsGridApi = null;
     }
 
     const gridOptions = {
-      theme: agGrid.themeQuartz,
+      theme: getAgTheme(getCurrentTheme()),
       columnDefs,
       rowData: rows,
       rowHeight: 42,
@@ -876,16 +876,29 @@ let resultsGridApi = null;
 
   const THEME_KEY = "theme";
 
+  function getAgTheme(theme) {
+    return (
+      theme === "dark"
+        ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+        : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight)
+    ).withPart(agGrid.buttonStyleQuartz);
+  }
+
+  function getCurrentTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === "light" || saved === "dark") return saved;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
+
   function applyTheme(theme) {
     document.body.classList.remove("light", "dark");
     document.body.classList.add(theme);
     document.body.setAttribute("data-ag-theme-mode", theme);
     localStorage.setItem(THEME_KEY, theme);
 
-    const agTheme =
-      theme === "dark"
-        ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
-        : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
+    const agTheme = getAgTheme(theme);
     if (powerGridApi) powerGridApi.setGridOption("theme", agTheme);
     if (resultsGridApi) resultsGridApi.setGridOption("theme", agTheme);
   }
