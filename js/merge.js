@@ -24,6 +24,18 @@ function getExportTimestamp() {
   return `${dd}-${mm}-${yyyy}-T${HH}-${MM}-${uuid}`;
 }
 
+function getSheetDate() {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = now.getFullYear();
+  return `${dd}_${mm}_${yyyy}`;
+}
+
+function buildExportName(suffix, ext) {
+  return `${suffix}-${getExportTimestamp()}.${ext}`;
+}
+
 function buildColumnDefs(rows) {
   if (!rows || !rows.length) return [];
 
@@ -127,6 +139,10 @@ async function handleFiles() {
   const selectors = document.getElementById("columnSelectors");
 
   if (!file1 || !file2) return;
+  if (!/\.xlsx$/i.test(file1.name) || !/\.xlsx$/i.test(file2.name)) {
+    alert("Please select .xlsx files only.");
+    return;
+  }
 
   file1Data = await readExcel(file1);
   file2Data = await readExcel(file2);
@@ -197,12 +213,33 @@ async function doMerge() {
   }
 }
 
+function isPercentColumn(header) {
+  return typeof header === "string" && header.trim().endsWith("%");
+}
+
+function applyPercentFormats(ws, rows) {
+  if (!rows || !rows.length) return;
+  const headers = Object.keys(rows[0]);
+  headers.forEach((header, colIdx) => {
+    if (!isPercentColumn(header)) return;
+    const colLetter = XLSX.utils.encode_col(colIdx);
+    rows.forEach((row, rowIdx) => {
+      const addr = `${colLetter}${rowIdx + 2}`; // +2: header is row 1
+      const cell = ws[addr];
+      if (cell && typeof cell.v === "number") {
+        cell.z = "0.00%";
+      }
+    });
+  });
+}
+
 function exportToXlsx(rows) {
   if (!rows) return alert("No results to export.");
   const ws = XLSX.utils.json_to_sheet(rows);
+  applyPercentFormats(ws, rows);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Merged");
-  XLSX.writeFile(wb, `merge-${getExportTimestamp()}.xlsx`, {
+  XLSX.utils.book_append_sheet(wb, ws, getSheetDate());
+  XLSX.writeFile(wb, buildExportName("merge", "xlsx"), {
     compression: true,
   });
 }
@@ -212,18 +249,26 @@ function exportToCsv(rows) {
 
   const columns = Object.keys(rows[0]);
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const formatValue = (col, v) => {
+    if (isPercentColumn(col) && typeof v === "number" && Number.isFinite(v)) {
+      return `${(v * 100).toFixed(2)}%`;
+    }
+    return v;
+  };
   const csv =
     columns.map(escape).join(",") +
     "\n" +
     rows
-      .map((row) => columns.map((col) => escape(row[col])).join(","))
+      .map((row) =>
+        columns.map((col) => escape(formatValue(col, row[col]))).join(","),
+      )
       .join("\n");
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `merge-${getExportTimestamp()}.csv`;
+  a.download = buildExportName("merge", "csv");
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -240,7 +285,7 @@ function exportToJson(rows) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `merge-${getExportTimestamp()}.json`;
+  a.download = buildExportName("merge", "json");
   document.body.appendChild(a);
   a.click();
   a.remove();
