@@ -130,6 +130,18 @@ let resultsGridApi = null;
     return `${dd}-${mm}-${yyyy}-T${HH}-${MM}-${uuid}`;
   }
 
+  function getSheetDate() {
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, "0");
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const yyyy = now.getFullYear();
+    return `${dd}_${mm}_${yyyy}`;
+  }
+
+  function buildExportName(suffix, ext) {
+    return `${suffix}-${getExportTimestamp()}.${ext}`;
+  }
+
   function validatePowerRange(newItem, ranges, editingIdx = null) {
     const others = ranges.filter((_, i) => i !== editingIdx);
 
@@ -437,6 +449,9 @@ let resultsGridApi = null;
     const f1 = file1El.files[0];
     const f2 = file2El.files[0];
     if (!f1 || !f2) return alert("Please select both files.");
+    if (!/\.xlsx$/i.test(f1.name) || !/\.xlsx$/i.test(f2.name)) {
+      return alert("Please select .xlsx files only.");
+    }
     progressEl.value = 5;
 
     const [df1Raw, df2Raw] = await Promise.all([
@@ -658,12 +673,33 @@ let resultsGridApi = null;
     resultsGridApi = agGrid.createGrid(gridDiv, gridOptions);
   }
 
+  function isPercentColumn(header) {
+    return typeof header === "string" && header.trim().endsWith("%");
+  }
+
+  function applyPercentFormats(ws, rows) {
+    if (!rows || !rows.length) return;
+    const headers = Object.keys(rows[0]);
+    headers.forEach((header, colIdx) => {
+      if (!isPercentColumn(header)) return;
+      const colLetter = XLSX.utils.encode_col(colIdx);
+      rows.forEach((row, rowIdx) => {
+        const addr = `${colLetter}${rowIdx + 2}`; // +2: header is row 1
+        const cell = ws[addr];
+        if (cell && typeof cell.v === "number") {
+          cell.z = "0.00%";
+        }
+      });
+    });
+  }
+
   function exportToXlsx(rows) {
     if (!rows) return alert("No results to export.");
     const ws = XLSX.utils.json_to_sheet(rows);
+    applyPercentFormats(ws, rows);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "DKP");
-    XLSX.writeFile(wb, `dkp-${getExportTimestamp()}.xlsx`, {
+    XLSX.utils.book_append_sheet(wb, ws, getSheetDate());
+    XLSX.writeFile(wb, buildExportName("dkp", "xlsx"), {
       compression: true,
     });
   }
@@ -672,19 +708,27 @@ let resultsGridApi = null;
 
     const columns = Object.keys(rows[0]);
     const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const formatValue = (col, v) => {
+      if (isPercentColumn(col) && typeof v === "number" && Number.isFinite(v)) {
+        return `${(v * 100).toFixed(2)}%`;
+      }
+      return v;
+    };
 
     const csv =
       columns.map(escape).join(",") +
       "\n" +
       rows
-        .map((row) => columns.map((col) => escape(row[col])).join(","))
+        .map((row) =>
+          columns.map((col) => escape(formatValue(col, row[col]))).join(","),
+        )
         .join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dkp-${getExportTimestamp()}.csv`;
+    a.download = buildExportName("dkp", "csv");
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -701,7 +745,7 @@ let resultsGridApi = null;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dkp-${getExportTimestamp()}.json`;
+    a.download = buildExportName("dkp", "json");
     document.body.appendChild(a);
     a.click();
     a.remove();
