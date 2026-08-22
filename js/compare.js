@@ -65,6 +65,18 @@ function getExportTimestamp() {
   return `${dd}-${mm}-${yyyy}-T${HH}-${MM}-${uuid}`;
 }
 
+function getSheetDate() {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = now.getFullYear();
+  return `${dd}_${mm}_${yyyy}`;
+}
+
+function buildExportName(suffix, ext) {
+  return `${suffix}-${getExportTimestamp()}.${ext}`;
+}
+
 function compareData(df1, df2, keyColumn, option) {
   const normalizeKey = (v) =>
     v === null || v === undefined ? v : String(v).trim();
@@ -165,12 +177,33 @@ function renderResultsGrids(matchingRows, nonMatchingRows) {
   }
 }
 
+function isPercentColumn(header) {
+  return typeof header === "string" && header.trim().endsWith("%");
+}
+
+function applyPercentFormats(ws, rows) {
+  if (!rows || !rows.length) return;
+  const headers = Object.keys(rows[0]);
+  headers.forEach((header, colIdx) => {
+    if (!isPercentColumn(header)) return;
+    const colLetter = XLSX.utils.encode_col(colIdx);
+    rows.forEach((row, rowIdx) => {
+      const addr = `${colLetter}${rowIdx + 2}`; // +2: header is row 1
+      const cell = ws[addr];
+      if (cell && typeof cell.v === "number") {
+        cell.z = "0.00%";
+      }
+    });
+  });
+}
+
 function exportToXlsx(data, name) {
   if (!data || !data.length) return;
   const ws = XLSX.utils.json_to_sheet(data);
+  applyPercentFormats(ws, data);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Compare");
-  XLSX.writeFile(wb, `${name}--${getExportTimestamp()}.xlsx`, {
+  XLSX.utils.book_append_sheet(wb, ws, getSheetDate());
+  XLSX.writeFile(wb, buildExportName(name, "xlsx"), {
     compression: true,
   });
 }
@@ -180,17 +213,25 @@ function exportToCsv(data, name) {
 
   const columns = Object.keys(data[0]);
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const formatValue = (col, v) => {
+    if (isPercentColumn(col) && typeof v === "number" && Number.isFinite(v)) {
+      return `${(v * 100).toFixed(2)}%`;
+    }
+    return v;
+  };
   const csv =
     columns.map(escape).join(",") +
     "\n" +
     data
-      .map((row) => columns.map((col) => escape(row[col])).join(","))
+      .map((row) =>
+        columns.map((col) => escape(formatValue(col, row[col]))).join(","),
+      )
       .join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${name}-${getExportTimestamp()}.csv`;
+  a.download = buildExportName(name, "csv");
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -205,7 +246,7 @@ function exportToJson(data, name) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${name}-${getExportTimestamp()}.json`;
+  a.download = buildExportName(name, "json");
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -218,6 +259,9 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
   const option = document.getElementById("compareOption").value;
   if (!file1 || !file2 || !keyCol)
     return alert("Please select both files and a key column.");
+  if (!/\.xlsx$/i.test(file1.name) || !/\.xlsx$/i.test(file2.name)) {
+    return alert("Please select .xlsx files only.");
+  }
 
   progressEl.value = 5;
   resultsInfo.textContent = "Reading files...";
