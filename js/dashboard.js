@@ -432,7 +432,7 @@ const gridOptions = {
         Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
 
       tooltipValueGetter: (p) =>
-        `Starting KP: ${Number(p.data?.killPoints || 0).toLocaleString(
+        `Current KP: ${Number(p.data?.killPoints || 0).toLocaleString(
           "en-US",
         )}`,
 
@@ -450,7 +450,7 @@ const gridOptions = {
         ((Number(nodeB.data?.t4Diff) || 0) + (Number(nodeB.data?.t5Diff) || 0)),
       cellRenderer: (p) => renderTroopDiffStack(p.value, p.data?.t5Diff),
       tooltipValueGetter: (p) =>
-        `Starting T4: ${Number(p.data?.t4 || 0).toLocaleString("en-US")}\nStarting T5: ${Number(p.data?.t5 || 0).toLocaleString("en-US")}`,
+        `Current T4: ${Number(p.data?.t4 || 0).toLocaleString("en-US")}\nCurrent T5: ${Number(p.data?.t5 || 0).toLocaleString("en-US")}`,
 
       getQuickFilterText: () => "",
     },
@@ -466,7 +466,7 @@ const gridOptions = {
       cellRenderer: (p) =>
         renderDeadsPowerDiffStack(p.value, p.data?.powerDiff),
       tooltipValueGetter: (p) =>
-        `Starting deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}\nStarting Power: ${Number(p.data?.power || 0).toLocaleString("en-US")}`,
+        `Current Deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}\nCurrent Power: ${Number(p.data?.power || 0).toLocaleString("en-US")}`,
 
       getQuickFilterText: () => "",
     },
