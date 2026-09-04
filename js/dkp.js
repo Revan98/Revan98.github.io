@@ -563,11 +563,12 @@ let resultsGridApi = null;
         Deads: safeNum(b.Deads ?? a.Deads),
         "Power diff": Math.round(safeNum(b.Power) - safeNum(a.Power)),
         Acclaim: safeNum(b["Acclaim"]),
+        Vacation: isVacationRow({ ID: id }) ? "YES" : "NO",
       };
 
       if (status === "missing in start" || status === "missing in new") {
         Object.keys(row).forEach((k) => {
-          if (!["ID", "Name", "Power", "Status"].includes(k)) {
+          if (!["ID", "Name", "Power", "Status", "Vacation"].includes(k)) {
             row[k] = 0;
           }
         });
@@ -684,7 +685,7 @@ let resultsGridApi = null;
       if (!isPercentColumn(header)) return;
       const colLetter = XLSX.utils.encode_col(colIdx);
       rows.forEach((row, rowIdx) => {
-        const addr = `${colLetter}${rowIdx + 2}`; // +2: header is row 1
+        const addr = `${colLetter}${rowIdx + 2}`;
         const cell = ws[addr];
         if (cell && typeof cell.v === "number") {
           cell.z = "0.00%";
