@@ -139,6 +139,8 @@
     "subutai": { "name": "Subutai" },
     "lubu": { "name": "Lu Bu" },
     "diaochan": { "name": "Diaochan" },
+    "ivan": { "name": "Ivan IV" },
+    "marshal": { "name": "William Marshal" },
     "yik": { "name": "Yahya ibn Khalid" }
   }
 }
