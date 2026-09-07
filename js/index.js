@@ -30,6 +30,14 @@ navLinks.querySelectorAll("a").forEach((link) => {
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
+function getCurrentTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 function applyTheme(theme) {
   document.body.classList.remove("light", "dark");
   document.body.classList.add(theme);
@@ -38,17 +46,7 @@ function applyTheme(theme) {
 }
 
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-
-  let theme;
-  if (saved === "light" || saved === "dark") {
-    theme = saved;
-  } else {
-    theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  }
-
+  const theme = getCurrentTheme();
   applyTheme(theme);
   themeToggle.checked = theme === "dark";
 }
