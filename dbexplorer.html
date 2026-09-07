@@ -22,7 +22,7 @@
           <a href="index.html">KD Select</a>
           <a href="dashboard.html">Dashboard</a>
           <a href="playercard.html">Player Card</a>
-          <a href="compare.html" class="active">Compare</a>
+          <a href="compare.html">Compare</a>
           <a href="dkp.html">DKP Calculator</a>
           <a href="merge.html">Merge</a>
           <a href="equipment.html">Equipment Editor</a>
@@ -44,17 +44,7 @@
         <div id="load-state" class="dbx-load-state">
           <div class="dbx-load-hero">
             <div class="dbx-load-icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="36"
-                height="36"
-                fill="currentColor"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M8 1c-1.573 0-3.022.289-4.096.777C2.875 2.245 2 2.993 2 4s.875 1.755 1.904 2.223C4.978 6.711 6.427 7 8 7s3.022-.289 4.096-.777C13.125 5.755 14 5.007 14 4s-.875-1.755-1.904-2.223C11.022 1.289 9.573 1 8 1M2 6.161V7.5c0 .537.426 1.084 1.295 1.521C4.214 9.485 5.583 9.793 7 9.985V14c-1.252-.196-2.4-.521-3.295-.967C2.426 12.582 2 12.04 2 11.5v-.339C2 10.79 2.426 11.337 3.295 11.776...zM8 11v3.999c1.573 0 3.022-.289 4.096-.777C13.125 13.755 14 13.007 14 12v-1.339c-.857.747-2.18 1.27-3.704 1.585C9.674 12.42 8.847 12.5 8 12.5z"
-                />
-              </svg>
+              <i class="fa-solid fa-database" style="font-size: 32px"></i>
             </div>
             <h1>DB Explorer</h1>
             <p>
@@ -70,20 +60,7 @@
               accept=".db,.sqlite,.sqlite3,.db3"
               hidden
             />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="28"
-              height="28"
-              fill="currentColor"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
-              />
-              <path
-                d="M7.646.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 1.707V11.5a.5.5 0 0 1-1 0V1.707L5.354 3.854a.5.5 0 1 1-.708-.708z"
-              />
-            </svg>
+            <i class="fa-solid fa-file-arrow-up" style="font-size: 24px"></i>
             <span class="dbx-drop-text"
               ><strong>Click to choose a file</strong> or drag it here</span
             >
@@ -103,33 +80,12 @@
         <div id="explorer-state" style="display: none">
           <div class="dbx-topbar">
             <div class="dbx-file-info">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M8 1c-1.573 0-3.022.289-4.096.777C2.875 2.245 2 2.993 2 4s.875 1.755 1.904 2.223C4.978 6.711 6.427 7 8 7s3.022-.289 4.096-.777C13.125 5.755 14 5.007 14 4s-.875-1.755-1.904-2.223C11.022 1.289 9.573 1 8 1M2 6.161V7.5c0 .537.426 1.084 1.295 1.521C4.214 9.485 5.583 9.793 7 9.985V14c-1.252-.196-2.4-.521-3.295-.967C2.426 12.582 2 12.04 2 11.5v-.339"
-                />
-              </svg>
+              <i class="fa-solid fa-database" style="font-size: 14px"></i>
               <span id="dbx-filename" class="dbx-filename"></span>
               <span class="dbx-readonly-pill">Read-only</span>
             </div>
             <button id="dbx-close-btn" class="secondary dbx-close-btn">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                fill="currentColor"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"
-                />
-              </svg>
+              <i class="fa-solid fa-xmark" style="font-size: 13px"></i>
               Close database
             </button>
           </div>
@@ -164,17 +120,7 @@
                 <div id="dbx-data-content" style="display: none">
                   <div class="dbx-data-toolbar">
                     <div class="dbx-search-wrap">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="14"
-                        height="14"
-                        fill="currentColor"
-                        viewBox="0 0 16 16"
-                      >
-                        <path
-                          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"
-                        />
-                      </svg>
+                      <i class="fa-solid fa-magnifying-glass" style="font-size: 13px"></i>
                       <input
                         type="text"
                         id="dbx-row-search"
@@ -184,11 +130,12 @@
                     </div>
                     <div class="dbx-row-count" id="dbx-row-count"></div>
                   </div>
+                  <div id="dbx-data-empty" class="dbx-empty-hint" style="display: none"></div>
                   <div
-                    id="dbx-table-wrap"
-                    class="pc-table-wrap dbx-table-wrap"
+                    id="dbx-data-grid"
+                    class="dbx-ag-grid"
+                    style="display: none"
                   ></div>
-                  <div class="dbx-pagination" id="dbx-pagination"></div>
                 </div>
               </div>
 
@@ -220,7 +167,12 @@
                   class="search-error"
                   style="display: none"
                 ></div>
-                <div id="dbx-query-result" class="dbx-table-wrap"></div>
+                <div id="dbx-query-empty" class="dbx-empty-hint" style="display: none"></div>
+                <div
+                  id="dbx-query-grid"
+                  class="dbx-ag-grid"
+                  style="display: none"
+                ></div>
               </div>
             </section>
           </div>
@@ -235,6 +187,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/sql-wasm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@36.1.0/dist/ag-grid-community.min.js"></script>
     <script src="js/dbexplorer.js"></script>
   </body>
 </html>
