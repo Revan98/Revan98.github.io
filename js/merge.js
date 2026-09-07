@@ -356,6 +356,30 @@ navLinks.querySelectorAll("a").forEach((link) => {
   });
 });
 
+const toolsToggle = document.getElementById("tools-toggle");
+const toolsMenu = document.getElementById("tools-menu");
+if (toolsToggle && toolsMenu) {
+  toolsToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = toolsMenu.classList.toggle("show");
+    toolsToggle.setAttribute("aria-expanded", isOpen);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!toolsToggle.contains(e.target) && !toolsMenu.contains(e.target)) {
+      toolsMenu.classList.remove("show");
+      toolsToggle.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  toolsMenu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      toolsMenu.classList.remove("show");
+      toolsToggle.setAttribute("aria-expanded", "false");
+    });
+  });
+}
+
 document.getElementById("file1").addEventListener("change", handleFiles);
 document.getElementById("file2").addEventListener("change", handleFiles);
 document.getElementById("mergeBtn").addEventListener("click", doMerge);
