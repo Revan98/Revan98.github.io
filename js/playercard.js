@@ -1228,20 +1228,23 @@ function showError(msg) {
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
+function getCurrentTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 function applyTheme(theme) {
   document.body.classList.remove("light", "dark");
   document.body.classList.add(theme);
+  document.body.setAttribute("data-ag-theme-mode", theme);
   localStorage.setItem(THEME_KEY, theme);
 }
 
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  const theme =
-    saved === "light" || saved === "dark"
-      ? saved
-      : window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+  const theme = getCurrentTheme();
   applyTheme(theme);
   themeToggle.checked = theme === "dark";
 }
