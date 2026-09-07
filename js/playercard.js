@@ -1252,10 +1252,6 @@ themeToggle.addEventListener("change", () =>
   applyTheme(themeToggle.checked ? "dark" : "light"),
 );
 
-const navbar = document.getElementById("navbar");
-window.addEventListener("scroll", () =>
-  navbar.classList.toggle("scrolled", window.scrollY > 10),
-);
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => {
@@ -1268,12 +1264,12 @@ document.addEventListener("click", (e) => {
     hamburger.classList.remove("open");
   }
 });
-navLinks.querySelectorAll("a").forEach((a) =>
-  a.addEventListener("click", () => {
+navLinks.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
     navLinks.classList.remove("show");
     hamburger.classList.remove("open");
-  }),
-);
+  });
+});
 
 document.getElementById("back-btn").addEventListener("click", () => {
   showState("search");
