@@ -55,6 +55,13 @@ document.addEventListener("click", (e) => {
   }
 });
 
+navLinks.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
+    navLinks.classList.remove("show");
+    hamburger.classList.remove("open");
+  });
+});
+
 let SQL = null;
 let db = null;
 
