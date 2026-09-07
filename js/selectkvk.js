@@ -46,7 +46,6 @@ async function initSelectKvk() {
   const empty = document.getElementById("kvk-empty");
 
   if (!kd) {
-    // No/invalid kingdom in URL - send the user back to pick one.
     window.location.href = "index.html";
     return;
   }
