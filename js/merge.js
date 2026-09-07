@@ -356,16 +356,6 @@ navLinks.querySelectorAll("a").forEach((link) => {
   });
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  const current = location.pathname.split("/").pop();
-
-  document.querySelectorAll(".nav-links a").forEach((link) => {
-    if (link.getAttribute("href") === current) {
-      link.classList.add("active");
-    }
-  });
-});
-
 document.getElementById("file1").addEventListener("change", handleFiles);
 document.getElementById("file2").addEventListener("change", handleFiles);
 document.getElementById("mergeBtn").addEventListener("click", doMerge);
