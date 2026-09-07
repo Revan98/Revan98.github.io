@@ -541,19 +541,22 @@ async function createDatabase() {
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
+function getCurrentTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 function applyTheme(t) {
   document.body.classList.remove("light", "dark");
   document.body.classList.add(t);
+  document.body.setAttribute("data-ag-theme-mode", t);
   localStorage.setItem(THEME_KEY, t);
 }
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  const theme =
-    saved === "light" || saved === "dark"
-      ? saved
-      : window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+  const theme = getCurrentTheme();
   applyTheme(theme);
   themeToggle.checked = theme === "dark";
 }
