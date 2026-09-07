@@ -2,10 +2,6 @@ function selectKingdom(kd) {
   window.location.href = "selectkvk.html?kd=" + kd;
 }
 
-const navbar = document.getElementById("navbar");
-window.addEventListener("scroll", () => {
-  navbar.classList.toggle("scrolled", window.scrollY > 10);
-});
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => {
@@ -56,12 +52,3 @@ themeToggle.addEventListener("change", () => {
 });
 
 initTheme();
-document.addEventListener("DOMContentLoaded", () => {
-  const current = location.pathname.split("/").pop();
-
-  document.querySelectorAll(".nav-links a").forEach((link) => {
-    if (link.getAttribute("href") === current) {
-      link.classList.add("active");
-    }
-  });
-});
