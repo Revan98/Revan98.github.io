@@ -6,11 +6,20 @@ let queryGridApi = null;
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
-function agGridTheme() {
-  const dark = document.body.classList.contains("dark");
-  return dark
-    ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
-    : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
+function getAgTheme(theme) {
+  return (
+    theme === "dark"
+      ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+      : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight)
+  ).withPart(agGrid.buttonStyleQuartz);
+}
+
+function getCurrentTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
 function applyTheme(t) {
@@ -19,18 +28,12 @@ function applyTheme(t) {
   document.body.setAttribute("data-ag-theme-mode", t);
   localStorage.setItem(THEME_KEY, t);
 
-  const theme = agGridTheme();
-  if (dataGridApi) dataGridApi.setGridOption("theme", theme);
-  if (queryGridApi) queryGridApi.setGridOption("theme", theme);
+  const agTheme = getAgTheme(t);
+  if (dataGridApi) dataGridApi.setGridOption("theme", agTheme);
+  if (queryGridApi) queryGridApi.setGridOption("theme", agTheme);
 }
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  const theme =
-    saved === "light" || saved === "dark"
-      ? saved
-      : window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
+  const theme = getCurrentTheme();
   applyTheme(theme);
   themeToggle.checked = theme === "dark";
 }
