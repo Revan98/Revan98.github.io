@@ -571,15 +571,19 @@ hamburger.addEventListener("click", () => {
   navLinks.classList.toggle("show");
   hamburger.classList.toggle("open");
 });
+
 document.addEventListener("click", (e) => {
   if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
     navLinks.classList.remove("show");
     hamburger.classList.remove("open");
   }
 });
-document.querySelectorAll(".nav-links a").forEach((link) => {
-  if (link.getAttribute("href") === location.pathname.split("/").pop())
-    link.classList.add("active");
+
+navLinks.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
+    navLinks.classList.remove("show");
+    hamburger.classList.remove("open");
+  });
 });
 
 const dbFileInput = document.getElementById("dbFileInput");
