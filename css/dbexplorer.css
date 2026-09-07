@@ -64,7 +64,7 @@
   border-color: var(--chart-line);
   background: var(--row-hover-bg);
 }
-.dbx-drop svg {
+.dbx-drop i {
   opacity: 0.6;
 }
 .dbx-drop-text {
@@ -131,7 +131,7 @@
   gap: 8px;
   font-size: 0.9rem;
 }
-.dbx-file-info svg {
+.dbx-file-info i {
   opacity: 0.6;
   flex-shrink: 0;
 }
@@ -312,7 +312,7 @@
   min-width: 180px;
   max-width: 320px;
 }
-.dbx-search-wrap svg {
+.dbx-search-wrap i {
   position: absolute;
   left: 10px;
   top: 50%;
@@ -398,39 +398,14 @@
   vertical-align: middle;
 }
 
-.dbx-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 14px;
-  flex-wrap: wrap;
+.dbx-ag-grid {
+  height: 560px;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
 }
-.dbx-page-btn {
-  padding: 6px 11px;
-  border-radius: 6px;
-  border: 1px solid var(--table-border);
-  background: var(--table-bg);
-  color: var(--text-color);
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-.dbx-page-btn:hover:not(:disabled) {
-  background: var(--row-hover-bg);
-}
-.dbx-page-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-.dbx-page-btn.active {
-  background: var(--chart-line);
-  color: #fff;
-  border-color: var(--chart-line);
-}
-.dbx-page-status {
-  font-size: 0.8rem;
-  opacity: 0.65;
-  margin: 0 6px;
+.dbx-pk-cell {
+  font-weight: 600;
 }
 
 .dbx-schema-table {
