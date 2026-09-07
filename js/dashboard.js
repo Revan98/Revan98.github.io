@@ -169,7 +169,6 @@ async function loadAllSheetsCache() {
 
   SheetCache.sheetsData = {};
 
-  // Batch-load all snapshot diff data in one query instead of one per snapshot
   const allSnapIds = snaps.values.map((r) => r[0]).join(",");
   if (allSnapIds) {
     const allDiffData = db.exec(`
@@ -186,7 +185,6 @@ async function loadAllSheetsCache() {
     `)[0];
 
     if (allDiffData) {
-      // Group rows by snapshot_id -> governor_id map
       const bySnap = {};
       allDiffData.values.forEach((r) => {
         const sid = r[0];
@@ -580,7 +578,6 @@ function copyTop18() {
       }, 2000);
     })
     .catch(() => {
-      // Fallback for older browsers
       const ta = document.createElement("textarea");
       ta.value = text;
       ta.style.position = "fixed";
@@ -612,10 +609,6 @@ const CHART_STYLES = {
   },
 };
 
-function getCurrentTheme() {
-  return document.body.classList.contains("dark") ? "dark" : "light";
-}
-
 function formatSheetDate(sheetName) {
   if (!sheetName || typeof sheetName !== "string") return sheetName;
 
@@ -626,8 +619,6 @@ function formatSheetDate(sheetName) {
   return sheetName;
 }
 
-// Column indices in the batched sheetsData rows:
-// [0]=snapshot_id, [1]=governor_id, [2]=kp_diff, [3]=power_diff, [4]=t4_diff, [5]=t5_diff, [6]=deads_diff
 const CHART_COL = {
   KP: 2,
   POWER_DIFF: 3,
@@ -857,6 +848,22 @@ navLinks.querySelectorAll("a").forEach((link) => {
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
+function getAgTheme(theme) {
+  return (
+    theme === "dark"
+      ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+      : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight)
+  ).withPart(agGrid.buttonStyleQuartz);
+}
+
+function getCurrentTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 function applyTheme(theme) {
   document.body.classList.remove("light", "dark");
   document.body.classList.add(theme);
@@ -866,28 +873,14 @@ function applyTheme(theme) {
   localStorage.setItem(THEME_KEY, theme);
 
   if (gridApi) {
-    const agTheme =
-      theme === "dark"
-        ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
-        : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
-    gridApi.setGridOption("theme", agTheme);
+    gridApi.setGridOption("theme", getAgTheme(theme));
   }
 
   applyChartTheme();
 }
 
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-
-  let theme;
-  if (saved === "light" || saved === "dark") {
-    theme = saved;
-  } else {
-    theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  }
-
+  const theme = getCurrentTheme();
   applyTheme(theme);
   themeToggle.checked = theme === "dark";
 }
@@ -972,7 +965,6 @@ function initEquipTooltip() {
 }
 
 function renderCollapsibleSection(title, content, defaultOpen = false) {
-  // Use a stable incrementing counter instead of Math.random() for predictable IDs
   const id =
     "sec_" +
     (renderCollapsibleSection._counter =
