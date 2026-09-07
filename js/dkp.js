@@ -858,23 +858,6 @@ let resultsGridApi = null;
 
   init().catch((err) => console.error("Init error", err));
 
-  const backToTopBtn = document.getElementById("backToTop");
-
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 300) {
-      backToTopBtn.classList.add("show");
-    } else {
-      backToTopBtn.classList.remove("show");
-    }
-  });
-
-  backToTopBtn.addEventListener("click", () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  });
-
   const THEME_KEY = "theme";
 
   function getAgTheme(theme) {
@@ -934,15 +917,6 @@ let resultsGridApi = null;
     link.addEventListener("click", () => {
       navLinks.classList.remove("show");
       hamburger.classList.remove("open");
-    });
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const current = location.pathname.split("/").pop();
-    document.querySelectorAll(".nav-links a").forEach((link) => {
-      if (link.getAttribute("href") === current) {
-        link.classList.add("active");
-      }
     });
   });
 })();
