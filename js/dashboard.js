@@ -169,6 +169,7 @@ async function loadAllSheetsCache() {
 
   SheetCache.sheetsData = {};
 
+  // Batch-load all snapshot diff data in one query instead of one per snapshot
   const allSnapIds = snaps.values.map((r) => r[0]).join(",");
   if (allSnapIds) {
     const allDiffData = db.exec(`
@@ -185,6 +186,7 @@ async function loadAllSheetsCache() {
     `)[0];
 
     if (allDiffData) {
+      // Group rows by snapshot_id -> governor_id map
       const bySnap = {};
       allDiffData.values.forEach((r) => {
         const sid = r[0];
@@ -578,6 +580,7 @@ function copyTop18() {
       }, 2000);
     })
     .catch(() => {
+      // Fallback for older browsers
       const ta = document.createElement("textarea");
       ta.value = text;
       ta.style.position = "fixed";
@@ -619,6 +622,8 @@ function formatSheetDate(sheetName) {
   return sheetName;
 }
 
+// Column indices in the batched sheetsData rows:
+// [0]=snapshot_id, [1]=governor_id, [2]=kp_diff, [3]=power_diff, [4]=t4_diff, [5]=t5_diff, [6]=deads_diff
 const CHART_COL = {
   KP: 2,
   POWER_DIFF: 3,
@@ -819,11 +824,6 @@ function escapeHtml(str) {
   });
 }
 
-const navbar = document.getElementById("navbar");
-window.addEventListener("scroll", () => {
-  navbar.classList.toggle("scrolled", window.scrollY > 10);
-});
-
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => {
@@ -895,7 +895,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll(".nav-links a").forEach((link) => {
     if (link.getAttribute("href") === current) {
-      link.classList.add("active");
       link.setAttribute("href", current + window.location.search);
     }
   });
@@ -965,6 +964,7 @@ function initEquipTooltip() {
 }
 
 function renderCollapsibleSection(title, content, defaultOpen = false) {
+  // Use a stable incrementing counter instead of Math.random() for predictable IDs
   const id =
     "sec_" +
     (renderCollapsibleSection._counter =
