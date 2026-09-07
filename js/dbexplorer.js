@@ -1,12 +1,27 @@
 "use strict";
 
+let dataGridApi = null;
+let queryGridApi = null;
+
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
+
+function agGridTheme() {
+  const dark = document.body.classList.contains("dark");
+  return dark
+    ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
+    : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight);
+}
 
 function applyTheme(t) {
   document.body.classList.remove("light", "dark");
   document.body.classList.add(t);
+  document.body.setAttribute("data-ag-theme-mode", t);
   localStorage.setItem(THEME_KEY, t);
+
+  const theme = agGridTheme();
+  if (dataGridApi) dataGridApi.setGridOption("theme", theme);
+  if (queryGridApi) queryGridApi.setGridOption("theme", theme);
 }
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
@@ -77,8 +92,8 @@ const tabPanels = {
 
 const dbxNoTable = document.getElementById("dbx-no-table");
 const dbxDataContent = document.getElementById("dbx-data-content");
-const dbxTableWrap = document.getElementById("dbx-table-wrap");
-const dbxPagination = document.getElementById("dbx-pagination");
+const dbxDataEmpty = document.getElementById("dbx-data-empty");
+const dbxDataGridEl = document.getElementById("dbx-data-grid");
 const dbxRowSearch = document.getElementById("dbx-row-search");
 const dbxRowCount = document.getElementById("dbx-row-count");
 
@@ -87,15 +102,30 @@ const dbxSchemaContent = document.getElementById("dbx-schema-content");
 const dbxSqlInput = document.getElementById("dbx-sql-input");
 const dbxRunQueryBtn = document.getElementById("dbx-run-query");
 const dbxQueryError = document.getElementById("dbx-query-error");
-const dbxQueryResult = document.getElementById("dbx-query-result");
+const dbxQueryEmpty = document.getElementById("dbx-query-empty");
+const dbxQueryGridEl = document.getElementById("dbx-query-grid");
 
 let allTables = [];
 let activeTable = null;
 let tableInfoCache = {};
-let currentPage = 1;
-const PAGE_SIZE = 100;
 let rowSearchTerm = "";
-let sortState = { col: null, dir: "asc" };
+const MAX_GRID_ROWS = 50000;
+const GRID_DEFAULTS = {
+  enableCellTextSelection: true,
+  ensureDomOrder: true,
+  defaultColDef: {
+    sortable: false,
+    filter: false,
+    resizable: false,
+    minWidth: 130,
+	flex: 1,
+  },
+  pagination: true,
+  paginationPageSize: 20,
+  paginationPageSizeSelector: [20, 50, 75, 100],
+  animateRows: false,
+
+};
 
 dbxDrop.addEventListener("click", () => dbxFileInput.click());
 dbxDrop.addEventListener("dragover", (e) => {
@@ -180,8 +210,9 @@ function closeDatabase() {
   allTables = [];
   activeTable = null;
   tableInfoCache = {};
-  currentPage = 1;
   rowSearchTerm = "";
+  destroyDataGrid();
+  destroyQueryGrid();
   dbxRowSearch.value = "";
   dbxFileInput.value = "";
   dbxDropSub.textContent = "No file selected";
@@ -244,10 +275,8 @@ dbxTableFilter.addEventListener("input", renderTableList);
 
 function selectTable(name) {
   activeTable = name;
-  currentPage = 1;
   rowSearchTerm = "";
   dbxRowSearch.value = "";
-  sortState = { col: null, dir: "asc" };
   renderTableList();
   dbxNoTable.style.display = "none";
   dbxDataContent.style.display = "block";
@@ -288,196 +317,139 @@ function getTableInfo(name) {
   return cols;
 }
 
+function destroyDataGrid() {
+  if (dataGridApi) {
+    try {
+      dataGridApi.destroy();
+    } catch (e) {}
+    dataGridApi = null;
+  }
+}
+function destroyQueryGrid() {
+  if (queryGridApi) {
+    try {
+      queryGridApi.destroy();
+    } catch (e) {}
+    queryGridApi = null;
+  }
+}
+
+function dbxCellRenderer(params) {
+  const val = params.value;
+  if (val === null || val === undefined) {
+    const span = document.createElement("span");
+    span.className = "dbx-cell-null";
+    span.textContent = "NULL";
+    return span;
+  }
+  if (val instanceof Uint8Array) {
+    return `<BLOB ${val.length}b>`;
+  }
+  return String(val);
+}
+function dbxTooltipValueGetter(params) {
+  const val = params.value;
+  if (val === null || val === undefined) return "NULL";
+  if (val instanceof Uint8Array) return `<BLOB ${val.length}b>`;
+  return String(val);
+}
+
+function buildColumnDefs(columns, colInfo) {
+  const typeMap = {};
+  const pkSet = new Set();
+  (colInfo || []).forEach((c) => {
+    typeMap[c.name] = c.type;
+    if (c.pk) pkSet.add(c.name);
+  });
+  return columns.map((name) => ({
+    field: name,
+    headerName: pkSet.has(name) ? `${name}` : name,
+    headerTooltip: typeMap[name] ? `${name} — ${typeMap[name]}` : name,
+    cellClass: pkSet.has(name) ? "dbx-pk-cell" : undefined,
+    cellRenderer: dbxCellRenderer,
+    tooltipValueGetter: dbxTooltipValueGetter,
+  }));
+}
+
+function rowsToObjects(columns, values) {
+  return values.map((row) => {
+    const obj = {};
+    columns.forEach((c, i) => (obj[c] = row[i]));
+    return obj;
+  });
+}
+
 function renderDataTab() {
   if (!activeTable) return;
-  const cols = getTableInfo(activeTable);
-  const colNames = cols.length
-    ? cols.map((c) => c.name)
-    : inferColumnsFromSelect(activeTable);
+  destroyDataGrid();
+  dbxDataGridEl.style.display = "none";
+  dbxDataEmpty.style.display = "none";
 
+  const cols = getTableInfo(activeTable);
   const safeTable = `"${activeTable.replace(/"/g, '""')}"`;
-  const whereClause = buildSearchWhere(colNames, rowSearchTerm);
 
   let totalRows = 0;
   try {
-    const countRes = db.exec(
-      `SELECT COUNT(*) FROM ${safeTable} ${whereClause.sql}`,
-      whereClause.params,
-    );
+    const countRes = db.exec(`SELECT COUNT(*) FROM ${safeTable}`);
     totalRows = countRes[0]?.values?.[0]?.[0] ?? 0;
   } catch (e) {
-    renderQueryStyleError(dbxTableWrap, e);
-    dbxPagination.innerHTML = "";
+    dbxDataEmpty.style.display = "block";
+    dbxDataEmpty.innerHTML = `<div class="search-error">${escapeHtml(e.message || String(e))}</div>`;
     dbxRowCount.textContent = "";
     return;
   }
 
-  const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
-  currentPage = Math.min(currentPage, totalPages);
-  const offset = (currentPage - 1) * PAGE_SIZE;
-
-  const orderClause = sortState.col
-    ? ` ORDER BY "${sortState.col.replace(/"/g, '""')}" ${sortState.dir === "desc" ? "DESC" : "ASC"}`
-    : "";
-
   let dataRes;
   try {
-    dataRes = db.exec(
-      `SELECT * FROM ${safeTable} ${whereClause.sql}${orderClause} LIMIT ${PAGE_SIZE} OFFSET ${offset}`,
-      whereClause.params,
-    );
+    dataRes = db.exec(`SELECT * FROM ${safeTable} LIMIT ${MAX_GRID_ROWS}`);
   } catch (e) {
-    renderQueryStyleError(dbxTableWrap, e);
-    dbxPagination.innerHTML = "";
+    dbxDataEmpty.style.display = "block";
+    dbxDataEmpty.innerHTML = `<div class="search-error">${escapeHtml(e.message || String(e))}</div>`;
     dbxRowCount.textContent = "";
     return;
   }
 
   const result = dataRes[0];
-  dbxRowCount.textContent =
-    totalRows.toLocaleString() +
-    (totalRows === 1 ? " row" : " rows") +
-    (rowSearchTerm ? " (filtered)" : "");
-
   if (!result || !result.values.length) {
-    dbxTableWrap.innerHTML = `<div class="dbx-empty-hint">No rows ${rowSearchTerm ? "match your search" : "in this table"}.</div>`;
-    dbxPagination.innerHTML = "";
+    dbxDataEmpty.style.display = "block";
+    dbxDataEmpty.innerHTML = `<p>No rows in this table.</p>`;
+    dbxRowCount.textContent = "0 rows";
     return;
   }
 
-  const pkSet = new Set(cols.filter((c) => c.pk).map((c) => c.name));
-  dbxTableWrap.innerHTML = renderDataTable(
-    result.columns,
-    result.values,
-    cols,
-    pkSet,
-  );
+  const truncated = totalRows > MAX_GRID_ROWS;
+  const columnDefs = buildColumnDefs(result.columns, cols);
+  const rowData = rowsToObjects(result.columns, result.values);
 
-  dbxTableWrap.querySelectorAll("th[data-col]").forEach((th) => {
-    th.style.cursor = "pointer";
-    th.addEventListener("click", () => {
-      const col = th.dataset.col;
-      if (sortState.col === col) {
-        sortState.dir = sortState.dir === "asc" ? "desc" : "asc";
-      } else {
-        sortState = { col, dir: "asc" };
-      }
-      renderDataTab();
-    });
+  dbxDataGridEl.style.display = "block";
+  dataGridApi = agGrid.createGrid(dbxDataGridEl, {
+    ...GRID_DEFAULTS,
+    theme: agGridTheme(),
+    columnDefs,
+    rowData,
+    quickFilterText: rowSearchTerm,
+    onModelUpdated: () => updateDataRowCount(totalRows, truncated),
+    onFilterChanged: () => updateDataRowCount(totalRows, truncated),
   });
-
-  renderPagination(totalPages);
+  updateDataRowCount(totalRows, truncated);
 }
 
-function renderDataTable(columns, rows, colInfo, pkSet) {
-  const typeMap = {};
-  colInfo.forEach((c) => (typeMap[c.name] = c.type));
-
-  const head = columns
-    .map((c) => {
-      const isSorted = sortState.col === c;
-      const arrow = isSorted ? (sortState.dir === "asc" ? " ▲" : " ▼") : "";
-      return `<th data-col="${escapeAttr(c)}">${escapeHtml(c)}${pkSet.has(c) ? '<span class="dbx-pk-badge">PK</span>' : ""}${arrow}
-      ${typeMap[c] ? `<span class="dbx-col-type">${escapeHtml(typeMap[c])}</span>` : ""}
-    </th>`;
-    })
-    .join("");
-
-  const body = rows
-    .map((row) => {
-      const cells = row
-        .map((val) => {
-          if (val === null)
-            return `<td><span class="dbx-cell-null">NULL</span></td>`;
-          let display = val;
-          if (typeof val === "object" && val instanceof Uint8Array) {
-            display = `<BLOB ${val.length}b>`;
-          }
-          const str = String(display);
-          const truncated = str.length > 200 ? str.slice(0, 200) + "…" : str;
-          return `<td title="${escapeAttr(str)}">${escapeHtml(truncated)}</td>`;
-        })
-        .join("");
-      return `<tr>${cells}</tr>`;
-    })
-    .join("");
-
-  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+function updateDataRowCount(totalRows, truncated) {
+  if (!dataGridApi) return;
+  const shown = dataGridApi.getDisplayedRowCount();
+  let text = rowSearchTerm
+    ? `${shown.toLocaleString()} of ${totalRows.toLocaleString()} rows (filtered)`
+    : `${totalRows.toLocaleString()} ${totalRows === 1 ? "row" : "rows"}`;
+  if (truncated) text += ` — showing first ${MAX_GRID_ROWS.toLocaleString()}`;
+  dbxRowCount.textContent = text;
 }
 
-function renderPagination(totalPages) {
-  if (totalPages <= 1) {
-    dbxPagination.innerHTML = "";
-    return;
-  }
-
-  const makeBtn = (label, page, disabled, active) =>
-    `<button class="dbx-page-btn ${active ? "active" : ""}" data-page="${page}" ${disabled ? "disabled" : ""}>${label}</button>`;
-
-  let html = "";
-  html += makeBtn("« First", 1, currentPage === 1, false);
-  html += makeBtn("‹ Prev", currentPage - 1, currentPage === 1, false);
-
-  const pages = pageWindow(currentPage, totalPages);
-  pages.forEach((p) => {
-    if (p === "...") {
-      html += `<span class="dbx-page-status">…</span>`;
-    } else {
-      html += makeBtn(String(p), p, false, p === currentPage);
-    }
-  });
-
-  html += makeBtn("Next ›", currentPage + 1, currentPage === totalPages, false);
-  html += makeBtn("Last »", totalPages, currentPage === totalPages, false);
-
-  dbxPagination.innerHTML = html;
-  dbxPagination.querySelectorAll(".dbx-page-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      currentPage = Number(btn.dataset.page);
-      renderDataTab();
-      dbxTableWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
-  });
-}
-
-function pageWindow(current, total) {
-  const span = 1;
-  const pages = [];
-  for (let p = 1; p <= total; p++) {
-    if (
-      p === 1 ||
-      p === total ||
-      (p >= current - span && p <= current + span)
-    ) {
-      pages.push(p);
-    } else if (pages[pages.length - 1] !== "...") {
-      pages.push("...");
-    }
-  }
-  return pages;
-}
-
-let rowSearchDebounce = null;
 dbxRowSearch.addEventListener("input", () => {
-  clearTimeout(rowSearchDebounce);
-  rowSearchDebounce = setTimeout(() => {
-    rowSearchTerm = dbxRowSearch.value.trim();
-    currentPage = 1;
-    renderDataTab();
-  }, 250);
+  rowSearchTerm = dbxRowSearch.value.trim();
+  if (dataGridApi) {
+    dataGridApi.setGridOption("quickFilterText", rowSearchTerm);
+  }
 });
-
-function buildSearchWhere(colNames, term) {
-  if (!term || !colNames.length) return { sql: "", params: [] };
-  const likeParam = `%${term}%`;
-  const conditions = colNames.map(
-    (c) => `CAST("${c.replace(/"/g, '""')}" AS TEXT) LIKE ?`,
-  );
-  return {
-    sql: "WHERE " + conditions.join(" OR "),
-    params: colNames.map(() => likeParam),
-  };
-}
 
 function inferColumnsFromSelect(table) {
   try {
@@ -567,7 +539,10 @@ dbxSqlInput.addEventListener("keydown", (e) => {
 function runUserQuery() {
   const sql = dbxSqlInput.value.trim();
   dbxQueryError.style.display = "none";
-  dbxQueryResult.innerHTML = "";
+  destroyQueryGrid();
+  dbxQueryGridEl.style.display = "none";
+  dbxQueryEmpty.style.display = "none";
+  dbxQueryEmpty.innerHTML = "";
 
   if (!sql) return;
 
@@ -591,15 +566,24 @@ function runUserQuery() {
   try {
     const res = db.exec(sql);
     if (!res.length) {
-      dbxQueryResult.innerHTML = `<div class="dbx-empty-hint">Query ran successfully and returned no rows.</div>`;
+      dbxQueryEmpty.style.display = "block";
+      dbxQueryEmpty.innerHTML = `<p>Query ran successfully and returned no rows.</p>`;
       return;
     }
     const { columns, values } = res[0];
     if (!values.length) {
-      dbxQueryResult.innerHTML = `<div class="dbx-empty-hint">No rows returned.</div>`;
+      dbxQueryEmpty.style.display = "block";
+      dbxQueryEmpty.innerHTML = `<p>No rows returned.</p>`;
       return;
     }
-    dbxQueryResult.innerHTML = renderDataTable(columns, values, [], new Set());
+
+    dbxQueryGridEl.style.display = "block";
+    queryGridApi = agGrid.createGrid(dbxQueryGridEl, {
+      ...GRID_DEFAULTS,
+      theme: agGridTheme(),
+      columnDefs: buildColumnDefs(columns, []),
+      rowData: rowsToObjects(columns, values),
+    });
   } catch (e) {
     showQueryError(e.message || String(e));
   }
@@ -608,10 +592,6 @@ function runUserQuery() {
 function showQueryError(msg) {
   dbxQueryError.textContent = msg;
   dbxQueryError.style.display = "block";
-}
-
-function renderQueryStyleError(target, e) {
-  target.innerHTML = `<div class="search-error" style="margin:10px 0;">${escapeHtml(e.message || String(e))}</div>`;
 }
 
 function escapeHtml(str) {
