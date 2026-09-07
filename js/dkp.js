@@ -905,17 +905,7 @@ let resultsGridApi = null;
   }
 
   function initTheme() {
-    const saved = localStorage.getItem(THEME_KEY);
-
-    let theme;
-    if (saved === "light" || saved === "dark") {
-      theme = saved;
-    } else {
-      theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-    }
-
+    const theme = getCurrentTheme();
     applyTheme(theme);
     themeToggle.checked = theme === "dark";
   }
