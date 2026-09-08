@@ -2,6 +2,7 @@
 
 let dataGridApi = null;
 let queryGridApi = null;
+let schemaGridApis = [];
 
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
@@ -22,15 +23,24 @@ function getCurrentTheme() {
     : "light";
 }
 
-function applyTheme(t) {
-  document.body.classList.remove("light", "dark");
-  document.body.classList.add(t);
-  document.body.setAttribute("data-ag-theme-mode", t);
-  localStorage.setItem(THEME_KEY, t);
-
-  const agTheme = getAgTheme(t);
+// Both grids on this page (Data tab + SQL Query tab) are created/destroyed
+// on the fly, so theme changes need to be pushed to whichever ones exist.
+function applyGridsTheme(theme) {
+  const agTheme = getAgTheme(theme);
   if (dataGridApi) dataGridApi.setGridOption("theme", agTheme);
   if (queryGridApi) queryGridApi.setGridOption("theme", agTheme);
+  schemaGridApis.forEach((api) => api.setGridOption("theme", agTheme));
+}
+
+function applyTheme(theme) {
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(theme);
+
+  document.body.setAttribute("data-ag-theme-mode", theme);
+
+  localStorage.setItem(THEME_KEY, theme);
+
+  applyGridsTheme(theme);
 }
 function initTheme() {
   const theme = getCurrentTheme();
@@ -129,7 +139,6 @@ const dbxDataContent = document.getElementById("dbx-data-content");
 const dbxDataEmpty = document.getElementById("dbx-data-empty");
 const dbxDataGridEl = document.getElementById("dbx-data-grid");
 const dbxRowSearch = document.getElementById("dbx-row-search");
-const dbxRowCount = document.getElementById("dbx-row-count");
 
 const dbxSchemaContent = document.getElementById("dbx-schema-content");
 
@@ -143,22 +152,23 @@ let allTables = [];
 let activeTable = null;
 let tableInfoCache = {};
 let rowSearchTerm = "";
-const MAX_GRID_ROWS = 50000;
+
 const GRID_DEFAULTS = {
   enableCellTextSelection: true,
   ensureDomOrder: true,
   defaultColDef: {
-    sortable: false,
+    sortable: true,
     filter: false,
-    resizable: false,
+    resizable: true,
     minWidth: 130,
-	flex: 1,
+    flex: 1,
   },
+  tooltipShowDelay: 300,
   pagination: true,
-  paginationPageSize: 20,
-  paginationPageSizeSelector: [20, 50, 75, 100],
-  animateRows: false,
-
+  paginationPageSize: 50,
+  paginationPageSizeSelector: [20, 50, 100, 200],
+  animateRows: true,
+  rowHeight: 42,
 };
 
 dbxDrop.addEventListener("click", () => dbxFileInput.click());
@@ -247,6 +257,8 @@ function closeDatabase() {
   rowSearchTerm = "";
   destroyDataGrid();
   destroyQueryGrid();
+  destroySchemaGrids();
+  dbxSchemaContent.innerHTML = "";
   dbxRowSearch.value = "";
   dbxFileInput.value = "";
   dbxDropSub.textContent = "No file selected";
@@ -351,21 +363,43 @@ function getTableInfo(name) {
   return cols;
 }
 
-function destroyDataGrid() {
-  if (dataGridApi) {
+function destroyGrid(el, api) {
+  if (api) {
     try {
-      dataGridApi.destroy();
+      api.destroy();
     } catch (e) {}
-    dataGridApi = null;
   }
+  if (el) el.classList.remove("visible");
+  return null;
+}
+function destroyDataGrid() {
+  dataGridApi = destroyGrid(dbxDataGridEl, dataGridApi);
 }
 function destroyQueryGrid() {
-  if (queryGridApi) {
-    try {
-      queryGridApi.destroy();
-    } catch (e) {}
-    queryGridApi = null;
-  }
+  queryGridApi = destroyGrid(dbxQueryGridEl, queryGridApi);
+}
+
+// Same approach as the dashboard's formatNumber(): thousands separators via
+// toLocaleString. sql.js returns real JS numbers for INTEGER/REAL columns,
+// so this applies automatically wherever a cell's value is numeric —
+// whether that's the Data tab, the Query tab, or an arbitrary user query.
+function formatNumber(value) {
+  return value.toLocaleString("en-US", { maximumFractionDigits: 20 });
+}
+
+// IDs are numeric but aren't quantities — don't add thousands separators or
+// right-align them.
+const ID_COLUMN_NAMES = new Set([
+  "player_id",
+  "id",
+  "governor_id",
+  "kvk_number",
+  "main_id",
+  "kingdom",
+]);
+
+function isIdColumn(field) {
+  return !!field && ID_COLUMN_NAMES.has(String(field).toLowerCase());
 }
 
 function dbxCellRenderer(params) {
@@ -379,12 +413,18 @@ function dbxCellRenderer(params) {
   if (val instanceof Uint8Array) {
     return `<BLOB ${val.length}b>`;
   }
+  if (typeof val === "number" && !isIdColumn(params.colDef?.field)) {
+    return formatNumber(val);
+  }
   return String(val);
 }
 function dbxTooltipValueGetter(params) {
   const val = params.value;
   if (val === null || val === undefined) return "NULL";
   if (val instanceof Uint8Array) return `<BLOB ${val.length}b>`;
+  if (typeof val === "number" && !isIdColumn(params.colDef?.field)) {
+    return formatNumber(val);
+  }
   return String(val);
 }
 
@@ -399,7 +439,14 @@ function buildColumnDefs(columns, colInfo) {
     field: name,
     headerName: pkSet.has(name) ? `${name}` : name,
     headerTooltip: typeMap[name] ? `${name} — ${typeMap[name]}` : name,
-    cellClass: pkSet.has(name) ? "dbx-pk-cell" : undefined,
+    cellClass: (p) => {
+      const classes = [];
+      if (pkSet.has(name)) classes.push("dbx-pk-cell");
+      if (typeof p.value === "number" && !isIdColumn(name)) {
+        classes.push("dbx-num-cell");
+      }
+      return classes;
+    },
     cellRenderer: dbxCellRenderer,
     tooltipValueGetter: dbxTooltipValueGetter,
   }));
@@ -422,60 +469,33 @@ function renderDataTab() {
   const cols = getTableInfo(activeTable);
   const safeTable = `"${activeTable.replace(/"/g, '""')}"`;
 
-  let totalRows = 0;
+  let result;
   try {
-    const countRes = db.exec(`SELECT COUNT(*) FROM ${safeTable}`);
-    totalRows = countRes[0]?.values?.[0]?.[0] ?? 0;
+    result = db.exec(`SELECT * FROM ${safeTable}`)[0];
   } catch (e) {
     dbxDataEmpty.style.display = "block";
     dbxDataEmpty.innerHTML = `<div class="search-error">${escapeHtml(e.message || String(e))}</div>`;
-    dbxRowCount.textContent = "";
     return;
   }
 
-  let dataRes;
-  try {
-    dataRes = db.exec(`SELECT * FROM ${safeTable} LIMIT ${MAX_GRID_ROWS}`);
-  } catch (e) {
-    dbxDataEmpty.style.display = "block";
-    dbxDataEmpty.innerHTML = `<div class="search-error">${escapeHtml(e.message || String(e))}</div>`;
-    dbxRowCount.textContent = "";
-    return;
-  }
-
-  const result = dataRes[0];
   if (!result || !result.values.length) {
     dbxDataEmpty.style.display = "block";
     dbxDataEmpty.innerHTML = `<p>No rows in this table.</p>`;
-    dbxRowCount.textContent = "0 rows";
     return;
   }
 
-  const truncated = totalRows > MAX_GRID_ROWS;
   const columnDefs = buildColumnDefs(result.columns, cols);
   const rowData = rowsToObjects(result.columns, result.values);
 
   dbxDataGridEl.style.display = "block";
   dataGridApi = agGrid.createGrid(dbxDataGridEl, {
     ...GRID_DEFAULTS,
-    theme: agGridTheme(),
+    theme: getAgTheme(getCurrentTheme()),
     columnDefs,
     rowData,
     quickFilterText: rowSearchTerm,
-    onModelUpdated: () => updateDataRowCount(totalRows, truncated),
-    onFilterChanged: () => updateDataRowCount(totalRows, truncated),
   });
-  updateDataRowCount(totalRows, truncated);
-}
-
-function updateDataRowCount(totalRows, truncated) {
-  if (!dataGridApi) return;
-  const shown = dataGridApi.getDisplayedRowCount();
-  let text = rowSearchTerm
-    ? `${shown.toLocaleString()} of ${totalRows.toLocaleString()} rows (filtered)`
-    : `${totalRows.toLocaleString()} ${totalRows === 1 ? "row" : "rows"}`;
-  if (truncated) text += ` — showing first ${MAX_GRID_ROWS.toLocaleString()}`;
-  dbxRowCount.textContent = text;
+  requestAnimationFrame(() => dbxDataGridEl.classList.add("visible"));
 }
 
 dbxRowSearch.addEventListener("input", () => {
@@ -485,20 +505,36 @@ dbxRowSearch.addEventListener("input", () => {
   }
 });
 
-function inferColumnsFromSelect(table) {
-  try {
-    const res = db.exec(`SELECT * FROM "${table.replace(/"/g, '""')}" LIMIT 1`);
-    return res[0]?.columns || [];
-  } catch (e) {
-    return [];
-  }
+function createStaticGrid(el, columnDefs, rowData) {
+  const api = agGrid.createGrid(el, {
+    theme: getAgTheme(getCurrentTheme()),
+    columnDefs,
+    rowData,
+    domLayout: "autoHeight",
+    defaultColDef: { resizable: true, sortable: false, flex: 1 },
+    enableCellTextSelection: true,
+  });
+  requestAnimationFrame(() => el.classList.add("visible"));
+  return api;
+}
+
+function destroySchemaGrids() {
+  schemaGridApis.forEach((api) => {
+    try {
+      api.destroy();
+    } catch (e) {}
+  });
+  schemaGridApis = [];
 }
 
 function renderSchemaForActive() {
+  destroySchemaGrids();
+
   if (!activeTable) {
     dbxSchemaContent.innerHTML = `<div class="dbx-empty-hint">Select a table on the left to see its schema.</div>`;
     return;
   }
+
   const cols = getTableInfo(activeTable);
   const fkRes = db.exec(
     `PRAGMA foreign_key_list("${activeTable.replace(/"/g, '""')}")`,
@@ -518,47 +554,88 @@ function renderSchemaForActive() {
   );
   const createSql = createSqlRes[0]?.values?.[0]?.[0] || "";
 
-  const colRows = cols
-    .map(
-      (c) => `
-    <tr>
-      <td>${escapeHtml(c.name)}${c.pk ? '<span class="dbx-pk-badge">PK</span>' : ""}</td>
-      <td>${escapeHtml(c.type || "—")}</td>
-      <td>${c.notnull ? "NOT NULL" : ""}</td>
-      <td>${c.dflt === null ? "" : escapeHtml(String(c.dflt))}</td>
-    </tr>
-  `,
-    )
-    .join("");
-
-  const fkRows = fks.length
-    ? `<div class="dbx-schema-table"><h3>Foreign keys</h3>
-        <table><thead><tr><th>Column</th><th>References</th></tr></thead><tbody>
-        ${fks.map((f) => `<tr><td>${escapeHtml(f.from)}</td><td>${escapeHtml(f.table)}.${escapeHtml(f.to)}</td></tr>`).join("")}
-        </tbody></table></div>`
-    : "";
-
-  const idxRows = indexes.length
-    ? `<div class="dbx-schema-table"><h3>Indexes</h3>
-        <table><thead><tr><th>Name</th><th>Unique</th></tr></thead><tbody>
-        ${indexes.map((i) => `<tr><td>${escapeHtml(i.name)}</td><td>${i.unique ? "Yes" : "No"}</td></tr>`).join("")}
-        </tbody></table></div>`
-    : "";
-
   dbxSchemaContent.innerHTML = `
     <div class="dbx-schema-table">
       <h3>${escapeHtml(activeTable)} <span class="dbx-row-badge">${cols.length} column${cols.length === 1 ? "" : "s"}</span></h3>
-      <div class="dbx-table-wrap">
-        <table>
-          <thead><tr><th>Column</th><th>Type</th><th>Constraint</th><th>Default</th></tr></thead>
-          <tbody>${colRows}</tbody>
-        </table>
-      </div>
+      <div id="dbx-schema-columns-grid" class="dbx-ag-grid dbx-ag-grid--auto ag-theme-quartz"></div>
     </div>
-    ${fkRows}
-    ${idxRows}
+    ${
+      fks.length
+        ? `<div class="dbx-schema-table"><h3>Foreign keys</h3><div id="dbx-schema-fks-grid" class="dbx-ag-grid dbx-ag-grid--auto ag-theme-quartz"></div></div>`
+        : ""
+    }
+    ${
+      indexes.length
+        ? `<div class="dbx-schema-table"><h3>Indexes</h3><div id="dbx-schema-idx-grid" class="dbx-ag-grid dbx-ag-grid--auto ag-theme-quartz"></div></div>`
+        : ""
+    }
     ${createSql ? `<div class="dbx-schema-table"><h3>CREATE statement</h3><div class="dbx-create-sql">${escapeHtml(createSql)}</div></div>` : ""}
   `;
+
+  const columnsGridEl = document.getElementById("dbx-schema-columns-grid");
+  schemaGridApis.push(
+    createStaticGrid(
+      columnsGridEl,
+      [
+        {
+          headerName: "Column",
+          field: "name",
+          flex: 1.4,
+          cellRenderer: (p) =>
+            p.data.pk
+              ? `${escapeHtml(p.value)}<span class="dbx-pk-badge">PK</span>`
+              : escapeHtml(p.value),
+        },
+        { headerName: "Type", field: "type", valueFormatter: (p) => p.value || "—" },
+        {
+          headerName: "Constraint",
+          field: "notnull",
+          valueFormatter: (p) => (p.value ? "NOT NULL" : ""),
+        },
+        {
+          headerName: "Default",
+          field: "dflt",
+          valueFormatter: (p) => (p.value === null ? "" : String(p.value)),
+        },
+      ],
+      cols,
+    ),
+  );
+
+  if (fks.length) {
+    const fksGridEl = document.getElementById("dbx-schema-fks-grid");
+    schemaGridApis.push(
+      createStaticGrid(
+        fksGridEl,
+        [
+          { headerName: "Column", field: "from" },
+          {
+            headerName: "References",
+            valueGetter: (p) => `${p.data.table}.${p.data.to}`,
+          },
+        ],
+        fks,
+      ),
+    );
+  }
+
+  if (indexes.length) {
+    const idxGridEl = document.getElementById("dbx-schema-idx-grid");
+    schemaGridApis.push(
+      createStaticGrid(
+        idxGridEl,
+        [
+          { headerName: "Name", field: "name", flex: 1.5 },
+          {
+            headerName: "Unique",
+            field: "unique",
+            valueFormatter: (p) => (p.value ? "Yes" : "No"),
+          },
+        ],
+        indexes,
+      ),
+    );
+  }
 }
 
 const ALLOWED_QUERY_PREFIX = /^\s*(SELECT|WITH|PRAGMA|EXPLAIN)\b/i;
@@ -614,10 +691,11 @@ function runUserQuery() {
     dbxQueryGridEl.style.display = "block";
     queryGridApi = agGrid.createGrid(dbxQueryGridEl, {
       ...GRID_DEFAULTS,
-      theme: agGridTheme(),
+      theme: getAgTheme(getCurrentTheme()),
       columnDefs: buildColumnDefs(columns, []),
       rowData: rowsToObjects(columns, values),
     });
+    requestAnimationFrame(() => dbxQueryGridEl.classList.add("visible"));
   } catch (e) {
     showQueryError(e.message || String(e));
   }
