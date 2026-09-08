@@ -328,61 +328,6 @@
   color: var(--text-color);
   font-size: 0.85rem;
 }
-.dbx-row-count {
-  font-size: 0.8rem;
-  opacity: 0.6;
-  white-space: nowrap;
-}
-
-.dbx-table-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--table-border);
-  border-radius: 10px;
-  background: var(--table-bg);
-}
-.dbx-table-wrap table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-  white-space: nowrap;
-}
-.dbx-table-wrap thead th {
-  position: sticky;
-  top: 0;
-  background: var(--table-bg);
-  text-align: left;
-  font-weight: 600;
-  padding: 9px 12px;
-  border-bottom: 2px solid var(--table-border);
-  z-index: 1;
-}
-.dbx-table-wrap thead th .dbx-col-type {
-  display: block;
-  font-weight: 400;
-  font-size: 0.68rem;
-  opacity: 0.5;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-.dbx-table-wrap td {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--table-border);
-  max-width: 320px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.dbx-table-wrap tbody tr:nth-child(odd) {
-  background: var(--table-stripe-odd);
-}
-.dbx-table-wrap tbody tr:nth-child(even) {
-  background: var(--table-stripe-even);
-}
-.dbx-table-wrap tbody tr:hover {
-  background: var(--row-hover-bg);
-}
-.dbx-table-wrap tbody tr:last-child td {
-  border-bottom: none;
-}
 .dbx-cell-null {
   opacity: 0.4;
   font-style: italic;
@@ -403,9 +348,26 @@
   width: 100%;
   border-radius: 10px;
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+.dbx-ag-grid.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.dbx-ag-grid--auto {
+  height: auto;
 }
 .dbx-pk-cell {
   font-weight: 600;
+}
+.dbx-num-cell {
+  text-align: right;
+  justify-content: flex-end;
+  font-variant-numeric: tabular-nums;
 }
 
 .dbx-schema-table {
