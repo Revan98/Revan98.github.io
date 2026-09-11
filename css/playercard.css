@@ -11,7 +11,7 @@
 }
 
 .navbar.scrolled {
-  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 40px rgb(0 0 0 / 0.3);
 }
 
 .spinner {
@@ -70,13 +70,13 @@
   border-radius: 50%;
   color: var(--chart-line);
   margin-bottom: 1.2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 0.08);
 }
 
 .search-hero h1 {
   font-family: "Playfair Display", serif;
   font-size: 2.2rem;
-  font-weight: 700;
+  font-weight: bold;
   color: var(--text-color);
   margin-bottom: 0.6rem;
 }
@@ -112,7 +112,7 @@
   border-radius: 9px;
   overflow: hidden;
   z-index: 200;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.15);
   max-height: 240px;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -136,7 +136,7 @@
 
 .name-suggestion-item:hover,
 .name-suggestion-item.is-active {
-  background: var(--hover-bg, rgba(128, 128, 128, 0.12));
+  background: var(--hover-bg, rgb(128 128 128 / 0.12));
 }
 
 .name-suggestion-name {
@@ -225,7 +225,7 @@
   border-radius: 12px;
   padding: 1.4rem 1.6rem 1.5rem;
   margin-bottom: 1.2rem;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 16px rgb(0 0 0 / 0.05);
 }
 
 .pc-profile-topbar {
@@ -264,7 +264,7 @@
 .pc-name {
   font-family: "DM Sans", sans-serif;
   font-size: 1.9rem;
-  font-weight: 700;
+  font-weight: bold;
   color: var(--text-color);
   line-height: 1.15;
   margin-bottom: 5px;
@@ -278,7 +278,7 @@
 
 .pc-id-label {
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--text-color);
@@ -294,7 +294,7 @@
 
 .pc-type-badge {
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 2px 8px;
@@ -304,16 +304,16 @@
 
 .pc-type-badge.badge-farm {
   display: inline-block;
-  background: rgba(244, 67, 54, 0.12);
+  background: rgb(244 67 54 / 0.12);
   color: #f44336;
-  border: 1px solid rgba(244, 67, 54, 0.3);
+  border: 1px solid rgb(244 67 54 / 0.3);
 }
 
 .pc-type-badge.badge-main {
   display: inline-block;
-  background: rgba(76, 175, 80, 0.12);
+  background: rgb(76 175 80 / 0.12);
   color: #4caf50;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  border: 1px solid rgb(76 175 80 / 0.3);
 }
 
 .pc-ch-value {
@@ -340,21 +340,21 @@
 }
 
 .pill-status-ok {
-  background: rgba(76, 175, 80, 0.12);
+  background: rgb(76 175 80 / 0.12);
   color: #4caf50;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  border: 1px solid rgb(76 175 80 / 0.3);
 }
 
 .pill-vacation {
-  background: rgba(255, 152, 0, 0.14);
+  background: rgb(255 152 0 / 0.14);
   color: #ff9800;
-  border: 1px solid rgba(255, 152, 0, 0.35);
+  border: 1px solid rgb(255 152 0 / 0.35);
 }
 
 .pill-status-other {
-  background: rgba(33, 150, 243, 0.12);
+  background: rgb(33 150 243 / 0.12);
   color: #2196f3;
-  border: 1px solid rgba(33, 150, 243, 0.3);
+  border: 1px solid rgb(33 150 243 / 0.3);
 }
 
 .pc-section {
@@ -363,7 +363,7 @@
   border-radius: 10px;
   padding: 1.2rem 1.4rem;
   margin-bottom: 1.2rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.04);
 }
 
 .pc-section.is-collapsible {
@@ -378,7 +378,7 @@
   align-items: center;
   gap: 7px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-color);
@@ -439,7 +439,7 @@
 }
 .pc-farm-kvk-label {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--chart-line);
@@ -512,7 +512,7 @@
 
 .pc-stat-label {
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-color);
@@ -521,7 +521,7 @@
 
 .pc-stat-main {
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: bold;
   color: var(--text-color);
   line-height: 1.2;
 }
@@ -549,7 +549,7 @@
 
 .pc-stat-pair-label {
   font-size: 0.65rem;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-color);
@@ -562,7 +562,7 @@
   position: relative;
 }
 
-@media (max-width: 600px) {
+@media (width <= 600px) {
   .pc-chart-wrap {
     height: 280px;
   }
@@ -657,7 +657,7 @@
   margin-right: 4px;
   color: var(--text-color);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: bold;
   opacity: 0.5;
 }
 .modal-pair-stack {
@@ -728,8 +728,8 @@
   position: relative;
 }
 .equip-box--framed {
-  --rarity-border: rgba(148, 163, 184, 0.55);
-  --rarity-glow: rgba(148, 163, 184, 0.14);
+  --rarity-border: rgb(148 163 184 / 0.55);
+  --rarity-glow: rgb(148 163 184 / 0.14);
 }
 .equip-box--framed::before {
   content: "";
@@ -739,7 +739,7 @@
   background: var(--rarity-glow);
   box-shadow:
     0 0 12px var(--rarity-glow),
-    inset 0 0 10px rgba(0, 0, 0, 0.28);
+    inset 0 0 10px rgb(0 0 0 / 0.28);
   transform: rotate(45deg);
   pointer-events: none;
 }
@@ -770,25 +770,25 @@
 
 .equip-box--framed.rarity-gold {
   --rarity-border: #f2b632;
-  --rarity-glow: rgba(242, 182, 50, 0.2);
+  --rarity-glow: rgb(242 182 50 / 0.2);
 }
 .equip-box--framed.rarity-purple {
   --rarity-border: #a855f7;
-  --rarity-glow: rgba(168, 85, 247, 0.2);
+  --rarity-glow: rgb(168 85 247 / 0.2);
 }
 .equip-box--framed.rarity-blue {
   --rarity-border: #3b82f6;
-  --rarity-glow: rgba(59, 130, 246, 0.2);
+  --rarity-glow: rgb(59 130 246 / 0.2);
 }
 .equip-box--framed.rarity-green {
   --rarity-border: #22c55e;
-  --rarity-glow: rgba(34, 197, 94, 0.2);
+  --rarity-glow: rgb(34 197 94 / 0.2);
 }
 .equip-box--framed.rarity-gray,
 .equip-box--framed.rarity-empty,
 .equip-box--framed.rarity-unknown {
   --rarity-border: #9ca3af;
-  --rarity-glow: rgba(156, 163, 175, 0.16);
+  --rarity-glow: rgb(156 163 175 / 0.16);
 }
 .equip-meta {
   display: flex;
@@ -929,7 +929,7 @@
   padding: 1rem 0;
 }
 
-@media (max-width: 600px) {
+@media (width <= 600px) {
   .pc-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -986,7 +986,7 @@
 
 .scan-item-label {
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-color);
@@ -997,7 +997,7 @@
 
 .scan-item-value {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: bold;
   color: var(--text-color);
   line-height: 1.2;
   white-space: nowrap;
@@ -1014,7 +1014,7 @@
 
 .scan-tier-label {
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-color);
@@ -1025,13 +1025,13 @@
 
 .scan-tier-val {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: bold;
   color: var(--text-color);
   white-space: nowrap;
   padding-top: 2px;
 }
 
-@media (max-width: 700px) {
+@media (width <= 700px) {
   .scan-item,
   .scan-tier-item {
     padding: 0 1rem 0.9rem;
