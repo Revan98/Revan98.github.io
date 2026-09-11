@@ -1,3 +1,56 @@
+function getToastContainer() {
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+const TOAST_ICONS = {
+  error: "fa-solid fa-circle-exclamation",
+  info: "fa-solid fa-circle-info",
+  success: "fa-solid fa-circle-check",
+};
+
+function showToast(message, type = "info", duration = 5000) {
+  const container = getToastContainer();
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.setAttribute("role", "alert");
+
+  const icon = document.createElement("i");
+  icon.className = `toast-icon ${TOAST_ICONS[type] || TOAST_ICONS.info}`;
+
+  const text = document.createElement("span");
+  text.className = "toast-message";
+  text.textContent = message;
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "toast-close";
+  closeBtn.setAttribute("aria-label", "Dismiss");
+  closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+
+  toast.append(icon, text, closeBtn);
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add("show"));
+
+  const remove = () => {
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    toast.addEventListener("transitionend", () => toast.remove(), {
+      once: true,
+    });
+  };
+
+  closeBtn.addEventListener("click", remove);
+  if (duration > 0) setTimeout(remove, duration);
+}
+
 function getKDFromURL() {
   const params = new URLSearchParams(window.location.search);
   return normalizeNumericId(params.get("kd"));
@@ -54,14 +107,14 @@ async function loadEquipRefData() {
   }
 }
 loadEquipRefData();
-
+const DB_VERSION = "1"; 
 async function loadDatabase() {
   const SQL = await initSqlJs({
     locateFile: (file) =>
       `https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/${file}`,
   });
 
-  const res = await fetch("kvk.db");
+  const res = await fetch(`kvk.db?v=${DB_VERSION}`);
   const buffer = await res.arrayBuffer();
   db = new SQL.Database(new Uint8Array(buffer));
   ensureDashboardSchema();
@@ -80,14 +133,14 @@ function ensureDashboardSchema() {
   });
 }
 
-const SheetCache = {};
+const DbCache = {};
 
-async function loadAllSheetsCache() {
+async function loadDashboardData() {
   await loadDatabase();
 
   const kd = getKDFromURL();
   if (!kd) {
-    alert("Invalid or missing kingdom ID");
+    showToast("Invalid or missing kingdom ID", "error");
     return;
   }
 
@@ -109,13 +162,13 @@ async function loadAllSheetsCache() {
 	`)[0];
 
   if (!kvk) {
-    alert("No KvK found in DB for this kingdom/KvK selection");
+    showToast("No KvK found in DB for this kingdom/KvK selection", "error");
     return;
   }
 
   const kvkId = kvk.values[0][0];
-  SheetCache.currentKvkNumber = kvk.values[0][1];
-  SheetCache.currentKvkName = kvk.values[0][2];
+  DbCache.currentKvkNumber = kvk.values[0][1];
+  DbCache.currentKvkName = kvk.values[0][2];
   const snaps = db.exec(`
     SELECT id, snapshot_date
     FROM snapshots
@@ -123,8 +176,8 @@ async function loadAllSheetsCache() {
     ORDER BY snapshot_date
   `)[0];
 
-  SheetCache.sheetsList = snaps.values.map((r) => r[1]); // dates
-  SheetCache._snapIds = Object.fromEntries(
+  DbCache.snapshotsList = snaps.values.map((r) => r[1]); // dates
+  DbCache.snapshotIds = Object.fromEntries(
     snaps.values.map((r) => [r[1], r[0]]),
   );
 
@@ -163,11 +216,11 @@ async function loadAllSheetsCache() {
       AND upper(coalesce(s.vacation, 'NO')) != 'YES'
   `)[0];
 
-  SheetCache.lastSheetData = {
+  DbCache.lastSnapshotData = {
     rows: grid.values,
   };
 
-  SheetCache.sheetsData = {};
+  DbCache.snapshotsData = {};
 
   // Batch-load all snapshot diff data in one query instead of one per snapshot
   const allSnapIds = snaps.values.map((r) => r[0]).join(",");
@@ -195,7 +248,7 @@ async function loadAllSheetsCache() {
       });
 
       snaps.values.forEach(([sid, date]) => {
-        SheetCache.sheetsData[date] = { rows: bySnap[sid] || {} };
+        DbCache.snapshotsData[date] = { rows: bySnap[sid] || {} };
       });
     }
   }
@@ -227,7 +280,7 @@ const COL_table = {
 
 let gridApi;
 
-function buildRowDataFromSheet(rows) {
+function buildRowData(rows) {
   return rows.map((r) => ({
     id: r[COL_table.ID],
     name: r[COL_table.NAME],
@@ -312,12 +365,12 @@ const DKP_EXPORT_COLUMNS = [
 
 function getExportFileName() {
   const kd = getKDFromURL() || "dkp";
-  const kvkPart = SheetCache.currentKvkNumber
-    ? `_kvk${SheetCache.currentKvkNumber}`
+  const kvkPart = DbCache.currentKvkNumber
+    ? `_kvk${DbCache.currentKvkNumber}`
     : "";
-  const lastSheet =
-    SheetCache.sheetsList?.[SheetCache.sheetsList.length - 1] || "export";
-  return `DKP_${kd}${kvkPart}_${String(lastSheet).replaceAll("-", "_")}.csv`;
+  const lastSnapshot =
+    DbCache.snapshotsList?.[DbCache.snapshotsList.length - 1] || "export";
+  return `DKP_${kd}${kvkPart}_${String(lastSnapshot).replaceAll("-", "_")}.csv`;
 }
 
 function exportDkpCsv() {
@@ -537,13 +590,60 @@ const gridOptions = {
   rowHeight: 60,
   rowBuffer: 20,
   suppressRowTransform: true,
+  cacheQuickFilter: false,
+  quickFilterParser: quickFilterParser,
+  quickFilterMatcher: quickFilterMatcher,
 };
 
-gridApi = agGrid.createGrid(document.querySelector("#myGrid"), gridOptions);
-
 function onFilterTextBoxChanged() {
-  const input = document.getElementById("quickFilter");
-  gridApi.setGridOption("quickFilterText", input.value);
+  gridApi.setGridOption(
+    "quickFilterText",
+    document.getElementById("filter-text-box").value,
+  );
+}
+
+function quickFilterParser(quickFilter) {
+  const quickFilterParts = [];
+  let lastSpaceIndex = -1;
+  const isQuote = (index) => quickFilter[index] === '"';
+  const getQuickFilterPart = (lastSpaceIndex, currentIndex) => {
+    const startsWithQuote = isQuote(lastSpaceIndex + 1);
+    const endsWithQuote = isQuote(currentIndex - 1);
+    const startIndex =
+      startsWithQuote && endsWithQuote
+        ? lastSpaceIndex + 2
+        : lastSpaceIndex + 1;
+    const endIndex =
+      startsWithQuote && endsWithQuote ? currentIndex - 1 : currentIndex;
+    return quickFilter.slice(startIndex, endIndex);
+  };
+  for (let i = 0; i < quickFilter.length; i++) {
+    const char = quickFilter[i];
+    if (char === " ") {
+      if (!isQuote(lastSpaceIndex + 1) || isQuote(i - 1)) {
+        quickFilterParts.push(getQuickFilterPart(lastSpaceIndex, i));
+        lastSpaceIndex = i;
+      }
+    }
+  }
+  if (lastSpaceIndex !== quickFilter.length - 1) {
+    quickFilterParts.push(
+      getQuickFilterPart(lastSpaceIndex, quickFilter.length),
+    );
+  }
+  return quickFilterParts;
+}
+
+function quickFilterMatcher(quickFilterParts, rowQuickFilterAggregateText) {
+  let result;
+  try {
+    result = quickFilterParts.every((part) =>
+      rowQuickFilterAggregateText.match(part),
+    );
+  } catch {
+    result = false;
+  }
+  return result;
 }
 
 document
@@ -557,7 +657,7 @@ function copyTop18() {
   });
 
   if (!allRows.length) {
-    alert("No data loaded yet.");
+    showToast("No data loaded yet.", "info");
     return;
   }
 
@@ -612,17 +712,17 @@ const CHART_STYLES = {
   },
 };
 
-function formatSheetDate(sheetName) {
-  if (!sheetName || typeof sheetName !== "string") return sheetName;
+function formatSnapshotDate(snapshotDate) {
+  if (!snapshotDate || typeof snapshotDate !== "string") return snapshotDate;
 
-  if (/^\d{2}_\d{2}_\d{4}$/.test(sheetName)) {
-    return sheetName.replaceAll("_", ".");
+  if (/^\d{2}_\d{2}_\d{4}$/.test(snapshotDate)) {
+    return snapshotDate.replaceAll("_", ".");
   }
 
-  return sheetName;
+  return snapshotDate;
 }
 
-// Column indices in the batched sheetsData rows:
+// Column indices in the batched snapshotsData rows:
 // [0]=snapshot_id, [1]=governor_id, [2]=kp_diff, [3]=power_diff, [4]=t4_diff, [5]=t5_diff, [6]=deads_diff
 const CHART_COL = {
   KP: 2,
@@ -676,8 +776,8 @@ function buildChartDatasets(governorId) {
   const colors = ["#dc3545", "#007bff", "#28a745", "#ffc107", "#6f42c1"];
 
   return CHART_SERIES.map((series, i) => {
-    const data = SheetCache.sheetsList.map((sheetName) => {
-      const sheet = SheetCache.sheetsData[sheetName];
+    const data = DbCache.snapshotsList.map((snapshotDate) => {
+      const sheet = DbCache.snapshotsData[snapshotDate];
 
       if (!sheet) return 0;
       const row = sheet.rows?.[governorId];
@@ -728,7 +828,7 @@ function applyChartTheme() {
 function updateChart(governorId) {
   selectedGovernorId = governorId;
 
-  const labels = SheetCache.sheetsList.map(formatSheetDate);
+  const labels = DbCache.snapshotsList.map(formatSnapshotDate);
   const datasets = buildChartDatasets(governorId);
   const canvas = document.querySelector("#modal-chart");
   if (!canvas) return;
@@ -742,11 +842,11 @@ function updateChart(governorId) {
   createChart(ctx, labels, datasets);
 }
 
-loadAllSheetsCache().then(() => {
+loadDashboardData().then(() => {
   const spinner = document.getElementById("loading-spinner");
 
-  const rows = SheetCache.lastSheetData.rows;
-  const rowData = buildRowDataFromSheet(rows);
+  const rows = DbCache.lastSnapshotData.rows;
+  const rowData = buildRowData(rows);
 
   gridApi.setGridOption("rowData", rowData);
 
@@ -1984,9 +2084,16 @@ function closeGovModal() {
 document
   .getElementById("govModalClose")
   .addEventListener("click", closeGovModal);
+  
 document.getElementById("govModalOverlay").addEventListener("click", (e) => {
   if (e.target === e.currentTarget) closeGovModal();
 });
+
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeGovModal();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const gridDiv = document.querySelector("#myGrid");
+  gridApi = agGrid.createGrid(gridDiv, gridOptions);
 });
