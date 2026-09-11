@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DKP stats</title>
     <link
@@ -107,13 +107,7 @@
               <i class="fa-regular fa-copy" style="font-size: 14px"></i>
               Copy Top 18
             </button>
-            <input
-              type="text"
-              id="quickFilter"
-              placeholder="Search..."
-              class="quick-filter"
-              oninput="onFilterTextBoxChanged()"
-            />
+			<input type="text" id="filter-text-box" placeholder="Search..." oninput="onFilterTextBoxChanged()" />
           </div>
 
           <div id="loading-spinner" class="loading-spinner">
