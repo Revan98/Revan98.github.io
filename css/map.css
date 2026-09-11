@@ -54,7 +54,7 @@
 
 .map-tab.active {
   border-color: var(--chart-line);
-  background: rgba(11, 116, 209, 0.13);
+  background: rgb(11 116 209 / 0.13);
 }
 
 .backup-actions {
@@ -69,7 +69,7 @@
 }
 
 body.dark .map-tab.active {
-  background: rgba(255, 152, 0, 0.14);
+  background: rgb(255 152 0 / 0.14);
 }
 
 .tab-panel {
@@ -89,7 +89,7 @@ body.dark .map-tab.active {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
   border-radius: 8px;
-  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.05);
+  box-shadow: 0 4px 18px rgb(11 20 40 / 0.05);
 }
 
 .team-layout {
@@ -159,8 +159,8 @@ body.dark .map-tab.active {
   border-radius: 8px;
   border: 1px solid var(--table-border);
   background: var(--button-primary-bg);
-  color: #fff;
-  font-weight: 700;
+  color: #ffffff;
+  font-weight: bold;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
@@ -240,14 +240,14 @@ body.dark .map-tab.active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(11, 116, 209, 0.15);
+  background: rgb(11 116 209 / 0.15);
   font-size: 0.78rem;
   font-weight: 800;
   padding: 0 7px;
 }
 
 body.dark .player-slot {
-  background: rgba(255, 152, 0, 0.16);
+  background: rgb(255 152 0 / 0.16);
 }
 
 .player-name {
@@ -297,7 +297,7 @@ body.dark .player-slot {
 .player-coordinator.active {
   background: var(--chart-line);
   border-color: var(--chart-line);
-  color: #fff;
+  color: #ffffff;
 }
 
 .player-coordinator:disabled {
@@ -475,7 +475,7 @@ body.dark .player-slot {
   border-radius: 8px;
   overflow: hidden;
   background: var(--table-bg);
-  box-shadow: 0 4px 18px rgba(11, 20, 40, 0.05);
+  box-shadow: 0 4px 18px rgb(11 20 40 / 0.05);
 }
 
 .planning-topbar {
@@ -509,11 +509,11 @@ body.dark .player-slot {
 
 .lane-plan-tab.active {
   border-color: var(--chart-line);
-  background: rgba(11, 116, 209, 0.13);
+  background: rgb(11 116 209 / 0.13);
 }
 
 body.dark .lane-plan-tab.active {
-  background: rgba(255, 152, 0, 0.14);
+  background: rgb(255 152 0 / 0.14);
 }
 
 .ark-skills-card {
@@ -575,7 +575,7 @@ body.dark .lane-plan-tab.active {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.58);
+  background: rgb(0 0 0 / 0.58);
 }
 
 .skill-modal-overlay[hidden] {
@@ -590,7 +590,7 @@ body.dark .lane-plan-tab.active {
   border-radius: 8px;
   background: var(--table-bg);
   color: var(--text-color);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 0.4);
 }
 
 .skill-modal-header,
@@ -1075,7 +1075,7 @@ body.dark .lane-plan-tab.active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: bold;
   font-size: 1rem;
 }
 
@@ -1083,7 +1083,7 @@ body.dark .lane-plan-tab.active {
   min-height: 38px;
   padding: 0 12px;
   border-radius: 8px;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 .map-stage-switcher {
@@ -1165,13 +1165,13 @@ body.dark .lane-plan-tab.active {
 .filter-chip.active,
 .marker-row.active {
   border-color: var(--chart-line);
-  background: rgba(11, 116, 209, 0.13);
+  background: rgb(11 116 209 / 0.13);
 }
 
 body.dark .map-pin-btn.active,
 body.dark .filter-chip.active,
 body.dark .marker-row.active {
-  background: rgba(255, 152, 0, 0.14);
+  background: rgb(255 152 0 / 0.14);
 }
 
 .map-content {
@@ -1201,7 +1201,7 @@ body.dark .marker-row.active {
   border-radius: 999px;
   padding: 7px 10px;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 .marker-list {
@@ -1244,16 +1244,8 @@ body.dark .marker-row.active {
   border-radius: 8px;
   border: 1px solid var(--table-border);
   background:
-    radial-gradient(
-      circle at 20% 20%,
-      rgba(58, 131, 196, 0.2),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 82% 72%,
-      rgba(233, 111, 82, 0.16),
-      transparent 30%
-    ),
+    radial-gradient(circle at 20% 20%, rgb(58 131 196 / 0.2), transparent 28%),
+    radial-gradient(circle at 82% 72%, rgb(233 111 82 / 0.16), transparent 30%),
     #10151c;
   overflow: hidden;
   touch-action: none;
@@ -1291,7 +1283,7 @@ body.dark .marker-row.active {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 24px 34px rgb(0 0 0 / 0.4));
   pointer-events: none;
 }
 
@@ -1308,15 +1300,15 @@ body.dark .marker-row.active {
   position: absolute;
   width: 28px;
   height: 28px;
-  border: 2px solid #fff;
+  border: 2px solid #ffffff;
   border-radius: 50% 50% 50% 6px;
-  color: #fff;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   transform: translate(-50%, -100%) rotate(-45deg);
   cursor: pointer;
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.34);
+  box-shadow: 0 5px 14px rgb(0 0 0 / 0.34);
   transition:
     transform 0.16s,
     box-shadow 0.16s,
@@ -1334,7 +1326,7 @@ body.dark .marker-row.active {
 .map-marker:hover,
 .map-marker.active {
   transform: translate(-50%, -100%) rotate(-45deg) scale(1.2);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.45);
   z-index: 5;
 }
 
@@ -1451,7 +1443,7 @@ body.dark .marker-row.active {
   width: 12px;
   height: 12px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.56);
+  border: 1px solid rgb(255 255 255 / 0.56);
   background: var(--chart-line);
   cursor: nwse-resize;
 }
@@ -1464,7 +1456,7 @@ body.dark .marker-row.active {
   border: 1px solid var(--table-border);
   border-radius: 8px;
   background: var(--table-bg);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
 }
 
 .map-roles-divider {
@@ -1529,7 +1521,7 @@ body.dark .marker-row.active {
   padding: 5px 9px;
   font-size: 0.72rem;
   font-weight: 800;
-  color: #fff;
+  color: #ffffff;
 }
 
 .detail-name {
@@ -1545,7 +1537,7 @@ body.dark .marker-row.active {
   color: var(--text-color);
   opacity: 0.62;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
@@ -1584,12 +1576,12 @@ body.dark .marker-row.active {
 .detail-reset {
   border-radius: 8px;
   padding: 9px 12px;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 .detail-delete {
   background: var(--button-secondary-bg);
-  color: #fff;
+  color: #ffffff;
 }
 
 .map-icon-btn:hover,
@@ -1599,7 +1591,7 @@ body.dark .marker-row.active {
   border-color: var(--chart-line);
 }
 
-@media (max-width: 1100px) {
+@media (width <= 1100px) {
   .map-toolbar {
     grid-template-columns: 1fr;
   }
@@ -1638,7 +1630,7 @@ body.dark .marker-row.active {
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .map-shell {
     width: 100%;
   }
@@ -1722,7 +1714,7 @@ body.dark .marker-row.active {
   background: var(--planner-accent-soft);
   border: 1px solid var(--chart-line);
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: bold;
   color: var(--text-color);
   white-space: nowrap;
 }
@@ -1747,7 +1739,7 @@ body.dark .marker-row.active {
 .role-tag-remove:hover {
   opacity: 1;
   background: var(--button-secondary-bg);
-  color: #fff;
+  color: #ffffff;
 }
 
 .role-manual-input {
@@ -1808,7 +1800,7 @@ body.dark .marker-row.active {
   background: var(--bg-color);
   color: var(--text-color);
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: bold;
   cursor: grab;
   user-select: none;
   transition:
@@ -1836,7 +1828,7 @@ body.dark .marker-row.active {
   padding: 5px 8px;
   border-left: 1px solid var(--table-border);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: bold;
   min-width: 0;
   transition: outline 0.1s;
 }
@@ -1857,7 +1849,7 @@ body.dark .marker-row.active {
 .slot-role-empty {
   opacity: 0.45;
   font-style: italic;
-  font-weight: 400;
+  font-weight: normal;
 }
 
 .slot-role.has-role {
@@ -1884,7 +1876,7 @@ body.dark .marker-row.active {
 .slot-role-clear:hover {
   background: var(--button-secondary-bg);
   border-color: var(--button-secondary-bg);
-  color: #fff;
+  color: #ffffff;
 }
 
 .player-list,
@@ -1918,13 +1910,13 @@ body.dark .marker-row.active {
 .player-gl-btn.active {
   background: #5aa36b;
   border-color: #5aa36b;
-  color: #fff;
+  color: #ffffff;
 }
 
 .player-rl-btn.active {
   background: #8b6ac8;
   border-color: #8b6ac8;
-  color: #fff;
+  color: #ffffff;
 }
 
 /* GL/RL card borders */
@@ -1998,7 +1990,7 @@ body.dark .marker-row.active {
   min-width: 18px;
   padding: 0 3px;
   border-radius: 50%;
-  color: #fff;
+  color: #ffffff;
   font-size: 0.6rem;
   font-weight: 900;
   font-style: normal;
@@ -2033,7 +2025,7 @@ body.dark .marker-row.active {
   border: 1px solid var(--chart-line);
   background: color-mix(in srgb, var(--chart-line) 12%, var(--table-bg));
   color: var(--text-color);
-  font-weight: 700;
+  font-weight: bold;
   white-space: nowrap;
 }
 
@@ -2141,7 +2133,7 @@ body.dark .marker-row.active {
   min-width: 17px;
   padding: 0 3px;
   border-radius: 50%;
-  color: #fff;
+  color: #ffffff;
   font-size: 0.58rem;
   font-weight: 900;
   flex-shrink: 0;
@@ -2235,7 +2227,7 @@ body.dark .marker-row.active {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.58);
+  background: rgb(0 0 0 / 0.58);
 }
 
 .lane-stages-modal-overlay[hidden] {
@@ -2248,7 +2240,7 @@ body.dark .marker-row.active {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
   border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.32);
   padding: 10px;
   min-width: 196px;
   display: flex;
@@ -2311,7 +2303,7 @@ body.dark .marker-row.active {
   align-items: center;
   gap: 6px;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: bold;
   color: var(--text-color);
   cursor: pointer;
 }
