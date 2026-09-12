@@ -1,3 +1,56 @@
+function getToastContainer() {
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+const TOAST_ICONS = {
+  error: "fa-solid fa-circle-exclamation",
+  info: "fa-solid fa-circle-info",
+  success: "fa-solid fa-circle-check",
+};
+
+function showToast(message, type = "info", duration = 5000) {
+  const container = getToastContainer();
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.setAttribute("role", "alert");
+
+  const icon = document.createElement("i");
+  icon.className = `toast-icon ${TOAST_ICONS[type] || TOAST_ICONS.info}`;
+
+  const text = document.createElement("span");
+  text.className = "toast-message";
+  text.textContent = message;
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "toast-close";
+  closeBtn.setAttribute("aria-label", "Dismiss");
+  closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+
+  toast.append(icon, text, closeBtn);
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add("show"));
+
+  const remove = () => {
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    toast.addEventListener("transitionend", () => toast.remove(), {
+      once: true,
+    });
+  };
+
+  closeBtn.addEventListener("click", remove);
+  if (duration > 0) setTimeout(remove, duration);
+}
+
 let file1Data = [];
 let file2Data = [];
 let mergedResults = null;
@@ -140,7 +193,7 @@ async function handleFiles() {
 
   if (!file1 || !file2) return;
   if (!/\.xlsx$/i.test(file1.name) || !/\.xlsx$/i.test(file2.name)) {
-    alert("Please select .xlsx files only.");
+    showToast("Please select .xlsx files only.");
     return;
   }
 
@@ -172,7 +225,7 @@ async function doMerge() {
     const mergeColumn = document.getElementById("mergeColumn").value;
 
     if (!idColumn || !sourceIdColumn || !mergeColumn)
-      return alert("Please select columns first.");
+      return showToast("Please select columns first.");
 
     progressEl.value = 10;
 
@@ -234,7 +287,7 @@ function applyPercentFormats(ws, rows) {
 }
 
 function exportToXlsx(rows) {
-  if (!rows) return alert("No results to export.");
+  if (!rows) return showToast("No results to export.");
   const ws = XLSX.utils.json_to_sheet(rows);
   applyPercentFormats(ws, rows);
   const wb = XLSX.utils.book_new();
@@ -245,7 +298,7 @@ function exportToXlsx(rows) {
 }
 
 function exportToCsv(rows) {
-  if (!rows) return alert("No results to export.");
+  if (!rows) return showToast("No results to export.");
 
   const columns = Object.keys(rows[0]);
   const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -276,7 +329,7 @@ function exportToCsv(rows) {
 }
 
 function exportToJson(rows) {
-  if (!rows) return alert("No results to export.");
+  if (!rows) return showToast("No results to export.");
 
   const blob = new Blob([JSON.stringify(rows, null, 2)], {
     type: "application/json",
