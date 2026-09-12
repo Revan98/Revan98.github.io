@@ -1,3 +1,56 @@
+function getToastContainer() {
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+const TOAST_ICONS = {
+  error: "fa-solid fa-circle-exclamation",
+  info: "fa-solid fa-circle-info",
+  success: "fa-solid fa-circle-check",
+};
+
+function showToast(message, type = "info", duration = 5000) {
+  const container = getToastContainer();
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.setAttribute("role", "alert");
+
+  const icon = document.createElement("i");
+  icon.className = `toast-icon ${TOAST_ICONS[type] || TOAST_ICONS.info}`;
+
+  const text = document.createElement("span");
+  text.className = "toast-message";
+  text.textContent = message;
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "toast-close";
+  closeBtn.setAttribute("aria-label", "Dismiss");
+  closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+
+  toast.append(icon, text, closeBtn);
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add("show"));
+
+  const remove = () => {
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    toast.addEventListener("transitionend", () => toast.remove(), {
+      once: true,
+    });
+  };
+
+  closeBtn.addEventListener("click", remove);
+  if (duration > 0) setTimeout(remove, duration);
+}
+
 let powerGridApi = null;
 let resultsGridApi = null;
 
@@ -76,13 +129,13 @@ let resultsGridApi = null;
       deads: parseFloat(deadsEl.value) || 0,
     };
     await localforage.setItem(KEY_MULT, multipliers);
-    alert("Multipliers saved locally.");
+    showToast("Multipliers saved locally.");
   }
 
   async function savePowerRangesToStorage() {
     powerRanges.sort((a, b) => a.min_power - b.min_power);
     await localforage.setItem(KEY_PR, powerRanges);
-    alert("Power ranges saved locally.");
+    showToast("Power ranges saved locally.");
   }
 
   async function saveVacationList() {
@@ -96,7 +149,7 @@ let resultsGridApi = null;
         .filter(Boolean);
     }
     await localforage.setItem(KEY_VAC, vacationList);
-    alert("Vacation list saved.");
+    showToast("Vacation list saved.");
   }
 
   async function clearVacationList() {
@@ -104,7 +157,7 @@ let resultsGridApi = null;
     vacationList = [];
     vacInput.value = "";
     await localforage.setItem(KEY_VAC, vacationList);
-    alert("Vacation list cleared.");
+    showToast("Vacation list cleared.");
   }
 
   async function saveMinDkpMap() {
@@ -116,7 +169,7 @@ let resultsGridApi = null;
       return;
     await localforage.removeItem(KEY_MIN);
     minDkpMap = {};
-    alert("All Min DKP values cleared.");
+    showToast("All Min DKP values cleared.");
   }
 
   function getExportTimestamp() {
@@ -234,7 +287,7 @@ let resultsGridApi = null;
 
   prAddBtn.addEventListener("click", async () => {
     const minv = parseInt(prMin.value, 10);
-    if (Number.isNaN(minv)) return alert("Min power must be an integer");
+    if (Number.isNaN(minv)) return showToast("Min power must be an integer");
 
     const maxRaw = prMax.value.trim();
     const maxv =
@@ -244,21 +297,21 @@ let resultsGridApi = null;
           ? parseInt(maxRaw, 10)
           : null;
     if (maxRaw !== "" && maxv === null) {
-      return alert("Max power must be an integer or left empty.");
+      return showToast("Max power must be an integer or left empty.");
     }
     if (maxv !== null && maxv < minv) {
-      return alert("Max power must be greater than or equal to Min power.");
+      return showToast("Max power must be greater than or equal to Min power.");
     }
 
     const perc = parseFloat(prPercent.value);
-    if (Number.isNaN(perc)) return alert("Percentage required (e.g. 0.6)");
+    if (Number.isNaN(perc)) return showToast("Percentage required (e.g. 0.6)");
 
     const item = { min_power: minv, max_power: maxv, percentage: perc };
     const editIdx =
       "editIdx" in prAddBtn.dataset ? Number(prAddBtn.dataset.editIdx) : null;
     const error = validatePowerRange(item, powerRanges, editIdx);
     if (error) {
-      alert(
+      showToast(
         error +
           "\n\nExample fix:\nIf last range ends at 100, next should start at 101.",
       );
@@ -448,9 +501,9 @@ let resultsGridApi = null;
     setExportEnabled(false);
     const f1 = file1El.files[0];
     const f2 = file2El.files[0];
-    if (!f1 || !f2) return alert("Please select both files.");
+    if (!f1 || !f2) return showToast("Please select both files.");
     if (!/\.xlsx$/i.test(f1.name) || !/\.xlsx$/i.test(f2.name)) {
-      return alert("Please select .xlsx files only.");
+      return showToast("Please select .xlsx files only.");
     }
     progressEl.value = 5;
 
@@ -695,7 +748,7 @@ let resultsGridApi = null;
   }
 
   function exportToXlsx(rows) {
-    if (!rows) return alert("No results to export.");
+    if (!rows) return showToast("No results to export.");
     const ws = XLSX.utils.json_to_sheet(rows);
     applyPercentFormats(ws, rows);
     const wb = XLSX.utils.book_new();
@@ -705,7 +758,7 @@ let resultsGridApi = null;
     });
   }
   function exportToCsv(rows) {
-    if (!rows) return alert("No results to export.");
+    if (!rows) return showToast("No results to export.");
 
     const columns = Object.keys(rows[0]);
     const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -737,7 +790,7 @@ let resultsGridApi = null;
   }
 
   function exportToJson(rows) {
-    if (!rows) return alert("No results to export.");
+    if (!rows) return showToast("No results to export.");
 
     const blob = new Blob([JSON.stringify(rows, null, 2)], {
       type: "application/json",
@@ -800,11 +853,11 @@ let resultsGridApi = null;
         minDkpMap = parsed.min_dkp;
         await localforage.setItem(KEY_MIN, minDkpMap);
       }
-      alert("Settings imported successfully.");
+      showToast("Settings imported successfully.");
       populateUIFromMemory();
     } catch (err) {
       console.error(err);
-      alert("Failed to import settings: " + (err.message || err));
+      showToast("Failed to import settings: " + (err.message || err));
     } finally {
       importSettingsFile.value = "";
     }
@@ -843,7 +896,7 @@ let resultsGridApi = null;
       await saveMinDkpMap();
     } catch (err) {
       console.error(err);
-      alert("Error during calculation: " + (err.message || err));
+      showToast("Error during calculation: " + (err.message || err));
     } finally {
       progressEl.value = 100;
     }
