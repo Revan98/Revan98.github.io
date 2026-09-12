@@ -1,3 +1,56 @@
+function getToastContainer() {
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+const TOAST_ICONS = {
+  error: "fa-solid fa-circle-exclamation",
+  info: "fa-solid fa-circle-info",
+  success: "fa-solid fa-circle-check",
+};
+
+function showToast(message, type = "info", duration = 5000) {
+  const container = getToastContainer();
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.setAttribute("role", "alert");
+
+  const icon = document.createElement("i");
+  icon.className = `toast-icon ${TOAST_ICONS[type] || TOAST_ICONS.info}`;
+
+  const text = document.createElement("span");
+  text.className = "toast-message";
+  text.textContent = message;
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "toast-close";
+  closeBtn.setAttribute("aria-label", "Dismiss");
+  closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+
+  toast.append(icon, text, closeBtn);
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add("show"));
+
+  const remove = () => {
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    toast.addEventListener("transitionend", () => toast.remove(), {
+      once: true,
+    });
+  };
+
+  closeBtn.addEventListener("click", remove);
+  if (duration > 0) setTimeout(remove, duration);
+}
+
 let comparedResults = { matching: [], nonMatching: [] };
 const progressEl = document.getElementById("progressBar");
 const resultsInfo = document.getElementById("compare-results-info");
@@ -258,9 +311,9 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
   const keyCol = document.getElementById("keyColumn").value.trim();
   const option = document.getElementById("compareOption").value;
   if (!file1 || !file2 || !keyCol)
-    return alert("Please select both files and a key column.");
+    return showToast("Please select both files and a key column.");
   if (!/\.xlsx$/i.test(file1.name) || !/\.xlsx$/i.test(file2.name)) {
-    return alert("Please select .xlsx files only.");
+    return showToast("Please select .xlsx files only.");
   }
 
   progressEl.value = 5;
@@ -272,12 +325,12 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
     const df2 = await readFile(file2);
     progressEl.value = 60;
     if (!df1.length || !df2.length) {
-      alert("One of the files is empty.");
+      showToast("One of the files is empty.");
       return;
     }
 
     if (!(keyCol in df1[0]) || !(keyCol in df2[0])) {
-      alert(`Key column "${keyCol}" not found in both files.`);
+      showToast(`Key column "${keyCol}" not found in both files.`);
       return;
     }
     const { matching, nonMatching } = compareData(df1, df2, keyCol, option);
@@ -292,7 +345,7 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
     setExportEnabled(true);
   } catch (err) {
     console.error(err);
-    alert("Error: " + err);
+    showToast("Error: " + err);
     progressEl.value = 0;
     resultsInfo.textContent = "Comparison failed.";
   }
@@ -300,7 +353,7 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
 
 document.getElementById("export-xlsx").addEventListener("click", () => {
   if (!comparedResults.matching.length && !comparedResults.nonMatching.length)
-    return alert("No results to export yet.");
+    return showToast("No results to export yet.");
   exportToXlsx(comparedResults.matching, "compare_matching");
   if (comparedResults.nonMatching.length)
     exportToXlsx(comparedResults.nonMatching, "compare_nonmatching");
@@ -308,7 +361,7 @@ document.getElementById("export-xlsx").addEventListener("click", () => {
 
 document.getElementById("export-csv").addEventListener("click", () => {
   if (!comparedResults.matching.length && !comparedResults.nonMatching.length)
-    return alert("No results to export yet.");
+    return showToast("No results to export yet.");
   exportToCsv(comparedResults.matching, "compare_matching");
   if (comparedResults.nonMatching.length)
     exportToCsv(comparedResults.nonMatching, "compare_nonmatching");
@@ -316,7 +369,7 @@ document.getElementById("export-csv").addEventListener("click", () => {
 
 document.getElementById("export-json").addEventListener("click", () => {
   if (!comparedResults.matching.length && !comparedResults.nonMatching.length)
-    return alert("No results to export yet.");
+    return showToast("No results to export yet.");
   exportToJson(comparedResults.matching, "compare_matching");
   if (comparedResults.nonMatching.length)
     exportToJson(comparedResults.nonMatching, "compare_nonmatching");
