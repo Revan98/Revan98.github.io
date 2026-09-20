@@ -438,7 +438,7 @@ const gridOptions = {
       getQuickFilterText: () => "",
     },
     {
-      headerName: "Name",
+      headerName: "Governor",
       field: "name",
       flex: 1.25,
       minWidth: 155,
@@ -451,17 +451,57 @@ const gridOptions = {
         const nameEl = document.createElement("div");
         nameEl.classList.add("gov-name-value");
         nameEl.textContent = name;
+        if (id) {
+          nameEl.classList.add("gov-name-link");
+          nameEl.title = "View governor history";
+          nameEl.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openGovModal(String(id), name);
+          });
+        }
         wrap.appendChild(nameEl);
 
         if (!id) return wrap;
 
         const a = document.createElement("a");
-        a.textContent = id;
         a.classList.add("gov-id");
+        a.title = "Copy governor ID";
+
+        const idText = document.createElement("span");
+        idText.classList.add("gov-id-text");
+        idText.textContent = id;
+        a.appendChild(idText);
+
+        const copyIcon = document.createElement("i");
+        copyIcon.className = "fa-regular fa-copy gov-id-copy-icon";
+        a.appendChild(copyIcon);
+
         a.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
-          openGovModal(String(id), name);
+          navigator.clipboard
+            .writeText(String(id))
+            .then(() => {
+              const original = idText.textContent;
+              idText.textContent = "Copied!";
+              a.classList.add("gov-id-copied");
+              setTimeout(() => {
+                idText.textContent = original;
+                a.classList.remove("gov-id-copied");
+              }, 1200);
+            })
+            .catch(() => {
+              const ta = document.createElement("textarea");
+              ta.value = String(id);
+              ta.style.position = "fixed";
+              ta.style.opacity = "0";
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              document.body.removeChild(ta);
+              showToast("Governor ID copied", "info");
+            });
         });
         wrap.appendChild(a);
 
@@ -1087,6 +1127,15 @@ function renderCollapsibleSection(title, content, defaultOpen = false) {
   `;
 }
 
+function switchGovModalTab(tab) {
+  document.querySelectorAll(".gov-modal-tab").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tab === tab);
+  });
+  document.querySelectorAll(".gov-modal-tab-pane").forEach((pane) => {
+    pane.style.display = pane.id === `govTabPane-${tab}` ? "block" : "none";
+  });
+}
+
 function expandAllSections() {
   document.querySelectorAll(".collapsible-content").forEach((el) => {
     el.style.display = "block";
@@ -1701,6 +1750,33 @@ function buildTooltipHtml(code, kind) {
   return parts.join("");
 }
 
+const ROMAN_NUMERALS = [
+  "",
+  "I",
+  "II",
+  "III",
+  "IV",
+  "V",
+  "VI",
+  "VII",
+  "VIII",
+  "IX",
+  "X",
+];
+
+function toRoman(v) {
+  const n = parseInt(String(v).trim(), 10);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return ROMAN_NUMERALS[n] || String(n);
+}
+
+// Talent is stored as a yes/no style flag; treat anything affirmative as "has talent".
+function hasTalent(v) {
+  if (isEmptyVal(v)) return false;
+  const s = String(v).trim().toLowerCase();
+  return !["no", "n", "false", "-", "—"].includes(s);
+}
+
 function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
   const isEmpty = isEmptyVal(itemName);
   const imgSrc = isEmpty ? null : iconPath(itemName, "item");
@@ -1716,13 +1792,18 @@ function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
   const tipAttrs = isEmpty
     ? ""
     : ` data-tip-code="${escapeHtml(String(itemName).trim())}" data-tip-kind="item"`;
+  const roman = isEmpty ? "" : toRoman(lvl);
+  const awkBadge = roman
+    ? `<span class="equip-awk" title="Awakening ${roman}"><span class="equip-awk-text">${roman}</span></span>`
+    : "";
+  const talBadge =
+    !isEmpty && hasTalent(tal)
+      ? `<span class="equip-talent" title="Talent unlocked" aria-label="Talent unlocked"></span>`
+      : "";
   return `
-    <div class="equip-slot" id="${slot.id}_${marchIdx}">
+    <div class="equip-slot" id="${slot.id}_${marchIdx}" data-slot="${slot.id}">
       <div class="equip-box equip-box--framed rarity-${rarity}"${tipAttrs}>${imgTag}${fallback}</div>
-      <div class="equip-meta">
-        <span class="equip-lvl">Awk: ${lvlText}</span>
-        <span class="equip-tal">Talent: ${talText}</span>
-      </div>
+      ${talBadge}${awkBadge}
     </div>`;
 }
 
@@ -1743,23 +1824,23 @@ function renderPairBox(name) {
 
 function renderPairsSection(row) {
   const PAIR_COUNT = 12;
-  let pairRows = "";
+  let pairCards = "";
   for (let n = 1; n <= PAIR_COUNT; n++) {
     const comm1 = row[`pair${n}_comm1`];
     const comm2 = row[`pair${n}_comm2`];
     if (isEmptyVal(comm1) && isEmptyVal(comm2)) continue;
     const boxes = [comm1, comm2].map((c) => renderPairBox(c)).join("");
-    pairRows += `
-      <div class="equip-pair-row">
-        <span class="equip-label">Pair ${n}</span>
-        <div class="equip-pairs">${boxes}</div>
+    pairCards += `
+      <div class="pair-card">
+        <div class="pair-card-label">Pair ${n}</div>
+        <div class="pair-card-boxes">${boxes}</div>
       </div>`;
   }
-  if (!pairRows) return "";
+  if (!pairCards) return "";
   return `
     <div class="equip-pairs-section">
       <div class="equip-arm-label">Pairs</div>
-      ${pairRows}
+      <div class="pair-cards">${pairCards}</div>
     </div>`;
 }
 function getAbilityTier(name) {
@@ -1795,7 +1876,9 @@ function renderArmamentRow(armRow) {
       .filter((v) => !isEmptyVal(v))
       .map((v) => {
         const tier = getAbilityTier(String(v));
-        return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
+        const label = String(v).trim();
+        const wideClass = label.length > 14 ? " arm-ins--wide" : "";
+        return `<span class="arm-ins tier-${tier}${wideClass}" data-tip-code="${escapeHtml(label)}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
       })
       .join("");
 
@@ -1809,7 +1892,7 @@ function renderArmamentRow(armRow) {
       .filter((s) => !isEmptyVal(armRow[s.n]) && !isEmptyVal(armRow[s.v]))
       .map(
         (s) =>
-          `<span class="arm-stat">${escapeHtml(String(armRow[s.n]))}: <b>${escapeHtml(String(armRow[s.v]))}</b></span>`,
+          `<span class="arm-stat"><i class="fa-solid fa-khanda arm-stat-icon"></i>${escapeHtml(String(armRow[s.n]))} <b>${escapeHtml(String(armRow[s.v]))}%</b></span>`,
       )
       .join("");
 
@@ -1836,7 +1919,7 @@ function renderEmptyEquipmentMarch(marchNum = 1) {
   ).join("");
   return `
     <div class="equip-march-row equip-march-row--empty">
-      <span class="equip-label">March ${marchNum}</span>
+      <span class="equip-march-title">March ${marchNum}</span>
       <div class="equip-slots">${slotBoxes}</div>
     </div>`;
 }
@@ -1846,11 +1929,7 @@ function renderEquipmentSection(govId) {
   const armRow = govId ? loadGovernorArmaments(govId) : null;
 
   if (!row) {
-    return renderCollapsibleSection(
-      "Equipment",
-      `<div class="equip-grid">${renderEmptyEquipmentMarch(1)}${renderArmamentRow(armRow)}</div>`,
-      false,
-    );
+    return `<div class="equip-grid"><div class="equip-marches">${renderEmptyEquipmentMarch(1)}</div>${renderArmamentRow(armRow)}</div>`;
   }
 
   const MARCH_SUFFIXES = [
@@ -1888,18 +1967,14 @@ function renderEquipmentSection(govId) {
 
     marchRows += `
       <div class="equip-march-row">
-        <span class="equip-label">March ${marchNum}</span>
+        <span class="equip-march-title">Equipment ${marchNum}</span>
         <div class="equip-slots">${slotBoxes}</div>
       </div>`;
   });
 
   if (!marchRows) marchRows = renderEmptyEquipmentMarch(1);
 
-  return renderCollapsibleSection(
-    "Equipment",
-    `<div class="equip-grid">${marchRows}${renderArmamentRow(armRow)}${renderPairsSection(row)}</div>`,
-    false,
-  );
+  return `<div class="equip-grid"><div class="equip-marches">${marchRows}</div>${renderArmamentRow(armRow)}${renderPairsSection(row)}</div>`;
 }
 
 function renderFarmKvKTable(rows) {
@@ -2005,6 +2080,11 @@ function openGovModal(govId, govName) {
 	    </div>
 	  `;
       body.innerHTML =
+        '<div class="gov-modal-tabs">' +
+        '  <button type="button" class="gov-modal-tab active" data-tab="stats" onclick="switchGovModalTab(\'stats\')">Statistics</button>' +
+        '  <button type="button" class="gov-modal-tab" data-tab="equipment" onclick="switchGovModalTab(\'equipment\')">Equipment</button>' +
+        "</div>" +
+        '<div class="gov-modal-tab-pane" id="govTabPane-stats">' +
         '<div class="modal-controls">' +
         '  <button onclick="expandAllSections()">Expand All</button>' +
         '  <button onclick="collapseAllSections()">Collapse All</button>' +
@@ -2020,7 +2100,10 @@ function openGovModal(govId, govName) {
         ) +
         safeRender("farms", () => renderFarmsTable(farms)) +
         safeRender("farmKvK", () => renderFarmKvKTable(farmKvK)) +
-        safeRender("equipment", () => renderEquipmentSection(govId));
+        "</div>" +
+        '<div class="gov-modal-tab-pane" id="govTabPane-equipment" style="display:none;">' +
+        safeRender("equipment", () => renderEquipmentSection(govId)) +
+        "</div>";
       setTimeout(() => {
         updateChart(govId);
       }, 0);
