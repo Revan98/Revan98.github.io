@@ -430,6 +430,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.gov-name-value.gov-name-link {
+  cursor: pointer;
+}
+.gov-name-value.gov-name-link:hover {
+  text-decoration: underline;
+  color: var(--chart-line);
+}
 .gov-name-stack .gov-id {
   font-size: 12.5px;
   line-height: 1.15;
@@ -473,13 +480,29 @@
   }
 }
 .gov-id {
-  color: var(--chart-line);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-color);
+  opacity: 0.6;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
 }
 .gov-id:hover {
-  text-decoration: underline;
+  opacity: 1;
+}
+.gov-id-copy-icon {
+  font-size: 0.85em;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.gov-id:hover .gov-id-copy-icon {
+  opacity: 0.8;
+}
+.gov-id-copied {
+  color: #3ecf6e !important;
+  text-decoration: none !important;
 }
 .gov-modal-overlay {
   display: none;
@@ -570,6 +593,37 @@
   overflow-y: auto;
   padding: 1.2rem 1.4rem;
   flex: 1;
+}
+.gov-modal-tabs {
+  display: flex;
+  gap: 6px;
+  margin: -0.2rem -0.2rem 1rem;
+  border-bottom: 1px solid var(--table-border);
+}
+.gov-modal-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-color);
+  opacity: 0.55;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    border-color 0.2s ease;
+}
+.gov-modal-tab:hover {
+  opacity: 0.8;
+}
+.gov-modal-tab.active {
+  opacity: 1;
+  color: var(--chart-line);
+  border-bottom-color: var(--chart-line);
+}
+.gov-modal-tab-pane {
+  display: block;
 }
 .gov-modal-loading {
   display: flex;
@@ -683,10 +737,35 @@ footer {
   gap: 10px;
   padding: 4px 0;
 }
+.equip-marches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 28px 34px;
+  padding: 4px 0 10px;
+}
+@media (max-width: 640px) {
+  .equip-slots {
+    --eq-size: 64px;
+  }
+  .equip-marches {
+    gap: 20px 22px;
+    justify-content: center;
+  }
+}
+/* ---- marches are now vertical "paper dolls" laid side by side ---- */
 .equip-march-row {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.equip-march-title {
+  font-size: 0.78rem;
+  color: var(--text-color);
+  opacity: 0.55;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 .equip-label {
   width: 64px;
@@ -697,16 +776,59 @@ footer {
   text-align: right;
   padding-top: 6px;
 }
+
+/* ---- diamond doll ------------------------------------------------ */
+/* --eq-size is the bounding box of one diamond; everything else
+   is derived from it, so resizing the whole doll = changing one value. */
 .equip-slots {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  --eq-size: 82px;
+  --eq-col: 0.72; /* horizontal offset of the side columns, in --eq-size */
+  --eq-head: 1.3; /* drop from helmet to chest; 1.0 = vertices touching */
+  position: relative;
+  width: calc(var(--eq-size) * (1 + var(--eq-col) * 2));
+  height: calc(var(--eq-size) * (var(--eq-head) + 3.8));
+  flex-shrink: 0;
 }
 .equip-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  position: absolute;
+  width: var(--eq-size);
+  height: var(--eq-size);
+  left: calc(50% + (var(--x) * var(--eq-size)));
+  top: calc(var(--y) * var(--eq-size));
+  transform: translateX(-50%);
+}
+/* slot coordinates, in units of --eq-size, measured from the doll's top */
+.equip-slot[data-slot="helmet"] {
+  --x: 0;
+  --y: 0;
+}
+.equip-slot[data-slot="chest"] {
+  --x: 0;
+  --y: var(--eq-head);
+}
+.equip-slot[data-slot="weapon"] {
+  --x: calc(var(--eq-col) * -1);
+  --y: calc(var(--eq-head) + 0.7);
+}
+.equip-slot[data-slot="gloves"] {
+  --x: var(--eq-col);
+  --y: calc(var(--eq-head) + 0.7);
+}
+.equip-slot[data-slot="legs"] {
+  --x: 0;
+  --y: calc(var(--eq-head) + 1.4);
+}
+.equip-slot[data-slot="accessory"] {
+  --x: calc(var(--eq-col) * -1);
+  --y: calc(var(--eq-head) + 2.1);
+}
+.equip-slot[data-slot="accessory_sec"] {
+  --x: var(--eq-col);
+  --y: calc(var(--eq-head) + 2.1);
+}
+.equip-slot[data-slot="boots"] {
+  --x: 0;
+  --y: calc(var(--eq-head) + 2.8);
 }
 .equip-box {
   width: 68px;
@@ -718,6 +840,10 @@ footer {
   justify-content: center;
   position: relative;
 }
+.equip-slot .equip-box {
+  width: 100%;
+  height: 100%;
+}
 .equip-box--framed {
   --rarity-border: rgb(148 163 184 / 0.55);
   --rarity-glow: rgb(148 163 184 / 0.14);
@@ -725,7 +851,7 @@ footer {
 .equip-box--framed::before {
   content: "";
   position: absolute;
-  inset: 10px;
+  inset: 14%;
   border: 2px solid var(--rarity-border);
   background: var(--rarity-glow);
   box-shadow:
@@ -758,43 +884,88 @@ footer {
   fill: currentColor;
   filter: drop-shadow(0 0 5px var(--rarity-glow));
 }
-.equip-box--framed.rarity-gold {
+.equip-box--framed.rarity-gold,
+.equip-slot:has(.rarity-gold) {
   --rarity-border: #f2b632;
   --rarity-glow: rgb(242 182 50 / 0.2);
 }
-.equip-box--framed.rarity-purple {
+.equip-box--framed.rarity-purple,
+.equip-slot:has(.rarity-purple) {
   --rarity-border: #a855f7;
   --rarity-glow: rgb(168 85 247 / 0.2);
 }
-.equip-box--framed.rarity-blue {
+.equip-box--framed.rarity-blue,
+.equip-slot:has(.rarity-blue) {
   --rarity-border: #3b82f6;
   --rarity-glow: rgb(59 130 246 / 0.2);
 }
-.equip-box--framed.rarity-green {
+.equip-box--framed.rarity-green,
+.equip-slot:has(.rarity-green) {
   --rarity-border: #22c55e;
   --rarity-glow: rgb(34 197 94 / 0.2);
 }
 .equip-box--framed.rarity-gray,
 .equip-box--framed.rarity-empty,
-.equip-box--framed.rarity-unknown {
+.equip-box--framed.rarity-unknown,
+.equip-slot:has(.rarity-gray),
+.equip-slot:has(.rarity-empty),
+.equip-slot:has(.rarity-unknown) {
   --rarity-border: #9ca3af;
   --rarity-glow: rgb(156 163 175 / 0.16);
 }
-.equip-meta {
+/* ---- badges -------------------------------------------------------
+   Both are diamonds (a rotated square). Sizes are a share of --eq-size
+   so they track the doll when it scales.
+   Add class "equip-slots--bare" on .equip-slots to hide both. */
+
+/* Awakening: roman numeral in a diamond at the bottom vertex. */
+.equip-awk {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 88%;
+  width: calc(var(--eq-size) * 0.25);
+  height: calc(var(--eq-size) * 0.25);
+  transform: translate(-50%, -50%) rotate(45deg);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  line-height: 1.2;
+  justify-content: center;
+  background: var(--nav-bg, #16161a);
+  border: 1.5px solid var(--rarity-border, #f2b632);
+  box-shadow: 0 0 6px rgb(0 0 0 / 0.55);
+  pointer-events: none;
 }
-.equip-lvl,
-.equip-tal {
-  font-size: 0.86rem;
+/* counter-rotate so the numeral stays upright inside the diamond */
+.equip-awk-text {
+  transform: rotate(-45deg);
+  font-size: calc(var(--eq-size) * 0.105);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--text-color);
-  opacity: 0.65;
   white-space: nowrap;
 }
-.equip-tal {
-  opacity: 0.45;
+
+/* Talent: small solid red diamond on the right edge, below centre. */
+.equip-talent {
+  position: absolute;
+  z-index: 3;
+  left: 86%;
+  top: 62%;
+  width: calc(var(--eq-size) * 0.16);
+  height: calc(var(--eq-size) * 0.16);
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: #e5342f;
+  border: 1px solid rgb(255 255 255 / 0.55);
+  box-shadow:
+    0 0 6px rgb(229 52 47 / 0.75),
+    0 0 2px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+}
+
+.equip-slots--bare .equip-awk,
+.equip-slots--bare .equip-talent {
+  display: none;
 }
 .equip-arm-section {
   margin-top: 14px;
@@ -818,14 +989,14 @@ footer {
 .arm-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 3px;
+  align-items: stretch;
+  gap: 4px;
   min-width: 80px;
   max-width: 350px;
   background: var(--table-bg);
   border: 1px solid var(--table-border);
   border-radius: 8px;
-  padding: 8px 6px 6px;
+  padding: 8px 10px 10px;
 }
 .arm-card--empty {
   opacity: 0.35;
@@ -847,94 +1018,113 @@ footer {
 .arm-stats {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  margin-top: 2px;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
 }
 
 .arm-ins-group {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 2px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 7px;
+  margin-top: 5px;
 }
 
 .arm-ins {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 14px 5px 10px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
-  border: 1.5px solid;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   width: auto;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.25);
+  clip-path: polygon(
+    6px 50%,
+    12px 0,
+    calc(100% - 12px) 0,
+    calc(100% - 6px) 50%,
+    calc(100% - 12px) 100%,
+    12px 100%
+  );
+}
+.arm-ins--wide {
+  grid-column: 1 / -1;
+  justify-self: center;
 }
 .arm-ins.tier-gold {
-  background: #2a1f00;
-  border-color: #c9920a;
-  color: #f5c842;
+  background: linear-gradient(180deg, #ffedb0 0%, #f7ad2b 55%, #ec8c0e 100%);
+  border: 2px solid #c9660b;
+  color: #7a3900;
 }
 .arm-ins.tier-blue {
-  background: #001733;
-  border-color: #3b7dd8;
-  color: #80b8f5;
+  background: linear-gradient(180deg, #f2f8ff 0%, #c3ddfb 55%, #93bdf2 100%);
+  border: 2px solid #4d78d9;
+  color: #2a3a8c;
 }
 .arm-ins.tier-gray {
-  background: #1a1a1d;
-  border-color: #6b6b72;
-  color: #c8c8cc;
-}
-.arm-ins .badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.arm-ins.tier-gold .badge-dot {
-  background: #f5c842;
-}
-.arm-ins.tier-blue .badge-dot {
-  background: #80b8f5;
-}
-.arm-ins.tier-gray .badge-dot {
-  background: #9a9aa0;
-}
-.arm-stat b {
-  font-weight: 600;
-  opacity: 0.9;
+  background: linear-gradient(180deg, #f3f3f5 0%, #d3d4d8 55%, #aeafb6 100%);
+  border: 2px solid #83848c;
+  color: #3a3a3f;
 }
 .arm-stat {
-  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
   color: var(--text-color);
-  opacity: 0.75;
-  text-align: center;
+  opacity: 0.95;
+  text-align: left;
+}
+.arm-stat-icon {
+  color: #2f9bf5;
+  font-size: 0.8em;
+  transform: rotate(-40deg);
+  flex-shrink: 0;
 }
 .arm-stat b {
   opacity: 1;
-  font-weight: 600;
+  font-weight: 700;
 }
 .equip-pairs-section {
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--table-border);
 }
-.equip-pair-row {
+.pair-cards {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 6px;
 }
-.equip-pairs {
+.pair-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  padding: 8px 10px 10px;
+}
+.pair-card-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-color);
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pair-card-boxes {
   display: flex;
   gap: 6px;
-  align-items: center;
-  flex-wrap: wrap;
 }
 .equip-pair-box {
-  width: 90px;
-  height: 90px;
+  width: 76px;
+  height: 76px;
   overflow: hidden;
   flex-shrink: 0;
 }
