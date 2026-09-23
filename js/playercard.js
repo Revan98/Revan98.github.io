@@ -809,12 +809,34 @@ function slotIcon(slotId) {
   };
   return `<svg class="equip-placeholder-icon" viewBox="0 0 16 16" aria-hidden="true">${icons[slotId] || icons.accessory}</svg>`;
 }
+const ROMAN_NUMERALS = [
+  "",
+  "I",
+  "II",
+  "III",
+  "IV",
+  "V",
+  "VI",
+  "VII",
+  "VIII",
+  "IX",
+  "X",
+];
+function toRoman(v) {
+  const n = parseInt(String(v).trim(), 10);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return ROMAN_NUMERALS[n] || String(n);
+}
+// Talent is stored as a yes/no style flag; treat anything affirmative as "has talent".
+function hasTalent(v) {
+  if (isEmptyVal(v)) return false;
+  const s = String(v).trim().toLowerCase();
+  return !["no", "n", "false", "-", "—"].includes(s);
+}
 function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
   const empty = isEmptyVal(itemName);
   const imgSrc = empty ? null : iconPath(itemName, "item");
   const rarity = getEquipRarity(itemName);
-  const lvlTxt = !empty && !isEmptyVal(lvl) ? lvl : "—";
-  const talTxt = !empty && !isEmptyVal(tal) ? tal : "—";
   const imgTag = imgSrc
     ? `<img src="${imgSrc}" alt="${escapeHtml(String(itemName))}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:100%;height:100%;object-fit:contain;border-radius:2px;">`
     : "";
@@ -822,10 +844,19 @@ function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
   const tipAttrs = empty
     ? ""
     : ` data-tip-code="${escapeHtml(String(itemName).trim())}" data-tip-kind="item"`;
-  return `<div class="equip-slot" id="${slot.id}_${marchIdx}">
-    <div class="equip-box equip-box--framed rarity-${rarity}"${tipAttrs}>${imgTag}${fallback}</div>
-    <div class="equip-meta"><span class="equip-lvl">Awk:${lvlTxt}</span><span class="equip-tal">Tal:${talTxt}</span></div>
-  </div>`;
+  const roman = empty ? "" : toRoman(lvl);
+  const awkBadge = roman
+    ? `<span class="equip-awk" title="Awakening ${roman}"><span class="equip-awk-text">${roman}</span></span>`
+    : "";
+  const talBadge =
+    !empty && hasTalent(tal)
+      ? `<span class="equip-talent" title="Talent unlocked" aria-label="Talent unlocked"></span>`
+      : "";
+  return `
+    <div class="equip-slot" id="${slot.id}_${marchIdx}" data-slot="${slot.id}">
+      <div class="equip-box equip-box--framed rarity-${rarity}"${tipAttrs}>${imgTag}${fallback}</div>
+      ${talBadge}${awkBadge}
+    </div>`;
 }
 function renderPairBox(name) {
   const empty = isEmptyVal(name);
@@ -837,7 +868,7 @@ function renderPairBox(name) {
   const tipAttrs = empty
     ? ""
     : ` data-tip-code="${escapeHtml(String(name).trim())}" data-tip-kind="commander"`;
-  return `<div class="equip-pair-box${empty ? " equip-pair-box--empty" : ""}"${tipAttrs}>${imgTag}${fallback}</div>`;
+  return `<div class="equip-box equip-pair-box${empty ? " equip-pair-box--empty" : ""}"${tipAttrs}>${imgTag}${fallback}</div>`;
 }
 
 function getAbilityTier(name) {
@@ -865,10 +896,11 @@ function renderArmamentSection(armRow) {
     const inscriptions = insKeys
       .map((k) => armRow[`${arm.prefix}${k}`])
       .filter((v) => !isEmptyVal(v))
-      .map(
-        (v) =>
-          `<span class="arm-ins tier-${getAbilityTier(String(v))}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`,
-      )
+      .map((v) => {
+        const tier = getAbilityTier(String(v));
+        const label = String(v).trim();
+        return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(label)}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
+      })
       .join("");
     const statSlots = [
       { n: `${arm.prefix}_stat_name`, v: `${arm.prefix}_stat` },
@@ -880,10 +912,15 @@ function renderArmamentSection(armRow) {
       .filter((s) => !isEmptyVal(armRow[s.n]) && !isEmptyVal(armRow[s.v]))
       .map(
         (s) =>
-          `<span class="arm-stat">${escapeHtml(String(armRow[s.n]))}: <b>${escapeHtml(String(armRow[s.v]))}</b></span>`,
+          `<span class="arm-stat"><i class="fa-solid fa-khanda arm-stat-icon"></i>${escapeHtml(String(armRow[s.n]))} <b>${escapeHtml(String(armRow[s.v]))}%</b></span>`,
       )
       .join("");
-    return `<div class="arm-card"><div class="arm-name">${escapeHtml(String(name))}</div>${inscriptions ? `<div class="arm-ins-group">${inscriptions}</div>` : ""}${statsHtml ? `<div class="arm-stats">${statsHtml}</div>` : ""}</div>`;
+    return `
+      <div class="arm-card">
+        <div class="arm-name">${escapeHtml(String(name))}</div>
+        ${inscriptions ? `<div class="arm-ins-group">${inscriptions}</div>` : ""}
+        ${statsHtml ? `<div class="arm-stats">${statsHtml}</div>` : ""}
+      </div>`;
   })
     .filter(Boolean)
     .join("");
@@ -891,15 +928,36 @@ function renderArmamentSection(armRow) {
 }
 
 function renderPairsSection(row) {
-  let html = "";
-  for (let n = 1; n <= 12; n++) {
+  const PAIR_COUNT = 12;
+  let pairCards = "";
+  for (let n = 1; n <= PAIR_COUNT; n++) {
     const c1 = row[`pair${n}_comm1`],
       c2 = row[`pair${n}_comm2`];
     if (isEmptyVal(c1) && isEmptyVal(c2)) continue;
-    html += `<div class="equip-pair-row"><span class="equip-label">Pair ${n}</span><div class="equip-pairs">${[c1, c2].map((c) => renderPairBox(c)).join("")}</div></div>`;
+    const boxes = [c1, c2].map((c) => renderPairBox(c)).join("");
+    pairCards += `
+      <div class="pair-card">
+        <div class="pair-card-label">Pair ${n}</div>
+        <div class="pair-card-boxes">${boxes}</div>
+      </div>`;
   }
-  if (!html) return "";
-  return `<div class="equip-pairs-section"><div class="equip-arm-label">Pairs</div>${html}</div>`;
+  if (!pairCards) return "";
+  return `
+    <div class="equip-pairs-section">
+      <div class="equip-arm-label">Pairs</div>
+      <div class="pair-cards">${pairCards}</div>
+    </div>`;
+}
+
+function renderEmptyEquipmentMarch(marchNum = 1) {
+  const slotBoxes = EQUIP_SLOTS.map((slot) =>
+    renderEquipBox(slot, "", "", "", marchNum),
+  ).join("");
+  return `
+    <div class="equip-march-row equip-march-row--empty">
+      <span class="equip-march-title">March ${marchNum}</span>
+      <div class="equip-slots">${slotBoxes}</div>
+    </div>`;
 }
 
 function renderEquipmentGrid(govId) {
@@ -907,7 +965,7 @@ function renderEquipmentGrid(govId) {
   const armRow = loadArmaments(govId);
   const grid = document.getElementById("pc-equipment");
   if (!row) {
-    grid.innerHTML = `<div class="pc-equip-empty">No equipment data found for this governor.</div>${renderArmamentSection(armRow)}`;
+    grid.innerHTML = `<div class="equip-grid"><div class="equip-marches">${renderEmptyEquipmentMarch(1)}</div>${renderArmamentSection(armRow)}</div>`;
     return;
   }
   const MARCH_SUFFIXES = [
@@ -940,12 +998,14 @@ function renderEquipmentGrid(govId) {
         marchNum,
       );
     }).join("");
-    marchRows += `<div class="equip-march-row"><span class="equip-label">March ${marchNum}</span><div class="equip-slots">${slotBoxes}</div></div>`;
+    marchRows += `
+      <div class="equip-march-row">
+        <span class="equip-march-title">Equipment ${marchNum}</span>
+        <div class="equip-slots">${slotBoxes}</div>
+      </div>`;
   });
-  if (!marchRows)
-    marchRows = `<div class="pc-equip-empty">No equipment set.</div>`;
-  grid.innerHTML =
-    marchRows + renderArmamentSection(armRow) + renderPairsSection(row);
+  if (!marchRows) marchRows = renderEmptyEquipmentMarch(1);
+  grid.innerHTML = `<div class="equip-grid"><div class="equip-marches">${marchRows}</div>${renderArmamentSection(armRow)}${renderPairsSection(row)}</div>`;
 }
 
 function renderScanStats(govId) {
