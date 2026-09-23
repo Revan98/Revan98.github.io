@@ -1135,8 +1135,8 @@ function renderArmamentsGrid() {
         <span class="eq-arm-name${isEmpty ? " eq-arm-name--empty" : ""}">${isEmpty ? "— empty —" : escapeHtml(String(name))}</span>
         <button class="eq-arm-edit-btn" title="${isEmpty ? "Add armament" : "Edit armament"}">${isEmpty ? "+" : "✎"}</button>
       </div>
-      ${stats ? `<div class="eq-arm-stats-row">${stats}</div>` : ""}
       ${inscriptions ? `<div class="eq-arm-ins-row">${inscriptions}</div>` : ""}
+      ${stats ? `<div class="eq-arm-stats-row">${stats}</div>` : ""}
     `;
     div.querySelector(".eq-arm-edit-btn").addEventListener("click", (e) => {
       e.stopPropagation();
