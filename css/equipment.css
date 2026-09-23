@@ -1078,6 +1078,7 @@ body.dark .eq-arm-stat-tag {
   border-color: rgb(255 152 0 / 0.2);
 }
 .eq-arm-stat-name {
+  font-size: 0.85rem;
   color: var(--text-color);
   opacity: 0.7;
 }
@@ -1090,39 +1091,54 @@ body.dark .eq-arm-stat-tag {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  margin-bottom: 8px;
 }
 .eq-arm-ins {
-  font-size: 0.64rem;
-  padding: 2px 7px;
-  border-radius: 20px;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 800;
   letter-spacing: 0.02em;
+  width: auto;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.25);
+  clip-path: polygon(
+    6px 50%,
+    12px 0,
+    calc(100% - 12px) 0,
+    calc(100% - 6px) 50%,
+    calc(100% - 12px) 100%,
+    12px 100%
+  );
 }
 .eq-arm-ins--gold {
-  background: rgb(255 193 7 / 0.18);
-  color: #b8860b;
-  border: 1px solid rgb(255 193 7 / 0.4);
+  background: linear-gradient(180deg, #ffedb0 0%, #f7ad2b 55%, #ec8c0e 100%);
+  border: 2px solid #c9660b;
+  color: #7a3900;
 }
 body.dark .eq-arm-ins--gold {
-  background: rgb(255 193 7 / 0.15);
-  color: #ffd54f;
-  border-color: rgb(255 193 7 / 0.35);
+  background: linear-gradient(180deg, #ffedb0 0%, #f7ad2b 55%, #ec8c0e 100%);
+  border: 2px solid #c9660b;
+  color: #7a3900;
 }
 .eq-arm-ins--blue {
-  background: rgb(11 116 209 / 0.12);
-  color: var(--chart-line);
-  border: 1px solid rgb(11 116 209 / 0.25);
+  background: linear-gradient(180deg, #f2f8ff 0%, #c3ddfb 55%, #93bdf2 100%);
+  border: 2px solid #4d78d9;
+  color: #2a3a8c;;
 }
 body.dark .eq-arm-ins--blue {
-  background: rgb(100 181 246 / 0.12);
-  color: #90caf9;
-  border-color: rgb(100 181 246 / 0.25);
+  background: linear-gradient(180deg, #f2f8ff 0%, #c3ddfb 55%, #93bdf2 100%);
+  border: 2px solid #4d78d9;
+  color: #2a3a8c;
 }
 .eq-arm-ins--gray {
-  background: var(--table-border);
-  color: var(--text-color);
-  opacity: 0.65;
-  border: 1px solid transparent;
+  background: linear-gradient(180deg, #f3f3f5 0%, #d3d4d8 55%, #aeafb6 100%);
+  border: 2px solid #83848c;
+  color: #3a3a3f;
 }
 
 .eq-arm-modal-overlay {
@@ -1211,9 +1227,10 @@ body.dark .eq-arm-ins--blue {
 }
 
 .eq-arm-modal-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
 }
 
 .eq-arm-modal-section-title {
@@ -1258,7 +1275,7 @@ body.dark .eq-arm-ins--blue {
 .eq-arm-ins-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 7px;
+  gap: 14px;
 }
 .eq-arm-ins-grid .eq-input {
   width: 100%;
@@ -1325,13 +1342,14 @@ body.dark .eq-arm-ins--blue {
 
 /* Footer */
 .eq-arm-modal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 13px 20px;
-  border-top: 1px solid var(--table-border);
-  flex-shrink: 0;
+	display: flex;
+	gap: 10px;
+	padding: 13px 20px;
+	border-top: 1px solid var(--table-border);
+	flex-shrink: 0;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
 }
 
 .eq-arm-modal-clear-btn,
@@ -1345,6 +1363,7 @@ body.dark .eq-arm-ins--blue {
 .eq-arm-modal-save-btn {
   flex: 1;
   justify-content: center;
+   max-width: 200px;
 }
 
 @media (width <= 680px) {
@@ -1403,18 +1422,22 @@ body.dark .eq-arm-ins--blue {
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 32px;
+  max-width: 270px;
   cursor: pointer;
 }
 
 .eq-add-ins-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.84rem;
-  padding: 9px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.15s;
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	font-size: 0.84rem;
+	padding: 9px 16px;
+	border-radius: 8px;
+	min-width: 180px;
+	max-width: 200px;
+	cursor: pointer;
+	transition: opacity 0.15s;
+    justify-content: center;
 }
 .eq-add-ins-btn:hover {
   opacity: 0.8;
@@ -1491,21 +1514,26 @@ body.dark .eq-arm-ins--blue {
 .eq-ins-pill {
   display: inline-flex;
   align-items: center;
-  padding: 5px 13px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1.5px solid;
-  background: transparent;
-  transition:
-    background 0.13s,
-    opacity 0.13s,
-    transform 0.1s;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  width: auto;
+  line-height: 1;
   white-space: nowrap;
-  line-height: 1.3;
-  user-select: none;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.25);
+  clip-path: polygon(
+    6px 50%,
+    12px 0,
+    calc(100% - 12px) 0,
+    calc(100% - 6px) 50%,
+    calc(100% - 12px) 100%,
+    12px 100%
+  );
 }
+
 .eq-ins-pill:hover {
   opacity: 0.8;
   transform: translateY(-1px);
@@ -1515,38 +1543,30 @@ body.dark .eq-arm-ins--blue {
 }
 
 .eq-ins-pill--gold {
-  color: #c8961a;
-  border-color: #c8961a;
+  background: linear-gradient(180deg, #ffedb0 0%, #f7ad2b 55%, #ec8c0e 100%);
+  border: 2px solid #c9660b;
+  color: #7a3900;
 }
 .eq-ins-pill--gold.selected {
-  background: rgb(200 150 26 / 0.18);
-  color: #e0ab2a;
-  border-color: #e0ab2a;
-  box-shadow: 0 0 0 2px rgb(200 150 26 / 0.25);
+  opacity: 0.5;
 }
 
 .eq-ins-pill--blue {
-  color: #4f8ec9;
-  border-color: #4f8ec9;
+  background: linear-gradient(180deg, #f2f8ff 0%, #c3ddfb 55%, #93bdf2 100%);
+  border: 2px solid #4d78d9;
+  color: #2a3a8c;
 }
 .eq-ins-pill--blue.selected {
-  background: rgb(79 142 201 / 0.18);
-  color: #6aabdf;
-  border-color: #6aabdf;
-  box-shadow: 0 0 0 2px rgb(79 142 201 / 0.25);
+  opacity: 0.5;
 }
 
 .eq-ins-pill--gray {
-  color: var(--text-color);
-  border-color: var(--table-border);
-  opacity: 0.65;
+  background: linear-gradient(180deg, #f3f3f5 0%, #d3d4d8 55%, #aeafb6 100%);
+  border: 2px solid #83848c;
+  color: #3a3a3f;
 }
 .eq-ins-pill--gray.selected {
-  opacity: 1;
-  background: color-mix(in srgb, var(--chart-line) 15%, transparent);
-  border-color: var(--chart-line);
-  color: var(--text-color);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--chart-line) 30%, transparent);
+  opacity: 0.5;
 }
 
 .eq-ins-picker-footer {
