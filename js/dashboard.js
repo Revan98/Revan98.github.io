@@ -1877,8 +1877,7 @@ function renderArmamentRow(armRow) {
       .map((v) => {
         const tier = getAbilityTier(String(v));
         const label = String(v).trim();
-        const wideClass = label.length > 14 ? " arm-ins--wide" : "";
-        return `<span class="arm-ins tier-${tier}${wideClass}" data-tip-code="${escapeHtml(label)}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
+        return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(label)}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
       })
       .join("");
 
