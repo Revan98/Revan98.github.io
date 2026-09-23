@@ -967,11 +967,7 @@ footer {
 .equip-slots--bare .equip-talent {
   display: none;
 }
-.equip-arm-section {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--table-border);
-}
+
 .equip-arm-label {
   font-size: 0.9rem;
   font-weight: 600;
@@ -991,8 +987,7 @@ footer {
   flex-direction: column;
   align-items: stretch;
   gap: 4px;
-  min-width: 80px;
-  max-width: 350px;
+  flex: 0 0 300px;
   background: var(--table-bg);
   border: 1px solid var(--table-border);
   border-radius: 8px;
@@ -1018,15 +1013,15 @@ footer {
 .arm-stats {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin-top: 6px;
+    margin-left: 8px;
+    row-gap: 5px;
+    margin-top: 6px;
 }
 
 .arm-ins-group {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px 7px;
+  row-gap: 5px;
   margin-top: 5px;
 }
 
@@ -1035,13 +1030,16 @@ footer {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 4px 14px;
+  padding: 4px 8px;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.02em;
-  width: auto;
+  width: 100%;
+  box-sizing: border-box;
   line-height: 1;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-shadow: 0 1px 0 rgb(255 255 255 / 0.25);
   clip-path: polygon(
     6px 50%,
@@ -1090,11 +1088,7 @@ footer {
   opacity: 1;
   font-weight: 700;
 }
-.equip-pairs-section {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--table-border);
-}
+
 .pair-cards {
   display: flex;
   flex-wrap: wrap;
