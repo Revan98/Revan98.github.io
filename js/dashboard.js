@@ -107,7 +107,7 @@ async function loadEquipRefData() {
   }
 }
 loadEquipRefData();
-const DB_VERSION = "5"; 
+const DB_VERSION = "4"; 
 async function loadDatabase() {
   const SQL = await initSqlJs({
     locateFile: (file) =>
@@ -1832,16 +1832,14 @@ function renderPairsSection(row) {
     const boxes = [comm1, comm2].map((c) => renderPairBox(c)).join("");
     pairCards += `
       <div class="pair-card">
-        <div class="pair-card-label">Pair ${n}</div>
+
         <div class="pair-card-boxes">${boxes}</div>
       </div>`;
   }
   if (!pairCards) return "";
   return `
-    <div class="equip-pairs-section">
-      <div class="equip-arm-label">Pairs</div>
-      <div class="pair-cards">${pairCards}</div>
-    </div>`;
+
+      <div class="pair-cards">${pairCards}</div>`;
 }
 function getAbilityTier(name) {
   if (!name) return "gray";
@@ -1877,7 +1875,9 @@ function renderArmamentRow(armRow) {
       .map((v) => {
         const tier = getAbilityTier(String(v));
         const label = String(v).trim();
-        return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(label)}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
+        const displayLabel =
+          label.length > 9 ? `${label.slice(0, 9)}...` : label;
+        return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(label)}" data-tip-kind="inscription">${escapeHtml(displayLabel)}</span>`;
       })
       .join("");
 
@@ -1906,10 +1906,7 @@ function renderArmamentRow(armRow) {
     .join("");
 
   return `
-    <div class="equip-arm-section">
-      <div class="equip-arm-label">Armaments</div>
-      <div class="arm-cards">${arms || '<div class="gov-modal-empty" style="padding:1rem 0;">No armaments set.</div>'}</div>
-    </div>`;
+      <div class="arm-cards">${arms || '<div class="gov-modal-empty" style="padding:1rem 0;">No armaments set.</div>'}</div>`;
 }
 
 function renderEmptyEquipmentMarch(marchNum = 1) {
