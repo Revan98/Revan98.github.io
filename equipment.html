@@ -212,29 +212,47 @@
             <div class="eq-import-panel">
               <div class="eq-import-head">
                 <div>
-                  <h2>Farm Accounts Import</h2>
+                  <h2>Farm Accounts</h2>
                   <p>
-                    Imports every worksheet into <code>farm_accounts</code>.
-                    Expected columns: ID, Name, Power, Killpoints, Deads, CH,
-                    acc_type, main_id.
+                    Add, edit, and remove rows in <code>farm_accounts</code>
+                    directly — no spreadsheet needed.
                   </p>
                 </div>
-                <button
-                  class="eq-import-btn primary"
-                  id="farmImportBtn"
-                  disabled
-                >
-                  Import Farms
+                <button class="eq-import-btn primary" id="farmAddNewBtn" disabled>
+                  <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+                  Add Farm
                 </button>
               </div>
-              <div class="eq-import-grid">
-                <label class="eq-import-file">
-                  <span>Farm Excel File</span>
-                  <input type="file" id="farmFileInput" accept=".xlsx,.xls" />
-                </label>
-                <div class="eq-import-status" id="farmImportStatus">
-                  Load a database, then choose a farm Excel file.
-                </div>
+              <div class="eq-farms-toolbar">
+                <input
+                  type="text"
+                  id="farmSearchInput"
+                  class="eq-input"
+                  placeholder="Search by name or player ID..."
+                  autocomplete="off"
+                  disabled
+                />
+              </div>
+              <div class="eq-farms-table-wrap">
+                <table class="eq-farms-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Player ID</th>
+                      <th>Power</th>
+                      <th>Kill Points</th>
+                      <th>Deads</th>
+                      <th>CH</th>
+                      <th>Type</th>
+                      <th>Main's Player ID</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="farmsTableBody"></tbody>
+                </table>
+              </div>
+              <div class="eq-import-status" id="farmImportStatus">
+                Load a database to manage farm accounts.
               </div>
             </div>
           </div>
