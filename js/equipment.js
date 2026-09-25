@@ -515,6 +515,12 @@ CREATE TABLE IF NOT EXISTS armaments (
   arm8_stat4_name4 TEXT, arm8_stat4 REAL
 );
  
+CREATE TABLE IF NOT EXISTS player_profile (
+  player_id INTEGER PRIMARY KEY,
+  vip_level INTEGER,
+  city_skin TEXT
+);
+ 
 CREATE TABLE IF NOT EXISTS farm_accounts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT,
@@ -839,6 +845,8 @@ farmAddNewBtn?.addEventListener("click", () => {
 
 const govIdInput = document.getElementById("govIdInput");
 const govNameInput = document.getElementById("govNameInput");
+const vipLevelInput = document.getElementById("vipLevelInput");
+const citySkinInput = document.getElementById("citySkinInput");
 const saveStatus = document.getElementById("saveStatus");
 const govBadge = document.getElementById("govBadge");
 
@@ -944,6 +952,8 @@ newGovBtn.addEventListener("click", () => {
   hideGovIdSuggestions();
   govIdInput.value = "";
   govNameInput.value = "";
+  vipLevelInput.value = "";
+  citySkinInput.value = "";
   setGovBadge("new");
   renderActiveTab();
   showSaveStatus("Fill in the Governor ID & Name, then save.", "info");
@@ -956,6 +966,8 @@ function clearAllData() {
       marchData[mi][s.key] = { item: "", awk: "", tal: "" };
   for (let n = 0; n < PAIR_COUNT; n++) pairsData[n] = { comm1: "", comm2: "" };
   armamentsRow = null;
+  if (vipLevelInput) vipLevelInput.value = "";
+  if (citySkinInput) citySkinInput.value = "";
 }
 
 function setGovBadge(type) {
@@ -1093,9 +1105,31 @@ function loadGovernorById(safeGovId) {
     console.error("loadGovernor:", e);
   }
 
+  loadPlayerProfile(safeGovId);
+
   renderSlotGrid();
   renderPairsGrid();
   loadArmaments(safeGovId);
+}
+
+function loadPlayerProfile(govId) {
+  if (!db) return;
+  try {
+    const tbl = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='player_profile'`,
+    );
+    if (!tbl.length || !tbl[0].values.length) return;
+    const res = db.exec(
+      `SELECT vip_level, city_skin FROM player_profile WHERE player_id=${govId} LIMIT 1`,
+    );
+    if (res.length && res[0].values.length) {
+      const [vip, skin] = res[0].values[0];
+      vipLevelInput.value = isEmpty(vip) ? "" : String(vip);
+      citySkinInput.value = isEmpty(skin) ? "" : String(skin);
+    }
+  } catch (e) {
+    console.warn("player_profile load failed:", e);
+  }
 }
 function getArmTier(name) {
   const info = getInscriptionInfo(name);
@@ -1338,6 +1372,8 @@ function saveGovernor() {
       upsertVals,
     );
 
+    savePlayerProfile(govId);
+
     downloadDbBtn.disabled = false;
     markDirty();
     setGovBadge("loaded");
@@ -1357,6 +1393,29 @@ downloadDbBtn.addEventListener("click", () => {
   markClean();
   showSaveStatus("✓ Database downloaded!", "ok");
 });
+
+function savePlayerProfile(govId) {
+  if (!db) return;
+  try {
+    const tbl = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='player_profile'`,
+    );
+    if (!tbl.length || !tbl[0].values.length) return;
+
+    const vipRaw = vipLevelInput.value.trim();
+    const skinRaw = citySkinInput.value.trim();
+    const vip = vipRaw === "" ? null : Number(vipRaw);
+    const skin = skinRaw === "" ? null : skinRaw;
+
+    db.run(
+      `INSERT INTO player_profile (player_id, vip_level, city_skin) VALUES (?, ?, ?)
+       ON CONFLICT(player_id) DO UPDATE SET vip_level=excluded.vip_level, city_skin=excluded.city_skin`,
+      [govId, vip, skin],
+    );
+  } catch (e) {
+    console.warn("savePlayerProfile:", e);
+  }
+}
 
 function pushIfExists(cols, vals, existingCols, col, val) {
   if (existingCols.has(col)) {
