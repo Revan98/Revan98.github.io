@@ -1092,7 +1092,6 @@ body.dark #backToTop:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 0 rgb(255 255 255 / 0.25);
   clip-path: polygon(
     6px 50%,
     12px 0,
@@ -1107,17 +1106,17 @@ body.dark #backToTop:hover {
   justify-self: center;
 }
 .arm-ins.tier-gold {
-  background: linear-gradient(180deg, #ffedb0 0%, #f7ad2b 55%, #ec8c0e 100%);
+  background: #f2b632;
   border: 2px solid #c9660b;
   color: #7a3900;
 }
 .arm-ins.tier-blue {
-  background: linear-gradient(180deg, #f2f8ff 0%, #c3ddfb 55%, #93bdf2 100%);
+  background: #a9cdf7;
   border: 2px solid #4d78d9;
   color: #2a3a8c;
 }
 .arm-ins.tier-gray {
-  background: linear-gradient(180deg, #f3f3f5 0%, #d3d4d8 55%, #aeafb6 100%);
+  background: #cfd0d5;
   border: 2px solid #83848c;
   color: #3a3a3f;
 }
@@ -1179,4 +1178,73 @@ body.dark #backToTop:hover {
 }
 .equip-box[data-tip-code] {
   cursor: help;
+}
+
+.city-skin-section {
+  margin-top: 2px;
+}
+.city-skin-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+}
+.city-skin-box {
+  width: 108px;
+  height: 108px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #2a2a2e 0%, #1c1c1f 100%);
+  border: 1.5px solid rgb(148 163 184 / 0.35);
+  box-shadow:
+    inset 0 0 14px rgb(0 0 0 / 0.35),
+    0 4px 10px rgb(0 0 0 / 0.25);
+  cursor: help;
+}
+.city-skin-box.rarity-gold {
+  border-color: #f2b632;
+  box-shadow:
+    inset 0 0 14px rgb(0 0 0 / 0.35),
+    0 0 10px rgb(242 182 50 / 0.25);
+}
+.city-skin-box.rarity-purple {
+  border-color: #a855f7;
+  box-shadow:
+    inset 0 0 14px rgb(0 0 0 / 0.35),
+    0 0 10px rgb(168 85 247 / 0.25);
+}
+.city-skin-box.rarity-blue {
+  border-color: #3b82f6;
+  box-shadow:
+    inset 0 0 14px rgb(0 0 0 / 0.35),
+    0 0 10px rgb(59 130 246 / 0.25);
+}
+.city-skin-box.rarity-green {
+  border-color: #22c55e;
+  box-shadow:
+    inset 0 0 14px rgb(0 0 0 / 0.35),
+    0 0 10px rgb(34 197 94 / 0.25);
+}
+.city-skin-box-fallback {
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 12px;
+  opacity: 0.35;
+  color: var(--text-color);
+}
+.city-skin-name {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-color);
+  text-align: center;
+}
+.city-skin-name--empty {
+  opacity: 0.4;
 }
