@@ -66,6 +66,7 @@ const EQUIP_SLOTS = [
 
 const MARCH_COUNT = 12;
 const PAIR_COUNT = 12;
+const SKIN_COUNT = 8;
 
 let SQL = null;
 let db = null;
@@ -84,10 +85,13 @@ const pairsData = Array.from({ length: PAIR_COUNT }, () => ({
   comm2: "",
 }));
 
+let skinsData = Array.from({ length: SKIN_COUNT }, () => "");
+
 let pickerTarget = null;
 let pickerSelectedItem = "";
 let allIconNames = [];
 let allCommNames = [];
+let allSkinNames = [];
 
 function normalizeNumericId(value) {
   const id = String(value ?? "").trim();
@@ -127,7 +131,12 @@ function searchByName(query) {
 }
 
 function iconPath(name, kind) {
-  const folder = kind === "commander" ? "commanders" : "equipment";
+  const folder =
+    kind === "commander"
+      ? "commanders"
+      : kind === "skin"
+        ? "skins"
+        : "equipment";
   return `icons/${folder}/${encodeURIComponent(String(name).trim())}.webp`;
 }
 
@@ -135,17 +144,29 @@ let itemsData = { items: {} };
 let commandersData = { commanders: {} };
 let inscriptionsData = { inscriptions: {} };
 let inscriptionsByName = {};
+let skinsData_ref = { skins: {} };
 
 async function loadEquipRefData() {
   try {
-    const [itemsRes, commandersRes, inscriptionsRes] = await Promise.all([
-      fetch("data/items.json"),
-      fetch("data/commanders.json"),
-      fetch("data/inscriptions.json"),
-    ]);
+    const [itemsRes, commandersRes, inscriptionsRes, skinsRes] =
+      await Promise.all([
+        fetch("data/items.json"),
+        fetch("data/commanders.json"),
+        fetch("data/inscriptions.json"),
+        fetch("data/skins.json"),
+      ]);
     itemsData = await itemsRes.json();
     commandersData = await commandersRes.json();
     inscriptionsData = await inscriptionsRes.json();
+    try {
+      skinsData_ref = await skinsRes.json();
+    } catch (e) {
+      skinsData_ref = { skins: {} };
+      console.error(
+        "data/skins.json failed to parse (check for trailing commas or other invalid JSON):",
+        e,
+      );
+    }
 
     inscriptionsByName = {};
     for (const [key, info] of Object.entries(
@@ -169,6 +190,11 @@ function getItemInfo(itemCode) {
 function getCommanderInfo(commCode) {
   const key = String(commCode ?? "").trim();
   return (commandersData.commanders && commandersData.commanders[key]) || null;
+}
+
+function getSkinInfo(skinCode) {
+  const key = String(skinCode ?? "").trim();
+  return (skinsData_ref.skins && skinsData_ref.skins[key]) || null;
 }
 
 function getInscriptionInfo(name) {
@@ -213,7 +239,7 @@ function buildTooltipHtml(code, kind) {
     return parts.join("");
   }
 
-  const info = getItemInfo(key);
+  const info = kind === "skin" ? getSkinInfo(key) : getItemInfo(key);
   if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
 
   const rarityClass = String(info.rarity || "gold").toLowerCase();
@@ -324,6 +350,7 @@ initEquipTooltip();
   }
   await loadEquipRefData();
   loadIconManifest();
+  loadSkinManifest();
 })();
 
 const SCHEMA_SQL = `
@@ -519,6 +546,19 @@ CREATE TABLE IF NOT EXISTS player_profile (
   player_id INTEGER PRIMARY KEY,
   vip_level INTEGER,
   city_skin TEXT
+);
+ 
+CREATE TABLE IF NOT EXISTS skins (
+  player_id INTEGER PRIMARY KEY,
+  name TEXT,
+  skin1 TEXT,
+  skin2 TEXT,
+  skin3 TEXT,
+  skin4 TEXT,
+  skin5 TEXT,
+  skin6 TEXT,
+  skin7 TEXT,
+  skin8 TEXT
 );
  
 CREATE TABLE IF NOT EXISTS farm_accounts (
@@ -965,6 +1005,7 @@ function clearAllData() {
     for (const s of EQUIP_SLOTS)
       marchData[mi][s.key] = { item: "", awk: "", tal: "" };
   for (let n = 0; n < PAIR_COUNT; n++) pairsData[n] = { comm1: "", comm2: "" };
+  for (let i = 0; i < SKIN_COUNT; i++) skinsData[i] = "";
   armamentsRow = null;
   if (vipLevelInput) vipLevelInput.value = "";
   if (citySkinInput) citySkinInput.value = "";
@@ -1027,6 +1068,29 @@ function loadArmaments(govId) {
     armamentsRow = row;
   } catch (e) {
     console.warn("armaments load failed:", e);
+  }
+}
+
+function loadSkins(govId) {
+  for (let i = 0; i < SKIN_COUNT; i++) skinsData[i] = "";
+  const safeGovId = normalizeNumericId(govId);
+  if (!db || !safeGovId) return;
+  try {
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='skins'`,
+    );
+    if (!t.length || !t[0].values.length) return;
+    const res = db.exec(
+      `SELECT * FROM skins WHERE player_id=${safeGovId} LIMIT 1`,
+    );
+    if (!res.length || !res[0].values.length) return;
+    const row = zipRow(res[0]);
+    for (let i = 0; i < SKIN_COUNT; i++) {
+      const v = row[`skin${i + 1}`];
+      skinsData[i] = isEmpty(v) ? "" : String(v);
+    }
+  } catch (e) {
+    console.warn("skins load failed:", e);
   }
 }
 
@@ -1110,6 +1174,8 @@ function loadGovernorById(safeGovId) {
   renderSlotGrid();
   renderPairsGrid();
   loadArmaments(safeGovId);
+  loadSkins(safeGovId);
+  renderSkinGrid();
 }
 
 function loadPlayerProfile(govId) {
@@ -1371,6 +1437,36 @@ function saveGovernor() {
        ON CONFLICT(player_id) DO UPDATE SET name=excluded.name${updateSet ? ", " + updateSet : ""}`,
       upsertVals,
     );
+
+    try {
+      const skinColsRes = db.exec(`PRAGMA table_info(skins)`);
+      if (skinColsRes.length) {
+        const existSkinCols = new Set(skinColsRes[0].values.map((r) => r[1]));
+        const skinSetCols = [];
+        const skinSetVals = [];
+        for (let i = 0; i < SKIN_COUNT; i++) {
+          const col = `skin${i + 1}`;
+          if (existSkinCols.has(col)) {
+            skinSetCols.push(col);
+            skinSetVals.push(skinsData[i] || "none");
+          }
+        }
+        const skinUpsertCols = ["player_id", "name", ...skinSetCols];
+        const skinUpsertVals = [govId, name, ...skinSetVals];
+        const skinPh = skinUpsertVals.map(() => "?").join(", ");
+        const skinUpdateSet = skinSetCols
+          .map((c) => `${c}=excluded.${c}`)
+          .join(", ");
+
+        db.run(
+          `INSERT INTO skins (${skinUpsertCols.join(", ")}) VALUES (${skinPh})
+           ON CONFLICT(player_id) DO UPDATE SET name=excluded.name${skinUpdateSet ? ", " + skinUpdateSet : ""}`,
+          skinUpsertVals,
+        );
+      }
+    } catch (e) {
+      console.warn("skins save failed:", e);
+    }
 
     savePlayerProfile(govId);
 
@@ -1960,6 +2056,7 @@ document.querySelectorAll(".eq-section-tab").forEach((btn) => {
       "equipment",
       "pairs",
       "armaments",
+      "skins",
       "farmImport",
       "kvkImport",
     ]) {
@@ -1975,6 +2072,7 @@ function renderActiveTab() {
   if (activeTab === "equipment") renderSlotGrid();
   else if (activeTab === "pairs") renderPairsGrid();
   else if (activeTab === "armaments") renderArmamentsGrid();
+  else if (activeTab === "skins") renderSkinGrid();
   else if (activeTab === "farmImport") {
     farmNewRowOpen = false;
     renderFarmsTable();
@@ -2100,8 +2198,56 @@ function renderPairsGrid() {
   }
 }
 
+function renderSkinGrid() {
+  const grid = document.getElementById("skinGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  for (let i = 0; i < SKIN_COUNT; i++) {
+    const name = skinsData[i];
+    const hasItem = !!name;
+    const card = document.createElement("div");
+    card.className = "eq-slot-card" + (hasItem ? " has-item" : "");
+    if (hasItem) {
+      card.dataset.tipCode = name;
+      card.dataset.tipKind = "skin";
+    }
+
+    card.innerHTML = `
+      <span class="eq-slot-label">Skin ${i + 1}</span>
+      <div class="eq-slot-img-box">
+        ${
+          hasItem
+            ? `<img src="${iconPath(name, "skin")}" alt="${escapeHtml(name)}" loading="lazy"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+             <div class="eq-slot-placeholder" style="display:none;">?</div>`
+            : `<div class="eq-slot-placeholder">+</div>`
+        }
+      </div>
+      <span class="eq-slot-item-name">${hasItem ? escapeHtml(name) : "—"}</span>
+      ${hasItem ? `<button class="eq-pair-clear" title="Clear this skin">×</button>` : ""}`;
+
+    card.addEventListener("click", (ev) => {
+      if (ev.target.classList.contains("eq-pair-clear")) return;
+      openPicker({ type: "skin", skinIdx: i });
+    });
+
+    const clearBtn = card.querySelector(".eq-pair-clear");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        skinsData[i] = "";
+        renderSkinGrid();
+      });
+    }
+
+    grid.appendChild(card);
+  }
+}
+
 renderSlotGrid();
 renderPairsGrid();
+renderSkinGrid();
 
 const EQUIP_PREFIX_MAP = {
   helm: "h",
@@ -2143,6 +2289,43 @@ function loadIconManifest() {
 
 function loadCommManifest() {
   loadIconManifest();
+}
+
+function loadSkinManifest() {
+  if (allSkinNames.length) return;
+
+  const skinKeys = Object.keys(skinsData_ref.skins || {});
+  if (skinKeys.length) {
+    allSkinNames = skinKeys.sort();
+    return;
+  }
+
+  if (!db) return;
+  try {
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='skins'`,
+    );
+    if (!t.length || !t[0].values.length) return;
+    const cols = db.exec(`PRAGMA table_info(skins)`);
+    if (!cols.length) return;
+    const skinCols = cols[0].values
+      .map((r) => r[1])
+      .filter((c) => c.startsWith("skin"));
+    if (!skinCols.length) return;
+    const res = db.exec(`SELECT ${skinCols.join(",")} FROM skins LIMIT 500`);
+    const names = new Set();
+    if (res.length) {
+      res[0].values.forEach((row) =>
+        row.forEach((v) => {
+          if (!v || ["none", "0"].includes(String(v).toLowerCase())) return;
+          names.add(String(v).trim());
+        }),
+      );
+    }
+    allSkinNames = [...names].sort();
+  } catch (e) {
+    /* ignore */
+  }
 }
 
 function _scrapeIconsFromDb() {
@@ -2195,8 +2378,8 @@ function _scrapeIconsFromDb() {
 }
 
 async function preloadIconsFromDb() {
-  if (allIconNames.length && allCommNames.length) return;
-  _scrapeIconsFromDb();
+  if (!allIconNames.length || !allCommNames.length) _scrapeIconsFromDb();
+  loadSkinManifest();
 }
 
 const pickerOverlay = document.getElementById("pickerOverlay");
@@ -2224,6 +2407,10 @@ async function openPicker(target) {
     pickerSlotLabel.textContent = `– ${slot?.label ?? target.slotKey} · March ${target.marchIdx + 1}`;
     pickerSelectedItem = marchData[target.marchIdx][target.slotKey].item;
     loadIconManifest();
+  } else if (target.type === "skin") {
+    pickerSlotLabel.textContent = `– Skin ${target.skinIdx + 1}`;
+    pickerSelectedItem = skinsData[target.skinIdx];
+    loadSkinManifest();
   } else {
     const lbl = target.slot === "comm1" ? "Commander 1" : "Commander 2";
     pickerSlotLabel.textContent = `– ${lbl} · Pair ${target.pairIdx + 1}`;
@@ -2252,6 +2439,10 @@ function clearPickerSlot() {
     };
     closePicker();
     renderSlotGrid();
+  } else if (pickerTarget.type === "skin") {
+    skinsData[pickerTarget.skinIdx] = "";
+    closePicker();
+    renderSkinGrid();
   } else {
     pairsData[pickerTarget.pairIdx][pickerTarget.slot] = "";
     closePicker();
@@ -2267,6 +2458,8 @@ function renderPickerItems(filter) {
     base = allCommNames;
   } else if (pickerTarget?.type === "equip") {
     base = iconsForSlot(pickerTarget.slotKey);
+  } else if (pickerTarget?.type === "skin") {
+    base = allSkinNames;
   } else {
     base = allIconNames;
   }
@@ -2288,6 +2481,9 @@ function renderPickerItems(filter) {
       if (pairsData[n].comm1) candidates.add(pairsData[n].comm1);
       if (pairsData[n].comm2) candidates.add(pairsData[n].comm2);
     }
+  } else if (pickerTarget?.type === "skin") {
+    for (let i = 0; i < SKIN_COUNT; i++)
+      if (skinsData[i]) candidates.add(skinsData[i]);
   }
 
   let list = [...candidates].sort((a, b) => a.localeCompare(b));
@@ -2297,13 +2493,20 @@ function renderPickerItems(filter) {
     pickerBody.innerHTML = `<div class="eq-picker-empty">${
       filter
         ? "No items match your search."
-        : `No icons found.<br><small>Check <code>data/items.json</code> / <code>data/commanders.json</code> or load a DB with existing records.</small>`
+        : pickerTarget?.type === "skin"
+          ? `No skins found.<br><small>Check <code>data/skins.json</code> or load a DB with existing records.</small>`
+          : `No icons found.<br><small>Check <code>data/items.json</code> / <code>data/commanders.json</code> or load a DB with existing records.</small>`
     }</div>`;
     return;
   }
 
   pickerBody.innerHTML = "";
-  const tipKind = pickerTarget?.type === "pair" ? "commander" : "item";
+  const tipKind =
+    pickerTarget?.type === "pair"
+      ? "commander"
+      : pickerTarget?.type === "skin"
+        ? "skin"
+        : "item";
   for (const name of list) {
     const div = document.createElement("div");
     div.className =
@@ -2332,6 +2535,9 @@ function selectPickerItem(name) {
       tal: existing.tal,
     };
     openDetailPopup(pickerTarget.marchIdx, pickerTarget.slotKey);
+  } else if (pickerTarget.type === "skin") {
+    skinsData[pickerTarget.skinIdx] = name;
+    renderSkinGrid();
   } else {
     pairsData[pickerTarget.pairIdx][pickerTarget.slot] = name;
     renderPairsGrid();
