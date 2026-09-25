@@ -1218,5 +1218,15 @@
       "slot": "Weapon",
       "rarity": "Purple"
     }
+  },
+    "a14g": {
+      "name": "Timeless Amber",
+      "stats": [
+        "Resource Gathering Speed +15%"
+      ],
+      "description": "",
+      "slot": "Accessory",
+      "rarity": "Gold"
+    }
   }
 }
