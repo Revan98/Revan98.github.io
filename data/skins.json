@@ -1,0 +1,13 @@
+{
+  "skins": {
+    "hawa": {
+      "name": "Hawa Mahal",
+      "stats": [
+	  "Damage to Barbarians +10%",
+	  "aaaa 2%" 
+	  ],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }
+}}
