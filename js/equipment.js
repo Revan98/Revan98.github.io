@@ -322,7 +322,8 @@ initEquipTooltip();
   } catch (e) {
     console.error("sql.js init failed:", e);
   }
-  await Promise.all([loadIconManifest(), loadEquipRefData()]);
+  await loadEquipRefData();
+  loadIconManifest();
 })();
 
 const SCHEMA_SQL = `
@@ -2065,25 +2066,24 @@ function iconsForSlot(slotKey) {
   return allIconNames.filter((n) => n.charAt(0).toLowerCase() === prefix);
 }
 
-async function loadIconManifest() {
-  if (allIconNames.length) return;
-  try {
-    const res = await fetch("icons/manifest.json");
-    if (res.ok) {
-      const all = await res.json();
-      allIconNames = all.filter((n) => isEquipIcon(n)).sort();
-      allCommNames = all.filter((n) => !isEquipIcon(n)).sort();
-      return;
-    }
-  } catch (e) {}
+function loadIconManifest() {
+  if (allIconNames.length && allCommNames.length) return;
+
+  const itemKeys = Object.keys(itemsData.items || {});
+  const commKeys = Object.keys(commandersData.commanders || {});
+
+  if (itemKeys.length || commKeys.length) {
+    allIconNames = itemKeys.filter((n) => isEquipIcon(n)).sort();
+    allCommNames = commKeys.sort();
+    return;
+  }
 
   if (!db) return;
   _scrapeIconsFromDb();
 }
 
-async function loadCommManifest() {
-  if (allCommNames.length) return;
-  await loadIconManifest();
+function loadCommManifest() {
+  loadIconManifest();
 }
 
 function _scrapeIconsFromDb() {
@@ -2164,12 +2164,12 @@ async function openPicker(target) {
     const slot = EQUIP_SLOTS.find((s) => s.key === target.slotKey);
     pickerSlotLabel.textContent = `– ${slot?.label ?? target.slotKey} · March ${target.marchIdx + 1}`;
     pickerSelectedItem = marchData[target.marchIdx][target.slotKey].item;
-    await loadIconManifest();
+    loadIconManifest();
   } else {
     const lbl = target.slot === "comm1" ? "Commander 1" : "Commander 2";
     pickerSlotLabel.textContent = `– ${lbl} · Pair ${target.pairIdx + 1}`;
     pickerSelectedItem = pairsData[target.pairIdx][target.slot];
-    await loadCommManifest();
+    loadCommManifest();
   }
 
   pickerOverlay.classList.add("open");
@@ -2238,7 +2238,7 @@ function renderPickerItems(filter) {
     pickerBody.innerHTML = `<div class="eq-picker-empty">${
       filter
         ? "No items match your search."
-        : `No icons found.<br><small>Add <code>icons/manifest.json</code> or load a DB with existing records.</small>`
+        : `No icons found.<br><small>Check <code>data/items.json</code> / <code>data/commanders.json</code> or load a DB with existing records.</small>`
     }</div>`;
     return;
   }
