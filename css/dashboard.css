@@ -570,6 +570,24 @@
   font-weight: normal;
   font-size: 0.875rem;
 }
+.gov-modal-title .vip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 10px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  background: #f2b632;
+  border: 1px solid #c9660b;
+  color: #6b3800;
+}
+.gov-modal-title .vip-badge i {
+  font-size: 0.85em;
+}
 .gov-modal-close {
   background: none;
   border: none;
