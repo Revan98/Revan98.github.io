@@ -3,11 +3,230 @@
     "hawa": {
       "name": "Hawa Mahal",
       "stats": [
-	  "Damage to Barbarians +10%",
-	  "aaaa 2%" 
+	  "Damage to Barbarians +5%",
+	  "Troop Defense +8%" 
 	  ],
       "description": [],
       "slot": "Skin",
       "rarity": "Gold"
-    }
-}}
+    },
+    "default": {
+      "name": "Default",
+      "stats": [""],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "green"
+    }, 
+    "trick": {
+      "name": "Trick or Treat",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "placelike": {
+      "name": "No Place Like Home",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "magpie": {
+      "name": "Magpie Bridge",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "gingerbread": {
+      "name": "Gingerbread House",
+      "stats": ["Infantry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "timbered": {
+      "name": "Timbered Ensemble",
+      "stats": ["Archer Deffence +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "kingcottage": {
+      "name": "King's Cottage",
+      "stats": ["Infantry Deffence +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "topikapi": {
+      "name": "Topikapi Palace",
+      "stats": ["Archer Deffence +10%",
+	  "Action Point Recovery +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "summer": {
+      "name": "Summer of Passion",
+      "stats": ["Cavalry Deffence +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "celebration": {
+      "name": "Moment of Celebration",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "creepwood": {
+      "name": "Creepwood Cabin",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "luckylanterns": {
+      "name": "Lucky Lanterns",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "bloomingcourt": {
+      "name": "Blooming Court",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "fireworkscity": {
+      "name": "Fireworks City",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "allkingdom": {
+      "name": "All-Kingdom Carnival",
+      "stats": ["Infantry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "circus": {
+      "name": "Circus of Colors",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "candyland": {
+      "name": "Candyland",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "winterwonderland": {
+      "name": "Winter Wonderland",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "sacredsanctuary": {
+      "name": "Sacred Sanctuary",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "perpetual": {
+      "name": "Perpetual Palace",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "meriment": {
+      "name": "Magical Merriment",
+      "stats": ["Siege Unit Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "depths": {
+      "name": "Song of the Depths",
+      "stats": ["Cavalry Attack +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "banquet": {
+      "name": "Twilight Banquet",
+      "stats": ["Infantry Attack +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "winterdream": {
+      "name": "A Dream of Winter",
+      "stats": ["Infantry Attack +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "thousand": {
+      "name": "Night of a Thousand Lights",
+      "stats": ["Cavalry Defense +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "hangu": {
+      "name": "Hangu Pass",
+      "stats": ["Infantry Defense +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "frolics": {
+      "name": "Frozen Frolics",
+      "stats": ["Cavalry Health +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "beckoner": {
+      "name": "Walth Beckoner",
+      "stats": ["Infantry Health +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "frozencity": {
+      "name": "Frozen City",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "love": {
+      "name": "Love and Thanks",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+  }
+}
