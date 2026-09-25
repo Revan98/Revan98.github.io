@@ -500,5 +500,216 @@
       "slot": "Skin",
       "rarity": "Purple"
     },
+    "ephesus": {
+      "name": "Ephesus",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "treasure": {
+      "name": "Hall of Treasure",
+      "stats": ["Infantry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "crown": {
+      "name": "Road to the Crown",
+      "stats": ["Cavalry Attack +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "imperial": {
+      "name": "Imperial Crane Palace",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "white": {
+      "name": "White Tower",
+      "stats": ["Infantry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "summerpalace": {
+      "name": "Summer Palace",
+      "stats": ["Archer Attack +10%",
+	  "Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "royalmanor": {
+      "name": "Royal Manor",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "frozenfortress": {
+      "name": "Frozen Fortress",
+      "stats": ["Infantry Defense +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "boundless": {
+      "name": "Boundless Lighthouse",
+      "stats": ["Infantry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "divinelighthouse": {
+      "name": "Divine Lighthouse",
+      "stats": ["Troop Health +3%",
+	  "Trainig Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "exhibit": {
+      "name": "Rare Exhibit",
+      "stats": ["Cavalry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "island": {
+      "name": "Island Fortress",
+      "stats": ["Skill Damage +5%",
+		  "Damage to Barbarians +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "power": {
+      "name": "City of Power",
+      "stats": ["Cavalry Healt +10%",
+		  "Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "nubian": {
+      "name": "Nubian Longing",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "ombo": {
+      "name": "Ruins of Kom Ombo",
+      "stats": ["Troop Defense +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "atlantis": {
+      "name": "Atlantis",
+      "stats": ["Infantry Health +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "peter": {
+      "name": "St. Peter's Basilica",
+      "stats": ["Infantry Defense +10%",
+	  "Commander EXP Gain +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "soulvilla": {
+      "name": "Soul Villa",
+      "stats": ["Cavalry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "harvesthut": {
+      "name": "Harvest Hut",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "dynastic": {
+      "name": "Dynastic Conqueror",
+      "stats": ["Troop Defense +8%",
+	  "Commander EXP Gain +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "harmony": {
+      "name": "Perfect Harmony",
+      "stats": ["Infantry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "mightyforest": {
+      "name": "Mighty Forest",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "eternity": {
+      "name": "Call of Eternity",
+      "stats": ["Cavalry Attack +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "easterparty": {
+      "name": "Easter Party",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "supreme": {
+      "name": "Supreme Warrior",
+      "stats": ["Infantry Attack +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "goldeneye": {
+      "name": "Golden Eye",
+      "stats": ["Cavalry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "chaser": {
+      "name": "Chaser of Waves",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "blessing": {
+      "name": "Blessing of the Gods",
+      "stats": ["Troop Health +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "templewisdom": {
+      "name": "Temple of Wisdom",
+      "stats": ["Cavalry attack 5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
   }
 }
