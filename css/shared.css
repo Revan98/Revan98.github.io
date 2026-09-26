@@ -1056,10 +1056,24 @@ body.dark #backToTop:hover {
   letter-spacing: 0.05em;
 }
 .arm-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-color);
   text-align: center;
+  word-break: break-word;
+  cursor: default;
+}
+.arm-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.arm-name-text {
   word-break: break-word;
 }
 .arm-stats {
