@@ -1060,7 +1060,7 @@ body.dark #backToTop:hover {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-color);
   text-align: center;
@@ -1068,8 +1068,8 @@ body.dark #backToTop:hover {
   cursor: default;
 }
 .arm-icon {
-  width: 18px;
-  height: 18px;
+  width: 25px;
+  height: 25px;
   object-fit: contain;
   flex-shrink: 0;
 }
