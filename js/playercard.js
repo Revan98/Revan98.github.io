@@ -189,20 +189,32 @@ let commandersData = { commanders: {} };
 let inscriptionsData = { inscriptions: {} };
 let inscriptionsByName = {};
 let skinsData = { skins: {} };
+let armamentsData = { armaments: {} };
+let armamentsByKey = {};
+
+function normalizeArmamentKey(v) {
+  return String(v ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/formation/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
 
 async function loadEquipRefData() {
   try {
-    const [itemsRes, commandersRes, inscriptionsRes, skinsRes] =
+    const [itemsRes, commandersRes, inscriptionsRes, skinsRes, armamentsRes] =
       await Promise.all([
         fetch("data/items.json"),
         fetch("data/commanders.json"),
         fetch("data/inscriptions.json"),
         fetch("data/skins.json"),
+        fetch("data/armaments.json"),
       ]);
     itemsData = await itemsRes.json();
     commandersData = await commandersRes.json();
     inscriptionsData = await inscriptionsRes.json();
     skinsData = await skinsRes.json();
+    armamentsData = await armamentsRes.json();
 
     inscriptionsByName = {};
     for (const [key, info] of Object.entries(
@@ -212,6 +224,15 @@ async function loadEquipRefData() {
         .trim()
         .toLowerCase();
       inscriptionsByName[nameKey] = { key, ...info };
+    }
+
+    armamentsByKey = {};
+    for (const [key, info] of Object.entries(
+      armamentsData.armaments || {},
+    )) {
+      const entry = { key, ...info };
+      armamentsByKey[normalizeArmamentKey(key)] = entry;
+      if (info.name) armamentsByKey[normalizeArmamentKey(info.name)] = entry;
     }
   } catch (e) {
     console.error("loadEquipRefData:", e);
@@ -241,6 +262,10 @@ function getSkinInfo(skinCode) {
   return (skinsData.skins && skinsData.skins[key]) || null;
 }
 
+function getArmamentInfo(name) {
+  return armamentsByKey[normalizeArmamentKey(name)] || null;
+}
+
 function buildTooltipHtml(code, kind) {
   if (isEmptyVal(code)) return "";
   const key = String(code).trim();
@@ -249,6 +274,21 @@ function buildTooltipHtml(code, kind) {
     const info = getCommanderInfo(key);
     const name = info ? info.name : key;
     return `<div class="tt-name">${escapeHtml(name)}</div>`;
+  }
+
+  if (kind === "armament") {
+    const info = getArmamentInfo(key);
+    const name = info && info.name ? info.name : key;
+    const parts = [`<div class="tt-name">${escapeHtml(name)}</div>`];
+    if (info && info.description) {
+      const descArr = Array.isArray(info.description)
+        ? info.description
+        : [info.description];
+      parts.push(
+        `<div class="tt-desc">${descArr.map((d) => escapeHtml(String(d))).join("<br>")}</div>`,
+      );
+    }
+    return parts.join("");
   }
 
   if (kind === "inscription") {
@@ -867,7 +907,13 @@ const ARM_SLOTS = Array.from({ length: 8 }, (_, i) => ({
 
 function iconPath(name, kind) {
   const folder =
-    kind === "commander" ? "commanders" : kind === "skin" ? "skins" : "equipment";
+    kind === "commander"
+      ? "commanders"
+      : kind === "skin"
+        ? "skins"
+        : kind === "armament"
+          ? "armaments"
+          : "equipment";
   return `icons/${folder}/${encodeURIComponent(String(name).trim())}.webp`;
 }
 
@@ -1013,9 +1059,13 @@ function renderArmamentSection(armRow) {
           `<span class="arm-stat"><i class="fa-solid fa-khanda arm-stat-icon"></i>${escapeHtml(String(armRow[s.n]))} <b>${escapeHtml(String(armRow[s.v]))}%</b></span>`,
       )
       .join("");
+    const armIconSrc = iconPath(name, "armament");
     return `
       <div class="arm-card">
-        <div class="arm-name">${escapeHtml(String(name))}</div>
+        <div class="arm-name" data-tip-code="${escapeHtml(String(name).trim())}" data-tip-kind="armament">
+          <img class="arm-icon" src="${armIconSrc}" alt="" loading="lazy" onerror="this.style.display='none'">
+          <span class="arm-name-text">${escapeHtml(String(name))}</span>
+        </div>
         ${inscriptions ? `<div class="arm-ins-group">${inscriptions}</div>` : ""}
         ${statsHtml ? `<div class="arm-stats">${statsHtml}</div>` : ""}
       </div>`;
