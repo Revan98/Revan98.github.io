@@ -64,9 +64,15 @@ const EQUIP_SLOTS = [
   { key: "accessory_sec", label: "Acc. 2" },
 ];
 
-const MARCH_COUNT = 12;
-const PAIR_COUNT = 12;
-const SKIN_COUNT = 8;
+const DEFAULT_MARCH_COUNT = 12;
+const DEFAULT_PAIR_COUNT = 12;
+const DEFAULT_ARM_COUNT = 8;
+const DEFAULT_SKIN_COUNT = 8;
+
+let MARCH_COUNT = DEFAULT_MARCH_COUNT;
+let PAIR_COUNT = DEFAULT_PAIR_COUNT;
+let ARM_COUNT = DEFAULT_ARM_COUNT;
+let SKIN_COUNT = DEFAULT_SKIN_COUNT;
 
 let SQL = null;
 let db = null;
@@ -86,6 +92,15 @@ const pairsData = Array.from({ length: PAIR_COUNT }, () => ({
 }));
 
 let skinsData = Array.from({ length: SKIN_COUNT }, () => "");
+
+// Grows or shrinks a data array in place to match a target length,
+// filling new slots with `factory()`. Used whenever a slot count
+// (march/pair/arm/skin) changes, either from loading a .db that has a
+// different stored count, or from clicking "+ Add" in a tab.
+function resizeDataArray(arr, newLen, factory) {
+  while (arr.length < newLen) arr.push(factory());
+  if (arr.length > newLen) arr.length = newLen;
+}
 
 let pickerTarget = null;
 let pickerSelectedItem = "";
@@ -561,6 +576,11 @@ CREATE TABLE IF NOT EXISTS skins (
   skin8 TEXT
 );
  
+CREATE TABLE IF NOT EXISTS app_config (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);
+ 
 CREATE TABLE IF NOT EXISTS farm_accounts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT,
@@ -728,6 +748,63 @@ const kvkImportStatus = document.getElementById("kvkImportStatus");
 const kvkKingdomInput = document.getElementById("kvkKingdomInput");
 const kvkNumberInput = document.getElementById("kvkNumberInput");
 const kvkNameInput = document.getElementById("kvkNameInput");
+const addMarchBtn = document.getElementById("addMarchBtn");
+const addPairBtn = document.getElementById("addPairBtn");
+const addArmBtn = document.getElementById("addArmBtn");
+const addSkinBtn = document.getElementById("addSkinBtn");
+
+addMarchBtn?.addEventListener("click", addMarchSlot);
+addPairBtn?.addEventListener("click", addPairSlot);
+addArmBtn?.addEventListener("click", addArmSlot);
+addSkinBtn?.addEventListener("click", addSkinSlot);
+
+function addMarchSlot() {
+  if (!db) return;
+  MARCH_COUNT++;
+  marchData.push(
+    Object.fromEntries(
+      EQUIP_SLOTS.map((s) => [s.key, { item: "", awk: "", tal: "" }]),
+    ),
+  );
+  ensureEquipmentMarchColumns(db);
+  setConfigInt("march_count", MARCH_COUNT);
+  renderMarchTabs();
+  markDirty();
+  showToast(`Added March ${MARCH_COUNT}`, "success");
+}
+
+function addPairSlot() {
+  if (!db) return;
+  PAIR_COUNT++;
+  pairsData.push({ comm1: "", comm2: "" });
+  ensurePairColumns(db);
+  setConfigInt("pair_count", PAIR_COUNT);
+  renderPairsGrid();
+  markDirty();
+  showToast(`Added Pair Row ${PAIR_COUNT}`, "success");
+}
+
+function addArmSlot() {
+  if (!db) return;
+  ARM_COUNT++;
+  rebuildArmSlots();
+  ensureArmColumns(db);
+  setConfigInt("arm_count", ARM_COUNT);
+  renderArmamentsGrid();
+  markDirty();
+  showToast(`Added Armament Slot ${ARM_COUNT}`, "success");
+}
+
+function addSkinSlot() {
+  if (!db) return;
+  SKIN_COUNT++;
+  skinsData.push("");
+  ensureSkinColumns(db);
+  setConfigInt("skin_count", SKIN_COUNT);
+  renderSkinGrid();
+  markDirty();
+  showToast(`Added Skin Slot ${SKIN_COUNT}`, "success");
+}
 
 let dbDirty = false;
 
@@ -763,6 +840,7 @@ dbFileInput.addEventListener("change", async () => {
     db = new SQL.Database(bytes);
     db.exec("SELECT name FROM sqlite_master WHERE type='table' LIMIT 1");
     ensureAppSchema();
+    applySlotCounts();
     setDbStatus("✓ Loaded", "ok");
     loadGovBtn.disabled = false;
     saveBtn.disabled = false;
@@ -779,6 +857,7 @@ dbFileInput.addEventListener("change", async () => {
     newGovBtn.disabled = true;
     downloadDbBtn.disabled = true;
     updateImportButtons();
+    updateAddSlotButtons();
     if (activeTab === "farmImport") renderFarmsTable();
     console.error(e);
   }
@@ -838,37 +917,152 @@ function ensureAppSchema() {
   ensureEquipmentMarchColumns(db);
 }
 
-function ensureEquipmentMarchColumns(targetDb = db) {
+// Generic helper: given a table and a list of [columnName, sqlType] pairs,
+// adds whichever columns don't already exist. Safe to call repeatedly with
+// a growing list (e.g. after raising a slot count) — it only ever adds
+// columns that are missing, never removes or alters existing ones.
+function ensureColumnsExist(targetDb, table, colDefs) {
   if (!targetDb) return;
   try {
-    const table = targetDb.exec(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='equipment'",
+    const t = targetDb.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='${table}'`,
     );
-    if (!table.length || !table[0].values.length) return;
+    if (!t.length || !t[0].values.length) return;
 
-    const cols = targetDb.exec("PRAGMA table_info(equipment)");
+    const cols = targetDb.exec(`PRAGMA table_info(${table})`);
     const existing = new Set(
       cols.length ? cols[0].values.map((r) => r[1]) : [],
     );
 
-    for (let mi = 7; mi < MARCH_COUNT; mi++) {
-      for (const slot of EQUIP_SLOTS) {
-        const defs = [
-          [colKey(slot.key, mi), "TEXT"],
-          [lvlKey(slot.key, mi), "INTEGER"],
-          [talKey(slot.key, mi), "TEXT"],
-        ];
-        for (const [name, type] of defs) {
-          if (!existing.has(name)) {
-            targetDb.run(`ALTER TABLE equipment ADD COLUMN ${name} ${type}`);
-            existing.add(name);
-          }
-        }
+    for (const [name, type] of colDefs) {
+      if (!existing.has(name)) {
+        targetDb.run(`ALTER TABLE ${table} ADD COLUMN ${name} ${type}`);
+        existing.add(name);
       }
     }
   } catch (e) {
-    console.warn("equipment march migration skipped:", e);
+    console.warn(`${table} migration skipped:`, e);
   }
+}
+
+function ensureEquipmentMarchColumns(targetDb = db) {
+  const defs = [];
+  for (let mi = 7; mi < MARCH_COUNT; mi++) {
+    for (const slot of EQUIP_SLOTS) {
+      defs.push([colKey(slot.key, mi), "TEXT"]);
+      defs.push([lvlKey(slot.key, mi), "INTEGER"]);
+      defs.push([talKey(slot.key, mi), "TEXT"]);
+    }
+  }
+  ensureColumnsExist(targetDb, "equipment", defs);
+}
+
+// Pair columns live on the `equipment` table (pairN_comm1 / pairN_comm2),
+// same as march columns. Only the first 12 pairs exist in the base schema,
+// so this adds any beyond that.
+function ensurePairColumns(targetDb = db) {
+  const defs = [];
+  for (let n = 1; n <= PAIR_COUNT; n++) {
+    defs.push([`pair${n}_comm1`, "TEXT"]);
+    defs.push([`pair${n}_comm2`, "TEXT"]);
+  }
+  ensureColumnsExist(targetDb, "equipment", defs);
+}
+
+function ensureArmColumns(targetDb = db) {
+  const defs = [];
+  for (let n = 1; n <= ARM_COUNT; n++) {
+    const p = `arm${n}`;
+    defs.push([p, "TEXT"]);
+    ARM_INS_KEYS.forEach((k) => defs.push([`${p}${k}`, "TEXT"]));
+    ARM_STAT_DEFS.forEach((s) => {
+      defs.push([`${p}${s.nameKey}`, "TEXT"]);
+      defs.push([`${p}${s.valKey}`, "REAL"]);
+    });
+  }
+  ensureColumnsExist(targetDb, "armaments", defs);
+}
+
+function ensureSkinColumns(targetDb = db) {
+  const defs = [];
+  for (let n = 1; n <= SKIN_COUNT; n++) defs.push([`skin${n}`, "TEXT"]);
+  ensureColumnsExist(targetDb, "skins", defs);
+}
+
+function ensureAllSlotColumns(targetDb = db) {
+  ensureEquipmentMarchColumns(targetDb);
+  ensurePairColumns(targetDb);
+  ensureArmColumns(targetDb);
+  ensureSkinColumns(targetDb);
+}
+
+// --- Slot-count persistence (app_config key/value table) ---------------
+function getConfigInt(key, fallback) {
+  if (!db) return fallback;
+  try {
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='app_config'`,
+    );
+    if (!t.length || !t[0].values.length) return fallback;
+    const res = db.exec(`SELECT value FROM app_config WHERE key=?`, [key]);
+    if (res.length && res[0].values.length) {
+      const v = parseInt(res[0].values[0][0], 10);
+      if (!isNaN(v)) return v;
+    }
+  } catch (e) {
+    /* fall through to fallback */
+  }
+  return fallback;
+}
+
+function setConfigInt(key, value) {
+  if (!db) return;
+  try {
+    db.run(`CREATE TABLE IF NOT EXISTS app_config (key TEXT PRIMARY KEY, value TEXT)`);
+    db.run(
+      `INSERT INTO app_config (key, value) VALUES (?, ?)
+       ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
+      [key, String(value)],
+    );
+  } catch (e) {
+    console.warn("config save failed:", e);
+  }
+}
+
+// Reads stored slot counts (falling back to defaults for a fresh/old DB),
+// resizes every in-memory data array to match, makes sure the DB actually
+// has the columns for that many slots, and re-renders the affected tabs.
+// Called whenever a .db file is loaded.
+function applySlotCounts() {
+  MARCH_COUNT = getConfigInt("march_count", DEFAULT_MARCH_COUNT);
+  PAIR_COUNT = getConfigInt("pair_count", DEFAULT_PAIR_COUNT);
+  ARM_COUNT = getConfigInt("arm_count", DEFAULT_ARM_COUNT);
+  SKIN_COUNT = getConfigInt("skin_count", DEFAULT_SKIN_COUNT);
+
+  resizeDataArray(marchData, MARCH_COUNT, () =>
+    Object.fromEntries(
+      EQUIP_SLOTS.map((s) => [s.key, { item: "", awk: "", tal: "" }]),
+    ),
+  );
+  resizeDataArray(pairsData, PAIR_COUNT, () => ({ comm1: "", comm2: "" }));
+  resizeDataArray(skinsData, SKIN_COUNT, () => "");
+  rebuildArmSlots();
+
+  ensureAllSlotColumns(db);
+
+  if (currentMarch > MARCH_COUNT) currentMarch = 1;
+  renderMarchTabs();
+  renderSlotGrid();
+  renderPairsGrid();
+  renderArmamentsGrid();
+  renderSkinGrid();
+  updateAddSlotButtons();
+}
+
+function updateAddSlotButtons() {
+  [addMarchBtn, addPairBtn, addArmBtn, addSkinBtn].forEach((btn) => {
+    if (btn) btn.disabled = !db;
+  });
 }
 
 kvkFileInput?.addEventListener("change", updateImportButtons);
@@ -886,7 +1080,6 @@ farmAddNewBtn?.addEventListener("click", () => {
 const govIdInput = document.getElementById("govIdInput");
 const govNameInput = document.getElementById("govNameInput");
 const vipLevelInput = document.getElementById("vipLevelInput");
-const citySkinInput = document.getElementById("citySkinInput");
 const saveStatus = document.getElementById("saveStatus");
 const govBadge = document.getElementById("govBadge");
 
@@ -993,7 +1186,6 @@ newGovBtn.addEventListener("click", () => {
   govIdInput.value = "";
   govNameInput.value = "";
   vipLevelInput.value = "";
-  citySkinInput.value = "";
   setGovBadge("new");
   renderActiveTab();
   showSaveStatus("Fill in the Governor ID & Name, then save.", "info");
@@ -1008,7 +1200,6 @@ function clearAllData() {
   for (let i = 0; i < SKIN_COUNT; i++) skinsData[i] = "";
   armamentsRow = null;
   if (vipLevelInput) vipLevelInput.value = "";
-  if (citySkinInput) citySkinInput.value = "";
 }
 
 function setGovBadge(type) {
@@ -1017,16 +1208,14 @@ function setGovBadge(type) {
     type === "new" ? "New Governor" : type === "loaded" ? "Loaded" : "";
 }
 
-const ARM_SLOTS = [
-  { prefix: "arm1", label: "Arm 1" },
-  { prefix: "arm2", label: "Arm 2" },
-  { prefix: "arm3", label: "Arm 3" },
-  { prefix: "arm4", label: "Arm 4" },
-  { prefix: "arm5", label: "Arm 5" },
-  { prefix: "arm6", label: "Arm 6" },
-  { prefix: "arm7", label: "Arm 7" },
-  { prefix: "arm8", label: "Arm 8" },
-];
+let ARM_SLOTS = [];
+function rebuildArmSlots() {
+  ARM_SLOTS = Array.from({ length: ARM_COUNT }, (_, i) => ({
+    prefix: `arm${i + 1}`,
+    label: `Arm ${i + 1}`,
+  }));
+}
+rebuildArmSlots();
 
 const ARM_INS_KEYS = [
   "_ins",
@@ -1174,6 +1363,7 @@ function loadGovernorById(safeGovId) {
   renderSlotGrid();
   renderPairsGrid();
   loadArmaments(safeGovId);
+  renderArmamentsGrid();
   loadSkins(safeGovId);
   renderSkinGrid();
 }
@@ -1186,12 +1376,11 @@ function loadPlayerProfile(govId) {
     );
     if (!tbl.length || !tbl[0].values.length) return;
     const res = db.exec(
-      `SELECT vip_level, city_skin FROM player_profile WHERE player_id=${govId} LIMIT 1`,
+      `SELECT vip_level FROM player_profile WHERE player_id=${govId} LIMIT 1`,
     );
     if (res.length && res[0].values.length) {
-      const [vip, skin] = res[0].values[0];
+      const [vip] = res[0].values[0];
       vipLevelInput.value = isEmpty(vip) ? "" : String(vip);
-      citySkinInput.value = isEmpty(skin) ? "" : String(skin);
     }
   } catch (e) {
     console.warn("player_profile load failed:", e);
@@ -1499,14 +1688,12 @@ function savePlayerProfile(govId) {
     if (!tbl.length || !tbl[0].values.length) return;
 
     const vipRaw = vipLevelInput.value.trim();
-    const skinRaw = citySkinInput.value.trim();
     const vip = vipRaw === "" ? null : Number(vipRaw);
-    const skin = skinRaw === "" ? null : skinRaw;
 
     db.run(
-      `INSERT INTO player_profile (player_id, vip_level, city_skin) VALUES (?, ?, ?)
-       ON CONFLICT(player_id) DO UPDATE SET vip_level=excluded.vip_level, city_skin=excluded.city_skin`,
-      [govId, vip, skin],
+      `INSERT INTO player_profile (player_id, vip_level) VALUES (?, ?)
+       ON CONFLICT(player_id) DO UPDATE SET vip_level=excluded.vip_level`,
+      [govId, vip],
     );
   } catch (e) {
     console.warn("savePlayerProfile:", e);
@@ -2910,6 +3097,12 @@ function confirmInsPicker() {
   closeInsPicker();
 }
 
+function clearInsPickerSelection() {
+  insPickerSelected = [];
+  renderInsPickerList(document.getElementById("insPickerSearch").value.trim());
+  renderInsPickerFooter();
+}
+
 document
   .getElementById("openInsPickerBtn")
   .addEventListener("click", openInsPicker);
@@ -2919,6 +3112,9 @@ document
 document
   .getElementById("insPickerConfirm")
   .addEventListener("click", confirmInsPicker);
+document
+  .getElementById("insPickerClearAll")
+  .addEventListener("click", clearInsPickerSelection);
 document
   .getElementById("insPickerSearch")
   .addEventListener("input", (e) => renderInsPickerList(e.target.value.trim()));
