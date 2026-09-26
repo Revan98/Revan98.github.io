@@ -391,6 +391,29 @@ body.dark .eq-download-btn:hover:not(:disabled) {
   font-weight: 600;
 }
 
+.eq-tabs-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.eq-tabs-row .eq-tabs {
+  flex: 1;
+  min-width: 200px;
+}
+
+.eq-add-slot-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-bottom: 18px;
+}
+#pairsPanel .eq-add-slot-btn,
+#armamentsPanel .eq-add-slot-btn,
+#skinsPanel .eq-add-slot-btn {
+  margin-top: 14px;
+  margin-bottom: 0;
+}
+
 .eq-slot-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
@@ -1583,7 +1606,8 @@ body.dark .eq-arm-ins--blue {
   gap: 5px;
   min-height: 28px;
 }
-#insPickerConfirm {
+#insPickerConfirm,
+#insPickerClearAll {
   padding: 9px 22px;
   font-size: 0.86rem;
   white-space: nowrap;
