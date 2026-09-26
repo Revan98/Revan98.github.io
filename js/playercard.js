@@ -188,17 +188,21 @@ let itemsData = { items: {} };
 let commandersData = { commanders: {} };
 let inscriptionsData = { inscriptions: {} };
 let inscriptionsByName = {};
+let skinsData = { skins: {} };
 
 async function loadEquipRefData() {
   try {
-    const [itemsRes, commandersRes, inscriptionsRes] = await Promise.all([
-      fetch("data/items.json"),
-      fetch("data/commanders.json"),
-      fetch("data/inscriptions.json"),
-    ]);
+    const [itemsRes, commandersRes, inscriptionsRes, skinsRes] =
+      await Promise.all([
+        fetch("data/items.json"),
+        fetch("data/commanders.json"),
+        fetch("data/inscriptions.json"),
+        fetch("data/skins.json"),
+      ]);
     itemsData = await itemsRes.json();
     commandersData = await commandersRes.json();
     inscriptionsData = await inscriptionsRes.json();
+    skinsData = await skinsRes.json();
 
     inscriptionsByName = {};
     for (const [key, info] of Object.entries(
@@ -232,6 +236,11 @@ function getInscriptionInfo(name) {
   return inscriptionsByName[key] || null;
 }
 
+function getSkinInfo(skinCode) {
+  const key = String(skinCode ?? "").trim();
+  return (skinsData.skins && skinsData.skins[key]) || null;
+}
+
 function buildTooltipHtml(code, kind) {
   if (isEmptyVal(code)) return "";
   const key = String(code).trim();
@@ -255,6 +264,36 @@ function buildTooltipHtml(code, kind) {
     if (info.description) {
       parts.push(
         `<div class="tt-desc">${escapeHtml(String(info.description))}</div>`,
+      );
+    }
+    return parts.join("");
+  }
+
+  if (kind === "skin") {
+    const info = getSkinInfo(key);
+    if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
+    const rarityClass = String(info.rarity || "gold").toLowerCase();
+    const parts = [
+      `<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`,
+    ];
+    const stats = Array.isArray(info.stats)
+      ? info.stats
+      : info.stats
+        ? [info.stats]
+        : [];
+    if (stats.length) {
+      parts.push(
+        `<ul class="tt-stats">${stats.map((s) => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`,
+      );
+    }
+    const descArr = Array.isArray(info.description)
+      ? info.description
+      : info.description
+        ? [info.description]
+        : [];
+    if (descArr.length) {
+      parts.push(
+        `<div class="tt-desc">${descArr.map((d) => escapeHtml(String(d))).join("<br>")}</div>`,
       );
     }
     return parts.join("");
@@ -755,6 +794,58 @@ function loadArmaments(govId) {
   }
 }
 
+function loadPlayerProfile(govId) {
+  const safeId = normalizeNumericId(govId);
+  if (!safeId || !db) return null;
+  try {
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='player_profile'`,
+    );
+    if (!t.length || !t[0].values.length) return null;
+    const res = db.exec(
+      `SELECT vip_level, city_skin FROM player_profile WHERE player_id=${safeId} LIMIT 1`,
+    );
+    if (!res.length || !res[0].values.length) return null;
+    const [vip_level, city_skin] = res[0].values[0];
+    return { vip_level, city_skin };
+  } catch (e) {
+    console.error("loadPlayerProfile:", e);
+    return null;
+  }
+}
+
+function renderVipBadge(vipLevel) {
+  if (isEmptyVal(vipLevel)) return "";
+  const level = escapeHtml(String(vipLevel).trim());
+  return `<span class="vip-badge" title="VIP Level ${level}"><i class="fa-solid fa-crown"></i>VIP ${level}</span>`;
+}
+
+function renderCitySkinSection(skinCode) {
+  const isEmpty = isEmptyVal(skinCode);
+  const info = isEmpty ? null : getSkinInfo(skinCode);
+  const displayName = info && info.name ? info.name : skinCode;
+  const rarity = info && info.rarity ? String(info.rarity).toLowerCase() : "";
+  const imgSrc = isEmpty ? null : iconPath(skinCode, "skin");
+  const imgTag = imgSrc
+    ? `<img src="${imgSrc}" alt="${escapeHtml(String(displayName))}" loading="lazy"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+            style="width:100%;height:100%;object-fit:contain;">`
+    : "";
+  const fallback = `<span class="city-skin-box-fallback" style="display:${imgSrc ? "none" : "flex"};">—</span>`;
+  const tipAttrs = isEmpty
+    ? ""
+    : ` data-tip-code="${escapeHtml(String(skinCode).trim())}" data-tip-kind="skin"`;
+
+  return `
+      <div class="city-skin-section">
+        <div class="equip-arm-label">City Skin</div>
+        <div class="city-skin-item">
+          <div class="city-skin-box${rarity ? " rarity-" + rarity : ""}"${tipAttrs}>${imgTag}${fallback}</div>
+          <span class="city-skin-name${isEmpty ? " city-skin-name--empty" : ""}">${isEmpty ? "No city skin set" : escapeHtml(String(displayName))}</span>
+        </div>
+      </div>`;
+}
+
 const EQUIP_SLOTS = [
   { key: "helm", label: "Helm", id: "helmet" },
   { key: "chest", label: "Chest", id: "chest" },
@@ -771,7 +862,8 @@ const ARM_SLOTS = Array.from({ length: 8 }, (_, i) => ({
 }));
 
 function iconPath(name, kind) {
-  const folder = kind === "commander" ? "commanders" : "equipment";
+  const folder =
+    kind === "commander" ? "commanders" : kind === "skin" ? "skins" : "equipment";
   return `icons/${folder}/${encodeURIComponent(String(name).trim())}.webp`;
 }
 
@@ -963,9 +1055,11 @@ function renderEmptyEquipmentMarch(marchNum = 1) {
 function renderEquipmentGrid(govId) {
   const row = loadEquipment(govId);
   const armRow = loadArmaments(govId);
+  const profile = loadPlayerProfile(govId);
+  const citySkinHtml = renderCitySkinSection(profile ? profile.city_skin : "");
   const grid = document.getElementById("pc-equipment");
   if (!row) {
-    grid.innerHTML = `<div class="equip-grid"><div class="equip-marches">${renderEmptyEquipmentMarch(1)}</div>${renderArmamentSection(armRow)}</div>`;
+    grid.innerHTML = `<div class="equip-grid"><div class="equip-marches">${renderEmptyEquipmentMarch(1)}</div>${renderArmamentSection(armRow)}${citySkinHtml}</div>`;
     return;
   }
   const MARCH_SUFFIXES = [
@@ -1005,7 +1099,7 @@ function renderEquipmentGrid(govId) {
       </div>`;
   });
   if (!marchRows) marchRows = renderEmptyEquipmentMarch(1);
-  grid.innerHTML = `<div class="equip-grid"><div class="equip-marches">${marchRows}</div>${renderArmamentSection(armRow)}${renderPairsSection(row)}</div>`;
+  grid.innerHTML = `<div class="equip-grid"><div class="equip-marches">${marchRows}</div>${renderArmamentSection(armRow)}${renderPairsSection(row)}${citySkinHtml}</div>`;
 }
 
 function renderScanStats(govId) {
@@ -1082,6 +1176,10 @@ function renderPlayerCard(govId) {
           scanData.name || safeId;
         document.getElementById("pc-id").textContent = safeId;
         document.getElementById("pc-type-badge").className = "pc-type-badge";
+        const scanProfile = loadPlayerProfile(safeId);
+        document.getElementById("pc-vip-badge").innerHTML = renderVipBadge(
+          scanProfile ? scanProfile.vip_level : "",
+        );
         if (!document.getElementById("pc-ch")) {
           const chSpan = document.createElement("span");
           chSpan.id = "pc-ch";
@@ -1129,6 +1227,11 @@ function renderPlayerCard(govId) {
 
       document.getElementById("pc-name").textContent = info.name || safeId;
       document.getElementById("pc-id").textContent = safeId;
+
+      const profile = loadPlayerProfile(safeId);
+      document.getElementById("pc-vip-badge").innerHTML = renderVipBadge(
+        profile ? profile.vip_level : "",
+      );
 
       if (!document.getElementById("pc-ch")) {
         const chSpan = document.createElement("span");
