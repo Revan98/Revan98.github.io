@@ -842,8 +842,8 @@ body.dark #backToTop:hover {
 
 .equip-slots {
   --eq-size: 82px;
-  --eq-col: 0.72;
-  --eq-head: 1.3;
+  --eq-col: 0.52;
+  --eq-head: 1.1;
   position: relative;
   width: calc(var(--eq-size) * (1 + var(--eq-col) * 2));
   height: calc(var(--eq-size) * (var(--eq-head) + 3.8));
