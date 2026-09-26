@@ -399,11 +399,16 @@ function initEquipTooltip() {
   );
 }
 
+// Keep in sync with DB_VERSION in dashboard.js — bump both together whenever
+// kvk.db's schema or contents change, so browsers don't serve a stale cached copy.
+const DB_VERSION = "9";
+const SCANS_DB_VERSION = "1";
+
 async function loadDatabase() {
   const SQL = await initSqlJs({
     locateFile: (f) => `https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/${f}`,
   });
-  const res = await fetch("kvk.db");
+  const res = await fetch(`kvk.db?v=${DB_VERSION}`);
   const buf = await res.arrayBuffer();
   db = new SQL.Database(new Uint8Array(buf));
   ensureSchema();
@@ -412,7 +417,7 @@ async function loadDatabase() {
 
 async function loadScansDatabase(SQL) {
   try {
-    const res = await fetch("scans_2247.db");
+    const res = await fetch(`scans_2247.db?v=${SCANS_DB_VERSION}`);
     if (!res.ok) return;
     const buf = await res.arrayBuffer();
     scansDb = new SQL.Database(new Uint8Array(buf));
@@ -838,7 +843,6 @@ function renderCitySkinSection(skinCode) {
 
   return `
       <div class="city-skin-section">
-        <div class="equip-arm-label">City Skin</div>
         <div class="city-skin-item">
           <div class="city-skin-box${rarity ? " rarity-" + rarity : ""}"${tipAttrs}>${imgTag}${fallback}</div>
           <span class="city-skin-name${isEmpty ? " city-skin-name--empty" : ""}">${isEmpty ? "No city skin set" : escapeHtml(String(displayName))}</span>
@@ -971,7 +975,7 @@ function getAbilityTier(name) {
 
 function renderArmamentSection(armRow) {
   if (!armRow)
-    return `<div class="equip-arm-section"><div class="equip-arm-label">Armaments</div><div class="pc-equip-empty">No armament data.</div></div>`;
+    return `<div class="equip-arm-section"><div class="pc-equip-empty">No armament data.</div></div>`;
   const arms = ARM_SLOTS.map((arm) => {
     const name = armRow[arm.prefix];
     if (isEmptyVal(name)) return "";
@@ -991,7 +995,9 @@ function renderArmamentSection(armRow) {
       .map((v) => {
         const tier = getAbilityTier(String(v));
         const label = String(v).trim();
-        return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(label)}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
+        const displayLabel =
+          label.length > 9 ? `${label.slice(0, 9)}...` : label;
+        return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(label)}" data-tip-kind="inscription">${escapeHtml(displayLabel)}</span>`;
       })
       .join("");
     const statSlots = [
@@ -1016,7 +1022,7 @@ function renderArmamentSection(armRow) {
   })
     .filter(Boolean)
     .join("");
-  return `<div class="equip-arm-section"><div class="equip-arm-label">Armaments</div><div class="arm-cards">${arms || `<div class="pc-equip-empty">No armaments set.</div>`}</div></div>`;
+  return `<div class="equip-arm-section"><div class="arm-cards">${arms || `<div class="pc-equip-empty">No armaments set.</div>`}</div></div>`;
 }
 
 function renderPairsSection(row) {
@@ -1029,14 +1035,12 @@ function renderPairsSection(row) {
     const boxes = [c1, c2].map((c) => renderPairBox(c)).join("");
     pairCards += `
       <div class="pair-card">
-        <div class="pair-card-label">Pair ${n}</div>
         <div class="pair-card-boxes">${boxes}</div>
       </div>`;
   }
   if (!pairCards) return "";
   return `
     <div class="equip-pairs-section">
-      <div class="equip-arm-label">Pairs</div>
       <div class="pair-cards">${pairCards}</div>
     </div>`;
 }
