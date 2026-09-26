@@ -1248,3 +1248,22 @@ body.dark #backToTop:hover {
 .city-skin-name--empty {
   opacity: 0.4;
 }
+
+.vip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  background: #f2b632;
+  border: 1px solid #c9660b;
+  color: #6b3800;
+  white-space: nowrap;
+}
+.vip-badge i {
+  font-size: 0.85em;
+}
