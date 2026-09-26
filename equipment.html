@@ -140,19 +140,6 @@
               />
             </div>
 
-            <div class="eq-field-group">
-              <label class="eq-label" for="citySkinInput">
-                <i class="fa-solid fa-city" style="font-size: 13px"></i>
-                City Skin
-              </label>
-              <input
-                type="text"
-                id="citySkinInput"
-                class="eq-input"
-                placeholder="e.g. Golden Age"
-              />
-            </div>
-
             <div class="eq-field-group eq-field-group--action">
               <div class="eq-action-row">
                 <button class="eq-create-db-btn secondary" id="createDbBtn">
@@ -204,6 +191,10 @@
               <i class="fa-solid fa-khanda" style="font-size: 14px"></i> 
               Armaments
             </button>
+            <button class="eq-section-tab" data-tab="skins">
+              <i class="fa-solid fa-palette" style="font-size: 14px"></i>
+              Skins
+            </button>
             <button class="eq-section-tab" data-tab="farmImport">
               Farm Accounts
             </button>
@@ -213,14 +204,20 @@
           </div>
 
           <div id="equipmentPanel">
-            <div class="eq-tabs" id="marchTabs">
-              <button class="eq-tab active" data-march="1">March 1</button>
-              <button class="eq-tab" data-march="2">March 2</button>
-              <button class="eq-tab" data-march="3">March 3</button>
-              <button class="eq-tab" data-march="4">March 4</button>
-              <button class="eq-tab" data-march="5">March 5</button>
-              <button class="eq-tab" data-march="6">March 6</button>
-              <button class="eq-tab" data-march="7">March 7</button>
+            <div class="eq-tabs-row">
+              <div class="eq-tabs" id="marchTabs">
+                <button class="eq-tab active" data-march="1">March 1</button>
+                <button class="eq-tab" data-march="2">March 2</button>
+                <button class="eq-tab" data-march="3">March 3</button>
+                <button class="eq-tab" data-march="4">March 4</button>
+                <button class="eq-tab" data-march="5">March 5</button>
+                <button class="eq-tab" data-march="6">March 6</button>
+                <button class="eq-tab" data-march="7">March 7</button>
+              </div>
+              <button class="secondary eq-add-slot-btn" id="addMarchBtn" disabled>
+                <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+                Add March
+              </button>
             </div>
             <div class="eq-slot-grid" id="slotGrid"></div>
           </div>
@@ -230,10 +227,29 @@
               Click any card to assign a commander. Use × to clear.
             </div>
             <div class="eq-pairs-grid" id="pairsGrid"></div>
+            <button class="secondary eq-add-slot-btn" id="addPairBtn" disabled>
+              <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+              Add Pair Row
+            </button>
           </div>
 
           <div id="armamentsPanel" style="display: none">
             <div class="eq-arm-grid" id="armGrid"></div>
+            <button class="secondary eq-add-slot-btn" id="addArmBtn" disabled>
+              <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+              Add Armament Slot
+            </button>
+          </div>
+
+          <div id="skinsPanel" style="display: none">
+            <div class="eq-pairs-hint">
+              Click any slot to choose a skin. Use × to clear.
+            </div>
+            <div class="eq-slot-grid" id="skinGrid"></div>
+            <button class="secondary eq-add-slot-btn" id="addSkinBtn" disabled>
+              <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+              Add Skin Slot
+            </button>
           </div>
 
           <div id="farmImportPanel" style="display: none">
@@ -642,6 +658,10 @@
             class="eq-ins-picker-selected-wrap"
             id="insPickerSelectedWrap"
           ></div>
+          <button class="secondary" id="insPickerClearAll" type="button">
+            <i class="fa-solid fa-trash-can" style="font-size: 12px"></i>
+            Clear All
+          </button>
           <button class="primary" id="insPickerConfirm">Confirm</button>
         </div>
       </div>
