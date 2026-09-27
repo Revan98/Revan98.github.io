@@ -456,6 +456,43 @@ body.dark .eq-download-btn:hover:not(:disabled) {
   color: var(--text-color);
 }
 
+.eq-vip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 10px;
+}
+
+.eq-vip-btn {
+  padding: 12px 6px;
+  border: 1.5px solid var(--table-border);
+  border-radius: 10px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s,
+    transform 0.14s,
+    background 0.18s,
+    color 0.18s;
+}
+.eq-vip-btn:hover {
+  border-color: var(--chart-line);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.1);
+  transform: translateY(-2px);
+}
+.eq-vip-btn.selected {
+  border-color: var(--chart-line);
+  background: var(--chart-line);
+  color: #fff;
+}
+.eq-vip-btn.svip {
+  grid-column: span 2;
+}
+
 .eq-slot-label {
   font-size: 0.68rem;
   font-weight: bold;
