@@ -1079,7 +1079,9 @@ farmAddNewBtn?.addEventListener("click", () => {
 
 const govIdInput = document.getElementById("govIdInput");
 const govNameInput = document.getElementById("govNameInput");
-const vipLevelInput = document.getElementById("vipLevelInput");
+const VIP_LEVELS = Array.from({ length: 19 }, (_, i) => i + 1); // 1..19
+const SVIP_VALUE = 20; // sentinel int stored in vip_level for "SVIP"
+let vipLevel = null; // null = none selected, else 1-19 or SVIP_VALUE
 const saveStatus = document.getElementById("saveStatus");
 const govBadge = document.getElementById("govBadge");
 
@@ -1185,7 +1187,8 @@ newGovBtn.addEventListener("click", () => {
   hideGovIdSuggestions();
   govIdInput.value = "";
   govNameInput.value = "";
-  vipLevelInput.value = "";
+  vipLevel = null;
+  renderVipGrid();
   setGovBadge("new");
   renderActiveTab();
   showSaveStatus("Fill in the Governor ID & Name, then save.", "info");
@@ -1199,7 +1202,7 @@ function clearAllData() {
   for (let n = 0; n < PAIR_COUNT; n++) pairsData[n] = { comm1: "", comm2: "" };
   for (let i = 0; i < SKIN_COUNT; i++) skinsData[i] = "";
   armamentsRow = null;
-  if (vipLevelInput) vipLevelInput.value = "";
+  vipLevel = null;
 }
 
 function setGovBadge(type) {
@@ -1370,21 +1373,28 @@ function loadGovernorById(safeGovId) {
 
 function loadPlayerProfile(govId) {
   if (!db) return;
+  vipLevel = null;
   try {
     const tbl = db.exec(
       `SELECT name FROM sqlite_master WHERE type='table' AND name='player_profile'`,
     );
-    if (!tbl.length || !tbl[0].values.length) return;
+    if (!tbl.length || !tbl[0].values.length) {
+      renderVipGrid();
+      return;
+    }
     const res = db.exec(
       `SELECT vip_level FROM player_profile WHERE player_id=${govId} LIMIT 1`,
     );
     if (res.length && res[0].values.length) {
       const [vip] = res[0].values[0];
-      vipLevelInput.value = isEmpty(vip) ? "" : String(vip);
+      vipLevel = isEmpty(vip) ? null : Number(vip);
+    } else {
+      vipLevel = null;
     }
   } catch (e) {
     console.warn("player_profile load failed:", e);
   }
+  renderVipGrid();
 }
 function getArmTier(name) {
   const info = getInscriptionInfo(name);
@@ -1687,13 +1697,10 @@ function savePlayerProfile(govId) {
     );
     if (!tbl.length || !tbl[0].values.length) return;
 
-    const vipRaw = vipLevelInput.value.trim();
-    const vip = vipRaw === "" ? null : Number(vipRaw);
-
     db.run(
       `INSERT INTO player_profile (player_id, vip_level) VALUES (?, ?)
        ON CONFLICT(player_id) DO UPDATE SET vip_level=excluded.vip_level`,
-      [govId, vip],
+      [govId, vipLevel],
     );
   } catch (e) {
     console.warn("savePlayerProfile:", e);
@@ -2244,6 +2251,7 @@ document.querySelectorAll(".eq-section-tab").forEach((btn) => {
       "pairs",
       "armaments",
       "skins",
+      "vip",
       "farmImport",
       "kvkImport",
     ]) {
@@ -2260,6 +2268,7 @@ function renderActiveTab() {
   else if (activeTab === "pairs") renderPairsGrid();
   else if (activeTab === "armaments") renderArmamentsGrid();
   else if (activeTab === "skins") renderSkinGrid();
+  else if (activeTab === "vip") renderVipGrid();
   else if (activeTab === "farmImport") {
     farmNewRowOpen = false;
     renderFarmsTable();
@@ -2432,9 +2441,37 @@ function renderSkinGrid() {
   }
 }
 
+function renderVipGrid() {
+  const grid = document.getElementById("vipGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  const buttons = [
+    ...VIP_LEVELS.map((n) => ({ label: String(n), value: n })),
+    { label: "SVIP", value: SVIP_VALUE },
+  ];
+
+  for (const { label, value } of buttons) {
+    const isSelected = vipLevel === value;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className =
+      "eq-vip-btn" +
+      (isSelected ? " selected" : "") +
+      (value === SVIP_VALUE ? " svip" : "");
+    btn.textContent = label;
+    btn.addEventListener("click", () => {
+      vipLevel = isSelected ? null : value;
+      renderVipGrid();
+    });
+    grid.appendChild(btn);
+  }
+}
+
 renderSlotGrid();
 renderPairsGrid();
 renderSkinGrid();
+renderVipGrid();
 
 const EQUIP_PREFIX_MAP = {
   helm: "h",
