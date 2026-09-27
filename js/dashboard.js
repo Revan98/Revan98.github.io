@@ -1976,7 +1976,8 @@ function renderPairsSection(row) {
 function renderVipBadge(vipLevel) {
   if (isEmptyVal(vipLevel)) return "";
   const level = escapeHtml(String(vipLevel).trim());
-  return `<span class="vip-badge" title="VIP Level ${level}"><i class="fa-solid fa-crown"></i>VIP ${level}</span>`;
+  const label = level === "20" ? "SVIP" : `VIP ${level}`;
+  return `<span class="vip-badge" title="VIP Level ${level}"><i class="fa-solid fa-crown"></i>${label}</span>`;
 }
 
 function renderSingleSkinItem(skinCode) {
