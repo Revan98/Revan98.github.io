@@ -132,7 +132,7 @@ async function loadEquipRefData() {
   }
 }
 loadEquipRefData();
-const DB_VERSION = "10"; 
+const DB_VERSION = "9"; 
 async function loadDatabase() {
   const SQL = await initSqlJs({
     locateFile: (file) =>
@@ -1601,6 +1601,7 @@ const ARM_SLOTS = [
   { prefix: "arm7", label: "Arm 7" },
   { prefix: "arm8", label: "Arm 8" },
 ];
+const SKIN_SLOTS = Array.from({ length: 8 }, (_, i) => `skin${i + 1}`);
 
 function loadGovernorEquipment(govId) {
   const safeGovId = normalizeNumericId(govId);
@@ -1650,6 +1651,30 @@ function loadGovernorArmaments(govId) {
   }
 }
 
+function loadGovernorSkins(govId) {
+  const safeGovId = normalizeNumericId(govId);
+  if (!safeGovId) return null;
+
+  try {
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='skins'`,
+    );
+    if (!t.length || !t[0].values.length) return null;
+    const res = db.exec(
+      `SELECT * FROM skins WHERE player_id=${safeGovId} LIMIT 1`,
+    );
+    if (!res.length || !res[0].values.length) return null;
+    const row = {};
+    res[0].columns.forEach((c, i) => {
+      row[c] = res[0].values[0][i];
+    });
+    return row;
+  } catch (e) {
+    console.error("loadGovernorSkins:", e);
+    return null;
+  }
+}
+
 function loadPlayerProfile(govId) {
   const safeGovId = normalizeNumericId(govId);
   if (!safeGovId) return null;
@@ -1673,11 +1698,14 @@ function loadPlayerProfile(govId) {
 
 function iconPath(name, kind) {
   const folder =
-    kind === "commander" ? "commanders" :
-    kind === "skin" ? "skins" :
-    kind === "armament" ? "armaments" :
-    "equipment";
-  return `icons/${folder}/${encodeURIComponent(String(name).trim().toLowerCase())}.webp`;
+    kind === "commander"
+      ? "commanders"
+      : kind === "skin"
+        ? "skins"
+        : kind === "armament"
+          ? "armaments"
+          : "equipment";
+  return `icons/${folder}/${encodeURIComponent(String(name).trim())}.webp`;
 }
 
 function isEmptyVal(v) {
@@ -1951,29 +1979,45 @@ function renderVipBadge(vipLevel) {
   return `<span class="vip-badge" title="VIP Level ${level}"><i class="fa-solid fa-crown"></i>VIP ${level}</span>`;
 }
 
-function renderCitySkinSection(skinCode) {
-  const isEmpty = isEmptyVal(skinCode);
-  const info = isEmpty ? null : getSkinInfo(skinCode);
+function renderSingleSkinItem(skinCode) {
+  const info = getSkinInfo(skinCode);
   const displayName = info && info.name ? info.name : skinCode;
   const rarity = info && info.rarity ? String(info.rarity).toLowerCase() : "";
-  const imgSrc = isEmpty ? null : iconPath(skinCode, "skin");
-  const imgTag = imgSrc
-    ? `<img src="${imgSrc}" alt="${escapeHtml(String(displayName))}" loading="lazy"
+  const imgSrc = iconPath(skinCode, "skin");
+  const imgTag = `<img src="${imgSrc}" alt="${escapeHtml(String(displayName))}" loading="lazy"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-            style="width:100%;height:100%;object-fit:contain;">`
-    : "";
-  const fallback = `<span class="city-skin-box-fallback" style="display:${imgSrc ? "none" : "flex"};">—</span>`;
-  const tipAttrs = isEmpty
-    ? ""
-    : ` data-tip-code="${escapeHtml(String(skinCode).trim())}" data-tip-kind="skin"`;
+            style="width:100%;height:100%;object-fit:contain;">`;
+  const fallback = `<span class="city-skin-box-fallback" style="display:none;">—</span>`;
+  const tipAttrs = ` data-tip-code="${escapeHtml(String(skinCode).trim())}" data-tip-kind="skin"`;
 
   return `
+        <div class="city-skin-item">
+          <div class="city-skin-box${rarity ? " rarity-" + rarity : ""}"${tipAttrs}>${imgTag}${fallback}</div>
+          <span class="city-skin-name">${escapeHtml(String(displayName))}</span>
+        </div>`;
+}
+
+function renderCitySkinSection(skinsRow) {
+  const owned = skinsRow
+    ? SKIN_SLOTS.map((key) => skinsRow[key]).filter((v) => !isEmptyVal(v))
+    : [];
+  if (!owned.length) {
+    return `
       <div class="city-skin-section">
         <div class="equip-arm-label">City Skin</div>
         <div class="city-skin-item">
-          <div class="city-skin-box${rarity ? " rarity-" + rarity : ""}"${tipAttrs}>${imgTag}${fallback}</div>
-          <span class="city-skin-name${isEmpty ? " city-skin-name--empty" : ""}">${isEmpty ? "No city skin set" : escapeHtml(String(displayName))}</span>
+          <div class="city-skin-box">
+            <span class="city-skin-box-fallback" style="display:flex;">—</span>
+          </div>
+          <span class="city-skin-name city-skin-name--empty">No skins set</span>
         </div>
+      </div>`;
+  }
+  const items = owned.map((code) => renderSingleSkinItem(code)).join("");
+  return `
+      <div class="city-skin-section">
+        <div class="equip-arm-label">City Skin${owned.length > 1 ? "s" : ""}</div>
+        ${items}
       </div>`;
 }
 
@@ -2063,8 +2107,8 @@ function renderEmptyEquipmentMarch(marchNum = 1) {
 function renderEquipmentSection(govId) {
   const row = govId ? loadGovernorEquipment(govId) : null;
   const armRow = govId ? loadGovernorArmaments(govId) : null;
-  const profile = govId ? loadPlayerProfile(govId) : null;
-  const citySkinHtml = renderCitySkinSection(profile ? profile.city_skin : "");
+  const skinsRow = govId ? loadGovernorSkins(govId) : null;
+  const citySkinHtml = renderCitySkinSection(skinsRow);
 
   if (!row) {
     return `<div class="equip-grid"><div class="equip-marches">${renderEmptyEquipmentMarch(1)}</div>${renderArmamentRow(armRow)}${citySkinHtml}</div>`;
