@@ -125,21 +125,6 @@
               />
             </div>
 
-            <div class="eq-field-group">
-              <label class="eq-label" for="vipLevelInput">
-                <i class="fa-solid fa-crown" style="font-size: 13px"></i>
-                VIP Level
-              </label>
-              <input
-                type="number"
-                id="vipLevelInput"
-                class="eq-input"
-                placeholder="e.g. 12"
-                min="0"
-                step="1"
-              />
-            </div>
-
             <div class="eq-field-group eq-field-group--action">
               <div class="eq-action-row">
                 <button class="eq-create-db-btn secondary" id="createDbBtn">
@@ -194,6 +179,10 @@
             <button class="eq-section-tab" data-tab="skins">
               <i class="fa-solid fa-palette" style="font-size: 14px"></i>
               Skins
+            </button>
+            <button class="eq-section-tab" data-tab="vip">
+              <i class="fa-solid fa-crown" style="font-size: 14px"></i>
+              VIP
             </button>
             <button class="eq-section-tab" data-tab="farmImport">
               Farm Accounts
@@ -250,6 +239,14 @@
               <i class="fa-solid fa-plus" style="font-size: 12px"></i>
               Add Skin Slot
             </button>
+          </div>
+
+          <div id="vipPanel" style="display: none">
+            <div class="eq-pairs-hint">
+              Click a level to select it for this governor. Click the
+              selected level again to clear it.
+            </div>
+            <div class="eq-vip-grid" id="vipGrid"></div>
           </div>
 
           <div id="farmImportPanel" style="display: none">
