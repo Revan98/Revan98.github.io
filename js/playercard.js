@@ -859,35 +859,70 @@ function loadPlayerProfile(govId) {
   }
 }
 
+function loadSkins(govId) {
+  const safeId = normalizeNumericId(govId);
+  if (!safeId || !db) return null;
+  try {
+    const t = db.exec(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='skins'`,
+    );
+    if (!t.length || !t[0].values.length) return null;
+    const res = db.exec(
+      `SELECT * FROM skins WHERE player_id=${safeId} LIMIT 1`,
+    );
+    if (!res.length || !res[0].values.length) return null;
+    const row = {};
+    res[0].columns.forEach((c, i) => {
+      row[c] = res[0].values[0][i];
+    });
+    return row;
+  } catch (e) {
+    console.error("loadSkins:", e);
+    return null;
+  }
+}
+
 function renderVipBadge(vipLevel) {
   if (isEmptyVal(vipLevel)) return "";
   const level = escapeHtml(String(vipLevel).trim());
   return `<span class="vip-badge" title="VIP Level ${level}"><i class="fa-solid fa-crown"></i>VIP ${level}</span>`;
 }
 
-function renderCitySkinSection(skinCode) {
-  const isEmpty = isEmptyVal(skinCode);
-  const info = isEmpty ? null : getSkinInfo(skinCode);
+function renderSingleSkinItem(skinCode) {
+  const info = getSkinInfo(skinCode);
   const displayName = info && info.name ? info.name : skinCode;
   const rarity = info && info.rarity ? String(info.rarity).toLowerCase() : "";
-  const imgSrc = isEmpty ? null : iconPath(skinCode, "skin");
-  const imgTag = imgSrc
-    ? `<img src="${imgSrc}" alt="${escapeHtml(String(displayName))}" loading="lazy"
+  const imgSrc = iconPath(skinCode, "skin");
+  const imgTag = `<img src="${imgSrc}" alt="${escapeHtml(String(displayName))}" loading="lazy"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-            style="width:100%;height:100%;object-fit:contain;">`
-    : "";
-  const fallback = `<span class="city-skin-box-fallback" style="display:${imgSrc ? "none" : "flex"};">—</span>`;
-  const tipAttrs = isEmpty
-    ? ""
-    : ` data-tip-code="${escapeHtml(String(skinCode).trim())}" data-tip-kind="skin"`;
+            style="width:100%;height:100%;object-fit:contain;">`;
+  const fallback = `<span class="city-skin-box-fallback" style="display:none;">—</span>`;
+  const tipAttrs = ` data-tip-code="${escapeHtml(String(skinCode).trim())}" data-tip-kind="skin"`;
 
   return `
-      <div class="city-skin-section">
         <div class="city-skin-item">
           <div class="city-skin-box${rarity ? " rarity-" + rarity : ""}"${tipAttrs}>${imgTag}${fallback}</div>
-          <span class="city-skin-name${isEmpty ? " city-skin-name--empty" : ""}">${isEmpty ? "No city skin set" : escapeHtml(String(displayName))}</span>
+          <span class="city-skin-name">${escapeHtml(String(displayName))}</span>
+        </div>`;
+}
+
+function renderCitySkinSection(skinsRow) {
+  const owned = skinsRow
+    ? SKIN_SLOTS.map((key) => skinsRow[key]).filter((v) => !isEmptyVal(v))
+    : [];
+  if (!owned.length) {
+    return `
+      <div class="city-skin-section">
+        <div class="city-skin-item">
+          <div class="city-skin-box">
+            <span class="city-skin-box-fallback" style="display:flex;">—</span>
+          </div>
+          <span class="city-skin-name city-skin-name--empty">No skins set</span>
         </div>
       </div>`;
+  }
+  const items = owned.map((code) => renderSingleSkinItem(code)).join("");
+  return `<div class="city-skin-section">${items}</div>`;
 }
 
 const EQUIP_SLOTS = [
@@ -904,14 +939,18 @@ const ARM_SLOTS = Array.from({ length: 8 }, (_, i) => ({
   prefix: `arm${i + 1}`,
   label: `Arm ${i + 1}`,
 }));
+const SKIN_SLOTS = Array.from({ length: 8 }, (_, i) => `skin${i + 1}`);
 
 function iconPath(name, kind) {
   const folder =
-    kind === "commander" ? "commanders" :
-    kind === "skin" ? "skins" :
-    kind === "armament" ? "armaments" :
-    "equipment";
-  return `icons/${folder}/${encodeURIComponent(String(name).trim().toLowerCase())}.webp`;
+    kind === "commander"
+      ? "commanders"
+      : kind === "skin"
+        ? "skins"
+        : kind === "armament"
+          ? "armaments"
+          : "equipment";
+  return `icons/${folder}/${encodeURIComponent(String(name).trim())}.webp`;
 }
 
 function isEmptyVal(v) {
@@ -1106,8 +1145,8 @@ function renderEmptyEquipmentMarch(marchNum = 1) {
 function renderEquipmentGrid(govId) {
   const row = loadEquipment(govId);
   const armRow = loadArmaments(govId);
-  const profile = loadPlayerProfile(govId);
-  const citySkinHtml = renderCitySkinSection(profile ? profile.city_skin : "");
+  const skinsRow = loadSkins(govId);
+  const citySkinHtml = renderCitySkinSection(skinsRow);
   const grid = document.getElementById("pc-equipment");
   if (!row) {
     grid.innerHTML = `<div class="equip-grid"><div class="equip-marches">${renderEmptyEquipmentMarch(1)}</div>${renderArmamentSection(armRow)}${citySkinHtml}</div>`;
