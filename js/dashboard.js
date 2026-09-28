@@ -132,7 +132,7 @@ async function loadEquipRefData() {
   }
 }
 loadEquipRefData();
-const DB_VERSION = "14"; 
+const DB_VERSION = "15"; 
 async function loadDatabase() {
   const SQL = await initSqlJs({
     locateFile: (file) =>
