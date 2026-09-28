@@ -235,26 +235,20 @@
   margin-bottom: 1rem;
 }
 
-.pc-profile-identity {
-  margin-bottom: 1.2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--chart-line);
-  font-size: 0.82rem;
-  font-weight: 500;
-  padding: 0;
-  opacity: 0.8;
-  transition: opacity 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    color: var(--table-bg);
+    font-size: 0.82rem;
+    font-weight: bold;
+    padding: 10px;
+    opacity: 0.8;
+    transition: opacity 0.15s;
+    border: solid 2px;
+    border-radius: 10px;
+    background: var(--chart-line);
 }
 
 .back-btn:hover {
@@ -707,11 +701,6 @@
   font-size: 11.5px;
 }
 
-/* ==========================================================================
-   Equipment / Armaments / Inscriptions / Commanders — base styles moved to
-   shared.css. These two section wrappers only exist in the player-card
-   markup (dashboard doesn't use them), so they stay page-specific.
-   ========================================================================== */
 .equip-arm-section {
   margin-top: 14px;
   padding-top: 12px;
@@ -742,96 +731,59 @@
 }
 
 .pc-scan-stats-inline {
-  border-top: 1px solid var(--table-border);
-  padding-top: 1.1rem;
-  margin-top: 0.2rem;
+  margin-top: 1rem;
 }
 
-.scan-snap-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-color);
-  opacity: 0.32;
-  text-align: right;
-  margin-top: 0.9rem;
-}
-
-.scan-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: 1.2rem;
-}
-.scan-row:last-child {
-  margin-bottom: 0;
-}
-
-.scan-item {
+.pc-scan-stats-inline {
+  margin-top: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 0 2rem;
 }
 
-.scan-item-label {
-  font-size: 0.82rem;
-  font-weight: bold;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-color);
-  opacity: 0.55;
-  border-bottom: 2.5px solid var(--chart-line);
-  padding-bottom: 3px;
-}
-
-.scan-item-value {
-  font-size: 1rem;
-  font-weight: bold;
-  color: var(--text-color);
-  line-height: 1.2;
-  white-space: nowrap;
-  padding-top: 2px;
-}
-
-.scan-tier-item {
+.poster-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 0 2rem;
+  gap: 12px;
+  padding: 3rem 0;
+  color: var(--text-color);
+  opacity: 0.65;
+  font-size: 0.9rem;
 }
 
-.scan-tier-label {
-  font-size: 0.82rem;
-  font-weight: bold;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-color);
-  opacity: 0.55;
-  border-bottom: 2.5px solid var(--chart-line);
-  padding-bottom: 3px;
+.poster-image {
+  display: block;
+  width: 100%;
+  max-width: 860px;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 10px 34px rgb(0 0 0 / 0.35);
+  user-select: none;
+  pointer-events: none;
 }
 
-.scan-tier-val {
-  font-size: 1rem;
-  font-weight: bold;
-  color: var(--text-color);
-  white-space: nowrap;
-  padding-top: 2px;
+.poster-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0.7rem;
+    font-size: 0.82rem;
+    font-weight: bold;
+    color: var(--table-bg);
+    text-decoration: none;
+    opacity: 0.85;
+    transition: opacity 0.15s;
+    border: solid 2px;
+    border-radius: 10px;
+    background: var(--chart-line);
+    padding: 10px;
+}
+.poster-download:hover {
+  opacity: 1;
 }
 
 @media (width <= 700px) {
-  .scan-item,
-  .scan-tier-item {
-    padding: 0 1rem 0.9rem;
-  }
-  .scan-row {
-    margin-bottom: 0;
-  }
   .pc-profile-topbar {
     flex-wrap: wrap;
     gap: 8px;
