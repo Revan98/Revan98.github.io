@@ -240,16 +240,6 @@ async function loadEquipRefData() {
 }
 loadEquipRefData();
 
-function getItemInfo(itemCode) {
-  const key = String(itemCode ?? "").trim();
-  return (itemsData.items && itemsData.items[key]) || null;
-}
-
-function getCommanderInfo(commCode) {
-  const key = String(commCode ?? "").trim();
-  return (commandersData.commanders && commandersData.commanders[key]) || null;
-}
-
 function getInscriptionInfo(name) {
   const key = String(name ?? "")
     .trim()
@@ -262,185 +252,6 @@ function getSkinInfo(skinCode) {
   return (skinsData.skins && skinsData.skins[key]) || null;
 }
 
-function getArmamentInfo(name) {
-  return armamentsByKey[normalizeArmamentKey(name)] || null;
-}
-
-function buildTooltipHtml(code, kind) {
-  if (isEmptyVal(code)) return "";
-  const key = String(code).trim();
-
-  if (kind === "commander") {
-    const info = getCommanderInfo(key);
-    const name = info ? info.name : key;
-    return `<div class="tt-name">${escapeHtml(name)}</div>`;
-  }
-
-  if (kind === "armament") {
-    const info = getArmamentInfo(key);
-    const name = info && info.name ? info.name : key;
-    const parts = [`<div class="tt-name">${escapeHtml(name)}</div>`];
-    if (info && info.description) {
-      const descArr = Array.isArray(info.description)
-        ? info.description
-        : [info.description];
-      parts.push(
-        `<div class="tt-desc">${descArr.map((d) => escapeHtml(String(d))).join("<br>")}</div>`,
-      );
-    }
-    return parts.join("");
-  }
-
-  if (kind === "inscription") {
-    const info = getInscriptionInfo(key);
-    if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
-    const rarityClass = String(info.rarity || "gold").toLowerCase();
-    const parts = [
-      `<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`,
-    ];
-    if (info.type) {
-      parts.push(`<div class="tt-slot">${escapeHtml(info.type)}</div>`);
-    }
-    if (info.description) {
-      parts.push(
-        `<div class="tt-desc">${escapeHtml(String(info.description))}</div>`,
-      );
-    }
-    return parts.join("");
-  }
-
-  if (kind === "skin") {
-    const info = getSkinInfo(key);
-    if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
-    const rarityClass = String(info.rarity || "gold").toLowerCase();
-    const parts = [
-      `<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`,
-    ];
-    const stats = Array.isArray(info.stats)
-      ? info.stats
-      : info.stats
-        ? [info.stats]
-        : [];
-    if (stats.length) {
-      parts.push(
-        `<ul class="tt-stats">${stats.map((s) => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`,
-      );
-    }
-    const descArr = Array.isArray(info.description)
-      ? info.description
-      : info.description
-        ? [info.description]
-        : [];
-    if (descArr.length) {
-      parts.push(
-        `<div class="tt-desc">${descArr.map((d) => escapeHtml(String(d))).join("<br>")}</div>`,
-      );
-    }
-    return parts.join("");
-  }
-
-  const info = getItemInfo(key);
-  if (!info) return `<div class="tt-name">${escapeHtml(key)}</div>`;
-
-  const rarityClass = String(info.rarity || "gold").toLowerCase();
-  const parts = [
-    `<div class="tt-name tt-rarity-${rarityClass}">${escapeHtml(info.name || key)}</div>`,
-  ];
-
-  if (info.slot) {
-    parts.push(`<div class="tt-slot">${escapeHtml(info.slot)}</div>`);
-  }
-
-  const stats = Array.isArray(info.stats)
-    ? info.stats
-    : info.stats
-      ? [info.stats]
-      : [];
-  if (stats.length) {
-    parts.push(
-      `<ul class="tt-stats">${stats.map((s) => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`,
-    );
-  }
-
-  const descArr = Array.isArray(info.description)
-    ? info.description
-    : info.description
-      ? [info.description]
-      : [];
-  if (descArr.length) {
-    parts.push(
-      `<div class="tt-desc">${descArr.map((d) => escapeHtml(String(d))).join("<br>")}</div>`,
-    );
-  }
-
-  return parts.join("");
-}
-
-function initEquipTooltip() {
-  const tip = document.createElement("div");
-  tip.className = "equip-tooltip";
-  tip.style.display = "none";
-  document.body.appendChild(tip);
-
-  let activeEl = null;
-
-  function positionTip(x, y) {
-    const margin = 14;
-    const rect = tip.getBoundingClientRect();
-    let left = x + margin;
-    let top = y + margin;
-
-    if (left + rect.width > window.innerWidth - 8) {
-      left = x - rect.width - margin;
-    }
-    if (top + rect.height > window.innerHeight - 8) {
-      top = y - rect.height - margin;
-    }
-    left = Math.max(8, left);
-    top = Math.max(8, top);
-
-    tip.style.left = `${left}px`;
-    tip.style.top = `${top}px`;
-  }
-
-  document.addEventListener("mouseover", (e) => {
-    const el = e.target.closest("[data-tip-code]");
-    if (!el) return;
-    activeEl = el;
-
-    const html = buildTooltipHtml(el.dataset.tipCode, el.dataset.tipKind);
-    if (!html) return;
-
-    tip.innerHTML = html;
-    tip.style.display = "block";
-    positionTip(e.clientX, e.clientY);
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!activeEl || tip.style.display === "none") return;
-    positionTip(e.clientX, e.clientY);
-  });
-
-  document.addEventListener("mouseout", (e) => {
-    const el = e.target.closest("[data-tip-code]");
-    if (!el || el !== activeEl) return;
-    if (el.contains(e.relatedTarget)) return;
-    activeEl = null;
-    tip.style.display = "none";
-  });
-
-  document.addEventListener(
-    "scroll",
-    () => {
-      tip.style.display = "none";
-      activeEl = null;
-    },
-    true,
-  );
-}
-
-// Keep in sync with DB_VERSION in dashboard.js — bump both together whenever
-// kvk.db's schema or contents change, so browsers don't serve a stale cached copy.
 const DB_VERSION = "9";
 const SCANS_DB_VERSION = "1";
 
@@ -882,50 +693,6 @@ function loadSkins(govId) {
   }
 }
 
-function renderVipBadge(vipLevel) {
-  if (isEmptyVal(vipLevel)) return "";
-  const level = escapeHtml(String(vipLevel).trim());
-  const label = level === "20" ? "SVIP" : `VIP ${level}`;
-  return `<span class="vip-badge" title="VIP Level ${level}"><i class="fa-solid fa-crown"></i>${label}</span>`;
-}
-
-function renderSingleSkinItem(skinCode) {
-  const info = getSkinInfo(skinCode);
-  const displayName = info && info.name ? info.name : skinCode;
-  const rarity = info && info.rarity ? String(info.rarity).toLowerCase() : "";
-  const imgSrc = iconPath(skinCode, "skin");
-  const imgTag = `<img src="${imgSrc}" alt="${escapeHtml(String(displayName))}" loading="lazy"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-            style="width:100%;height:100%;object-fit:contain;">`;
-  const fallback = `<span class="city-skin-box-fallback" style="display:none;">—</span>`;
-  const tipAttrs = ` data-tip-code="${escapeHtml(String(skinCode).trim())}" data-tip-kind="skin"`;
-
-  return `
-        <div class="city-skin-item">
-          <div class="city-skin-box${rarity ? " rarity-" + rarity : ""}"${tipAttrs}>${imgTag}${fallback}</div>
-          <span class="city-skin-name">${escapeHtml(String(displayName))}</span>
-        </div>`;
-}
-
-function renderCitySkinSection(skinsRow) {
-  const owned = skinsRow
-    ? SKIN_SLOTS.map((key) => skinsRow[key]).filter((v) => !isEmptyVal(v))
-    : [];
-  if (!owned.length) {
-    return `
-      <div class="city-skin-section">
-        <div class="city-skin-item">
-          <div class="city-skin-box">
-            <span class="city-skin-box-fallback" style="display:flex;">—</span>
-          </div>
-          <span class="city-skin-name city-skin-name--empty">No skins set</span>
-        </div>
-      </div>`;
-  }
-  const items = owned.map((code) => renderSingleSkinItem(code)).join("");
-  return `<div class="city-skin-section">${items}</div>`;
-}
-
 const EQUIP_SLOTS = [
   { key: "helm", label: "Helm", id: "helmet" },
   { key: "chest", label: "Chest", id: "chest" },
@@ -972,19 +739,6 @@ function getEquipRarity(name) {
   if (n.endsWith("b")) return "blue";
   return "unknown";
 }
-function slotIcon(slotId) {
-  const icons = {
-    helmet: `<path d="M8 2.6 11 4v2.9c0 1.9-1.2 3.5-3 4.4-1.8-.9-3-2.5-3-4.4V4l3-1.4Zm-2 3.1v1l2 1.2 2-1.2v-1L8 6.9 6 5.7Zm.3 3 .7 1h2l.7-1H6.3Z"/><path opacity=".5" d="M8 2.6v4.3L6 5.7v-1L8 3.8l2 .9v1L8 6.9v4.4c-1.8-.9-3-2.5-3-4.4V4l3-1.4Z"/>`,
-    chest: `<path d="M5.5 2.9 7 4.1h2l1.5-1.2 2.3 1.3-1.3 2.6-1-.4v4.3h-5V6.4l-1 .4-1.3-2.6 2.3-1.3Zm1.1 3-.5 1.4L8 8.1l1.9-.8-.5-1.4H6.6Zm-.1 2.8v1.1h3V8.7L8 9.3l-1.5-.6Z"/><path opacity=".45" d="M5.5 2.9 7 4.1 5.5 5.3v-2.4Zm5 0v2.4L9 4.1l1.5-1.2Zm-3.9 3H9.4l.4 1.1H6.2l.4-1.1Z"/>`,
-    weapon: `<path d="M11.9 2.8 13.2 4l-5.6 5.6 1.1 1.1-1 1-1.1-1.1-1.5 1.5-1.2-1.2 1.5-1.5-1.1-1.1 1-1 1.1 1.1 5.5-5.6Zm-.5 2.3-3.8 3.8.5.5 3.8-3.8-.5-.5Z"/><path opacity=".45" d="M4.3 8.3 5.4 7.2l3.3 3.3-1 1-3.4-3.2Zm6.7-4.6 1.2-.9 1 .9-.9 1.2L11 3.7Z"/>`,
-    gloves: `<path d="M6.1 3h1.4v4h.8V2.8h1.4V7h.7V3.6h1.3v4.1l.8.9-.6 2.4-1.6 1.1H7l-2.1-1.6-1.1-2 .9-1.1 1.4 1V3Zm.3 6-.6.5.6.9 1.1.7h2.4l.8-.6.3-1.2-.5-.6-1.9.4L6.4 9Z"/><path opacity=".45" d="M6.1 3h1.4v4H6.1V3Zm2.2-.2h1.4V7H8.3V2.8Zm1.4 6.1 1.5-.3-.2.8-1.3.5v-1Z"/>`,
-    legs: `<path d="M5.2 3.2h5.6l.6 1.4-.9 3.3-.4 3.3-1.7.8L8 8.8 7.6 12l-1.7-.8-.4-3.3-.9-3.3.6-1.4Zm1.2 1.6.3 2h2.6l.3-2H6.4Zm.3 3 .3 2.3.4.2-.1-2.5h-.6Zm2 0-.1 2.5.4-.2.3-2.3h-.6Z"/><path opacity=".45" d="M6.4 4.8h3.2l-.3 1H6.7l-.3-1Zm-1 3.1 1.3-.1.3 2.3-1.1-.5-.5-1.7Zm5.2 0-.5 1.7-1.1.5.3-2.3 1.3.1Z"/>`,
-    boots: `<path d="M4.7 3.3h2.7l.4 4.1-.5 1.7 1.5.8 2.8.4 1.4 1.2v1.1H3.6v-1.8l1.2-1 .2-2.9-.3-3.6Zm1.1 1.2.2 2.3-.2 3.6-.8.6v.4h6.2l-.4-.3-2.7-.4-2.2-1.3.5-1.9-.4-3H5.8Z"/><path opacity=".45" d="M9.1 3.8h2.2l.4 3.7-.5 1.4 1 .4-2.3-.3.3-1.4-.4-2.6h-.7V3.8ZM5.9 9.4l2.2 1.3 2.7.4.4.3H5l.9-2Z"/>`,
-    accessory: `<path d="M8 2.5 10.2 5 8 7.5 5.8 5 8 2.5Zm0 5.8c1.8 0 3.3 1.5 3.3 3.3S9.8 14.9 8 14.9s-3.3-1.5-3.3-3.3S6.2 8.3 8 8.3Zm0 1.4c-1 0-1.9.8-1.9 1.9S7 13.5 8 13.5s1.9-.8 1.9-1.9S9 9.7 8 9.7Z"/>`,
-    accessory_sec: `<path d="M5.9 2.4 7.4 4 5.9 5.7 4.4 4l1.5-1.6Zm4.2 0L11.6 4l-1.5 1.7L8.6 4l1.5-1.6ZM6.1 7.5c1.5 0 2.7 1.2 2.7 2.7s-1.2 2.7-2.7 2.7-2.7-1.2-2.7-2.7 1.2-2.7 2.7-2.7Zm3.8 0c1.5 0 2.7 1.2 2.7 2.7s-1.2 2.7-2.7 2.7c-.4 0-.8-.1-1.1-.2.7-.6 1.1-1.5 1.1-2.5s-.4-1.9-1.1-2.5c.3-.1.7-.2 1.1-.2Zm-3.8 1.3c-.8 0-1.4.6-1.4 1.4s.6 1.4 1.4 1.4 1.4-.6 1.4-1.4-.6-1.4-1.4-1.4Z"/>`,
-  };
-  return `<svg class="equip-placeholder-icon" viewBox="0 0 16 16" aria-hidden="true">${icons[slotId] || icons.accessory}</svg>`;
-}
 const ROMAN_NUMERALS = [
   "",
   "I",
@@ -1003,48 +757,11 @@ function toRoman(v) {
   if (!Number.isFinite(n) || n <= 0) return "";
   return ROMAN_NUMERALS[n] || String(n);
 }
-// Talent is stored as a yes/no style flag; treat anything affirmative as "has talent".
+
 function hasTalent(v) {
   if (isEmptyVal(v)) return false;
   const s = String(v).trim().toLowerCase();
   return !["no", "n", "false", "-", "—"].includes(s);
-}
-function renderEquipBox(slot, itemName, lvl, tal, marchIdx) {
-  const empty = isEmptyVal(itemName);
-  const imgSrc = empty ? null : iconPath(itemName, "item");
-  const rarity = getEquipRarity(itemName);
-  const imgTag = imgSrc
-    ? `<img src="${imgSrc}" alt="${escapeHtml(String(itemName))}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:100%;height:100%;object-fit:contain;border-radius:2px;">`
-    : "";
-  const fallback = `<div class="equip-placeholder" style="display:${imgSrc ? "none" : "flex"};">${slotIcon(slot.id)}</div>`;
-  const tipAttrs = empty
-    ? ""
-    : ` data-tip-code="${escapeHtml(String(itemName).trim())}" data-tip-kind="item"`;
-  const roman = empty ? "" : toRoman(lvl);
-  const awkBadge = roman
-    ? `<span class="equip-awk" title="Awakening ${roman}"><span class="equip-awk-text">${roman}</span></span>`
-    : "";
-  const talBadge =
-    !empty && hasTalent(tal)
-      ? `<span class="equip-talent" title="Talent unlocked" aria-label="Talent unlocked"></span>`
-      : "";
-  return `
-    <div class="equip-slot" id="${slot.id}_${marchIdx}" data-slot="${slot.id}">
-      <div class="equip-box equip-box--framed rarity-${rarity}"${tipAttrs}>${imgTag}${fallback}</div>
-      ${talBadge}${awkBadge}
-    </div>`;
-}
-function renderPairBox(name) {
-  const empty = isEmptyVal(name);
-  const imgSrc = empty ? null : iconPath(name, "commander");
-  const imgTag = imgSrc
-    ? `<img src="${imgSrc}" alt="${escapeHtml(String(name))}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:100%;height:100%;object-fit:contain;border-radius:2px;">`
-    : "";
-  const fallback = `<span style="display:${imgSrc ? "none" : "flex"};width:100%;height:100%;align-items:center;justify-content:center;font-size:9px;opacity:0.35;">—</span>`;
-  const tipAttrs = empty
-    ? ""
-    : ` data-tip-code="${escapeHtml(String(name).trim())}" data-tip-kind="commander"`;
-  return `<div class="equip-box equip-pair-box${empty ? " equip-pair-box--empty" : ""}"${tipAttrs}>${imgTag}${fallback}</div>`;
 }
 
 function getAbilityTier(name) {
@@ -1053,190 +770,560 @@ function getAbilityTier(name) {
   return info ? info.rarity : "gray";
 }
 
-function renderArmamentSection(armRow) {
-  if (!armRow)
-    return `<div class="equip-arm-section"><div class="pc-equip-empty">No armament data.</div></div>`;
-  const arms = ARM_SLOTS.map((arm) => {
+const POSTER_W = 860;
+const POSTER_PAD_X = 40;
+
+const POSTER_RARITY_COLORS = {
+  gray: "#8a8a8a",
+  green: "#4caf50",
+  blue: "#2196f3",
+  purple: "#9c6ade",
+  gold: "#e0b23c",
+  unknown: "#665a99",
+  empty: "#443a70",
+};
+
+function posterRoundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function posterText(ctx, text, x, y, font, color, align = "center") {
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, x, y);
+}
+
+function posterTruncate(ctx, text, font, maxWidth) {
+  ctx.font = font;
+  const str = String(text ?? "");
+  if (ctx.measureText(str).width <= maxWidth) return str;
+  let t = str;
+  while (t.length > 1 && ctx.measureText(t + "…").width > maxWidth) {
+    t = t.slice(0, -1);
+  }
+  return t + "…";
+}
+
+function loadImageSafe(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function drawPosterBackground(ctx, w, h) {
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, "#0b0a1e");
+  grad.addColorStop(0.35, "#191340");
+  grad.addColorStop(1, "#241a52");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  let seed = 42;
+  const rnd = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+  ctx.fillStyle = "rgba(255,255,255,0.65)";
+  const starCount = Math.round((w * Math.min(h, 900)) / 6500);
+  for (let i = 0; i < starCount; i++) {
+    const x = rnd() * w;
+    const y = rnd() * h;
+    const r = rnd() < 0.85 ? 1 : 1.7;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = "#100c28";
+  ctx.beginPath();
+  ctx.moveTo(0, 210);
+  ctx.lineTo(0, 130);
+  ctx.lineTo(w * 0.12, 95);
+  ctx.lineTo(w * 0.24, 140);
+  ctx.lineTo(w * 0.38, 60);
+  ctx.lineTo(w * 0.5, 120);
+  ctx.lineTo(w * 0.64, 70);
+  ctx.lineTo(w * 0.78, 145);
+  ctx.lineTo(w * 0.9, 55);
+  ctx.lineTo(w, 100);
+  ctx.lineTo(w, 210);
+  ctx.closePath();
+  ctx.globalAlpha = 0.9;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawIconTile(ctx, img, x, y, size, borderColor) {
+  posterRoundRect(ctx, x, y, size, size, 8);
+  ctx.fillStyle = "rgba(255,255,255,0.07)";
+  ctx.fill();
+  ctx.strokeStyle = borderColor || "rgba(255,255,255,0.25)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  if (img) {
+    ctx.save();
+    posterRoundRect(ctx, x + 2, y + 2, size - 4, size - 4, 6);
+    ctx.clip();
+    ctx.drawImage(img, x + 2, y + 2, size - 4, size - 4);
+    ctx.restore();
+  } else {
+    posterText(ctx, "—", x + size / 2, y + size / 2, "13px sans-serif", "rgba(255,255,255,0.35)");
+  }
+}
+
+function drawPlainIcon(ctx, img, x, y, size) {
+  if (!img) return;
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.55)";
+  ctx.shadowBlur = 8;
+  ctx.drawImage(img, x, y, size, size);
+  ctx.restore();
+}
+
+function measurePillWidth(ctx, label, font) {
+  ctx.font = font;
+  return ctx.measureText(label).width + 20;
+}
+
+function drawArmamentCard(ctx, iconMap, a, cellX, topY, cellW, iconSize) {
+  let y = topY;
+
+  const nameFont = "700 14px 'DM Sans', sans-serif";
+  const img = iconMap.get(a.icon);
+  const iconGap = img ? 8 : 0;
+  const iconW = img ? iconSize : 0;
+  const nameStr = posterTruncate(ctx, a.name, nameFont, cellW - 12 - iconW - iconGap);
+  ctx.font = nameFont;
+  const nameW = ctx.measureText(nameStr).width;
+  const startX = cellX - (iconW + iconGap + nameW) / 2;
+  if (img) drawPlainIcon(ctx, img, startX, y, iconSize);
+  posterText(ctx, nameStr, startX + iconW + iconGap, y + iconSize / 2, nameFont, "#f3f1ff", "left");
+  y += iconSize + 6;
+
+  if (a.inscriptions.length) {
+    const pillFont = "600 10px 'DM Sans', sans-serif";
+    const pillH = 18;
+    const gapX = 6;
+    const gapY = 6;
+    const maxW = cellW - 10;
+    const pills = a.inscriptions.map((ins) => {
+      const label = ins.label;
+      return { label, tier: ins.tier, w: measurePillWidth(ctx, label, pillFont) };
+    });
+    const lines = [];
+    let line = [];
+    let lineW = 0;
+    pills.forEach((p) => {
+      const addW = p.w + (line.length ? gapX : 0);
+      if (lineW + addW > maxW && line.length) {
+        lines.push(line);
+        line = [];
+        lineW = 0;
+      }
+      line.push(p);
+      lineW += p.w + (line.length > 1 ? gapX : 0);
+    });
+    if (line.length) lines.push(line);
+
+    lines.forEach((ln) => {
+      const w = ln.reduce((s, p) => s + p.w, 0) + gapX * (ln.length - 1);
+      let x = cellX - w / 2;
+      ln.forEach((p) => {
+        posterRoundRect(ctx, x, y, p.w, pillH, pillH / 2);
+        ctx.fillStyle = POSTER_RARITY_COLORS[p.tier] || POSTER_RARITY_COLORS.unknown;
+        ctx.fill();
+        posterText(ctx, p.label, x + p.w / 2, y + pillH / 2 + 0.5, pillFont, "#0b0a1e");
+        x += p.w + gapX;
+      });
+      y += pillH + gapY;
+    });
+    y += 2;
+  }
+
+  a.stats.forEach((s) => {
+    const statStr = posterTruncate(ctx, `${s.name} +${s.val}%`, "11px 'DM Sans', sans-serif", cellW - 12);
+    posterText(ctx, statStr, cellX, y + 7, "11px 'DM Sans', sans-serif", "#8fe3ac");
+    y += 15;
+  });
+
+  return y - topY;
+}
+
+function drawEquipSlotIcon(ctx, iconMap, x, y, size, itemName, lvl, tal) {
+  const empty = isEmptyVal(itemName);
+  const rarity = getEquipRarity(itemName);
+  const color = POSTER_RARITY_COLORS[rarity] || POSTER_RARITY_COLORS.unknown;
+  drawIconTile(ctx, empty ? null : iconMap.get(iconPath(itemName, "item")), x, y, size, color);
+  if (!empty) {
+    const roman = toRoman(lvl);
+    if (roman) {
+      const badgeW = Math.max(16, size * 0.42);
+      const badgeH = 13;
+      const bx = x + size / 2 - badgeW / 2;
+      const by = y + size - badgeH / 2 - 2;
+      posterRoundRect(ctx, bx, by, badgeW, badgeH, badgeH / 2);
+      ctx.fillStyle = "rgba(10,8,25,0.88)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.3)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      posterText(ctx, roman, bx + badgeW / 2, by + badgeH / 2 + 0.5, "700 9px 'DM Sans', sans-serif", "#ffd76a");
+    }
+    if (hasTalent(tal)) {
+      ctx.beginPath();
+      ctx.fillStyle = "#57e08c";
+      ctx.arc(x + size - 6, y + 6, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+const EQUIP_DIAMOND_ROWS = [[0], [1], [2, 3], [4], [5, 6], [7]];
+
+function drawEquipDiamond(ctx, iconMap, slots, centerX, topY, slotSize) {
+  const gapV = 6;
+  const gapH = 10;
+  let y = topY;
+  EQUIP_DIAMOND_ROWS.forEach((idxRow) => {
+    const rowSlots = idxRow.map((i) => slots[i]);
+    const n = rowSlots.length;
+    const rowW = n * slotSize + (n - 1) * gapH;
+    let x = centerX - rowW / 2;
+    rowSlots.forEach(({ itemName, lvl, tal }) => {
+      drawEquipSlotIcon(ctx, iconMap, x, y, slotSize, itemName, lvl, tal);
+      x += slotSize + gapH;
+    });
+    y += slotSize + gapV;
+  });
+  return y - gapV - topY;
+}
+
+function buildEquipmentMarches(row) {
+  if (!row) return [];
+  const MARCH_SUFFIXES = ["", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+  const marches = [];
+  MARCH_SUFFIXES.forEach((suffix, idx) => {
+    if (isMarchEmpty(row, suffix)) return;
+    const slots = EQUIP_SLOTS.map((slot) => {
+      const colKey = suffix ? `${slot.key}_${suffix}` : slot.key;
+      const lvlKey = suffix ? `${slot.key}_lvl_${suffix}` : `${slot.key}_lvl`;
+      const talKey = suffix ? `${slot.key}_tal_${suffix}` : `${slot.key}_tal`;
+      return { itemName: row[colKey], lvl: row[lvlKey], tal: row[talKey] };
+    });
+    marches.push({ marchNum: idx + 1, slots });
+  });
+  return marches;
+}
+
+function buildArmamentsList(armRow) {
+  if (!armRow) return [];
+  const list = [];
+  ARM_SLOTS.forEach((arm) => {
     const name = armRow[arm.prefix];
-    if (isEmptyVal(name)) return "";
-    const insKeys = [
-      "_ins",
-      "_ins2",
-      "_ins3",
-      "_ins4",
-      "_ins5",
-      "_ins6",
-      "_ins7",
-      "_ins8",
-    ];
+    if (isEmptyVal(name)) return;
+    const insKeys = ["_ins", "_ins2", "_ins3", "_ins4", "_ins5", "_ins6", "_ins7", "_ins8"];
     const inscriptions = insKeys
       .map((k) => armRow[`${arm.prefix}${k}`])
       .filter((v) => !isEmptyVal(v))
-      .map((v) => {
-        const tier = getAbilityTier(String(v));
-        const label = String(v).trim();
-        const displayLabel =
-          label.length > 9 ? `${label.slice(0, 9)}...` : label;
-        return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(label)}" data-tip-kind="inscription">${escapeHtml(displayLabel)}</span>`;
-      })
-      .join("");
-    const statSlots = [
+      .map((v) => ({ label: String(v).trim(), tier: getAbilityTier(String(v)) }));
+    const stats = [
       { n: `${arm.prefix}_stat_name`, v: `${arm.prefix}_stat` },
       { n: `${arm.prefix}_stat2_name2`, v: `${arm.prefix}_stat2` },
       { n: `${arm.prefix}_stat3_name3`, v: `${arm.prefix}_stat3` },
       { n: `${arm.prefix}_stat4_name4`, v: `${arm.prefix}_stat4` },
-    ];
-    const statsHtml = statSlots
+    ]
       .filter((s) => !isEmptyVal(armRow[s.n]) && !isEmptyVal(armRow[s.v]))
-      .map(
-        (s) =>
-          `<span class="arm-stat"><i class="fa-solid fa-khanda arm-stat-icon"></i>${escapeHtml(String(armRow[s.n]))} <b>${escapeHtml(String(armRow[s.v]))}%</b></span>`,
-      )
-      .join("");
-    const armIconSrc = iconPath(name, "armament");
-    return `
-      <div class="arm-card">
-        <div class="arm-name" data-tip-code="${escapeHtml(String(name).trim())}" data-tip-kind="armament">
-          <img class="arm-icon" src="${armIconSrc}" alt="" loading="lazy" onerror="this.style.display='none'">
-          <span class="arm-name-text">${escapeHtml(String(name))}</span>
-        </div>
-        ${inscriptions ? `<div class="arm-ins-group">${inscriptions}</div>` : ""}
-        ${statsHtml ? `<div class="arm-stats">${statsHtml}</div>` : ""}
-      </div>`;
-  })
-    .filter(Boolean)
-    .join("");
-  return `<div class="equip-arm-section"><div class="arm-cards">${arms || `<div class="pc-equip-empty">No armaments set.</div>`}</div></div>`;
+      .map((s) => ({ name: String(armRow[s.n]), val: String(armRow[s.v]) }));
+    list.push({ name: String(name), icon: iconPath(name, "armament"), inscriptions, stats });
+  });
+  return list;
 }
 
-function renderPairsSection(row) {
-  const PAIR_COUNT = 12;
-  let pairCards = "";
-  for (let n = 1; n <= PAIR_COUNT; n++) {
-    const c1 = row[`pair${n}_comm1`],
-      c2 = row[`pair${n}_comm2`];
+function buildPairsList(row) {
+  if (!row) return [];
+  const pairs = [];
+  for (let n = 1; n <= 12; n++) {
+    const c1 = row[`pair${n}_comm1`];
+    const c2 = row[`pair${n}_comm2`];
     if (isEmptyVal(c1) && isEmptyVal(c2)) continue;
-    const boxes = [c1, c2].map((c) => renderPairBox(c)).join("");
-    pairCards += `
-      <div class="pair-card">
-        <div class="pair-card-boxes">${boxes}</div>
-      </div>`;
+    pairs.push([c1, c2]);
   }
-  if (!pairCards) return "";
-  return `
-    <div class="equip-pairs-section">
-      <div class="pair-cards">${pairCards}</div>
-    </div>`;
+  return pairs;
 }
 
-function renderEmptyEquipmentMarch(marchNum = 1) {
-  const slotBoxes = EQUIP_SLOTS.map((slot) =>
-    renderEquipBox(slot, "", "", "", marchNum),
-  ).join("");
-  return `
-    <div class="equip-march-row equip-march-row--empty">
-      <span class="equip-march-title">March ${marchNum}</span>
-      <div class="equip-slots">${slotBoxes}</div>
-    </div>`;
+function buildSkinsList(skinsRow) {
+  if (!skinsRow) return [];
+  return SKIN_SLOTS.map((k) => skinsRow[k]).filter((v) => !isEmptyVal(v));
 }
 
-function renderEquipmentGrid(govId) {
-  const row = loadEquipment(govId);
+function renderPosterContent(ctx, data, iconMap, W) {
+  const { scan, profile, ch, accType, marches, armaments, pairs, skins } = data;
+  const padX = POSTER_PAD_X;
+  const contentW = W - padX * 2;
+  const cx = W / 2;
+  let y = 36;
+
+  posterText(ctx, data.name, cx, y + 26, "700 26px 'DM Sans', sans-serif", "#f3f1ff");
+  posterText(ctx, `ID ${data.govId}`, cx, y + 52, "13px monospace", "#b9a8f5");
+  const badgeParts = [];
+  if (profile?.vip_level && !isEmptyVal(profile.vip_level)) {
+    badgeParts.push(String(profile.vip_level) === "20" ? "SVIP" : `VIP ${profile.vip_level}`);
+  }
+  if (ch) badgeParts.push(`CH ${ch}`);
+  if (accType === "farm") badgeParts.push("Farm Account");
+  if (accType === "main") badgeParts.push("Main Account");
+  if (badgeParts.length) {
+    posterText(ctx, badgeParts.join("   ·   "), cx, y + 80, "600 13px 'DM Sans', sans-serif", "#8fe3ac");
+  }
+  y += 116;
+
+  ctx.strokeStyle = "rgba(255,255,255,0.14)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx - 230, y);
+  ctx.lineTo(cx + 230, y);
+  ctx.stroke();
+  y += 26;
+
+  if (scan) {
+    const rows = [
+      [
+        ["Power", fmt(scan.power)],
+        ["Kill Points", fmt(scan.killPoints)],
+        ["Deaths", fmt(scan.deaths)],
+        ["Ranged Points", fmt(scan.rangedPoints)],
+      ],
+      [
+        ["T1", fmt(scan.t1)],
+        ["T2", fmt(scan.t2)],
+        ["T3", fmt(scan.t3)],
+        ["T4", fmt(scan.t4)],
+        ["T5", fmt(scan.t5)],
+      ],
+      [
+        ["RSS Gathered", fmt(scan.rssGathered)],
+        ["RSS Assistance", fmt(scan.rssAssistance)],
+        ["Helps", fmt(scan.helps)],
+        ["Acclaim", fmt(scan.acclaim)],
+      ],
+    ];
+    rows.forEach((items) => {
+      const itemW = contentW / items.length;
+      const startX = padX + itemW / 2;
+      items.forEach(([label, value], i) => {
+        const x = startX + i * itemW;
+        posterText(ctx, label, x, y + 13, "600 12px 'DM Sans', sans-serif", "#b9a8f5");
+        posterText(ctx, value, x, y + 35, "700 16px 'DM Sans', sans-serif", "#f3f1ff");
+      });
+      y += 52;
+    });
+    posterText(ctx, `Snapshot · ${data.snapDate}`, W - padX, y + 6, "11px 'DM Sans', sans-serif", "rgba(185,168,245,0.7)", "right");
+    y += 30;
+  } else {
+    posterText(ctx, "No live scan data available.", cx, y + 20, "14px 'DM Sans', sans-serif", "rgba(255,255,255,0.55)");
+    y += 46;
+  }
+
+  y += 16;
+
+  y += 26;
+  if (!marches.length) {
+    posterText(ctx, "No equipment set.", cx, y + 12, "13px 'DM Sans', sans-serif", "rgba(255,255,255,0.5)");
+    y += 30;
+  } else {
+    const slotSize = 42;
+    const colsPerRow = Math.min(marches.length, 4);
+    const colW = contentW / colsPerRow;
+    for (let i = 0; i < marches.length; i += colsPerRow) {
+      const rowMarches = marches.slice(i, i + colsPerRow);
+      let maxColHeight = 0;
+      rowMarches.forEach((m, ci) => {
+        const colCenterX = padX + colW * ci + colW / 2;
+        posterText(ctx, `Equipment ${m.marchNum}`, colCenterX, y + 8, "600 12px 'DM Sans', sans-serif", "#b9a8f5");
+        const colH = drawEquipDiamond(ctx, iconMap, m.slots, colCenterX, y + 24, slotSize);
+        maxColHeight = Math.max(maxColHeight, colH);
+      });
+      y += 24 + maxColHeight + 26;
+    }
+  }
+
+  y += 16;
+
+  y += 16;
+  if (!armaments.length) {
+    posterText(ctx, "No armaments set.", cx, y + 12, "13px 'DM Sans', sans-serif", "rgba(255,255,255,0.5)");
+    y += 30;
+  } else {
+    const cols = 4;
+    const cellW = contentW / cols;
+    const iconSize = 30;
+    const rowGap = 14;
+    for (let i = 0; i < armaments.length; i += cols) {
+      const rowArms = armaments.slice(i, i + cols);
+      let maxH = 0;
+      rowArms.forEach((a, ci) => {
+        const cellX = padX + cellW * ci + cellW / 2;
+        const h = drawArmamentCard(ctx, iconMap, a, cellX, y, cellW, iconSize);
+        maxH = Math.max(maxH, h);
+      });
+      y += maxH + rowGap;
+    }
+  }
+
+  y += 16;
+
+  y += 26;
+  if (!pairs.length) {
+    posterText(ctx, "No commander pairs set.", cx, y + 12, "13px 'DM Sans', sans-serif", "rgba(255,255,255,0.5)");
+    y += 30;
+  } else {
+    const cols = 5;
+    const cellW = contentW / cols;
+    const iconSize = 58;
+    const boxGap = 8;
+    const rowStep = 96;
+    pairs.forEach(([c1, c2], i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cellX = padX + cellW * col + cellW / 2;
+      const cellY = y + row * rowStep;
+      const totalW = iconSize * 2 + boxGap;
+      let x0 = cellX - totalW / 2;
+      [c1, c2].forEach((c) => {
+        const empty = isEmptyVal(c);
+        drawIconTile(ctx, empty ? null : iconMap.get(iconPath(c, "commander")), x0, cellY, iconSize, "#3a2f66");
+        x0 += iconSize + boxGap;
+      });
+    });
+    y += Math.ceil(pairs.length / cols) * rowStep;
+  }
+
+  y += 16;
+
+
+  y += 26;
+  if (!skins.length) {
+    posterText(ctx, "No skins set.", cx, y + 12, "13px 'DM Sans', sans-serif", "rgba(255,255,255,0.5)");
+    y += 30;
+  } else {
+    const cols = 5;
+    const cellW = contentW / cols;
+    const iconSize = 76;
+    const rowStep = 122;
+    skins.forEach((code, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cellX = padX + cellW * col + cellW / 2;
+      const cellY = y + row * rowStep;
+      drawIconTile(ctx, iconMap.get(iconPath(code, "skin")), cellX - iconSize / 2, cellY, iconSize, "#e0b23c");
+      const info = getSkinInfo(code);
+      const label = posterTruncate(ctx, (info && info.name) || code, "600 13px 'DM Sans', sans-serif", cellW - 12);
+      posterText(ctx, label, cellX, cellY + iconSize + 16, "600 13px 'DM Sans', sans-serif", "#f3f1ff");
+    });
+    y += Math.ceil(skins.length / cols) * rowStep;
+  }
+
+  y += 30;
+  return y;
+}
+
+async function buildStatPosterDataUrl(govId) {
+  const scan = loadScanStats(govId);
+  const profile = loadPlayerProfile(govId);
+  const ch = loadCH(govId);
+  const accType = getAccType(govId);
+  const equipRow = loadEquipment(govId);
   const armRow = loadArmaments(govId);
   const skinsRow = loadSkins(govId);
-  const citySkinHtml = renderCitySkinSection(skinsRow);
-  const grid = document.getElementById("pc-equipment");
-  if (!row) {
-    grid.innerHTML = `<div class="equip-grid"><div class="equip-marches">${renderEmptyEquipmentMarch(1)}</div>${renderArmamentSection(armRow)}${citySkinHtml}</div>`;
-    return;
-  }
-  const MARCH_SUFFIXES = [
-    "",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-  ];
-  let marchRows = "";
-  MARCH_SUFFIXES.forEach((suffix, idx) => {
-    if (isMarchEmpty(row, suffix)) return;
-    const marchNum = idx + 1;
-    const slotBoxes = EQUIP_SLOTS.map((slot) => {
-      const colKey = suffix ? `${slot.key}_${suffix}` : slot.key;
-      const lvlKey = suffix ? `${slot.key}_lvl_${suffix}` : `${slot.key}_lvl`;
-      const talKey = suffix ? `${slot.key}_tal_${suffix}` : `${slot.key}_tal`;
-      return renderEquipBox(
-        slot,
-        row[colKey],
-        row[lvlKey],
-        row[talKey],
-        marchNum,
-      );
-    }).join("");
-    marchRows += `
-      <div class="equip-march-row">
-        <span class="equip-march-title">Equipment ${marchNum}</span>
-        <div class="equip-slots">${slotBoxes}</div>
-      </div>`;
-  });
-  if (!marchRows) marchRows = renderEmptyEquipmentMarch(1);
-  grid.innerHTML = `<div class="equip-grid"><div class="equip-marches">${marchRows}</div>${renderArmamentSection(armRow)}${renderPairsSection(row)}${citySkinHtml}</div>`;
+
+  const marches = buildEquipmentMarches(equipRow);
+  const armaments = buildArmamentsList(armRow);
+  const pairs = buildPairsList(equipRow);
+  const skins = buildSkinsList(skinsRow);
+
+  const iconSrcs = new Set();
+  marches.forEach((m) =>
+    m.slots.forEach(({ itemName }) => {
+      if (!isEmptyVal(itemName)) iconSrcs.add(iconPath(itemName, "item"));
+    }),
+  );
+  armaments.forEach((a) => iconSrcs.add(a.icon));
+  pairs.forEach(([c1, c2]) =>
+    [c1, c2].forEach((c) => {
+      if (!isEmptyVal(c)) iconSrcs.add(iconPath(c, "commander"));
+    }),
+  );
+  skins.forEach((s) => iconSrcs.add(iconPath(s, "skin")));
+
+  const iconMap = new Map();
+  await Promise.all(
+    [...iconSrcs].map(async (src) => {
+      iconMap.set(src, await loadImageSafe(src));
+    }),
+  );
+
+  const data = {
+    name: (scan && scan.name) || String(govId),
+    govId: String(govId),
+    snapDate: scan ? scan.snapDate : "",
+    scan,
+    profile,
+    ch,
+    accType,
+    marches,
+    armaments,
+    pairs,
+    skins,
+  };
+
+  const W = POSTER_W;
+  const scratch = document.createElement("canvas");
+  scratch.width = W;
+  scratch.height = 8000;
+  const measuredHeight = renderPosterContent(scratch.getContext("2d"), data, iconMap, W);
+
+  const SCALE = 2;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W * SCALE;
+  canvas.height = Math.ceil(measuredHeight) * SCALE;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(SCALE, SCALE);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  drawPosterBackground(ctx, W, Math.ceil(measuredHeight));
+  renderPosterContent(ctx, data, iconMap, W);
+
+  return canvas.toDataURL("image/png");
 }
 
-function renderScanStats(govId) {
+async function renderStatCard(govId) {
   const el = document.getElementById("pc-scan-stats");
-  const data = loadScanStats(govId);
-  if (!data) {
-    el.style.display = "none";
-    return;
-  }
-
-  function statItem(label, value) {
-    return `<div class="scan-item">
-      <span class="scan-item-label">${label}</span>
-      <span class="scan-item-value">${value}</span>
-    </div>`;
-  }
-
-  function tierItem(tier, value) {
-    return `<div class="scan-tier-item">
-      <span class="scan-tier-label">${tier}</span>
-      <span class="scan-tier-val">${fmt(value)}</span>
-    </div>`;
-  }
-
-  const row1 = `<div class="scan-row">
-    ${statItem("Power", fmt(data.power))}
-    ${statItem("Kill Points", fmt(data.killPoints))}
-    ${statItem("Deaths", fmt(data.deaths))}
-    ${statItem("Ranged Points", fmt(data.rangedPoints))}
-  </div>`;
-
-  const row2 = `<div class="scan-row">
-    ${tierItem("T1", data.t1)}
-    ${tierItem("T2", data.t2)}
-    ${tierItem("T3", data.t3)}
-    ${tierItem("T4", data.t4)}
-    ${tierItem("T5", data.t5)}
-  </div>`;
-
-  const row3 = `<div class="scan-row">
-    ${statItem("RSS Gathered", fmt(data.rssGathered))}
-    ${statItem("RSS Assistance", fmt(data.rssAssistance))}
-    ${statItem("Helps", fmt(data.helps))}
-    ${statItem("Acclaim", fmt(data.acclaim))}
-  </div>`;
-
-  el.innerHTML = `${row1}${row2}${row3}
-    <div class="scan-snap-label">Snapshot · ${escapeHtml(String(data.snapDate))}</div>`;
   el.style.display = "";
+  el.innerHTML = `<div class="poster-loading"><div class="spinner"></div><span>Building player card image…</span></div>`;
+
+  try {
+    const dataUrl = await buildStatPosterDataUrl(govId);
+    el.innerHTML = `
+      <img class="poster-image" src="${dataUrl}" alt="Player stat card" draggable="false">
+      <a class="poster-download" href="${dataUrl}" download="player-${escapeHtml(String(govId))}.png">
+        <i class="fa-solid fa-download"></i> Download image
+      </a>`;
+  } catch (e) {
+    console.error("renderStatCard:", e);
+    el.innerHTML = `<div class="pc-equip-empty">Could not build the player image.</div>`;
+  }
 }
 
 function renderPlayerCard(govId) {
@@ -1260,35 +1347,13 @@ function renderPlayerCard(govId) {
           return;
         }
 
-        document.getElementById("pc-name").textContent =
-          scanData.name || safeId;
-        document.getElementById("pc-id").textContent = safeId;
-        document.getElementById("pc-type-badge").className = "pc-type-badge";
-        const scanProfile = loadPlayerProfile(safeId);
-        document.getElementById("pc-vip-badge").innerHTML = renderVipBadge(
-          scanProfile ? scanProfile.vip_level : "",
-        );
-        if (!document.getElementById("pc-ch")) {
-          const chSpan = document.createElement("span");
-          chSpan.id = "pc-ch";
-          chSpan.className = "pc-ch-value";
-          document
-            .getElementById("pc-type-badge")
-            .insertAdjacentElement("afterend", chSpan);
-        }
-        const chScan = loadCH(safeId);
-        const chElScan = document.getElementById("pc-ch");
-        chElScan.textContent = chScan ? `CH ${chScan}` : "";
-        chElScan.style.display = chScan ? "" : "none";
-
-        renderScanStats(safeId);
+        renderStatCard(safeId);
 
         document.getElementById("section-history").style.display = "none";
         document.getElementById("pc-farm-owner-section").style.display = "none";
         document.getElementById("pc-farms-section").style.display = "none";
         document.getElementById("pc-farm-kvk-section").style.display = "none";
 
-        renderEquipmentGrid(safeId);
         initCollapsibleSections();
         showState("card");
         return;
@@ -1313,28 +1378,7 @@ function renderPlayerCard(govId) {
       const history = loadGovHistory(safeId, kd);
       const hasFarmRollup = isMain && farmIds.length > 0;
 
-      document.getElementById("pc-name").textContent = info.name || safeId;
-      document.getElementById("pc-id").textContent = safeId;
-
-      const profile = loadPlayerProfile(safeId);
-      document.getElementById("pc-vip-badge").innerHTML = renderVipBadge(
-        profile ? profile.vip_level : "",
-      );
-
-      if (!document.getElementById("pc-ch")) {
-        const chSpan = document.createElement("span");
-        chSpan.id = "pc-ch";
-        chSpan.className = "pc-ch-value";
-        document
-          .getElementById("pc-type-badge")
-          .insertAdjacentElement("afterend", chSpan);
-      }
-      const ch = loadCH(safeId);
-      const chEl = document.getElementById("pc-ch");
-      chEl.textContent = ch ? `CH ${ch}` : "";
-      chEl.style.display = ch ? "" : "none";
-
-      renderScanStats(safeId);
+      renderStatCard(safeId);
 
       renderHistoryTable(history);
 
@@ -1382,7 +1426,6 @@ function renderPlayerCard(govId) {
         document.getElementById("pc-farm-kvk-section").style.display = "none";
       }
 
-      renderEquipmentGrid(safeId);
       initCollapsibleSections();
       showState("card");
     } catch (err) {
@@ -1581,7 +1624,6 @@ document.getElementById("back-btn").addEventListener("click", () => {
 });
 
 initTheme();
-initEquipTooltip();
 
 const dbLoadEl = document.getElementById("db-loading");
 const searchBtn = document.getElementById("search-btn");
