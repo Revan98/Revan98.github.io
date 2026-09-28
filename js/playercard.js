@@ -252,7 +252,7 @@ function getSkinInfo(skinCode) {
   return (skinsData.skins && skinsData.skins[key]) || null;
 }
 
-const DB_VERSION = "9";
+const DB_VERSION = "10";
 const SCANS_DB_VERSION = "1";
 
 async function loadDatabase() {
