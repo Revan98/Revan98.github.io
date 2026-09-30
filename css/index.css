@@ -1,9 +1,12 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 35px;
-  align-items: center;
-  max-width: 1400px !important;
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 35px;
+    align-items: center;
+    max-width: 1400px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
 }
 .kingdom-box {
   background: var(--table-bg);
