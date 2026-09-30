@@ -132,7 +132,7 @@ async function loadEquipRefData() {
   }
 }
 loadEquipRefData();
-const DB_VERSION = "16"; 
+const DB_VERSION = "9"; 
 async function loadDatabase() {
   const SQL = await initSqlJs({
     locateFile: (file) =>
@@ -201,7 +201,7 @@ async function loadDashboardData() {
     ORDER BY snapshot_date
   `)[0];
 
-  DbCache.snapshotsList = snaps.values.map((r) => r[1]); // dates
+  DbCache.snapshotsList = snaps.values.map((r) => r[1]);
   DbCache.snapshotIds = Object.fromEntries(
     snaps.values.map((r) => [r[1], r[0]]),
   );
@@ -247,7 +247,6 @@ async function loadDashboardData() {
 
   DbCache.snapshotsData = {};
 
-  // Batch-load all snapshot diff data in one query instead of one per snapshot
   const allSnapIds = snaps.values.map((r) => r[0]).join(",");
   if (allSnapIds) {
     const allDiffData = db.exec(`
@@ -264,7 +263,6 @@ async function loadDashboardData() {
     `)[0];
 
     if (allDiffData) {
-      // Group rows by snapshot_id -> governor_id map
       const bySnap = {};
       allDiffData.values.forEach((r) => {
         const sid = r[0];
@@ -303,7 +301,7 @@ const COL_table = {
   ACCLAIM: 20,
 };
 
-let gridApi;
+let table;
 
 function buildRowData(rows) {
   return rows.map((r) => ({
@@ -350,44 +348,6 @@ function formatCsvPercent(value) {
   return Number.isFinite(n) ? String(n).replace(".", ",") : "";
 }
 
-const DKP_EXPORT_COLUMNS = [
-  { headerName: "ID", field: "id" },
-  { headerName: "Name", field: "name" },
-  { headerName: "Power", field: "power" },
-  { headerName: "KP gained", field: "killPointsDiff" },
-  { headerName: "T4 gained", field: "t4Diff" },
-  { headerName: "T5 gained", field: "t5Diff" },
-  { headerName: "Deads gained", field: "deadsDiff" },
-  { headerName: "Min DKP", field: "minDkp" },
-  { headerName: "DKP", field: "dkp" },
-  {
-    headerName: "DKP%",
-    field: "dkpPercent",
-    valueFormatter: (p) => formatCsvPercent(p.value),
-  },
-  { headerName: "Sum Min DKP", field: "sumMinDkp" },
-  { headerName: "Sum DKP", field: "sumDkp" },
-  {
-    headerName: "Sum DKP%",
-    field: "sumDkpPercent",
-    valueFormatter: (p) => formatCsvPercent(p.value),
-  },
-  { headerName: "Vacation", field: "vacation" },
-  { headerName: "Status", field: "status" },
-  { headerName: "T4 Kills", field: "t4" },
-  { headerName: "T5 Kills", field: "t5" },
-  { headerName: "Killpoints", field: "killPoints" },
-  { headerName: "Deads", field: "deads" },
-  { headerName: "Power diff", field: "powerDiff" },
-  { headerName: "Acclaim", field: "acclaim" },
-].map((column) => ({
-  ...column,
-  colId: `export_${column.field}`,
-  hide: true,
-  suppressColumnsToolPanel: true,
-  getQuickFilterText: () => "",
-}));
-
 function getExportFileName() {
   const kd = getKDFromURL() || "dkp";
   const kvkPart = DbCache.currentKvkNumber
@@ -396,16 +356,6 @@ function getExportFileName() {
   const lastSnapshot =
     DbCache.snapshotsList?.[DbCache.snapshotsList.length - 1] || "export";
   return `DKP_${kd}${kvkPart}_${String(lastSnapshot).replaceAll("-", "_")}.csv`;
-}
-
-function exportDkpCsv() {
-  if (!gridApi) return;
-  gridApi.exportDataAsCsv({
-    fileName: getExportFileName(),
-    columnKeys: DKP_EXPORT_COLUMNS.map((column) => column.colId),
-    columnSeparator: ";",
-    exportedRows: "all",
-  });
 }
 
 function renderMetricStack(baseValue, sumValue, formatter) {
@@ -449,315 +399,355 @@ function renderDeadsPowerDiffStack(deadsDiff, powerDiff) {
   `;
 }
 
-const gridOptions = {
-  theme: agGrid.themeQuartz,
-  rowData: [],
-  columnDefs: [
-    {
-      headerName: "#",
-      valueGetter: "node.rowIndex + 1",
-      width: 55,
-      sortable: false,
-      filter: false,
-      pinned: "left",
-      getQuickFilterText: () => "",
-    },
-    {
-      headerName: "Governor",
-      field: "name",
-      flex: 1.25,
-      minWidth: 155,
-      cellRenderer: (params) => {
-        const id = params.data?.id;
-        const name = params.value || "";
-        const wrap = document.createElement("div");
-        wrap.classList.add("gov-name-stack");
+const num = (v) => Number(v) || 0;
 
-        const nameEl = document.createElement("div");
-        nameEl.classList.add("gov-name-value");
-        nameEl.textContent = name;
-        if (id) {
-          nameEl.classList.add("gov-name-link");
-          nameEl.title = "View governor history";
-          nameEl.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openGovModal(String(id), name);
-          });
-        }
-        wrap.appendChild(nameEl);
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  }
+}
 
-        if (!id) return wrap;
-
-        const a = document.createElement("a");
-        a.classList.add("gov-id");
-        a.title = "Copy governor ID";
-
-        const idText = document.createElement("span");
-        idText.classList.add("gov-id-text");
-        idText.textContent = id;
-        a.appendChild(idText);
-
-        const copyIcon = document.createElement("i");
-        copyIcon.className = "fa-regular fa-copy gov-id-copy-icon";
-        a.appendChild(copyIcon);
-
-        a.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          navigator.clipboard
-            .writeText(String(id))
-            .then(() => {
-              const original = idText.textContent;
-              idText.textContent = "Copied!";
-              a.classList.add("gov-id-copied");
-              setTimeout(() => {
-                idText.textContent = original;
-                a.classList.remove("gov-id-copied");
-              }, 1200);
-            })
-            .catch(() => {
-              const ta = document.createElement("textarea");
-              ta.value = String(id);
-              ta.style.position = "fixed";
-              ta.style.opacity = "0";
-              document.body.appendChild(ta);
-              ta.select();
-              document.execCommand("copy");
-              document.body.removeChild(ta);
-              showToast("Governor ID copied", "info");
-            });
-        });
-        wrap.appendChild(a);
-
-        return wrap;
-      },
-      getQuickFilterText: (params) =>
-        `${params.data?.name || ""} ${params.data?.id || ""}`,
-    },
-
-    {
-      headerName: "Killpoints",
-      field: "killPointsDiff",
-      flex: 1,
-      minWidth: 100,
-      valueFormatter: (p) => {
-        const v = Number(p.value) || 0;
-        return `${v >= 0 ? "+" : ""}${v.toLocaleString("en-US")}`;
-      },
-
-      cellClass: (p) =>
-        Number(p.value) >= 0 ? "diff-positive" : "diff-negative",
-
-      tooltipValueGetter: (p) =>
-        `Current KP: ${Number(p.data?.killPoints || 0).toLocaleString(
-          "en-US",
-        )}`,
-
-      getQuickFilterText: () => "",
-    },
-    {
-      headerName: "T4 / T5",
-      field: "t4Diff",
-      flex: 1,
-      minWidth: 115,
-      cellClass: "metric-stack-cell",
-      comparator: (a, b, nodeA, nodeB) =>
-        (Number(nodeA.data?.t4Diff) || 0) +
-        (Number(nodeA.data?.t5Diff) || 0) -
-        ((Number(nodeB.data?.t4Diff) || 0) + (Number(nodeB.data?.t5Diff) || 0)),
-      cellRenderer: (p) => renderTroopDiffStack(p.value, p.data?.t5Diff),
-      tooltipValueGetter: (p) =>
-        `Current T4: ${Number(p.data?.t4 || 0).toLocaleString("en-US")}\nCurrent T5: ${Number(p.data?.t5 || 0).toLocaleString("en-US")}`,
-
-      getQuickFilterText: () => "",
-    },
-    {
-      headerName: "Deads / Power",
-      field: "deadsDiff",
-      flex: 1,
-      minWidth: 125,
-      cellClass: "metric-stack-cell",
-      comparator: (a, b, nodeA, nodeB) =>
-        (Number(nodeA.data?.deadsDiff) || 0) -
-        (Number(nodeB.data?.deadsDiff) || 0),
-      cellRenderer: (p) =>
-        renderDeadsPowerDiffStack(p.value, p.data?.powerDiff),
-      tooltipValueGetter: (p) =>
-        `Current Deads: ${Number(p.data?.deads || 0).toLocaleString("en-US")}\nCurrent Power: ${Number(p.data?.power || 0).toLocaleString("en-US")}`,
-
-      getQuickFilterText: () => "",
-    },
-    {
-      headerName: "Acclaim",
-      field: "acclaim",
-      flex: 1,
-      minWidth: 100,
-      getQuickFilterText: () => "",
-
-      valueFormatter: (p) => Number(p.value || 0).toLocaleString("en-US"),
-    },
-    {
-      headerName: "Min DKP",
-      field: "minDkp",
-      getQuickFilterText: () => "",
-      flex: 1,
-      minWidth: 135,
-      cellClass: "metric-stack-cell",
-      comparator: (a, b, nodeA, nodeB) =>
-        (Number(nodeA.data?.sumMinDkp) || 0) -
-        (Number(nodeB.data?.sumMinDkp) || 0),
-      tooltipValueGetter: () => "with farms\nwithout farms",
-      cellRenderer: (p) =>
-        renderMetricStack(p.value, p.data?.sumMinDkp, formatNumber),
-    },
-    {
-      headerName: "DKP",
-      field: "dkp",
-      sort: "desc",
-      sortIndex: 0,
-      getQuickFilterText: () => "",
-      flex: 1,
-      minWidth: 130,
-      cellClass: "metric-stack-cell",
-      comparator: (a, b, nodeA, nodeB) =>
-        (Number(nodeA.data?.sumDkp) || 0) - (Number(nodeB.data?.sumDkp) || 0),
-      tooltipValueGetter: () => "with farms\nwithout farms",
-      cellRenderer: (p) =>
-        renderMetricStack(p.value, p.data?.sumDkp, formatNumber),
-    },
-    {
-      headerName: "DKP %",
-      field: "dkpPercent",
-      getQuickFilterText: () => "",
-      flex: 1,
-      minWidth: 120,
-      cellClass: "metric-stack-cell",
-      comparator: (a, b, nodeA, nodeB) =>
-        (Number(nodeA.data?.sumDkpPercent) || 0) -
-        (Number(nodeB.data?.sumDkpPercent) || 0),
-      tooltipValueGetter: () => "with farms\nwithout farms",
-      cellRenderer: (p) =>
-        renderMetricStack(p.value, p.data?.sumDkpPercent, formatPercent),
-    },
-    ...DKP_EXPORT_COLUMNS,
-  ],
-  enableCellTextSelection: true,
-  ensureDomOrder: true,
-  defaultColDef: {
-    sortable: true,
-    filter: false,
-    resizable: true,
-  },
-  tooltipShowDelay: 300,
-  pagination: false,
-  animateRows: true,
-  rowHeight: 60,
-  rowBuffer: 20,
-  suppressRowTransform: true,
-  cacheQuickFilter: false,
-  quickFilterParser: quickFilterParser,
-  quickFilterMatcher: quickFilterMatcher,
-};
-
-function onFilterTextBoxChanged() {
-  gridApi.setGridOption(
-    "quickFilterText",
-    document.getElementById("filter-text-box").value,
+function renderGovernor(row) {
+  const name = escapeHtml(row.name);
+  if (!row.id) {
+    return `<div class="gov-name-stack"><div class="gov-name-value">${name}</div></div>`;
+  }
+  return (
+    `<div class="gov-name-stack">` +
+    `<div class="gov-name-value gov-name-link" data-tip="View governor history">${name}</div>` +
+    `<a class="gov-id" data-tip="Copy governor ID"><span class="gov-id-text">${escapeHtml(row.id)}</span>` +
+    `<i class="fa-regular fa-copy gov-id-copy-icon"></i></a>` +
+    `</div>`
   );
 }
 
-function quickFilterParser(quickFilter) {
-  const quickFilterParts = [];
-  let lastSpaceIndex = -1;
-  const isQuote = (index) => quickFilter[index] === '"';
-  const getQuickFilterPart = (lastSpaceIndex, currentIndex) => {
-    const startsWithQuote = isQuote(lastSpaceIndex + 1);
-    const endsWithQuote = isQuote(currentIndex - 1);
-    const startIndex =
-      startsWithQuote && endsWithQuote
-        ? lastSpaceIndex + 2
-        : lastSpaceIndex + 1;
-    const endIndex =
-      startsWithQuote && endsWithQuote ? currentIndex - 1 : currentIndex;
-    return quickFilter.slice(startIndex, endIndex);
+function stackedColumn(sortValue, renderDisplay) {
+  return (data, type, row) =>
+    type === "display" ? renderDisplay(row) : sortValue(row);
+}
+
+const TIP_FARMS = "with farms\nwithout farms";
+const FIRST_KVK_WITH_SUMS = 8;
+let hasSums = true;
+
+function sumMetricColumn({ title, data, sumData, format, name }) {
+  return {
+    title,
+    data,
+    name,
+    className: "metric-stack-cell",
+    render: (value, type, row) => {
+      if (type !== "display") return num(hasSums ? row[sumData] : value);
+      return hasSums
+        ? renderMetricStack(value, row[sumData], format)
+        : `<div class="metric-stack"><div class="metric-base">${format(value)}</div></div>`;
+    },
+    createdCell: (td) => {
+      if (hasSums) td.dataset.tip = TIP_FARMS;
+    },
   };
-  for (let i = 0; i < quickFilter.length; i++) {
-    const char = quickFilter[i];
-    if (char === " ") {
-      if (!isQuote(lastSpaceIndex + 1) || isQuote(i - 1)) {
-        quickFilterParts.push(getQuickFilterPart(lastSpaceIndex, i));
-        lastSpaceIndex = i;
-      }
-    }
-  }
-  if (lastSpaceIndex !== quickFilter.length - 1) {
-    quickFilterParts.push(
-      getQuickFilterPart(lastSpaceIndex, quickFilter.length),
-    );
-  }
-  return quickFilterParts;
 }
 
-function quickFilterMatcher(quickFilterParts, rowQuickFilterAggregateText) {
-  let result;
-  try {
-    result = quickFilterParts.every((part) =>
-      rowQuickFilterAggregateText.match(part),
-    );
-  } catch {
-    result = false;
-  }
-  return result;
-}
+const VISIBLE_COLUMNS = [
+  {
+    title: "#",
+    data: null,
+    defaultContent: "",
+    className: "row-num",
+    orderable: false,
+    width: "55px",
+  },
+  {
+    title: "Governor",
+    data: "name",
+    className: "gov-cell",
+    searchable: true,
+    render: (name, type, row) => {
+      if (type === "display") return renderGovernor(row);
+      if (type === "filter") return `${row.name ?? ""} ${row.id ?? ""}`;
+      return name ?? "";
+    },
+  },
+  {
+    title: "Killpoints",
+    data: "killPointsDiff",
+    render: (v, type) => (type === "display" ? formatSignedNumber(v) : num(v)),
+    createdCell: (td, v, row) => {
+      td.classList.add(num(v) >= 0 ? "diff-positive" : "diff-negative");
+      td.dataset.tip = `Current KP: ${formatNumber(row.killPoints)}`;
+    },
+  },
+  {
+    title: "T4 / T5",
+    data: "t4Diff",
+    className: "metric-stack-cell",
+    render: stackedColumn(
+      (r) => num(r.t4Diff) + num(r.t5Diff),
+      (r) => renderTroopDiffStack(r.t4Diff, r.t5Diff),
+    ),
+    createdCell: (td, v, r) => {
+      td.dataset.tip = `Current T4: ${formatNumber(r.t4)}\nCurrent T5: ${formatNumber(r.t5)}`;
+    },
+  },
+  {
+    title: "Deads / Power",
+    data: "deadsDiff",
+    className: "metric-stack-cell",
+    render: stackedColumn(
+      (r) => num(r.deadsDiff),
+      (r) => renderDeadsPowerDiffStack(r.deadsDiff, r.powerDiff),
+    ),
+    createdCell: (td, v, r) => {
+      td.dataset.tip = `Current Deads: ${formatNumber(r.deads)}\nCurrent Power: ${formatNumber(r.power)}`;
+    },
+  },
+  {
+    title: "Acclaim",
+    data: "acclaim",
+    render: DataTable.render.number(",", ".", 0),
+  },
+  sumMetricColumn({
+    title: "Min DKP",
+    data: "minDkp",
+    sumData: "sumMinDkp",
+    format: formatNumber,
+  }),
+  sumMetricColumn({
+    title: "DKP",
+    data: "dkp",
+    sumData: "sumDkp",
+    format: formatNumber,
+    name: "dkp",
+  }),
+  sumMetricColumn({
+    title: "DKP %",
+    data: "dkpPercent",
+    sumData: "sumDkpPercent",
+    format: formatPercent,
+  }),
+];
 
-document
-  .getElementById("export-csv-btn")
-  ?.addEventListener("click", exportDkpCsv);
+const EXPORT_COLUMNS = [
+  ["ID", "id"],
+  ["Name", "name"],
+  ["Power", "power"],
+  ["KP gained", "killPointsDiff"],
+  ["T4 gained", "t4Diff"],
+  ["T5 gained", "t5Diff"],
+  ["Deads gained", "deadsDiff"],
+  ["Min DKP", "minDkp"],
+  ["DKP", "dkp"],
+  ["DKP%", "dkpPercent", true],
+  ["Sum Min DKP", "sumMinDkp"],
+  ["Sum DKP", "sumDkp"],
+  ["Sum DKP%", "sumDkpPercent", true],
+  ["Vacation", "vacation"],
+  ["Status", "status"],
+  ["T4 Kills", "t4"],
+  ["T5 Kills", "t5"],
+  ["Killpoints", "killPoints"],
+  ["Deads", "deads"],
+  ["Power diff", "powerDiff"],
+  ["Acclaim", "acclaim"],
+].map(([title, data, isPercent]) => ({
+  title,
+  data,
+  visible: false,
+  orderable: false,
+  render: isPercent
+    ? (v, type) => (type === "export" ? formatCsvPercent(v) : v)
+    : undefined,
+}));
 
-function copyTop18() {
-  const allRows = [];
-  gridApi.forEachNode((node) => {
-    if (node.data) allRows.push(node.data);
+const TABLE_COLUMNS = [...VISIBLE_COLUMNS, ...EXPORT_COLUMNS].map((c) => ({
+  searchable: false,
+  ...c,
+}));
+const DKP_COL = TABLE_COLUMNS.findIndex((c) => c.name === "dkp");
+const SUM_FIELDS = new Set(["sumMinDkp", "sumDkp", "sumDkpPercent"]);
+const exportColumnIndexes = () =>
+  EXPORT_COLUMNS.flatMap((c, i) =>
+    hasSums || !SUM_FIELDS.has(c.data) ? [VISIBLE_COLUMNS.length + i] : [],
+  );
+
+const exportFilename = () => getExportFileName().replace(/\.csv$/, "");
+const exportOptions = (orthogonal) => ({
+  columns: exportColumnIndexes(),
+  orthogonal,
+  stripHtml: false,
+  modifier: { search: "none", order: "current" },
+});
+
+function initTable(rowData) {
+  const kvkNumber = Number(DbCache.currentKvkNumber);
+  hasSums = !(kvkNumber < FIRST_KVK_WITH_SUMS);
+
+  table = new DataTable("#dkpTable", {
+    data: rowData,
+    columns: TABLE_COLUMNS,
+    order: [[DKP_COL, "desc"]],
+    stripeClasses: [],
+    scroller: true,
+    scrollY: "700px",
+    scrollX: true,
+    scrollCollapse: true,
+    fixedColumns: { start: 2 },
+    rowCallback: (row, data, displayNum, displayIndexFull) => {
+      row.cells[0].textContent = displayIndexFull + 1;
+      row.classList.toggle("row-alt", displayIndexFull % 2 === 1);
+    },
+
+    layout: {
+      topStart: {
+        buttons: [
+          {
+            extend: "csvHtml5",
+            text: '<i class="fa-solid fa-download" style="font-size: 14px"></i> Export CSV',
+            className: "shared-style-btn",
+            filename: exportFilename,
+            fieldSeparator: ";",
+            newline: "\r\n",
+            bom: true,
+            exportOptions: exportOptions("export"),
+          },
+          {
+            extend: "excelHtml5",
+            text: '<i class="fa-solid fa-file-excel" style="font-size: 14px"></i> Export Excel',
+            className: "shared-style-btn",
+            filename: exportFilename,
+            title: null,
+            exportOptions: exportOptions("excel"),
+          },
+          {
+            text: '<i class="fa-regular fa-copy" style="font-size: 14px"></i> Copy Top 18',
+            className: "shared-style-btn",
+            action: copyTop18,
+          },
+        ],
+      },
+      topEnd: "search",
+      bottomStart: null,
+      bottomEnd: null,
+    },
+    language: {
+      search: "",
+      searchPlaceholder: "Search...",
+      zeroRecords: "No matching governors",
+    },
   });
 
-  if (!allRows.length) {
+  table.table().container().addEventListener("click", onTableClick);
+  initCellTooltip(table.table().container());
+}
+
+const TIP_SHOW_DELAY = 300;
+
+function initCellTooltip(container) {
+  const tip = document.createElement("div");
+  tip.className = "cell-tooltip";
+  document.body.appendChild(tip);
+
+  let timer = null;
+  let activeEl = null;
+
+  const hide = () => {
+    clearTimeout(timer);
+    activeEl = null;
+    tip.classList.remove("visible");
+  };
+
+  const show = (el, x, y) => {
+    tip.textContent = el.dataset.tip;
+    tip.classList.add("visible");
+    const { width, height } = tip.getBoundingClientRect();
+    const gap = 12;
+    let left = x + gap;
+    let top = y + gap;
+    if (left + width > window.innerWidth - 8) left = x - width - gap;
+    if (top + height > window.innerHeight - 8) top = y - height - gap;
+    tip.style.left = `${Math.max(8, left)}px`;
+    tip.style.top = `${Math.max(8, top)}px`;
+  };
+
+  container.addEventListener("mouseover", (e) => {
+    const el = e.target.closest("[data-tip]");
+    if (!el || el === activeEl) return;
+    hide();
+    activeEl = el;
+    const { clientX, clientY } = e;
+    timer = setTimeout(() => show(el, clientX, clientY), TIP_SHOW_DELAY);
+  });
+  container.addEventListener("mouseout", (e) => {
+    if (activeEl && !activeEl.contains(e.relatedTarget)) hide();
+  });
+  container.addEventListener("scroll", hide, true);
+  container.addEventListener("click", hide);
+}
+
+function onTableClick(e) {
+  const nameEl = e.target.closest(".gov-name-link");
+  const idEl = e.target.closest(".gov-id");
+  if (!nameEl && !idEl) return;
+
+  const row = table.row(e.target.closest("tr")).data();
+  if (!row) return;
+
+  if (nameEl) {
+    openGovModal(String(row.id), row.name || "");
+    return;
+  }
+
+  if (idEl.classList.contains("gov-id-copied")) return;
+  copyText(String(row.id)).then((ok) => {
+    if (!ok) return showToast("Could not copy governor ID", "error");
+    const idText = idEl.querySelector(".gov-id-text");
+    const original = idText.textContent;
+    idText.textContent = "Copied!";
+    idEl.classList.add("gov-id-copied");
+    setTimeout(() => {
+      idText.textContent = original;
+      idEl.classList.remove("gov-id-copied");
+    }, 1200);
+  });
+}
+
+async function copyTop18(e, dt, node, config) {
+  const rows = dt.rows().data().toArray();
+  const dkpKey = hasSums ? "sumDkp" : "dkp";
+  if (!rows.length) {
     showToast("No data loaded yet.", "info");
     return;
   }
 
-  const text = [...allRows]
-    .sort((a, b) => Number(b.sumDkp || 0) - Number(a.sumDkp || 0))
+  const text = rows
+    .sort((a, b) => num(b[dkpKey]) - num(a[dkpKey]))
     .slice(0, 18)
     .map((row, i) => `${i + 1}. ${row.id} ${row.name}`)
     .join("\n");
 
-  navigator.clipboard
-    .writeText(text)
-    .then(() => {
-      const btn = document.getElementById("copy-top18-btn");
-      const original = btn.innerHTML;
-      btn.textContent = "✓ Copied!";
-      btn.disabled = true;
-      setTimeout(() => {
-        btn.innerHTML = original;
-        btn.disabled = false;
-      }, 2000);
-    })
-    .catch(() => {
-      // Fallback for older browsers
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-    });
-}
+  if (!(await copyText(text))) {
+    showToast("Could not copy to clipboard", "error");
+    return;
+  }
 
-document.getElementById("copy-top18-btn")?.addEventListener("click", copyTop18);
+  this.text("✓ Copied!");
+  this.disable();
+  setTimeout(() => {
+    this.text(config.text);
+    this.enable();
+  }, 2000);
+}
 
 let inlineChart = null;
 let selectedGovernorId = null;
@@ -787,8 +777,6 @@ function formatSnapshotDate(snapshotDate) {
   return snapshotDate;
 }
 
-// Column indices in the batched snapshotsData rows:
-// [0]=snapshot_id, [1]=governor_id, [2]=kp_diff, [3]=power_diff, [4]=t4_diff, [5]=t5_diff, [6]=deads_diff
 const CHART_COL = {
   KP: 2,
   POWER_DIFF: 3,
@@ -909,11 +897,13 @@ function updateChart(governorId) {
 
 loadDashboardData().then(() => {
   const spinner = document.getElementById("loading-spinner");
+  const rows = DbCache.lastSnapshotData?.rows;
+  if (!rows) {
+    spinner.style.display = "none";
+    return;
+  }
 
-  const rows = DbCache.lastSnapshotData.rows;
-  const rowData = buildRowData(rows);
-
-  gridApi.setGridOption("rowData", rowData);
+  initTable(buildRowData(rows));
 
   const sortedByDKP = [...rows]
     .sort((a, b) => Number(b[COL_table.DKP]) - Number(a[COL_table.DKP]))
@@ -923,10 +913,8 @@ loadDashboardData().then(() => {
   renderTotals(rows);
 
   spinner.style.display = "none";
-  const gridEl = document.getElementById("myGrid");
-
   requestAnimationFrame(() => {
-    gridEl.classList.add("visible");
+    document.getElementById("gridWrapper").classList.add("visible");
   });
 });
 
@@ -1013,14 +1001,6 @@ navLinks.querySelectorAll("a").forEach((link) => {
 const THEME_KEY = "theme";
 const themeToggle = document.getElementById("toggle-theme");
 
-function getAgTheme(theme) {
-  return (
-    theme === "dark"
-      ? agGrid.themeQuartz.withPart(agGrid.colorSchemeDark)
-      : agGrid.themeQuartz.withPart(agGrid.colorSchemeLight)
-  ).withPart(agGrid.buttonStyleQuartz);
-}
-
 function getCurrentTheme() {
   const saved = localStorage.getItem(THEME_KEY);
   if (saved === "light" || saved === "dark") return saved;
@@ -1032,14 +1012,9 @@ function getCurrentTheme() {
 function applyTheme(theme) {
   document.body.classList.remove("light", "dark");
   document.body.classList.add(theme);
-
-  document.body.setAttribute("data-ag-theme-mode", theme);
+  document.documentElement.classList.toggle("dark", theme === "dark");
 
   localStorage.setItem(THEME_KEY, theme);
-
-  if (gridApi) {
-    gridApi.setGridOption("theme", getAgTheme(theme));
-  }
 
   applyChartTheme();
 }
@@ -1129,7 +1104,6 @@ function initEquipTooltip() {
 }
 
 function renderCollapsibleSection(title, content, defaultOpen = false) {
-  // Use a stable incrementing counter instead of Math.random() for predictable IDs
   const id =
     "sec_" +
     (renderCollapsibleSection._counter =
@@ -1236,8 +1210,12 @@ function loadGovHistory(govId) {
     if (!statsRes.length) continue;
 
     const r = statsRes[0].values[0];
+    const rollsUpFarms =
+      isMainAccount &&
+      Boolean(farmIdList) &&
+      !(Number(kvkNumber) < FIRST_KVK_WITH_SUMS);
     let farmSums = null;
-    if (farmIdList) {
+    if (rollsUpFarms) {
       const farmStatsRes = db.exec(`
         SELECT
           coalesce(sum(s.power_diff), 0),
@@ -1259,7 +1237,7 @@ function loadGovHistory(govId) {
 
     results.push({
       kvk: `KvK ${kvkNumber}`,
-      hasFarmRollup: isMainAccount && Boolean(farmIdList),
+      hasFarmRollup: rollsUpFarms,
       powerDiff: r[0],
       kpDiff: r[1],
       t4Diff: r[2],
@@ -1698,11 +1676,14 @@ function loadPlayerProfile(govId) {
 
 function iconPath(name, kind) {
   const folder =
-    kind === "commander" ? "commanders" :
-    kind === "skin" ? "skins" :
-    kind === "armament" ? "armaments" :
-    "equipment";
-  return `icons/${folder}/${encodeURIComponent(String(name).trim().toLowerCase())}.webp`;
+    kind === "commander"
+      ? "commanders"
+      : kind === "skin"
+        ? "skins"
+        : kind === "armament"
+          ? "armaments"
+          : "equipment";
+  return `icons/${folder}/${encodeURIComponent(String(name).trim())}.webp`;
 }
 
 function isEmptyVal(v) {
@@ -1899,7 +1880,6 @@ function toRoman(v) {
   return ROMAN_NUMERALS[n] || String(n);
 }
 
-// Talent is stored as a yes/no style flag; treat anything affirmative as "has talent".
 function hasTalent(v) {
   if (isEmptyVal(v)) return false;
   const s = String(v).trim().toLowerCase();
@@ -2002,7 +1982,6 @@ function renderCitySkinSection(skinsRow) {
   if (!owned.length) {
     return `
       <div class="city-skin-section">
-        <div class="equip-arm-label">City Skin</div>
         <div class="city-skin-item">
           <div class="city-skin-box">
             <span class="city-skin-box-fallback" style="display:flex;">—</span>
@@ -2014,7 +1993,6 @@ function renderCitySkinSection(skinsRow) {
   const items = owned.map((code) => renderSingleSkinItem(code)).join("");
   return `
       <div class="city-skin-section">
-        <div class="equip-arm-label">City Skin${owned.length > 1 ? "s" : ""}</div>
         ${items}
       </div>`;
 }
@@ -2267,15 +2245,18 @@ function openGovModal(govId, govName) {
 	  `;
       body.innerHTML =
         '<div class="gov-modal-tabs">' +
-        '  <button type="button" class="gov-modal-tab active" data-tab="stats" onclick="switchGovModalTab(\'stats\')">Statistics</button>' +
+        '  <button type="button" class="gov-modal-tab active" data-tab="chart" onclick="switchGovModalTab(\'chart\')">Chart</button>' +
+        '  <button type="button" class="gov-modal-tab" data-tab="stats" onclick="switchGovModalTab(\'stats\')">Statistics</button>' +
         '  <button type="button" class="gov-modal-tab" data-tab="equipment" onclick="switchGovModalTab(\'equipment\')">Equipment</button>' +
         "</div>" +
-        '<div class="gov-modal-tab-pane" id="govTabPane-stats">' +
+        '<div class="gov-modal-tab-pane" id="govTabPane-chart">' +
+        chartSection +
+        "</div>" +
+        '<div class="gov-modal-tab-pane" id="govTabPane-stats" style="display:none;">' +
         '<div class="modal-controls">' +
         '  <button onclick="expandAllSections()">Expand All</button>' +
         '  <button onclick="collapseAllSections()">Collapse All</button>' +
         "</div>" +
-        chartSection +
         safeRender("farmOwner", () => renderFarmOwnerInfo(farmOwner)) +
         safeRender("history", () =>
           renderCollapsibleSection(
@@ -2360,9 +2341,4 @@ document.getElementById("govModalOverlay").addEventListener("click", (e) => {
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeGovModal();
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  const gridDiv = document.querySelector("#myGrid");
-  gridApi = agGrid.createGrid(gridDiv, gridOptions);
 });
