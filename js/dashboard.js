@@ -1489,39 +1489,87 @@ function renderFarmOwnerInfo(owner) {
     true,
   );
 }
-
-function renderModalTable(rows) {
-  if (!rows.length)
-    return `<div class="gov-modal-empty">No historical data found for this governor.</div>`;
-
-  const headers = [
-    "KvK",
-    "Killpoints",
-    "T4 / T5",
-    "Deads / Power",
-    "Min DKP",
-    "DKP",
-    "DKP %",
-    "Acclaim",
+function formatCompact(value) {
+  const n = Number(value) || 0;
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  const units = [
+    [1e9, "B"],
+    [1e6, "M"],
+    [1e3, "K"],
   ];
-  const ths = headers.map((h) => `<th>${h}</th>`).join("");
-  const trs = rows
-    .map(
-      (r) => `
-    <tr>
-      <td class="kvk-label">${escapeHtml(r.kvk)}</td>
-      <td>${r.hasFarmRollup ? renderDiffStack(r.kpDiff, r.sumKpDiff) : _fmtDiff(r.kpDiff)}</td>
-      <td>${renderPairedDiffStack("T4", r.t4Diff, r.sumT4Diff, "T5", r.t5Diff, r.sumT5Diff, r.hasFarmRollup)}</td>
-      <td>${renderPairedDiffStack("Dead", r.deadsDiff, r.sumDeadsDiff, "Pwr", r.powerDiff, r.sumPowerDiff, r.hasFarmRollup)}</td>
-      <td>${renderMaybeRollupStack(r.minDkp, r.sumMinDkp, formatNumber, r.hasFarmRollup)}</td>
-      <td>${renderMaybeRollupStack(r.dkp, r.sumDkp, formatNumber, r.hasFarmRollup)}</td>
-      <td>${renderMaybeRollupStack(r.dkpPercent, r.sumDkpPercent, formatPercent, r.hasFarmRollup)}</td>
-      <td>${renderMaybeRollupStack(r.acclaim, r.sumAcclaim, formatNumber, r.hasFarmRollup)}</td>
-    </tr>`,
-    )
+  for (const [size, suffix] of units) {
+    if (abs >= size) {
+      return sign + (abs / size).toFixed(2).replace(/\.?0+$/, "") + suffix;
+    }
+  }
+  return String(n);
+}
+
+function renderKvkGainStat(label, base, sum, showRollup, opts = {}) {
+  const {
+    signed = true,
+    hideZero = false,
+    format = formatCompact,
+    full = formatNumber,
+  } = opts;
+
+  const main = Number(showRollup ? sum : base) || 0;
+  const alone = Number(base) || 0;
+
+  if (hideZero && main === 0) {
+    return `
+      <div class="kvk-gain-stat">
+        <span class="kvk-gain-label">${label}</span>
+        <span class="kvk-gain-value">—</span>
+      </div>`;
+  }
+
+  const show = (n) => `${signed && n > 0 ? "+" : ""}${format(n)}`;
+  const cls = signed ? (main >= 0 ? "diff-positive" : "diff-negative") : "";
+  const title = showRollup
+    ? `${full(main)} with farms\n${full(alone)} without farms`
+    : full(main);
+
+  return `
+    <div class="kvk-gain-stat" title="${title}">
+      <span class="kvk-gain-label">${label}</span>
+      <span class="kvk-gain-value ${cls}">${show(main)}</span>
+      ${showRollup ? `<span class="kvk-gain-rollup">${show(alone)}</span>` : ""}
+    </div>`;
+}
+
+function renderKvkGainBoxes(rows) {
+  if (!rows.length) {
+    return `<div class="gov-modal-empty">No historical data found for this governor.</div>`;
+  }
+
+  const pct = { signed: false, format: formatPercent, full: formatPercent };
+  const plain = { signed: false };
+
+  const boxes = [...rows]
+    .reverse() // newest KvK first
+    .map((r) => {
+      const f = r.hasFarmRollup;
+      return `
+        <div class="kvk-gain-box">
+          <div class="kvk-gain-title">${escapeHtml(r.kvk)}</div>
+          <div class="kvk-gain-stats">
+            ${renderKvkGainStat("Kill Points", r.kpDiff, r.sumKpDiff, f)}
+            ${renderKvkGainStat("T4 Kills", r.t4Diff, r.sumT4Diff, f)}
+            ${renderKvkGainStat("T5 Kills", r.t5Diff, r.sumT5Diff, f)}
+            ${renderKvkGainStat("Deads", r.deadsDiff, r.sumDeadsDiff, f)}
+            ${renderKvkGainStat("Power", r.powerDiff, r.sumPowerDiff, f)}
+            ${renderKvkGainStat("Acclaim", r.acclaim, r.sumAcclaim, f, { hideZero: true })}
+            ${renderKvkGainStat("Min DKP", r.minDkp, r.sumMinDkp, f, plain)}
+            ${renderKvkGainStat("DKP", r.dkp, r.sumDkp, f, plain)}
+            ${renderKvkGainStat("DKP %", r.dkpPercent, r.sumDkpPercent, f, pct)}
+          </div>
+        </div>`;
+    })
     .join("");
 
-  return `<table class="gov-modal-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+  return `<div class="kvk-gains-grid">${boxes}</div>`;
 }
 
 function renderFarmsTable(rows) {
@@ -2261,7 +2309,7 @@ function openGovModal(govId, govName) {
         safeRender("history", () =>
           renderCollapsibleSection(
             "Governor History",
-            renderModalTable(history),
+            renderKvkGainBoxes(history),
             false,
           ),
         ) +
