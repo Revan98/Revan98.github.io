@@ -38,7 +38,27 @@ function expandKvkName(rawName, kvkNumber, abbrMap) {
     ];
   return full ? `${numberLabel} ${full}` : rawName;
 }
+function formatCompact(n) {
+  n = Number(n) || 0;
+  if (n <= 0) return "—";
+  const units = [
+    [1e9, "B"],
+    [1e6, "M"],
+    [1e3, "K"],
+  ];
+  for (const [size, suffix] of units) {
+    if (n >= size) return (n / size).toFixed(2).replace(/\.?0+$/, "") + suffix;
+  }
+  return String(n);
+}
 
+function statHtml(label, value) {
+  return `
+    <div class="kvk-stat" title="${Number(value).toLocaleString("en-US")}">
+      <span class="kvk-stat-label">${label}</span>
+      <span class="kvk-stat-value">${formatCompact(value)}</span>
+    </div>`;
+}
 async function initSelectKvk() {
   const kd = getKDFromURL();
   const heading = document.getElementById("kvk-heading");
@@ -71,10 +91,21 @@ async function initSelectKvk() {
   }
 
   const result = db.exec(`
-    SELECT kvk_number, name, is_latest
-    FROM kvks
-    WHERE kingdom='${kd}'
-    ORDER BY kvk_number DESC
+    SELECT
+      k.kvk_number,
+      k.name,
+      k.is_latest,
+      COALESCE(SUM(st.kp_diff), 0)     AS kp,
+      COALESCE(SUM(st.t4_diff), 0)     AS t4,
+      COALESCE(SUM(st.t5_diff), 0)     AS t5,
+      COALESCE(SUM(st.deads_diff), 0)  AS deads,
+      COALESCE(SUM(st.acclaim), 0)     AS acclaim
+    FROM kvks k
+    LEFT JOIN snapshots s ON s.kvk_id = k.id AND s.is_last = 1
+    LEFT JOIN stats st    ON st.snapshot_id = s.id
+    WHERE k.kingdom = '${kd}'
+    GROUP BY k.id
+    ORDER BY k.kvk_number DESC
   `)[0];
 
   if (!result || !result.values.length) {
@@ -84,12 +115,19 @@ async function initSelectKvk() {
 
   list.className = "container";
   list.innerHTML = result.values
-    .map(([kvkNumber, name, isLatest]) => {
+    .map(([kvkNumber, name, isLatest, kp, t4, t5, deads, acclaim]) => {
       const label = expandKvkName(name, kvkNumber, abbrMap);
       const badge = isLatest ? '<span class="kvk-badge">Latest</span>' : "";
       return `
         <div class="kingdom-box kvk-box" onclick="selectKvk('${kd}', ${kvkNumber})">
-          ${escapeHtml(label)} ${badge}
+          <div class="kvk-title">${escapeHtml(label)} ${badge}</div>
+          <div class="kvk-stats">
+            ${statHtml("Kill Points", kp)}
+            ${statHtml("T4 Kills", t4)}
+            ${statHtml("T5 Kills", t5)}
+            ${statHtml("Deads", deads)}
+            ${statHtml("Acclaim", acclaim)}
+          </div>
         </div>
       `;
     })
