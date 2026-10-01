@@ -37,9 +37,41 @@
 }
 .kvk-box {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+}
+
+.kvk-title {
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
+}
+
+.kvk-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 12px;
+}
+
+.kvk-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kvk-stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+
+.kvk-stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 .kvk-badge {
   font-size: 0.7rem;
