@@ -91,7 +91,7 @@
                 Governor ID or Name
               </label>
               <div class="eq-input-row">
-                <div class="eq-input-wrap">
+                <div class="eq-input-wrap eq-input-wrap--gov">
                   <input
                     type="text"
                     id="govIdInput"
@@ -381,7 +381,7 @@
               placeholder="Search…"
             />
           </div>
-          <button class="gov-modal-close" id="pickerClose" aria-label="Close">
+          <button class="eq-arm-modal-close" id="pickerClose" aria-label="Close">
             <i class="fa-solid fa-xmark" style="font-size: 20px"></i>
           </button>
         </div>
@@ -589,7 +589,7 @@
               <i class="fa-solid fa-circle-plus" style="font-size: 13px"></i>
               Add Inscriptions
             </button>
-            <div class="eq-ins-chosen-list" id="insChosenList"></div>
+            <div class="arm-ins-group eq-ins-chosen-list" id="insChosenList"></div>
             <input type="hidden" id="armIns0" /><input
               type="hidden"
               id="armIns1"
@@ -652,7 +652,7 @@
         <div class="eq-ins-picker-body" id="insPickerBody"></div>
         <div class="eq-ins-picker-footer">
           <div
-            class="eq-ins-picker-selected-wrap"
+            class="arm-ins-group eq-ins-picker-selected-wrap"
             id="insPickerSelectedWrap"
           ></div>
           <button class="secondary" id="insPickerClearAll" type="button">
