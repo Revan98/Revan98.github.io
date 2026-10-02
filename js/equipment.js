@@ -93,10 +93,6 @@ const pairsData = Array.from({ length: PAIR_COUNT }, () => ({
 
 let skinsData = Array.from({ length: SKIN_COUNT }, () => "");
 
-// Grows or shrinks a data array in place to match a target length,
-// filling new slots with `factory()`. Used whenever a slot count
-// (march/pair/arm/skin) changes, either from loading a .db that has a
-// different stored count, or from clicking "+ Add" in a tab.
 function resizeDataArray(arr, newLen, factory) {
   while (arr.length < newLen) arr.push(factory());
   if (arr.length > newLen) arr.length = newLen;
@@ -917,10 +913,6 @@ function ensureAppSchema() {
   ensureEquipmentMarchColumns(db);
 }
 
-// Generic helper: given a table and a list of [columnName, sqlType] pairs,
-// adds whichever columns don't already exist. Safe to call repeatedly with
-// a growing list (e.g. after raising a slot count) — it only ever adds
-// columns that are missing, never removes or alters existing ones.
 function ensureColumnsExist(targetDb, table, colDefs) {
   if (!targetDb) return;
   try {
@@ -957,9 +949,6 @@ function ensureEquipmentMarchColumns(targetDb = db) {
   ensureColumnsExist(targetDb, "equipment", defs);
 }
 
-// Pair columns live on the `equipment` table (pairN_comm1 / pairN_comm2),
-// same as march columns. Only the first 12 pairs exist in the base schema,
-// so this adds any beyond that.
 function ensurePairColumns(targetDb = db) {
   const defs = [];
   for (let n = 1; n <= PAIR_COUNT; n++) {
@@ -996,7 +985,6 @@ function ensureAllSlotColumns(targetDb = db) {
   ensureSkinColumns(targetDb);
 }
 
-// --- Slot-count persistence (app_config key/value table) ---------------
 function getConfigInt(key, fallback) {
   if (!db) return fallback;
   try {
@@ -1010,7 +998,6 @@ function getConfigInt(key, fallback) {
       if (!isNaN(v)) return v;
     }
   } catch (e) {
-    /* fall through to fallback */
   }
   return fallback;
 }
@@ -1029,10 +1016,6 @@ function setConfigInt(key, value) {
   }
 }
 
-// Reads stored slot counts (falling back to defaults for a fresh/old DB),
-// resizes every in-memory data array to match, makes sure the DB actually
-// has the columns for that many slots, and re-renders the affected tabs.
-// Called whenever a .db file is loaded.
 function applySlotCounts() {
   MARCH_COUNT = getConfigInt("march_count", DEFAULT_MARCH_COUNT);
   PAIR_COUNT = getConfigInt("pair_count", DEFAULT_PAIR_COUNT);
@@ -1079,9 +1062,9 @@ farmAddNewBtn?.addEventListener("click", () => {
 
 const govIdInput = document.getElementById("govIdInput");
 const govNameInput = document.getElementById("govNameInput");
-const VIP_LEVELS = Array.from({ length: 19 }, (_, i) => i + 1); // 1..19
-const SVIP_VALUE = 20; // sentinel int stored in vip_level for "SVIP"
-let vipLevel = null; // null = none selected, else 1-19 or SVIP_VALUE
+const VIP_LEVELS = Array.from({ length: 19 }, (_, i) => i + 1);
+const SVIP_VALUE = 20;
+let vipLevel = null;
 const saveStatus = document.getElementById("saveStatus");
 const govBadge = document.getElementById("govBadge");
 
@@ -1333,7 +1316,6 @@ function loadGovernorById(safeGovId) {
     if (res.length && res[0].values.length)
       govNameInput.value = res[0].values[0][0] ?? "";
   } catch (e) {
-    /* ok */
   }
 
   try {
@@ -1415,7 +1397,7 @@ function renderArmamentsGrid() {
             .filter((v) => !isArmEmpty(v))
             .map((v) => {
               const tier = getArmTier(String(v));
-              return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
+              return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
             })
             .join("")
         : "";
@@ -1442,7 +1424,7 @@ function renderArmamentsGrid() {
         <span class="eq-arm-name${isEmpty ? " eq-arm-name--empty" : ""}">${isEmpty ? "— empty —" : escapeHtml(String(name))}</span>
         <button class="eq-arm-edit-btn" title="${isEmpty ? "Add armament" : "Edit armament"}">${isEmpty ? "+" : "✎"}</button>
       </div>
-      ${inscriptions ? `<div class="eq-arm-ins-row">${inscriptions}</div>` : ""}
+      ${inscriptions ? `<div class="arm-ins-group">${inscriptions}</div>` : ""}
       ${stats ? `<div class="eq-arm-stats-row">${stats}</div>` : ""}
     `;
     div.querySelector(".eq-arm-edit-btn").addEventListener("click", (e) => {
@@ -2548,7 +2530,6 @@ function loadSkinManifest() {
     }
     allSkinNames = [...names].sort();
   } catch (e) {
-    /* ignore */
   }
 }
 
@@ -2597,7 +2578,6 @@ function _scrapeIconsFromDb() {
     allIconNames = [...equipNames].sort();
     allCommNames = [...commNames].sort();
   } catch (e) {
-    /* ignore */
   }
 }
 
@@ -2710,8 +2690,29 @@ function renderPickerItems(filter) {
       if (skinsData[i]) candidates.add(skinsData[i]);
   }
 
+  const kindForInfo =
+    pickerTarget?.type === "pair"
+      ? "commander"
+      : pickerTarget?.type === "skin"
+        ? "skin"
+        : "item";
+
+  const fullNameOf = (code) => {
+    const info =
+      kindForInfo === "commander"
+        ? getCommanderInfo(code)
+        : kindForInfo === "skin"
+          ? getSkinInfo(code)
+          : getItemInfo(code);
+    return info && info.name ? String(info.name) : "";
+  };
+
   let list = [...candidates].sort((a, b) => a.localeCompare(b));
-  if (q) list = list.filter((n) => n.toLowerCase().includes(q));
+  if (q)
+    list = list.filter(
+      (n) =>
+        n.toLowerCase().includes(q) || fullNameOf(n).toLowerCase().includes(q),
+    );
 
   if (!list.length) {
     pickerBody.innerHTML = `<div class="eq-picker-empty">${
@@ -2740,7 +2741,7 @@ function renderPickerItems(filter) {
     div.innerHTML = `
       <img src="${iconPath(name, tipKind)}" alt="${escapeHtml(name)}" loading="lazy"
            onerror="this.style.display='none'">
-      <span class="eq-picker-item-name">${escapeHtml(name)}</span>`;
+      <span class="eq-picker-item-name">${escapeHtml(fullNameOf(name) || name)}</span>`;
     div.addEventListener("click", () => selectPickerItem(name));
     pickerBody.appendChild(div);
   }
@@ -3057,7 +3058,7 @@ function renderInsChosenList() {
   list.innerHTML = vals
     .map((v) => {
       const tier = getArmTier(v);
-      return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
+      return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
     })
     .join("");
 }
@@ -3085,13 +3086,13 @@ function renderInsPickerList(filter) {
 
   body.innerHTML = "";
   const wrap = document.createElement("div");
-  wrap.className = "eq-ins-pill-grid";
+  wrap.className = "arm-ins-group eq-ins-pill-grid";
   for (const name of list) {
     const tier = getArmTier(name);
     const checked = insPickerSelected.includes(name);
     const pill = document.createElement("button");
     pill.type = "button";
-    pill.className = `eq-ins-pill eq-ins-pill--${tier}${checked ? " selected" : ""}`;
+    pill.className = `arm-ins tier-${tier}${checked ? " selected" : ""}`;
     pill.textContent = name;
     pill.dataset.tipCode = name;
     pill.dataset.tipKind = "inscription";
@@ -3121,7 +3122,7 @@ function renderInsPickerFooter() {
   wrap.innerHTML = insPickerSelected
     .map((v) => {
       const tier = getArmTier(v);
-      return `<span class="eq-arm-ins eq-arm-ins--${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
+      return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(v)}</span>`;
     })
     .join("");
 }
