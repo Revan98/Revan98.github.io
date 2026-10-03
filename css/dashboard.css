@@ -952,3 +952,6 @@ body.dark .cell-tooltip {
 .collapsible-content .collapsible-section {
   margin-top: 12px;
 }
+#govModalSubtitle {
+  margin-left: 10px;
+}
