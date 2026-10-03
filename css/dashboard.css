@@ -598,37 +598,6 @@
   opacity: 0.6;
   font-size: 0.9rem;
 }
-.gov-modal-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-  color: var(--text-color);
-}
-.gov-modal-table th {
-  text-align: center;
-  padding: 8px 10px;
-  font-size: 0.72rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--chart-line);
-  border-bottom: 2px solid var(--table-border);
-  white-space: nowrap;
-}
-.gov-modal-table td {
-  text-align: center;
-  padding: 9px 10px;
-  border-bottom: 1px solid var(--table-border);
-}
-.gov-modal-table tbody tr:last-child td {
-  border-bottom: none;
-}
-.gov-modal-table tbody tr:hover td {
-  background: var(--row-hover-bg);
-}
-.gov-modal-table .kvk-label {
-  font-weight: 600;
-  text-align: left;
-}
 .gov-modal-empty {
   text-align: center;
   padding: 2.5rem 0;
@@ -950,4 +919,36 @@ body.dark .cell-tooltip {
 .kvk-gain-rollup {
   font-size: 0.75rem;
   opacity: 0.65;
+}
+.kvk-gains-grid + .kvk-gains-grid,
+.collapsible-content > .kvk-gains-grid {
+  margin-bottom: 0;
+}
+
+.kvk-gain-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kvk-gain-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kvk-gain-id {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.55;
+}
+
+.kvk-gain-stats.cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.collapsible-content .collapsible-section {
+  margin-top: 12px;
 }
