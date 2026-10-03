@@ -132,7 +132,7 @@ async function loadEquipRefData() {
   }
 }
 loadEquipRefData();
-const DB_VERSION = "21"; 
+const DB_VERSION = "9"; 
 async function loadDatabase() {
   const SQL = await initSqlJs({
     locateFile: (file) =>
@@ -1301,7 +1301,8 @@ function loadFarmKvKStats(farmIds) {
         s.deads_diff,
         s.dkp,
         s.dkp_percent,
-        s.acclaim
+        s.acclaim,
+        s.min_dkp
       FROM stats s
       JOIN governors g ON g.governor_id = s.governor_id
         AND g.kingdom='${kd}'
@@ -1326,6 +1327,7 @@ function loadFarmKvKStats(farmIds) {
         dkp: r[7],
         dkpPercent: r[8],
         acclaim: r[9],
+        minDkp: r[10],
       });
     });
   }
@@ -1457,38 +1459,7 @@ function renderPairedDiffStack(
   `;
 }
 
-function renderFarmOwnerInfo(owner) {
-  if (!owner) return "";
 
-  return renderCollapsibleSection(
-    "Main Account Owner",
-    `
-      <table class="gov-modal-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>ID</th>
-            <th>Power</th>
-            <th>Kill Points</th>
-            <th>Deads</th>
-            <th>CH</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="kvk-label">${escapeHtml(owner.name)}</td>
-            <td>${escapeHtml(owner.id)}</td>
-            <td>${Number(owner.power || 0).toLocaleString("en-US")}</td>
-            <td>${Number(owner.killpoints || 0).toLocaleString("en-US")}</td>
-            <td>${Number(owner.deads || 0).toLocaleString("en-US")}</td>
-            <td>${escapeHtml(owner.ch)}</td>
-          </tr>
-        </tbody>
-      </table>
-    `,
-    true,
-  );
-}
 function formatCompact(value) {
   const n = Number(value) || 0;
   const abs = Math.abs(n);
@@ -1548,7 +1519,7 @@ function renderKvkGainBoxes(rows) {
   const plain = { signed: false };
 
   const boxes = [...rows]
-    .reverse() // newest KvK first
+    .reverse()
     .map((r) => {
       const f = r.hasFarmRollup;
       return `
@@ -1572,38 +1543,33 @@ function renderKvkGainBoxes(rows) {
   return `<div class="kvk-gains-grid">${boxes}</div>`;
 }
 
-function renderFarmsTable(rows) {
-  if (!rows.length)
-    return `<div class="gov-modal-empty">No farm accounts found.</div>`;
+function renderPlainStat(label, display, full) {
+  return `
+    <div class="kvk-gain-stat" title="${escapeHtml(String(full ?? display))}">
+      <span class="kvk-gain-label">${label}</span>
+      <span class="kvk-gain-value">${escapeHtml(String(display))}</span>
+    </div>`;
+}
 
-  const headers = ["Name", "ID", "Power", "Kill Points", "Deads", "CH"];
-  const ths = headers.map((h) => `<th>${h}</th>`).join("");
-
-  const trs = rows
+function renderAccountBoxes(accounts) {
+  const boxes = accounts
     .map(
-      (r) => `
-    <tr>
-      <td class="kvk-label">${escapeHtml(r.name)}</td>
-      <td>${escapeHtml(r.id)}</td>
-      <td>${Number(r.power || 0).toLocaleString("en-US")}</td>
-      <td>${Number(r.killpoints || 0).toLocaleString("en-US")}</td>
-      <td>${Number(r.deads || 0).toLocaleString("en-US")}</td>
-      <td>${escapeHtml(r.ch)}</td>
-    </tr>
-  `,
+      (a) => `
+      <div class="kvk-gain-box">
+        <div class="kvk-gain-title">
+          <span class="kvk-gain-name">${escapeHtml(a.name)}</span>
+          <span class="kvk-gain-id">${escapeHtml(a.id)}</span>
+        </div>
+        <div class="kvk-gain-stats cols-4">
+          ${renderPlainStat("Power", formatCompact(a.power), formatNumber(a.power))}
+          ${renderPlainStat("Kill Points", formatCompact(a.killpoints), formatNumber(a.killpoints))}
+          ${renderPlainStat("Deads", formatCompact(a.deads), formatNumber(a.deads))}
+          ${renderPlainStat("CH", a.ch || "—")}
+        </div>
+      </div>`,
     )
     .join("");
-
-  return renderCollapsibleSection(
-    "Farm Accounts",
-    `
-		<table class="gov-modal-table">
-		  <thead><tr>${ths}</tr></thead>
-		  <tbody>${trs}</tbody>
-		</table>
-	  `,
-    false,
-  );
+  return `<div class="kvk-gains-grid">${boxes}</div>`;
 }
 
 const EQUIP_SLOTS = [
@@ -1724,14 +1690,11 @@ function loadPlayerProfile(govId) {
 
 function iconPath(name, kind) {
   const folder =
-    kind === "commander"
-      ? "commanders"
-      : kind === "skin"
-        ? "skins"
-        : kind === "armament"
-          ? "armaments"
-          : "equipment";
-  return `icons/${folder}/${encodeURIComponent(String(name).trim())}.webp`;
+    kind === "commander" ? "commanders" :
+    kind === "skin" ? "skins" :
+    kind === "armament" ? "armaments" :
+    "equipment";
+  return `icons/${folder}/${encodeURIComponent(String(name).trim().toLowerCase())}.webp`;
 }
 
 function isEmptyVal(v) {
@@ -2183,57 +2146,70 @@ function renderEquipmentSection(govId) {
   return `<div class="equip-grid"><div class="equip-marches">${marchRows}</div>${renderArmamentRow(armRow)}${renderPairsSection(row)}${citySkinHtml}</div>`;
 }
 
-function renderFarmKvKTable(rows) {
+function renderFarmOwnerInfo(owner) {
+  if (!owner) return "";
+  return renderCollapsibleSection(
+    "Main Account Owner",
+    renderAccountBoxes([owner]),
+    true,
+  );
+}
+
+function renderFarmsBoxes(rows) {
+  if (!rows.length)
+    return `<div class="gov-modal-empty">No farm accounts found.</div>`;
+  return renderCollapsibleSection(
+    "Farm Accounts",
+    renderAccountBoxes(rows),
+    false,
+  );
+}
+
+function renderFarmKvKBoxes(rows) {
   if (!rows.length)
     return `<div class="gov-modal-empty">No KvK data found for farm accounts.</div>`;
 
   const grouped = {};
   rows.forEach((r) => {
-    if (!grouped[r.kvk]) grouped[r.kvk] = [];
-    grouped[r.kvk].push(r);
+    (grouped[r.kvk] ||= []).push(r);
   });
 
-  const headers = [
-    "Name",
-    "ID",
-    "Killpoints",
-    "T4 / T5",
-    "Deads / Power",
-    "DKP",
-    "DKP %",
-    "Acclaim",
-  ];
-  const ths = headers.map((h) => `<th>${h}</th>`).join("");
+  const pct = { signed: false, format: formatPercent, full: formatPercent };
+  const plain = { signed: false };
 
-  let kvkBlocks = "";
+  const kvkBlocks = Object.keys(grouped)
+    .reverse()
+    .map((kvkName) => {
+      const boxes = grouped[kvkName]
+        .map(
+          (r) => `
+          <div class="kvk-gain-box">
+            <div class="kvk-gain-title">
+              <span class="kvk-gain-name">${escapeHtml(r.name)}</span>
+              <span class="kvk-gain-id">${escapeHtml(r.id)}</span>
+            </div>
+            <div class="kvk-gain-stats">
+              ${renderKvkGainStat("Kill Points", r.kpDiff, 0, false)}
+              ${renderKvkGainStat("T4 Kills", r.t4Diff, 0, false)}
+              ${renderKvkGainStat("T5 Kills", r.t5Diff, 0, false)}
+              ${renderKvkGainStat("Deads", r.deadsDiff, 0, false)}
+              ${renderKvkGainStat("Power", r.powerDiff, 0, false)}
+              ${renderKvkGainStat("Acclaim", r.acclaim, 0, false, { hideZero: true })}
+              ${renderKvkGainStat("Min DKP", r.minDkp, 0, false, plain)}
+              ${renderKvkGainStat("DKP", r.dkp, 0, false, plain)}
+              ${renderKvkGainStat("DKP %", r.dkpPercent, 0, false, pct)}
+            </div>
+          </div>`,
+        )
+        .join("");
 
-  Object.keys(grouped).forEach((kvkName) => {
-    const trs = grouped[kvkName]
-      .map(
-        (r) => `
-      <tr>
-        <td class="kvk-label">${escapeHtml(r.name)}</td>
-        <td>${escapeHtml(r.id)}</td>
-        <td>${_fmtDiff(r.kpDiff)}</td>
-        <td>${renderTroopDiffStack(r.t4Diff, r.t5Diff)}</td>
-        <td>${renderDeadsPowerDiffStack(r.deadsDiff, r.powerDiff)}</td>
-        <td>${Number(r.dkp || 0).toLocaleString("en-US")}</td>
-        <td>${isNaN(Number(r.dkpPercent)) ? "" : (Number(r.dkpPercent) * 100).toFixed(2) + "%"}</td>
-        <td>${Number(r.acclaim || 0).toLocaleString("en-US")}</td>
-      </tr>
-    `,
-      )
-      .join("");
-
-    const table = `
-      <table class="gov-modal-table">
-        <thead><tr>${ths}</tr></thead>
-        <tbody>${trs}</tbody>
-      </table>
-    `;
-
-    kvkBlocks += renderCollapsibleSection(kvkName, table, false);
-  });
+      return renderCollapsibleSection(
+        kvkName,
+        `<div class="kvk-gains-grid">${boxes}</div>`,
+        false,
+      );
+    })
+    .join("");
 
   return renderCollapsibleSection(
     "Farm Accounts – KvK Stats (All KvKs)",
@@ -2313,8 +2289,8 @@ function openGovModal(govId, govName) {
             false,
           ),
         ) +
-        safeRender("farms", () => renderFarmsTable(farms)) +
-        safeRender("farmKvK", () => renderFarmKvKTable(farmKvK)) +
+        safeRender("farms", () => renderFarmsBoxes(farms)) +
+        safeRender("farmKvK", () => renderFarmKvKBoxes(farmKvK)) +
         "</div>" +
         '<div class="gov-modal-tab-pane" id="govTabPane-equipment" style="display:none;">' +
         safeRender("equipment", () => renderEquipmentSection(govId)) +
