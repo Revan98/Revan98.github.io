@@ -2237,7 +2237,7 @@ function openGovModal(govId, govName) {
 
   govId = safeGovId;
 
-  subtitle.textContent = govName ? `— ${govName} (${govId})` : `— ID: ${govId}`;
+  subtitle.textContent = govName ? `${govName} (${govId})` : `ID: ${govId}`;
   body.innerHTML = `<div class="gov-modal-loading"><div class="spinner"></div><span>Loading…</span></div>`;
   overlay.classList.add("open");
   document.body.style.overflow = "hidden";
