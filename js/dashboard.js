@@ -120,9 +120,7 @@ async function loadEquipRefData() {
     }
 
     armamentsByKey = {};
-    for (const [key, info] of Object.entries(
-      armamentsData.armaments || {},
-    )) {
+    for (const [key, info] of Object.entries(armamentsData.armaments || {})) {
       const entry = { key, ...info };
       armamentsByKey[normalizeArmamentKey(key)] = entry;
       if (info.name) armamentsByKey[normalizeArmamentKey(info.name)] = entry;
@@ -132,7 +130,7 @@ async function loadEquipRefData() {
   }
 }
 loadEquipRefData();
-const DB_VERSION = "9"; 
+const DB_VERSION = "9";
 async function loadDatabase() {
   const SQL = await initSqlJs({
     locateFile: (file) =>
@@ -611,14 +609,14 @@ function initTable(rowData) {
     layout: {
       topStart: {
         buttons: [
-			{
-			  text: CARD_BTN_TEXT,
-			  className: "shared-style-btn",
-			  action: function () {
-			    setCardMode(!cardMode);
-			    this.text(cardMode ? TABLE_BTN_TEXT : CARD_BTN_TEXT);
-			  },
-			},
+          {
+            text: CARD_BTN_TEXT,
+            className: "shared-style-btn",
+            action: function () {
+              setCardMode(!cardMode);
+              this.text(cardMode ? TABLE_BTN_TEXT : CARD_BTN_TEXT);
+            },
+          },
           {
             extend: "csvHtml5",
             text: '<i class="fa-solid fa-download" style="font-size: 14px"></i> Export CSV',
@@ -654,14 +652,14 @@ function initTable(rowData) {
       zeroRecords: "No matching governors",
     },
   });
-	cardsEl = document.createElement("div");
-	cardsEl.id = "dkpCards";
-	cardsEl.className = "dkp-cards";
-	table.table().container().querySelector(".dt-scroll").after(cardsEl);
-	
-	table.on("draw", () => {
-	  if (cardMode) renderCards();
-	});
+  cardsEl = document.createElement("div");
+  cardsEl.id = "dkpCards";
+  cardsEl.className = "dkp-cards";
+  table.table().container().querySelector(".dt-scroll").after(cardsEl);
+
+  table.on("draw", () => {
+    if (cardMode) renderCards();
+  });
   table.table().container().addEventListener("click", onTableClick);
   initCellTooltip(table.table().container());
 }
@@ -715,11 +713,11 @@ function onTableClick(e) {
   const idEl = e.target.closest(".gov-id");
   if (!nameEl && !idEl) return;
 
-	const card = e.target.closest(".dkp-card");
-	const row = card
-	  ? table.row(Number(card.dataset.row)).data()
-	  : table.row(e.target.closest("tr")).data();
-	if (!row) return;
+  const card = e.target.closest(".dkp-card");
+  const row = card
+    ? table.row(Number(card.dataset.row)).data()
+    : table.row(e.target.closest("tr")).data();
+  if (!row) return;
 
   if (nameEl) {
     openGovModal(String(row.id), row.name || "");
@@ -942,7 +940,7 @@ function renderTopPlayers(players) {
   boxes.forEach((box) => {
     const rank = Number(box.dataset.rank);
     const p = players[rank - 1];
-    box.querySelector(".player-name").textContent = p ? p[1] ?? "" : "";
+    box.querySelector(".player-name").textContent = p ? (p[1] ?? "") : "";
     box.querySelector(".player-id").textContent = p ? `ID: ${p[0] ?? ""}` : "";
     const dkpEl = box.querySelector(".player-dkp");
     if (dkpEl) {
@@ -974,12 +972,12 @@ function renderTotals(rows = []) {
   });
 
   for (const key in sums) {
-    const el = document.querySelector(`.stat-box[data-stat="${key}"] .stat-value`);
+    const el = document.querySelector(
+      `.stat-box[data-stat="${key}"] .stat-value`,
+    );
     if (el) el.textContent = sums[key].toLocaleString();
   }
 }
-
-
 
 function escapeHtml(str) {
   if (str == null) return "";
@@ -1479,7 +1477,6 @@ function renderPairedDiffStack(
   `;
 }
 
-
 function formatCompact(value) {
   const n = Number(value) || 0;
   const abs = Math.abs(n);
@@ -1499,8 +1496,10 @@ function formatCompact(value) {
 let cardsEl = null;
 let cardMode = false;
 
-const CARD_BTN_TEXT = '<i class="fa-solid fa-table-cells-large" style="font-size: 14px"></i> Card view';
-const TABLE_BTN_TEXT = '<i class="fa-solid fa-table" style="font-size: 14px"></i> Table view';
+const CARD_BTN_TEXT =
+  '<i class="fa-solid fa-table-cells-large" style="font-size: 14px"></i> Card view';
+const TABLE_BTN_TEXT =
+  '<i class="fa-solid fa-table" style="font-size: 14px"></i> Table view';
 
 function renderCard(r, rowIdx, rank) {
   const metric = (base, sum, fmt) =>
@@ -1757,10 +1756,13 @@ function loadPlayerProfile(govId) {
 
 function iconPath(name, kind) {
   const folder =
-    kind === "commander" ? "commanders" :
-    kind === "skin" ? "skins" :
-    kind === "armament" ? "armaments" :
-    "equipment";
+    kind === "commander"
+      ? "commanders"
+      : kind === "skin"
+        ? "skins"
+        : kind === "armament"
+          ? "armaments"
+          : "equipment";
   return `icons/${folder}/${encodeURIComponent(String(name).trim().toLowerCase())}.webp`;
 }
 
@@ -2425,7 +2427,7 @@ function closeGovModal() {
 document
   .getElementById("govModalClose")
   .addEventListener("click", closeGovModal);
-  
+
 document.getElementById("govModalOverlay").addEventListener("click", (e) => {
   if (e.target === e.currentTarget) closeGovModal();
 });
