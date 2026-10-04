@@ -611,6 +611,14 @@ function initTable(rowData) {
     layout: {
       topStart: {
         buttons: [
+			{
+			  text: CARD_BTN_TEXT,
+			  className: "shared-style-btn",
+			  action: function () {
+			    setCardMode(!cardMode);
+			    this.text(cardMode ? TABLE_BTN_TEXT : CARD_BTN_TEXT);
+			  },
+			},
           {
             extend: "csvHtml5",
             text: '<i class="fa-solid fa-download" style="font-size: 14px"></i> Export CSV',
@@ -646,7 +654,14 @@ function initTable(rowData) {
       zeroRecords: "No matching governors",
     },
   });
-
+	cardsEl = document.createElement("div");
+	cardsEl.id = "dkpCards";
+	cardsEl.className = "dkp-cards";
+	table.table().container().querySelector(".dt-scroll").after(cardsEl);
+	
+	table.on("draw", () => {
+	  if (cardMode) renderCards();
+	});
   table.table().container().addEventListener("click", onTableClick);
   initCellTooltip(table.table().container());
 }
@@ -700,8 +715,11 @@ function onTableClick(e) {
   const idEl = e.target.closest(".gov-id");
   if (!nameEl && !idEl) return;
 
-  const row = table.row(e.target.closest("tr")).data();
-  if (!row) return;
+	const card = e.target.closest(".dkp-card");
+	const row = card
+	  ? table.row(Number(card.dataset.row)).data()
+	  : table.row(e.target.closest("tr")).data();
+	if (!row) return;
 
   if (nameEl) {
     openGovModal(String(row.id), row.name || "");
@@ -960,6 +978,8 @@ function renderTotals(rows = []) {
     if (el) el.textContent = sums[key].toLocaleString();
   }
 }
+
+
 
 function escapeHtml(str) {
   if (str == null) return "";
@@ -1476,7 +1496,54 @@ function formatCompact(value) {
   }
   return String(n);
 }
+let cardsEl = null;
+let cardMode = false;
 
+const CARD_BTN_TEXT = '<i class="fa-solid fa-table-cells-large" style="font-size: 14px"></i> Card view';
+const TABLE_BTN_TEXT = '<i class="fa-solid fa-table" style="font-size: 14px"></i> Table view';
+
+function renderCard(r, rowIdx, rank) {
+  const metric = (base, sum, fmt) =>
+    hasSums
+      ? renderMetricStack(base, sum, fmt)
+      : `<div class="metric-stack"><div class="metric-base">${fmt(base)}</div></div>`;
+  const field = (label, html) =>
+    `<div class="dkp-card-field"><span class="dkp-card-label">${label}</span><div class="dkp-card-value">${html}</div></div>`;
+  const kpCls = num(r.killPointsDiff) >= 0 ? "diff-positive" : "diff-negative";
+
+  return `
+    <div class="dkp-card" data-row="${rowIdx}">
+      <div class="dkp-card-head">
+        <span class="dkp-card-rank">${rank}</span>
+        ${renderGovernor(r)}
+      </div>
+      ${field("Killpoints", `<span class="${kpCls}">${formatSignedNumber(r.killPointsDiff)}</span>`)}
+      ${field("T4 / T5", renderTroopDiffStack(r.t4Diff, r.t5Diff))}
+      ${field("Deads / Power", renderDeadsPowerDiffStack(r.deadsDiff, r.powerDiff))}
+      ${field("Acclaim", formatNumber(r.acclaim))}
+      ${field("Min DKP", metric(r.minDkp, r.sumMinDkp, formatNumber))}
+      ${field("DKP", metric(r.dkp, r.sumDkp, formatNumber))}
+      ${field("DKP %", metric(r.dkpPercent, r.sumDkpPercent, formatPercent))}
+    </div>`;
+}
+
+function renderCards() {
+  const rows = table.rows({ search: "applied", order: "applied" });
+  const idx = rows.indexes().toArray();
+  const data = rows.data().toArray();
+  cardsEl.innerHTML = data.map((r, i) => renderCard(r, idx[i], i + 1)).join("");
+}
+
+function setCardMode(on) {
+  cardMode = on;
+  table.table().container().classList.toggle("dkp-cards-on", on);
+  if (on) {
+    renderCards();
+  } else {
+    table.columns.adjust();
+    table.scroller?.measure?.(false);
+  }
+}
 function renderKvkGainStat(label, base, sum, showRollup, opts = {}) {
   const {
     signed = true,
