@@ -241,7 +241,7 @@ function applyPercentFormats(ws, rows) {
     if (!isPercentColumn(header)) return;
     const colLetter = XLSX.utils.encode_col(colIdx);
     rows.forEach((row, rowIdx) => {
-      const addr = `${colLetter}${rowIdx + 2}`; // +2: header is row 1
+      const addr = `${colLetter}${rowIdx + 2}`;
       const cell = ws[addr];
       if (cell && typeof cell.v === "number") {
         cell.z = "0.00%";
@@ -462,4 +462,3 @@ if (toolsToggle && toolsMenu) {
     });
   });
 }
-
