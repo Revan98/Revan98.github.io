@@ -332,8 +332,7 @@ function loadTableList() {
     try {
       const c = db.exec(`SELECT COUNT(*) FROM "${name.replace(/"/g, '""')}"`);
       rowCount = c[0]?.values?.[0]?.[0] ?? null;
-    } catch (e) {
-    }
+    } catch (e) {}
     return { name, type, rowCount };
   });
 
@@ -430,16 +429,10 @@ function destroyQueryGrid() {
   queryGridApi = destroyGrid(dbxQueryGridEl, queryGridApi);
 }
 
-// Same approach as the dashboard's formatNumber(): thousands separators via
-// toLocaleString. sql.js returns real JS numbers for INTEGER/REAL columns,
-// so this applies automatically wherever a cell's value is numeric —
-// whether that's the Data tab, the Query tab, or an arbitrary user query.
 function formatNumber(value) {
   return value.toLocaleString("en-US", { maximumFractionDigits: 20 });
 }
 
-// IDs are numeric but aren't quantities — don't add thousands separators or
-// right-align them.
 const ID_COLUMN_NAMES = new Set([
   "player_id",
   "id",
@@ -637,7 +630,11 @@ function renderSchemaForActive() {
               ? `${escapeHtml(p.value)}<span class="dbx-pk-badge">PK</span>`
               : escapeHtml(p.value),
         },
-        { headerName: "Type", field: "type", valueFormatter: (p) => p.value || "—" },
+        {
+          headerName: "Type",
+          field: "type",
+          valueFormatter: (p) => p.value || "—",
+        },
         {
           headerName: "Constraint",
           field: "notnull",
