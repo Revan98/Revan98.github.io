@@ -670,7 +670,6 @@ footer {
   text-align: right;
   padding-top: 6px;
 }
-
 .shared-style-btn {
   display: inline-flex;
   align-items: center;
@@ -688,12 +687,10 @@ footer {
     border-color 0.2s;
   flex-shrink: 0;
 }
-
 .shared-style-btn:hover {
   background: var(--row-hover-bg);
   border-color: var(--chart-line);
 }
-
 .fo-main-info {
   display: flex;
   gap: 14px;
@@ -718,17 +715,14 @@ footer {
 .gov-modal-body::-webkit-scrollbar {
   width: 8px;
 }
-
 .gov-modal-body::-webkit-scrollbar-track {
   background: var(--table-bg);
   border-radius: 4px;
 }
-
 .gov-modal-body::-webkit-scrollbar-thumb {
   background: var(--table-border);
   border-radius: 4px;
 }
-
 .gov-modal-body::-webkit-scrollbar-thumb:hover {
   background: var(--chart-line);
 }
@@ -736,7 +730,6 @@ footer {
   scrollbar-width: thin;
   scrollbar-color: var(--table-border) var(--table-bg);
 }
-
 #gridWrapper {
   opacity: 0;
   transform: translateY(10px);
@@ -751,7 +744,6 @@ footer {
 #gridWrapper .dt-container {
   color: var(--text-color);
 }
-
 #gridWrapper .dt-layout-row {
   gap: 8px;
   margin: 0 0 6px;
@@ -788,7 +780,6 @@ footer {
   background: var(--table-bg) no-repeat 8px center / 16px 16px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E");
 }
-
 #gridWrapper .dt-scroll {
   border: 1px solid var(--table-border);
   border-radius: 10px;
@@ -822,7 +813,6 @@ footer {
   padding: 4px 8px;
   border-top: 1px solid var(--table-border);
 }
-
 #gridWrapper table.dataTable > tbody > tr.row-alt > td {
   background:
     linear-gradient(var(--table-stripe-even), var(--table-stripe-even)),
@@ -830,17 +820,19 @@ footer {
 }
 #gridWrapper table.dataTable > tbody > tr:hover > td {
   background:
-    linear-gradient(var(--row-hover-bg), var(--row-hover-bg)),
-    var(--table-bg);
+    linear-gradient(var(--row-hover-bg), var(--row-hover-bg)), var(--table-bg);
 }
-#gridWrapper table.dataTable > :is(thead, tbody) > tr > :is(th, td):nth-child(2) {
+#gridWrapper
+  table.dataTable
+  > :is(thead, tbody)
+  > tr
+  > :is(th, td):nth-child(2) {
   box-shadow: 1px 0 0 var(--table-border);
 }
 #gridWrapper td.gov-cell {
   min-width: 155px;
   max-width: 220px;
 }
-
 .cell-tooltip {
   position: fixed;
   z-index: 10000;
@@ -870,7 +862,6 @@ body.dark .cell-tooltip {
   gap: 12px;
   margin-bottom: 16px;
 }
-
 .kvk-gain-box {
   background: var(--table-bg);
   border: 1px solid var(--table-border);
@@ -879,7 +870,6 @@ body.dark .cell-tooltip {
   color: var(--text-color);
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
 }
-
 .kvk-gain-title {
   font-weight: 700;
   font-size: 0.92rem;
@@ -887,20 +877,17 @@ body.dark .cell-tooltip {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--table-border);
 }
-
 .kvk-gain-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px 8px;
 }
-
 .kvk-gain-stat {
   display: flex;
   flex-direction: column;
   gap: 1px;
   text-align: left;
 }
-
 .kvk-gain-label {
   font-size: 0.65rem;
   font-weight: 600;
@@ -908,12 +895,10 @@ body.dark .cell-tooltip {
   letter-spacing: 0.04em;
   opacity: 0.6;
 }
-
 .kvk-gain-value {
   font-size: 0.98rem;
   font-weight: 700;
 }
-
 .kvk-gain-rollup {
   font-size: 0.75rem;
   opacity: 0.65;
@@ -922,39 +907,38 @@ body.dark .cell-tooltip {
 .collapsible-content > .kvk-gains-grid {
   margin-bottom: 0;
 }
-
 .kvk-gain-title {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
 }
-
 .kvk-gain-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .kvk-gain-id {
   flex-shrink: 0;
   font-size: 0.75rem;
   font-weight: 600;
   opacity: 0.55;
 }
-
 .kvk-gain-stats.cols-4 {
   grid-template-columns: repeat(4, 1fr);
 }
-
 .collapsible-content .collapsible-section {
   margin-top: 12px;
 }
 #govModalSubtitle {
   margin-left: 10px;
 }
-#gridWrapper .dkp-cards-on .dt-scroll { display: none; }
-#gridWrapper .dkp-cards { display: none; }
+#gridWrapper .dkp-cards-on .dt-scroll {
+  display: none;
+}
+#gridWrapper .dkp-cards {
+  display: none;
+}
 #gridWrapper .dkp-cards-on .dkp-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -971,14 +955,20 @@ body.dark .cell-tooltip {
   padding: 12px 14px;
   transition: border-color 0.2s;
 }
-.dkp-card:hover { border-color: var(--chart-line); }
+.dkp-card:hover {
+  border-color: var(--chart-line);
+}
 .dkp-card-head {
   display: flex;
   align-items: center;
   gap: 10px;
   padding-bottom: 8px;
 }
-.dkp-card-head .gov-name-stack { flex: 1; min-width: 0; min-height: 0; }
+.dkp-card-head .gov-name-stack {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
 .dkp-card-rank {
   display: flex;
   align-items: center;
@@ -1009,7 +999,9 @@ body.dark .cell-tooltip {
   white-space: nowrap;
   opacity: 0.6;
 }
-.dkp-card-value { text-align: right; }
+.dkp-card-value {
+  text-align: right;
+}
 .dkp-card .metric-stack,
 .dkp-card .troop-diff-stack {
   min-height: 0;
