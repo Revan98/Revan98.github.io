@@ -755,6 +755,8 @@ body.dark .eq-slot-stat.filled {
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 9px;
   align-content: start;
+  scrollbar-width: thin;
+  scrollbar-color: var(--table-border) var(--table-bg);
 }
 .eq-picker-body::-webkit-scrollbar {
   width: 6px;
@@ -768,10 +770,6 @@ body.dark .eq-slot-stat.filled {
 }
 .eq-picker-body::-webkit-scrollbar-thumb:hover {
   background: var(--chart-line);
-}
-.eq-picker-body {
-  scrollbar-width: thin;
-  scrollbar-color: var(--table-border) var(--table-bg);
 }
 .eq-picker-item {
   display: flex;
