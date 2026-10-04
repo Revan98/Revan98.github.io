@@ -227,9 +227,7 @@ async function loadEquipRefData() {
     }
 
     armamentsByKey = {};
-    for (const [key, info] of Object.entries(
-      armamentsData.armaments || {},
-    )) {
+    for (const [key, info] of Object.entries(armamentsData.armaments || {})) {
       const entry = { key, ...info };
       armamentsByKey[normalizeArmamentKey(key)] = entry;
       if (info.name) armamentsByKey[normalizeArmamentKey(info.name)] = entry;
@@ -711,10 +709,13 @@ const SKIN_SLOTS = Array.from({ length: 8 }, (_, i) => `skin${i + 1}`);
 
 function iconPath(name, kind) {
   const folder =
-    kind === "commander" ? "commanders" :
-    kind === "skin" ? "skins" :
-    kind === "armament" ? "armaments" :
-    "equipment";
+    kind === "commander"
+      ? "commanders"
+      : kind === "skin"
+        ? "skins"
+        : kind === "armament"
+          ? "armaments"
+          : "equipment";
   return `icons/${folder}/${encodeURIComponent(String(name).trim().toLowerCase())}.webp`;
 }
 
@@ -878,7 +879,14 @@ function drawIconTile(ctx, img, x, y, size, borderColor) {
     ctx.drawImage(img, x + 2, y + 2, size - 4, size - 4);
     ctx.restore();
   } else {
-    posterText(ctx, "—", x + size / 2, y + size / 2, "13px sans-serif", "rgba(255,255,255,0.35)");
+    posterText(
+      ctx,
+      "—",
+      x + size / 2,
+      y + size / 2,
+      "13px sans-serif",
+      "rgba(255,255,255,0.35)",
+    );
   }
 }
 
@@ -903,12 +911,25 @@ function drawArmamentCard(ctx, iconMap, a, cellX, topY, cellW, iconSize) {
   const img = iconMap.get(a.icon);
   const iconGap = img ? 8 : 0;
   const iconW = img ? iconSize : 0;
-  const nameStr = posterTruncate(ctx, a.name, nameFont, cellW - 12 - iconW - iconGap);
+  const nameStr = posterTruncate(
+    ctx,
+    a.name,
+    nameFont,
+    cellW - 12 - iconW - iconGap,
+  );
   ctx.font = nameFont;
   const nameW = ctx.measureText(nameStr).width;
   const startX = cellX - (iconW + iconGap + nameW) / 2;
   if (img) drawPlainIcon(ctx, img, startX, y, iconSize);
-  posterText(ctx, nameStr, startX + iconW + iconGap, y + iconSize / 2, nameFont, "#f3f1ff", "left");
+  posterText(
+    ctx,
+    nameStr,
+    startX + iconW + iconGap,
+    y + iconSize / 2,
+    nameFont,
+    "#f3f1ff",
+    "left",
+  );
   y += iconSize + 6;
 
   if (a.inscriptions.length) {
@@ -919,7 +940,11 @@ function drawArmamentCard(ctx, iconMap, a, cellX, topY, cellW, iconSize) {
     const maxW = cellW - 10;
     const pills = a.inscriptions.map((ins) => {
       const label = ins.label;
-      return { label, tier: ins.tier, w: measurePillWidth(ctx, label, pillFont) };
+      return {
+        label,
+        tier: ins.tier,
+        w: measurePillWidth(ctx, label, pillFont),
+      };
     });
     const lines = [];
     let line = [];
@@ -941,9 +966,17 @@ function drawArmamentCard(ctx, iconMap, a, cellX, topY, cellW, iconSize) {
       let x = cellX - w / 2;
       ln.forEach((p) => {
         posterRoundRect(ctx, x, y, p.w, pillH, pillH / 2);
-        ctx.fillStyle = POSTER_RARITY_COLORS[p.tier] || POSTER_RARITY_COLORS.unknown;
+        ctx.fillStyle =
+          POSTER_RARITY_COLORS[p.tier] || POSTER_RARITY_COLORS.unknown;
         ctx.fill();
-        posterText(ctx, p.label, x + p.w / 2, y + pillH / 2 + 0.5, pillFont, "#0b0a1e");
+        posterText(
+          ctx,
+          p.label,
+          x + p.w / 2,
+          y + pillH / 2 + 0.5,
+          pillFont,
+          "#0b0a1e",
+        );
         x += p.w + gapX;
       });
       y += pillH + gapY;
@@ -952,8 +985,20 @@ function drawArmamentCard(ctx, iconMap, a, cellX, topY, cellW, iconSize) {
   }
 
   a.stats.forEach((s) => {
-    const statStr = posterTruncate(ctx, `${s.name} +${s.val}%`, "11px 'DM Sans', sans-serif", cellW - 12);
-    posterText(ctx, statStr, cellX, y + 7, "11px 'DM Sans', sans-serif", "#8fe3ac");
+    const statStr = posterTruncate(
+      ctx,
+      `${s.name} +${s.val}%`,
+      "11px 'DM Sans', sans-serif",
+      cellW - 12,
+    );
+    posterText(
+      ctx,
+      statStr,
+      cellX,
+      y + 7,
+      "11px 'DM Sans', sans-serif",
+      "#8fe3ac",
+    );
     y += 15;
   });
 
@@ -964,7 +1009,14 @@ function drawEquipSlotIcon(ctx, iconMap, x, y, size, itemName, lvl, tal) {
   const empty = isEmptyVal(itemName);
   const rarity = getEquipRarity(itemName);
   const color = POSTER_RARITY_COLORS[rarity] || POSTER_RARITY_COLORS.unknown;
-  drawIconTile(ctx, empty ? null : iconMap.get(iconPath(itemName, "item")), x, y, size, color);
+  drawIconTile(
+    ctx,
+    empty ? null : iconMap.get(iconPath(itemName, "item")),
+    x,
+    y,
+    size,
+    color,
+  );
   if (!empty) {
     const roman = toRoman(lvl);
     if (roman) {
@@ -978,7 +1030,14 @@ function drawEquipSlotIcon(ctx, iconMap, x, y, size, itemName, lvl, tal) {
       ctx.strokeStyle = "rgba(255,255,255,0.3)";
       ctx.lineWidth = 1;
       ctx.stroke();
-      posterText(ctx, roman, bx + badgeW / 2, by + badgeH / 2 + 0.5, "700 9px 'DM Sans', sans-serif", "#ffd76a");
+      posterText(
+        ctx,
+        roman,
+        bx + badgeW / 2,
+        by + badgeH / 2 + 0.5,
+        "700 9px 'DM Sans', sans-serif",
+        "#ffd76a",
+      );
     }
     if (hasTalent(tal)) {
       ctx.beginPath();
@@ -1011,7 +1070,20 @@ function drawEquipDiamond(ctx, iconMap, slots, centerX, topY, slotSize) {
 
 function buildEquipmentMarches(row) {
   if (!row) return [];
-  const MARCH_SUFFIXES = ["", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+  const MARCH_SUFFIXES = [
+    "",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+  ];
   const marches = [];
   MARCH_SUFFIXES.forEach((suffix, idx) => {
     if (isMarchEmpty(row, suffix)) return;
@@ -1032,11 +1104,23 @@ function buildArmamentsList(armRow) {
   ARM_SLOTS.forEach((arm) => {
     const name = armRow[arm.prefix];
     if (isEmptyVal(name)) return;
-    const insKeys = ["_ins", "_ins2", "_ins3", "_ins4", "_ins5", "_ins6", "_ins7", "_ins8"];
+    const insKeys = [
+      "_ins",
+      "_ins2",
+      "_ins3",
+      "_ins4",
+      "_ins5",
+      "_ins6",
+      "_ins7",
+      "_ins8",
+    ];
     const inscriptions = insKeys
       .map((k) => armRow[`${arm.prefix}${k}`])
       .filter((v) => !isEmptyVal(v))
-      .map((v) => ({ label: String(v).trim(), tier: getAbilityTier(String(v)) }));
+      .map((v) => ({
+        label: String(v).trim(),
+        tier: getAbilityTier(String(v)),
+      }));
     const stats = [
       { n: `${arm.prefix}_stat_name`, v: `${arm.prefix}_stat` },
       { n: `${arm.prefix}_stat2_name2`, v: `${arm.prefix}_stat2` },
@@ -1045,7 +1129,12 @@ function buildArmamentsList(armRow) {
     ]
       .filter((s) => !isEmptyVal(armRow[s.n]) && !isEmptyVal(armRow[s.v]))
       .map((s) => ({ name: String(armRow[s.n]), val: String(armRow[s.v]) }));
-    list.push({ name: String(name), icon: iconPath(name, "armament"), inscriptions, stats });
+    list.push({
+      name: String(name),
+      icon: iconPath(name, "armament"),
+      inscriptions,
+      stats,
+    });
   });
   return list;
 }
@@ -1074,17 +1163,33 @@ function renderPosterContent(ctx, data, iconMap, W) {
   const cx = W / 2;
   let y = 36;
 
-  posterText(ctx, data.name, cx, y + 26, "700 26px 'DM Sans', sans-serif", "#f3f1ff");
+  posterText(
+    ctx,
+    data.name,
+    cx,
+    y + 26,
+    "700 26px 'DM Sans', sans-serif",
+    "#f3f1ff",
+  );
   posterText(ctx, `ID ${data.govId}`, cx, y + 52, "13px monospace", "#b9a8f5");
   const badgeParts = [];
   if (profile?.vip_level && !isEmptyVal(profile.vip_level)) {
-    badgeParts.push(String(profile.vip_level) === "20" ? "SVIP" : `VIP ${profile.vip_level}`);
+    badgeParts.push(
+      String(profile.vip_level) === "20" ? "SVIP" : `VIP ${profile.vip_level}`,
+    );
   }
   if (ch) badgeParts.push(`CH ${ch}`);
   if (accType === "farm") badgeParts.push("Farm Account");
   if (accType === "main") badgeParts.push("Main Account");
   if (badgeParts.length) {
-    posterText(ctx, badgeParts.join("   ·   "), cx, y + 80, "600 13px 'DM Sans', sans-serif", "#8fe3ac");
+    posterText(
+      ctx,
+      badgeParts.join("   ·   "),
+      cx,
+      y + 80,
+      "600 13px 'DM Sans', sans-serif",
+      "#8fe3ac",
+    );
   }
   y += 116;
 
@@ -1123,15 +1228,44 @@ function renderPosterContent(ctx, data, iconMap, W) {
       const startX = padX + itemW / 2;
       items.forEach(([label, value], i) => {
         const x = startX + i * itemW;
-        posterText(ctx, label, x, y + 13, "600 12px 'DM Sans', sans-serif", "#b9a8f5");
-        posterText(ctx, value, x, y + 35, "700 16px 'DM Sans', sans-serif", "#f3f1ff");
+        posterText(
+          ctx,
+          label,
+          x,
+          y + 13,
+          "600 12px 'DM Sans', sans-serif",
+          "#b9a8f5",
+        );
+        posterText(
+          ctx,
+          value,
+          x,
+          y + 35,
+          "700 16px 'DM Sans', sans-serif",
+          "#f3f1ff",
+        );
       });
       y += 52;
     });
-    posterText(ctx, `Snapshot · ${data.snapDate}`, W - padX, y + 6, "11px 'DM Sans', sans-serif", "rgba(185,168,245,0.7)", "right");
+    posterText(
+      ctx,
+      `Snapshot · ${data.snapDate}`,
+      W - padX,
+      y + 6,
+      "11px 'DM Sans', sans-serif",
+      "rgba(185,168,245,0.7)",
+      "right",
+    );
     y += 30;
   } else {
-    posterText(ctx, "No live scan data available.", cx, y + 20, "14px 'DM Sans', sans-serif", "rgba(255,255,255,0.55)");
+    posterText(
+      ctx,
+      "No live scan data available.",
+      cx,
+      y + 20,
+      "14px 'DM Sans', sans-serif",
+      "rgba(255,255,255,0.55)",
+    );
     y += 46;
   }
 
@@ -1139,7 +1273,14 @@ function renderPosterContent(ctx, data, iconMap, W) {
 
   y += 26;
   if (!marches.length) {
-    posterText(ctx, "No equipment set.", cx, y + 12, "13px 'DM Sans', sans-serif", "rgba(255,255,255,0.5)");
+    posterText(
+      ctx,
+      "No equipment set.",
+      cx,
+      y + 12,
+      "13px 'DM Sans', sans-serif",
+      "rgba(255,255,255,0.5)",
+    );
     y += 30;
   } else {
     const slotSize = 42;
@@ -1150,8 +1291,22 @@ function renderPosterContent(ctx, data, iconMap, W) {
       let maxColHeight = 0;
       rowMarches.forEach((m, ci) => {
         const colCenterX = padX + colW * ci + colW / 2;
-        posterText(ctx, `Equipment ${m.marchNum}`, colCenterX, y + 8, "600 12px 'DM Sans', sans-serif", "#b9a8f5");
-        const colH = drawEquipDiamond(ctx, iconMap, m.slots, colCenterX, y + 24, slotSize);
+        posterText(
+          ctx,
+          `Equipment ${m.marchNum}`,
+          colCenterX,
+          y + 8,
+          "600 12px 'DM Sans', sans-serif",
+          "#b9a8f5",
+        );
+        const colH = drawEquipDiamond(
+          ctx,
+          iconMap,
+          m.slots,
+          colCenterX,
+          y + 24,
+          slotSize,
+        );
         maxColHeight = Math.max(maxColHeight, colH);
       });
       y += 24 + maxColHeight + 26;
@@ -1162,7 +1317,14 @@ function renderPosterContent(ctx, data, iconMap, W) {
 
   y += 16;
   if (!armaments.length) {
-    posterText(ctx, "No armaments set.", cx, y + 12, "13px 'DM Sans', sans-serif", "rgba(255,255,255,0.5)");
+    posterText(
+      ctx,
+      "No armaments set.",
+      cx,
+      y + 12,
+      "13px 'DM Sans', sans-serif",
+      "rgba(255,255,255,0.5)",
+    );
     y += 30;
   } else {
     const cols = 4;
@@ -1185,7 +1347,14 @@ function renderPosterContent(ctx, data, iconMap, W) {
 
   y += 26;
   if (!pairs.length) {
-    posterText(ctx, "No commander pairs set.", cx, y + 12, "13px 'DM Sans', sans-serif", "rgba(255,255,255,0.5)");
+    posterText(
+      ctx,
+      "No commander pairs set.",
+      cx,
+      y + 12,
+      "13px 'DM Sans', sans-serif",
+      "rgba(255,255,255,0.5)",
+    );
     y += 30;
   } else {
     const cols = 5;
@@ -1202,7 +1371,14 @@ function renderPosterContent(ctx, data, iconMap, W) {
       let x0 = cellX - totalW / 2;
       [c1, c2].forEach((c) => {
         const empty = isEmptyVal(c);
-        drawIconTile(ctx, empty ? null : iconMap.get(iconPath(c, "commander")), x0, cellY, iconSize, "#3a2f66");
+        drawIconTile(
+          ctx,
+          empty ? null : iconMap.get(iconPath(c, "commander")),
+          x0,
+          cellY,
+          iconSize,
+          "#3a2f66",
+        );
         x0 += iconSize + boxGap;
       });
     });
@@ -1211,10 +1387,16 @@ function renderPosterContent(ctx, data, iconMap, W) {
 
   y += 16;
 
-
   y += 26;
   if (!skins.length) {
-    posterText(ctx, "No skins set.", cx, y + 12, "13px 'DM Sans', sans-serif", "rgba(255,255,255,0.5)");
+    posterText(
+      ctx,
+      "No skins set.",
+      cx,
+      y + 12,
+      "13px 'DM Sans', sans-serif",
+      "rgba(255,255,255,0.5)",
+    );
     y += 30;
   } else {
     const cols = 5;
@@ -1226,10 +1408,29 @@ function renderPosterContent(ctx, data, iconMap, W) {
       const row = Math.floor(i / cols);
       const cellX = padX + cellW * col + cellW / 2;
       const cellY = y + row * rowStep;
-      drawIconTile(ctx, iconMap.get(iconPath(code, "skin")), cellX - iconSize / 2, cellY, iconSize, "#e0b23c");
+      drawIconTile(
+        ctx,
+        iconMap.get(iconPath(code, "skin")),
+        cellX - iconSize / 2,
+        cellY,
+        iconSize,
+        "#e0b23c",
+      );
       const info = getSkinInfo(code);
-      const label = posterTruncate(ctx, (info && info.name) || code, "600 13px 'DM Sans', sans-serif", cellW - 12);
-      posterText(ctx, label, cellX, cellY + iconSize + 16, "600 13px 'DM Sans', sans-serif", "#f3f1ff");
+      const label = posterTruncate(
+        ctx,
+        (info && info.name) || code,
+        "600 13px 'DM Sans', sans-serif",
+        cellW - 12,
+      );
+      posterText(
+        ctx,
+        label,
+        cellX,
+        cellY + iconSize + 16,
+        "600 13px 'DM Sans', sans-serif",
+        "#f3f1ff",
+      );
     });
     y += Math.ceil(skins.length / cols) * rowStep;
   }
@@ -1291,7 +1492,12 @@ async function buildStatPosterDataUrl(govId) {
   const scratch = document.createElement("canvas");
   scratch.width = W;
   scratch.height = 8000;
-  const measuredHeight = renderPosterContent(scratch.getContext("2d"), data, iconMap, W);
+  const measuredHeight = renderPosterContent(
+    scratch.getContext("2d"),
+    data,
+    iconMap,
+    W,
+  );
 
   const SCALE = 2;
 
