@@ -36,6 +36,7 @@
 .eq-field-group--action {
   justify-content: flex-end;
   gap: 10px;
+  grid-column: 1 / -1;
 }
 .eq-label {
   font-size: 0.72rem;
@@ -190,9 +191,6 @@
   font-size: 0.83rem;
   padding: 9px 14px;
   position: relative;
-}
-.eq-field-group--action {
-  grid-column: 1 / -1;
 }
 .eq-new-btn {
   background: var(--button-secondary-bg);
