@@ -305,7 +305,6 @@ body.dark .nav-dropdown-toggle.active {
     background 0.15s,
     color 0.15s;
 }
-
 .nav-dropdown-menu a.active {
   color: var(--chart-line);
   font-weight: 600;
@@ -715,7 +714,6 @@ body.dark #backToTop:hover {
   opacity: 0.75;
   font-style: italic;
 }
-
 /* ---------- Toast notifications (replaces alert()) ---------- */
 .toast-container {
   position: fixed;
@@ -803,7 +801,6 @@ body.dark #backToTop:hover {
     top: 70px;
   }
 }
-
 .equip-grid {
   display: flex;
   flex-direction: column;
@@ -839,7 +836,6 @@ body.dark #backToTop:hover {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-
 .equip-slots {
   --eq-size: 82px;
   --eq-col: 0.52;
@@ -972,7 +968,6 @@ body.dark #backToTop:hover {
   --rarity-border: #9ca3af;
   --rarity-glow: rgb(156 163 175 / 0.16);
 }
-
 .equip-awk {
   position: absolute;
   z-index: 3;
@@ -998,7 +993,6 @@ body.dark #backToTop:hover {
   color: var(--text-color);
   white-space: nowrap;
 }
-
 .equip-talent {
   position: absolute;
   z-index: 3;
@@ -1014,12 +1008,10 @@ body.dark #backToTop:hover {
     0 0 2px rgb(0 0 0 / 0.6);
   pointer-events: none;
 }
-
 .equip-slots--bare .equip-awk,
 .equip-slots--bare .equip-talent {
   display: none;
 }
-
 .equip-arm-label {
   font-size: 0.9rem;
   font-weight: 600;
@@ -1083,14 +1075,12 @@ body.dark #backToTop:hover {
   row-gap: 5px;
   margin-top: 6px;
 }
-
 .arm-ins-group {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   row-gap: 5px;
   margin-top: 5px;
 }
-
 .arm-ins {
   display: inline-flex;
   align-items: center;
@@ -1153,7 +1143,6 @@ body.dark #backToTop:hover {
   opacity: 1;
   font-weight: 700;
 }
-
 .pair-cards {
   display: flex;
   flex-wrap: wrap;
@@ -1193,7 +1182,6 @@ body.dark #backToTop:hover {
 .equip-box[data-tip-code] {
   cursor: help;
 }
-
 .city-skin-section {
   margin-top: 2px;
   display: flex;
@@ -1265,7 +1253,6 @@ body.dark #backToTop:hover {
 .city-skin-name--empty {
   opacity: 0.4;
 }
-
 .vip-badge {
   display: inline-flex;
   align-items: center;
