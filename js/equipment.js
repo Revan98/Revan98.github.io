@@ -997,15 +997,16 @@ function getConfigInt(key, fallback) {
       const v = parseInt(res[0].values[0][0], 10);
       if (!isNaN(v)) return v;
     }
-  } catch (e) {
-  }
+  } catch (e) {}
   return fallback;
 }
 
 function setConfigInt(key, value) {
   if (!db) return;
   try {
-    db.run(`CREATE TABLE IF NOT EXISTS app_config (key TEXT PRIMARY KEY, value TEXT)`);
+    db.run(
+      `CREATE TABLE IF NOT EXISTS app_config (key TEXT PRIMARY KEY, value TEXT)`,
+    );
     db.run(
       `INSERT INTO app_config (key, value) VALUES (?, ?)
        ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
@@ -1315,8 +1316,7 @@ function loadGovernorById(safeGovId) {
     );
     if (res.length && res[0].values.length)
       govNameInput.value = res[0].values[0][0] ?? "";
-  } catch (e) {
-  }
+  } catch (e) {}
 
   try {
     const tbl = db.exec(
@@ -1890,9 +1890,7 @@ function buildFarmRow(row) {
     deleteBtn.type = "button";
     deleteBtn.title = "Delete";
     deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
-    deleteBtn.addEventListener("click", () =>
-      deleteFarmRow(row.id, row.name),
-    );
+    deleteBtn.addEventListener("click", () => deleteFarmRow(row.id, row.name));
 
     actionsTd.append(saveRowBtn, deleteBtn);
   }
@@ -2529,8 +2527,7 @@ function loadSkinManifest() {
       );
     }
     allSkinNames = [...names].sort();
-  } catch (e) {
-  }
+  } catch (e) {}
 }
 
 function _scrapeIconsFromDb() {
@@ -2577,8 +2574,7 @@ function _scrapeIconsFromDb() {
 
     allIconNames = [...equipNames].sort();
     allCommNames = [...commNames].sort();
-  } catch (e) {
-  }
+  } catch (e) {}
 }
 
 async function preloadIconsFromDb() {
