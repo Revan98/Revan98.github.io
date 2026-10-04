@@ -10,7 +10,10 @@ function getKDFromURL() {
 
 function selectKvk(kd, kvkNumber) {
   window.location.href =
-    "dashboard.html?kd=" + encodeURIComponent(kd) + "&kvk=" + encodeURIComponent(kvkNumber);
+    "dashboard.html?kd=" +
+    encodeURIComponent(kd) +
+    "&kvk=" +
+    encodeURIComponent(kvkNumber);
 }
 
 async function loadKvkNames() {
