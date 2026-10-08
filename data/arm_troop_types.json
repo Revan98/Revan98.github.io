@@ -1,0 +1,54 @@
+{
+  "types": {
+    "Infantry Attack": {
+      "icon": "infantry"
+    },
+    "Infantry Defense": {
+      "icon": "infantry"
+    },
+    "Infantry Health": {
+      "icon": "infantry"
+    },
+    "Cavalry Attack": {
+      "icon": "cavalry"
+    },
+    "Cavalry Defense": {
+      "icon": "cavalry"
+    },
+    "Cavalry Health": {
+      "icon": "cavalry"
+    },
+    "Archer Attack": {
+      "icon": "archer"
+    },
+    "Archer Defense": {
+      "icon": "archer"
+    },
+    "Archer Health": {
+      "icon": "archer"
+    },
+    "Siege Attack": {
+      "icon": "siege"
+    },
+    "Siege Defense": {
+      "icon": "siege"
+    },
+    "Siege Health": {
+      "icon": "siege"
+    },
+    "All Damage": {
+    },
+    "Infantry March Speed": {
+      "icon": "infantry"
+    },
+    "Archer March Speed": {
+      "icon": "archer"
+    },
+    "Cavalry March Speed": {
+      "icon": "cavalry"
+    },
+    "Siege March Speed": {
+      "icon": "siege"
+    }
+  }
+}

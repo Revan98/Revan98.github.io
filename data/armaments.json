@@ -1,0 +1,76 @@
+{
+  "armaments": {
+    "arch": {
+      "name": "Arch Formation",
+      "description": ["The user's troops deals 5% more normal damage."]
+    },
+
+
+    "circle": {
+      "name": "Circle Formation",
+      "description": ["All healing the user's troop receives is increased by 5%."]
+    },
+
+
+    "delta": {
+      "name": "Delta Formation",
+      "description": ["The user's troop deals 10% more combo attack damage."]
+    },
+
+
+    "doubleline": {
+      "name": "Double Line Formation",
+      "description": ["If the user's troop is marching towards barbarians, it gains 10% March Speed."]
+    },
+
+
+    "echelon": {
+      "name": "Echelon Formation",
+      "description": ["When the user's troop grants percentage-based buffs to other troops, their effects are multiplied by 1.2, with a maximum increase of up to 5% of their original value."]
+    },
+
+
+    "hollowsquare": {
+      "name": "Hollow Square Formation",
+      "description": ["The user's troop takes 2% less damage."]
+    },
+
+
+    "line": {
+      "name": "Line Formation",
+      "description": ["Increases the Food, Wood, Stone, and Gold Gathering Speed of the user's troop by 10%."]
+    },
+
+
+    "pincer": {
+      "name": "Pincer Formation",
+      "description": ["The user's troop deals 12% more smite damage."]
+    },
+
+
+    "staggered": {
+      "name": "Staggered Formation",
+      "description": ["The user's troop gains 15% March Speed when marching to join a rallied army or garrison."]
+    },
+    "tercio": {
+      "name": "Tercio Formation",
+      "description": ["When the user is garrisoned in your city, all unit-specific attribute bonuses (Attack/Defense/Health) from the user's armaments will apply to all unit types."]
+    },
+    "tetsudo": {
+      "name": "Tetsudo Formation",
+      "description": ["The user's troop takes 5% less damage while it has a shield. All healing their troop receives is increased by 2.5%."]
+    },
+    "tripleline": {
+      "name": "Triple Line Formation",
+      "description": ["Increases the March Speed of the user's troop by 5%."]
+    },
+    "v": {
+      "name": "V Formation",
+      "description": ["The user's troop can switch to ranged mode, allowing it to launch 1 ranged basic attack per second. If your city is in a War Frenzy, your troops in ranged mode will automatically launch ranged attacks against enemies within their attack range that are attacking a friendly or allied troop. Only commanders with the Engineering talent tag can use their active skills while in V formation."]
+    },
+    "wedge": {
+      "name": "Wedge Formation",
+      "description": ["The user's troop deals 12% more skill damage."]
+    }
+  }
+}

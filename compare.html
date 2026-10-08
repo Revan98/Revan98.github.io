@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Comparator</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/shared.css" />
+        <link
+      href="https://cdn.datatables.net/v/dt/dt-3.1.2/datatables.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.datatables.net/scroller/3.1.1/css/scroller.dataTables.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/datatable.css" />
+    <link rel="stylesheet" href="css/compare.css" />
+  </head>
+  <body>
+    <header class="navbar" id="navbar">
+      <div class="nav-container">
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <i class="fa-solid fa-bars icon-menu" style="font-size: 20px"></i>
+          <i class="fa-solid fa-xmark icon-close" style="font-size: 20px"></i>
+        </button>
+
+        <div class="nav-links" id="nav-links">
+          <a href="index.html">KD Select</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="playercard.html">Player Card</a>
+          <div class="nav-dropdown" id="tools-dropdown">
+            <button
+              class="nav-dropdown-toggle active"
+              id="tools-toggle"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              Tools
+              <i class="fa-solid fa-chevron-down nav-dropdown-caret"></i>
+            </button>
+            <div class="nav-dropdown-menu" id="tools-menu">
+              <a href="compare.html" class="active">Compare</a>
+              <a href="dkp.html">DKP Calculator</a>
+              <a href="merge.html">Merge</a>
+              <a href="equipment.html">Equipment Editor</a>
+              <a href="map.html">Aoo planner</a>
+              <a href="dbexplorer.html">DB Explorer</a>
+            </div>
+          </div>
+        </div>
+
+        <label class="theme-toggle">
+          <i class="fa-solid fa-sun" style="font-size: 16px"></i>
+          <input type="checkbox" id="toggle-theme" />
+          <span class="toggle-slider"></span>
+          <i class="fa-solid fa-moon" style="font-size: 16px"></i>
+        </label>
+      </div>
+    </header>
+
+    <main class="page-main">
+      <div class="container">
+        <section class="card">
+          <h1>Compare Two Files</h1>
+
+          <div class="put-in-row">
+            <label>File 1:</label>
+            <input type="file" id="file1" class="file" accept=".xlsx" />
+          </div>
+
+          <div class="put-in-row">
+            <label>File 2:</label>
+            <input type="file" id="file2" class="file" accept=".xlsx" />
+          </div>
+
+          <div class="put-in-row">
+            <label>Key Column:</label>
+            <input
+              type="text"
+              id="keyColumn"
+              class="file"
+              placeholder="Enter column name"
+            />
+          </div>
+
+          <div class="put-in-row">
+            <label>Comparison Option:</label>
+            <select id="compareOption" class="file">
+              <option value="both">Both</option>
+              <option value="pierwszy">First Only</option>
+              <option value="drugi">Second Only</option>
+            </select>
+          </div>
+
+          <div class="put-in-row">
+            <button id="compareBtn" class="primary">Compare</button>
+            <progress id="progressBar" value="0" max="100"></progress>
+          </div>
+
+          <div class="put-in-row">
+            <button id="export-xlsx" class="primary">Export XLSX</button>
+            <button id="export-csv" class="primary">Export CSV</button>
+            <button id="export-json" class="primary">Export JSON</button>
+          </div>
+
+          <div id="compare-results-info" class="muted">
+            No compared data yet.
+          </div>
+          <div id="matching-table"></div>
+          <div id="nonmatching-table" style="margin-top: 25px"></div>
+        </section>
+      </div>
+    </main>
+
+    <footer id="contact">
+      <div class="footer-bottom">
+        <span>Comparsion</span>
+      </div>
+    </footer>
+
+    <script src="https://cdn.datatables.net/v/dt/dt-3.1.2/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/scroller/3.1.1/js/dataTables.scroller.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/siteTable.js"></script>
+    <script src="js/exportUtils.js"></script>
+    <script src="js/compare.js"></script>
+  </body>
+</html>

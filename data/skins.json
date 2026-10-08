@@ -1,0 +1,1054 @@
+{
+  "skins": {
+    "hawa": {
+      "name": "Hawa Mahal",
+      "stats": [
+	  "Damage to Barbarians +5%",
+	  "Troop Defense +8%" 
+	  ],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "default": {
+      "name": "Default",
+      "stats": [""],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "green"
+    }, 
+    "trick": {
+      "name": "Trick or Treat",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "placelike": {
+      "name": "No Place Like Home",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "magpie": {
+      "name": "Magpie Bridge",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "gingerbread": {
+      "name": "Gingerbread House",
+      "stats": ["Infantry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "timbered": {
+      "name": "Timbered Ensemble",
+      "stats": ["Archer Deffence +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "kingcottage": {
+      "name": "King's Cottage",
+      "stats": ["Infantry Deffence +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "topikapi": {
+      "name": "Topikapi Palace",
+      "stats": ["Archer Deffence +10%",
+	  "Action Point Recovery +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "summer": {
+      "name": "Summer of Passion",
+      "stats": ["Cavalry Deffence +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "celebration": {
+      "name": "Moment of Celebration",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "creepwood": {
+      "name": "Creepwood Cabin",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "luckylanterns": {
+      "name": "Lucky Lanterns",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "bloomingcourt": {
+      "name": "Blooming Court",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "fireworkscity": {
+      "name": "Fireworks City",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "allkingdom": {
+      "name": "All-Kingdom Carnival",
+      "stats": ["Infantry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "circus": {
+      "name": "Circus of Colors",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "candyland": {
+      "name": "Candyland",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "winterwonderland": {
+      "name": "Winter Wonderland",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "sacredsanctuary": {
+      "name": "Sacred Sanctuary",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "perpetual": {
+      "name": "Perpetual Palace",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "meriment": {
+      "name": "Magical Merriment",
+      "stats": ["Siege Unit Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "depths": {
+      "name": "Song of the Depths",
+      "stats": ["Cavalry Attack +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "banquet": {
+      "name": "Twilight Banquet",
+      "stats": ["Infantry Attack +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "winterdream": {
+      "name": "A Dream of Winter",
+      "stats": ["Infantry Attack +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "thousand": {
+      "name": "Night of a Thousand Lights",
+      "stats": ["Cavalry Defense +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "hangu": {
+      "name": "Hangu Pass",
+      "stats": ["Infantry Defense +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "frolics": {
+      "name": "Frozen Frolics",
+      "stats": ["Cavalry Health +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "beckoner": {
+      "name": "Walth Beckoner",
+      "stats": ["Infantry Health +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "frozencity": {
+      "name": "Frozen City",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "love": {
+      "name": "Love and Thanks",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "harvest": {
+      "name": "Harvest Cottage",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "carol": {
+      "name": "Snow Carol",
+      "stats": ["Cavalry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "angler": {
+      "name": "Angler's Abode",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "frosthowl": {
+      "name": "Frosthowl Sanctum",
+      "stats": ["Attack +10%",
+	  "Trainig Resource Cost -5%",
+	  "Resource Gathering Speed +10%"],
+      "description": ["When you gain the Wolf's Den effect, nearby allied cities gain 50% of its buffs."],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "phoenix": {
+      "name": "Phoenix Pavilion",
+      "stats": [],
+      "description": ["In the world map and Lost Kingdom, you can use the raid reinforcements feature up to 10 times per day. Field troops will replenish their units after a 10 second countdown. If they take damage, the countdown will be interrupted. Troops must return to the city to use the feature again."],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "astral": {
+      "name": "Astral Pegasus",
+      "stats": [],
+      "description": ["Proportion of fallen units resurrected during Relentless Warriors/by the Hall of Heroes: 5%."],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "feline": {
+      "name": "Feline Fort",
+      "stats": [],
+      "description": ["After leaving the city, March Speed +30% for 5 minutes. This effect expires after entering battle/another city or stronghold."],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "azure": {
+      "name": "Azure Thunderscape",
+      "stats": ["Damage Reduction +2%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "dragon": {
+      "name": "Dragon Tamer",
+      "stats": [],
+      "description": ["#2359 Itachi37's customized premium city theme. The dragon's flames shall bear witness to your legend.",
+	  "Governor's Message",
+      "Thank you, Rok, for this game. I've met some of the most amazing and beautiful souls here, and I've made some incredible memories. Cherishing the good days and leave the bad ones behind."],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "sower": {
+      "name": "Sower's Song",
+      "stats": ["Cavalry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "silent": {
+      "name": "Silent Night",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "cupid": {
+      "name": "Cupid's Arrow",
+      "stats": ["Infantry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "spring": {
+      "name": "Spring Blossoms",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "twilight": {
+      "name": "Twilight Falls",
+      "stats": ["Skill Damage +5%",
+	  "Commander EXP Gain +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "babylonian": {
+      "name": "Babylonian Gardens",
+      "stats": ["Infantry Attack +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },  
+    "temple": {
+      "name": "Temple of Vishnu",
+      "stats": ["Infantry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },  
+    "heliopolis": {
+      "name": "Heliopolis",
+      "stats": ["Troop Attack +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },  
+    "gifts": {
+      "name": "Gifts of the Nile",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },  
+    "persian": {
+      "name": "Persian Dream",
+      "stats": ["Troop Defense +3%",
+	  "Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },  
+    "joyful": {
+      "name": "Joyful Feast",
+      "stats": ["Infantry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },  
+    "age": {
+      "name": "Age of Devotion",
+      "stats": ["Infantry Health +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },  
+    "hidden": {
+      "name": "Hidden Lotus",
+      "stats": ["Cavalry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },  
+    "wailing": {
+      "name": "Wailing Keep",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },  
+    "divine": {
+      "name": "Divine Abode",
+      "stats": ["Cavalry Defense +10%",
+	  "Resource Production +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },  
+    "saint": {
+      "name": "Saint's Halo",
+      "stats": ["Skill Damage +5%",
+	  "Action Point Recovery +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },  
+    "swan": {
+      "name": "Swan's Reverie",
+      "stats": ["Infantry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },  
+    "karnak": {
+      "name": "Temple of Karnak",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },  
+    "lake": {
+      "name": "Lake Palace",
+      "stats": ["Troop Defense +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },  
+    "flight": {
+      "name": "Flight of the Heron",
+      "stats": ["Archer Attack +10%",
+	  "Damage to Barbarians +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },   
+    "tears": {
+      "name": "Tears of the Eternal",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },  
+    "artemis": {
+      "name": "Temple of Artemis",
+      "stats": ["Cavalry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "amber": {
+      "name": "Amber Fortress",
+      "stats": ["Archer Health +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "mayan": {
+      "name": "Mayan Mystery",
+      "stats": ["Infantry Defense +10%",
+	  "Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "mayan": {
+      "name": "Dragon Boat Wish",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "melk": {
+      "name": "Melk Abbey",
+      "stats": ["Cavalry Health +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "alhambra": {
+      "name": "Alhambra Palace",
+      "stats": ["Troop Health +3%",
+	  "Trainig Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "glorious": {
+      "name": "Glorious Siam",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "ephesus": {
+      "name": "Ephesus",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "treasure": {
+      "name": "Hall of Treasure",
+      "stats": ["Infantry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "crown": {
+      "name": "Road to the Crown",
+      "stats": ["Cavalry Attack +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "imperial": {
+      "name": "Imperial Crane Palace",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "white": {
+      "name": "White Tower",
+      "stats": ["Infantry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "summerpalace": {
+      "name": "Summer Palace",
+      "stats": ["Archer Attack +10%",
+	  "Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "royalmanor": {
+      "name": "Royal Manor",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "frozenfortress": {
+      "name": "Frozen Fortress",
+      "stats": ["Infantry Defense +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "boundless": {
+      "name": "Boundless Lighthouse",
+      "stats": ["Infantry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "divinelighthouse": {
+      "name": "Divine Lighthouse",
+      "stats": ["Troop Health +3%",
+	  "Trainig Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "exhibit": {
+      "name": "Rare Exhibit",
+      "stats": ["Cavalry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "island": {
+      "name": "Island Fortress",
+      "stats": ["Skill Damage +5%",
+		  "Damage to Barbarians +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "power": {
+      "name": "City of Power",
+      "stats": ["Cavalry Healt +10%",
+		  "Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "nubian": {
+      "name": "Nubian Longing",
+      "stats": ["Archer Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "ombo": {
+      "name": "Ruins of Kom Ombo",
+      "stats": ["Troop Defense +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "atlantis": {
+      "name": "Atlantis",
+      "stats": ["Infantry Health +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "peter": {
+      "name": "St. Peter's Basilica",
+      "stats": ["Infantry Defense +10%",
+	  "Commander EXP Gain +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "soulvilla": {
+      "name": "Soul Villa",
+      "stats": ["Cavalry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "harvesthut": {
+      "name": "Harvest Hut",
+      "stats": ["Archer Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "dynastic": {
+      "name": "Dynastic Conqueror",
+      "stats": ["Troop Defense +8%",
+	  "Commander EXP Gain +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "harmony": {
+      "name": "Perfect Harmony",
+      "stats": ["Infantry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "mightyforest": {
+      "name": "Mighty Forest",
+      "stats": ["Cavalry Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "eternity": {
+      "name": "Call of Eternity",
+      "stats": ["Cavalry Attack +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "easterparty": {
+      "name": "Easter Party",
+      "stats": ["Archer Health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "supreme": {
+      "name": "Supreme Warrior",
+      "stats": ["Infantry Attack +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "goldeneye": {
+      "name": "Golden Eye",
+      "stats": ["Cavalry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "chaser": {
+      "name": "Chaser of Waves",
+      "stats": ["Infantry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "blessing": {
+      "name": "Blessing of the Gods",
+      "stats": ["Troop Health +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "templewisdom": {
+      "name": "Temple of Wisdom",
+      "stats": ["Cavalry attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "star": {
+      "name": "Star Palace",
+      "stats": ["Archer Dfense +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "emeraldshade": {
+      "name": "Emeraldshade Hall",
+      "stats": ["Cavalry Defense +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "heavenly": {
+      "name": "Heavenly Palace",
+      "stats": ["Infantry Atack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "diadem": {
+      "name": "Divine Diadem",
+      "stats": ["Cavalry Attack +10%",
+	  "Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "crowning": {
+      "name": "Crowning Glory",
+      "stats": ["Infantry Defense +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "leisure": {
+      "name": "Ancient Leisure",
+      "stats": ["Archer Attack +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "wadjet": {
+      "name": "Spire of Wadjet",
+      "stats": ["Troop Health +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "horus": {
+      "name": "Aerie of Horus",
+      "stats": ["Siege Unit Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "battle": {
+      "name": "Battle's Bloom",
+      "stats": ["Cavalry Health +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "rime": {
+      "name": "Reign of Rime",
+      "stats": ["Infantry Health +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "dreamsdragon": {
+      "name": "Dreams of the Dragon",
+      "stats": ["Cavalry Defense +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "skypiercer": {
+      "name": "Skypiercer",
+      "stats": ["Archer Defense +10%",
+	  "Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "longship": {
+      "name": "Saga of the Longship",
+      "stats": ["Troop Attack +12%",
+	  "Action Point Recovery +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "dreamslapis": {
+      "name": "Dreams of Lapis",
+      "stats": ["Archer health +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "apkallu": {
+      "name": "Dreams of the Apkallu",
+      "stats": ["Troop Defense +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "ancestralhall": {
+      "name": "Ancestral Hall",
+      "stats": ["Troop Attack +12%",
+	  "Action Point Recovery +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "sanphet": {
+      "name": "Wat Phra Si Sanphet",
+      "stats": ["Archer Health +15%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "ills": {
+      "name": "Above Earthly Ills",
+      "stats": ["Cavalry Attack +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "sailcloth": {
+      "name": "On Wings of Sailcloth",
+      "stats": ["Troop Defense +12%",
+	  "Action Point Recovery +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "dirigible": {
+      "name": "Daedalus Dirigible",
+      "stats": ["Cavalry Attack +20%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "whereall": {
+      "name": "Where All Roads Lead",
+      "stats": ["Infantry Attack +10%",
+	  "Healig Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "shiningpavilion": {
+      "name": "Shining Pavilion",
+      "stats": ["Archer Attack +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    },
+    "judicator": {
+      "name": "Anubis the Judicator",
+      "stats": ["Troop Attack +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "viligant": {
+      "name": "Anubis the Viligant",
+      "stats": ["Infantry Health +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "perch": {
+      "name": "Phoenix Perch",
+      "stats": ["Infantry Attack +20%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "poseidon": {
+      "name": "Poseidon's Sanctuary",
+      "stats": ["Archer Attack +20%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "summitsupreme": {
+      "name": "Summit of the Supreme",
+      "stats": ["Troop Health +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "summitsupreme2": {
+      "name": "Summit of the Supreme",
+      "stats": ["Troop Health +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "summitsupreme3": {
+      "name": "Summit of the Supreme",
+      "stats": ["Troop Health +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "summitsupreme4": {
+      "name": "Summit of the Supreme",
+      "stats": ["Troop Health +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    },
+    "patronsflame": {
+      "name": "Patron's Flame",
+      "stats": ["Archer Defense +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "sandstime": {
+      "name": "Sands of Time",
+      "stats": ["Troop Attack +16%",
+	  "Action Point Recovery +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "hedvig": {
+      "name": "Hedvig",
+      "stats": ["Siege Unit Attack +10%",
+	  "Commander EXP Gain +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "gilded": {
+      "name": "Gilded Pavilion",
+      "stats": ["Cavalry Defense +20%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "victory": {
+      "name": "Ode to Victory",
+      "stats": ["Cavalry Defense +10%",
+	  "Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "dawnbreaker": {
+      "name": "Divine Dawnbreaker",
+      "stats": ["Healing Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "hymn": {
+      "name": "Warrior's Hymn",
+      "stats": ["Infantry Defense +20%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "omniscient": {
+      "name": "Omniscient Watch",
+      "stats": ["Troop Health +3%",
+	  "Training Speed +3%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "falcon": {
+      "name": "Falcon's Realm",
+      "stats": ["Cavalry Attack +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    }, 
+    "prophecy": {
+      "name": "Flaming Prophecy",
+      "stats": ["Gathering Speed +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "steam": {
+      "name": "Steam Patrol",
+      "stats": ["Archer Defense +20%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "promise": {
+      "name": "Promise of Love",
+      "stats": ["Resource Production +25%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "bloodblaze": {
+      "name": "Bloodblaze Crown",
+      "stats": ["Troop Defense +16%",
+	  "Action Point Recovery +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "jadeplume": {
+      "name": "Jade Plume Palace",
+      "stats": ["Troop Defense +16%",
+	  "Action Point Recovery +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
+    }, 
+    "court": {
+      "name": "Coronal Court",
+      "stats": ["Archer Health +5%",
+	  "Gathering Speed +5%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Purple"
+    } 
+  }
+}

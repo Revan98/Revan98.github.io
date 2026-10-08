@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DKP stats</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+    />
+    <link
+      href="https://cdn.datatables.net/v/dt/dt-3.1.2/datatables.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.datatables.net/buttons/4.1.2/css/buttons.dataTables.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.datatables.net/scroller/3.1.1/css/scroller.dataTables.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.datatables.net/fixedcolumns/6.1.1/css/fixedColumns.dataTables.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/shared.css" />
+    <link rel="stylesheet" href="css/govcards.css" />
+    <link rel="stylesheet" href="css/datatable.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+  </head>
+  <body>
+    <header class="navbar" id="navbar">
+      <div class="nav-container">
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <i class="fa-solid fa-bars icon-menu" style="font-size: 20px"></i>
+          <i class="fa-solid fa-xmark icon-close" style="font-size: 20px"></i>
+        </button>
+
+        <div class="nav-links" id="nav-links">
+          <a href="index.html">KD Select</a>
+          <a href="dashboard.html" class="active">Dashboard</a>
+          <a href="playercard.html">Player Card</a>
+        </div>
+
+        <label class="theme-toggle">
+          <i class="fa-solid fa-sun" style="font-size: 16px"></i>
+          <input type="checkbox" id="toggle-theme" />
+          <span class="toggle-slider"></span>
+          <i class="fa-solid fa-moon" style="font-size: 16px"></i>
+        </label>
+      </div>
+    </header>
+
+    <main class="page-main">
+      <div class="container-dash">
+        <section>
+          <div id="top-players" class="podium-row">
+            <div class="player-box" data-rank="2">
+              <div class="player-medal">
+                <i class="fa-solid fa-medal" style="font-size: 26px"></i>
+              </div>
+              <div class="player-rank-badge">2</div>
+              <h3 class="player-name"></h3>
+              <p class="player-id"></p>
+              <p class="player-dkp"></p>
+            </div>
+            <div class="player-box" data-rank="1">
+              <div class="player-crown">
+                <i class="fa-solid fa-crown" style="font-size: 30px"></i>
+              </div>
+              <div class="player-rank-badge">1</div>
+              <h3 class="player-name"></h3>
+              <p class="player-id"></p>
+              <p class="player-dkp"></p>
+            </div>
+            <div class="player-box" data-rank="3">
+              <div class="player-medal">
+                <i class="fa-solid fa-medal" style="font-size: 26px"></i>
+              </div>
+              <div class="player-rank-badge">3</div>
+              <h3 class="player-name"></h3>
+              <p class="player-id"></p>
+              <p class="player-dkp"></p>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-box" data-stat="t4">
+              <h3>Total T4</h3>
+              <p class="stat-value"></p>
+            </div>
+            <div class="stat-box" data-stat="t5">
+              <h3>Total T5</h3>
+              <p class="stat-value"></p>
+            </div>
+            <div class="stat-box" data-stat="deads">
+              <h3>Total Deads</h3>
+              <p class="stat-value"></p>
+            </div>
+            <div class="stat-box" data-stat="kp">
+              <h3>Total KP</h3>
+              <p class="stat-value"></p>
+            </div>
+            <div class="info-box">
+              <h3 class="info-box-title">DKP calculation</h3>
+              <p class="info-box-formula">(T4*5)+(T5*10)+(Deads*15)</p>
+              <p class="info-box-tip">
+                Click a governor's NAME to view their chart and history.
+              </p>
+            </div>
+          </div>
+
+          <div id="loading-spinner" class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+          </div>
+
+          <div id="gridWrapper" class="grid-wrapper dt-wrap">
+            <table id="dkpTable" class="dkp-table"></table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-bottom">
+        <span
+          >Rise of Kingdoms is a trademark of Lilith Games. This website is a
+          fan site and is not affiliated with Lilith Games.</span
+        >
+      </div>
+    </footer>
+
+    <div class="gov-modal-overlay" id="govModalOverlay">
+      <div class="gov-modal" id="govModal" role="dialog" aria-modal="true">
+        <div class="gov-modal-header">
+          <div class="gov-modal-title">
+            Governor History <span id="govModalSubtitle"></span
+            ><span id="govModalVip"></span>
+          </div>
+          <button class="gov-modal-close" id="govModalClose" aria-label="Close">
+            <i class="fa-solid fa-xmark" style="font-size: 20px"></i>
+          </button>
+        </div>
+        <div class="gov-modal-body" id="govModalBody">
+          <div class="gov-modal-loading">
+            <div class="spinner"></div>
+            <span>Loading…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="equipTooltip" class="equip-tooltip" style="display: none"></div>
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.2/dist/sql-wasm.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/dt-3.1.2/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/4.1.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/4.1.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/scroller/3.1.1/js/dataTables.scroller.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedcolumns/6.1.1/js/dataTables.fixedColumns.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedcolumns/6.1.1/js/fixedColumns.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/queries.js"></script>
+    <script src="js/gameData.js"></script>
+    <script src="js/govCards.js"></script>
+    <script src="js/equipView.js"></script>
+    <script src="js/govModal.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>

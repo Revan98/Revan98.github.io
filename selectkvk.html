@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Select KvK</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/shared.css" />
+    <link rel="stylesheet" href="css/index.css" />
+  </head>
+
+  <body>
+    <header class="navbar" id="navbar">
+      <div class="nav-container">
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <i class="fa-solid fa-bars icon-menu" style="font-size: 20px"></i>
+          <i class="fa-solid fa-xmark icon-close" style="font-size: 20px"></i>
+        </button>
+
+        <div class="nav-links" id="nav-links">
+          <a href="index.html">KD select</a>
+          <a href="playercard.html">Player Card</a>
+        </div>
+
+        <label class="theme-toggle">
+          <i class="fa-solid fa-sun" style="font-size: 16px"></i>
+          <input type="checkbox" id="toggle-theme" />
+          <span class="toggle-slider"></span>
+          <i class="fa-solid fa-moon" style="font-size: 16px"></i>
+        </label>
+      </div>
+    </header>
+
+    <main class="page-main">
+      <div class="container">
+        <div id="kvk-heading" class="kvk-select-heading"></div>
+        <div id="kvk-list"></div>
+        <div id="kvk-empty" class="muted" style="display: none">
+          No KvKs found for this kingdom yet.
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-bottom">
+        <span>KvK selection</span>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.2/dist/sql-wasm.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/queries.js"></script>
+    <script src="js/selectkvk.js"></script>
+  </body>
+</html>

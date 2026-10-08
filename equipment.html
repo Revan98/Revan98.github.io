@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Equipment Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="css/shared.css" />
+    <link rel="stylesheet" href="css/equipment.css" />
+  </head>
+  <body>
+    <header class="navbar" id="navbar">
+      <div class="nav-container">
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <i class="fa-solid fa-bars icon-menu" style="font-size: 20px"></i>
+          <i class="fa-solid fa-xmark icon-close" style="font-size: 20px"></i>
+        </button>
+        <div class="nav-links" id="nav-links">
+          <a href="index.html">KD Select</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="playercard.html">Player Card</a>
+          <div class="nav-dropdown" id="tools-dropdown">
+            <button
+              class="nav-dropdown-toggle active"
+              id="tools-toggle"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              Tools
+              <i class="fa-solid fa-chevron-down nav-dropdown-caret"></i>
+            </button>
+            <div class="nav-dropdown-menu" id="tools-menu">
+              <a href="compare.html">Compare</a>
+              <a href="dkp.html">DKP Calculator</a>
+              <a href="merge.html">Merge</a>
+              <a href="equipment.html" class="active">Equipment Editor</a>
+              <a href="map.html">Aoo planner</a>
+              <a href="dbexplorer.html">DB Explorer</a>
+            </div>
+          </div>
+        </div>
+        <label class="theme-toggle">
+          <i class="fa-solid fa-sun" style="font-size: 16px"></i>
+          <input type="checkbox" id="toggle-theme" />
+          <span class="toggle-slider"></span>
+          <i class="fa-solid fa-moon" style="font-size: 16px"></i>
+        </label>
+      </div>
+    </header>
+
+    <main class="page-main">
+      <div class="eq-container">
+        <section class="eq-setup-card">
+          <div class="eq-setup-grid">
+            <div class="eq-field-group">
+              <label class="eq-label">
+                <i class="fa-solid fa-database" style="font-size: 13px"></i>
+                Database File (.db)
+              </label>
+              <div class="eq-file-row">
+                <label class="eq-file-btn" id="dbFileLabel">
+                  <i class="fa-solid fa-upload" style="font-size: 13px"></i>
+                  Choose File
+                  <input
+                    type="file"
+                    id="dbFileInput"
+                    accept=".db"
+                    style="display: none"
+                  />
+                </label>
+                <span class="eq-file-name" id="dbFileName">No file chosen</span>
+                <span class="eq-db-status" id="dbStatus"></span>
+              </div>
+            </div>
+
+            <div class="eq-field-group eq-field-group--wide">
+              <label class="eq-label" for="govIdInput">
+                <i class="fa-solid fa-user-gear" style="font-size: 13px"></i>
+                Governor ID or Name
+              </label>
+              <div class="eq-input-row">
+                <div class="eq-input-wrap eq-input-wrap--gov">
+                  <input
+                    type="text"
+                    id="govIdInput"
+                    class="eq-input"
+                    placeholder="e.g. 12345678 or governor name"
+                    autocomplete="off"
+                  />
+                  <div
+                    id="govIdSuggestions"
+                    class="name-suggestions"
+                    style="display: none"
+                  ></div>
+                </div>
+                <button class="eq-load-btn primary" id="loadGovBtn" disabled>
+                  <i
+                    class="fa-solid fa-arrows-rotate"
+                    style="font-size: 13px"
+                  ></i>
+                  Load
+                </button>
+              </div>
+            </div>
+
+            <div class="eq-field-group">
+              <label class="eq-label" for="govNameInput">
+                <i class="fa-solid fa-user" style="font-size: 13px"></i>
+                Governor Name
+              </label>
+              <input
+                type="text"
+                id="govNameInput"
+                class="eq-input"
+                placeholder="Auto-filled or enter manually"
+              />
+            </div>
+
+            <div class="eq-field-group eq-field-group--action">
+              <div class="eq-action-row">
+                <button class="eq-create-db-btn secondary" id="createDbBtn">
+                  <i class="fa-solid fa-database" style="font-size: 13px"></i>
+                  Create Database
+                </button>
+                <button class="eq-new-btn secondary" id="newGovBtn" disabled>
+                  <i class="fa-solid fa-user-plus" style="font-size: 13px"></i>
+                  New Governor
+                </button>
+                <button class="eq-save-btn primary" id="saveBtn" disabled>
+                  <i
+                    class="fa-solid fa-floppy-disk"
+                    style="font-size: 13px"
+                  ></i>
+                  Save Governor
+                </button>
+                <button
+                  class="eq-download-btn secondary"
+                  id="downloadDbBtn"
+                  disabled
+                >
+                  <i class="fa-solid fa-download" style="font-size: 13px"></i>
+                  Download Database
+                  <span
+                    class="eq-unsaved-dot"
+                    id="unsavedBadge"
+                    title="Unsaved changes"
+                    style="display: none"
+                  ></span>
+                </button>
+              </div>
+              <div class="eq-status-row">
+                <span class="eq-gov-badge" id="govBadge"></span>
+                <span class="eq-save-status" id="saveStatus"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="eq-editor-section">
+          <div class="eq-section-tabs">
+            <button class="eq-section-tab active" data-tab="equipment">
+              <i class="fa-solid fa-shield-halved" style="font-size: 14px"></i>
+              Equipment
+            </button>
+            <button class="eq-section-tab" data-tab="pairs">
+              <i class="fa-solid fa-people-group" style="font-size: 14px"></i>
+              Commander Pairs
+            </button>
+            <button class="eq-section-tab" data-tab="armaments">
+              <i class="fa-solid fa-khanda" style="font-size: 14px"></i>
+              Armaments
+            </button>
+            <button class="eq-section-tab" data-tab="skins">
+              <i class="fa-solid fa-palette" style="font-size: 14px"></i>
+              Skins
+            </button>
+            <button class="eq-section-tab" data-tab="vip">
+              <i class="fa-solid fa-crown" style="font-size: 14px"></i>
+              VIP
+            </button>
+            <button class="eq-section-tab" data-tab="farmImport">
+              Farm Accounts
+            </button>
+            <button class="eq-section-tab" data-tab="kvkImport">
+              KvK Import
+            </button>
+          </div>
+
+          <div id="equipmentPanel">
+            <div class="eq-tabs-row">
+              <div class="eq-tabs" id="marchTabs">
+                <button class="eq-tab active" data-march="1">March 1</button>
+                <button class="eq-tab" data-march="2">March 2</button>
+                <button class="eq-tab" data-march="3">March 3</button>
+                <button class="eq-tab" data-march="4">March 4</button>
+                <button class="eq-tab" data-march="5">March 5</button>
+                <button class="eq-tab" data-march="6">March 6</button>
+                <button class="eq-tab" data-march="7">March 7</button>
+              </div>
+              <button
+                class="secondary eq-add-slot-btn"
+                id="addMarchBtn"
+                disabled
+              >
+                <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+                Add March
+              </button>
+            </div>
+            <div class="eq-slot-grid" id="slotGrid"></div>
+          </div>
+
+          <div id="pairsPanel" style="display: none">
+            <div class="eq-pairs-hint">
+              Click any card to assign a commander. Use × to clear.
+            </div>
+            <div class="eq-pairs-grid" id="pairsGrid"></div>
+            <button class="secondary eq-add-slot-btn" id="addPairBtn" disabled>
+              <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+              Add Pair Row
+            </button>
+          </div>
+
+          <div id="armamentsPanel" style="display: none">
+            <div class="eq-arm-grid" id="armGrid"></div>
+            <button class="secondary eq-add-slot-btn" id="addArmBtn" disabled>
+              <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+              Add Armament Slot
+            </button>
+          </div>
+
+          <div id="skinsPanel" style="display: none">
+            <div class="eq-pairs-hint">
+              Click any slot to choose a skin. Use × to clear.
+            </div>
+            <div class="eq-slot-grid" id="skinGrid"></div>
+            <button class="secondary eq-add-slot-btn" id="addSkinBtn" disabled>
+              <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+              Add Skin Slot
+            </button>
+          </div>
+
+          <div id="vipPanel" style="display: none">
+            <div class="eq-pairs-hint">
+              Click a level to select it for this governor. Click the selected
+              level again to clear it.
+            </div>
+            <div class="eq-vip-grid" id="vipGrid"></div>
+          </div>
+
+          <div id="farmImportPanel" style="display: none">
+            <div class="eq-import-panel">
+              <div class="eq-import-head">
+                <div>
+                  <h2>Farm Accounts</h2>
+                  <p>
+                    Add, edit, and remove rows in <code>farm_accounts</code>
+                    directly — no spreadsheet needed.
+                  </p>
+                </div>
+                <button
+                  class="eq-import-btn primary"
+                  id="farmAddNewBtn"
+                  disabled
+                >
+                  <i class="fa-solid fa-plus" style="font-size: 12px"></i>
+                  Add Farm
+                </button>
+              </div>
+              <div class="eq-farms-toolbar">
+                <input
+                  type="text"
+                  id="farmSearchInput"
+                  class="eq-input"
+                  placeholder="Search by name or player ID..."
+                  autocomplete="off"
+                  disabled
+                />
+              </div>
+              <div class="eq-farms-table-wrap">
+                <table class="eq-farms-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Player ID</th>
+                      <th>Power</th>
+                      <th>Kill Points</th>
+                      <th>Deads</th>
+                      <th>CH</th>
+                      <th>Type</th>
+                      <th>Main's Player ID</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="farmsTableBody"></tbody>
+                </table>
+              </div>
+              <div class="eq-import-status" id="farmImportStatus">
+                Load a database to manage farm accounts.
+              </div>
+            </div>
+          </div>
+
+          <div id="kvkImportPanel" style="display: none">
+            <div class="eq-import-panel">
+              <div class="eq-import-head">
+                <div>
+                  <h2>KvK Import</h2>
+                  <p>
+                    Imports all sheets as snapshots into <code>kvks</code>,
+                    <code>snapshots</code>, <code>governors</code>, and
+                    <code>stats</code>.
+                  </p>
+                </div>
+                <button
+                  class="eq-import-btn primary"
+                  id="kvkImportBtn"
+                  disabled
+                >
+                  Import KvK
+                </button>
+              </div>
+              <div class="eq-import-grid eq-import-grid--kvk">
+                <label class="eq-import-field">
+                  <span>Kingdom</span>
+                  <input
+                    type="text"
+                    id="kvkKingdomInput"
+                    class="eq-input"
+                    placeholder="2552"
+                  />
+                </label>
+                <label class="eq-import-field">
+                  <span>KvK Number</span>
+                  <input
+                    type="number"
+                    id="kvkNumberInput"
+                    class="eq-input"
+                    min="1"
+                    placeholder="1"
+                  />
+                </label>
+                <label class="eq-import-field">
+                  <span>Name</span>
+                  <input
+                    type="text"
+                    id="kvkNameInput"
+                    class="eq-input"
+                    placeholder="KvK"
+                  />
+                </label>
+                <label class="eq-import-file">
+                  <span>KvK Excel File</span>
+                  <input type="file" id="kvkFileInput" accept=".xlsx,.xls" />
+                </label>
+                <div class="eq-import-status" id="kvkImportStatus">
+                  Load a database, then choose a KvK Excel file.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-bottom">
+        <span
+          >Rise of Kingdoms is a trademark of Lilith Games. This website is a
+          fan site and is not affiliated with Lilith Games.</span
+        >
+      </div>
+    </footer>
+
+    <div class="eq-picker-overlay" id="pickerOverlay">
+      <div class="eq-picker-modal">
+        <div class="eq-picker-header">
+          <div class="eq-picker-title">
+            Choose Item <span id="pickerSlotLabel"></span>
+          </div>
+          <div class="eq-picker-search-wrap">
+            <i class="fa-solid fa-magnifying-glass" style="font-size: 13px"></i>
+            <input
+              type="text"
+              id="pickerSearch"
+              class="eq-picker-search"
+              placeholder="Search…"
+            />
+          </div>
+          <button
+            class="eq-arm-modal-close"
+            id="pickerClose"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark" style="font-size: 20px"></i>
+          </button>
+        </div>
+        <div class="eq-picker-body" id="pickerBody">
+          <div class="eq-picker-empty">Loading…</div>
+        </div>
+        <div class="eq-picker-footer">
+          <button class="eq-clear-btn secondary" id="pickerClearBtn">
+            <i class="fa-solid fa-trash-can" style="font-size: 13px"></i>
+            Clear Slot
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="eq-detail-backdrop"
+      id="detailBackdrop"
+      style="display: none"
+    ></div>
+    <div class="eq-detail-popup" id="detailPopup" style="display: none">
+      <div class="eq-detail-header">
+        <span id="detailSlotTitle"></span>
+        <button class="eq-detail-close" id="detailClose">×</button>
+      </div>
+      <div class="eq-detail-img-wrap">
+        <img id="detailImg" src="" alt="" />
+        <span id="detailItemName" class="eq-detail-item-name"></span>
+      </div>
+      <div class="eq-detail-fields">
+        <label class="eq-detail-label">
+          Awaken Level
+          <input
+            type="number"
+            id="detailAwk"
+            class="eq-input eq-detail-input"
+            min="0"
+            max="99"
+            placeholder="0"
+          />
+        </label>
+        <label class="eq-detail-label">
+          Talent
+          <div class="eq-talent-btn-row">
+            <button class="eq-talent-btn" id="talBtnYes" data-val="yes">
+              Yes
+            </button>
+            <button class="eq-talent-btn" id="talBtnNo" data-val="no">
+              No
+            </button>
+          </div>
+          <input type="hidden" id="detailTal" />
+        </label>
+      </div>
+      <button class="primary eq-detail-confirm" id="detailConfirm">
+        Confirm
+      </button>
+    </div>
+
+    <div class="eq-arm-modal-overlay" id="armModalOverlay">
+      <div class="eq-arm-modal">
+        <div class="eq-arm-modal-header">
+          <span class="eq-arm-modal-title" id="armModalTitle"
+            >Edit Armament</span
+          >
+          <button
+            class="eq-arm-modal-close"
+            id="armModalClose"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark" style="font-size: 18px"></i>
+          </button>
+        </div>
+
+        <div class="eq-arm-modal-body">
+          <div class="eq-arm-modal-section">
+            <div class="eq-arm-modal-section-title">Armament Type</div>
+            <select id="armModalName" class="eq-input eq-select">
+              <option value="">— Select type —</option>
+            </select>
+          </div>
+
+          <div class="eq-arm-modal-section">
+            <div class="eq-arm-modal-section-title" id="armStatTitle">Stats</div>
+            <div class="eq-arm-stats-grid" id="armStatGrid">
+              <div class="eq-arm-stats-head">
+                <span>Stat Name</span><span>Value (%)</span>
+              </div>
+              <!-- stat rows are created by populateArmamentSelects() -->
+            </div>
+          </div>
+
+          <div class="eq-arm-modal-section">
+            <div class="eq-arm-modal-section-title">Inscriptions (up to 8)</div>
+            <button
+              class="eq-add-ins-btn secondary"
+              id="openInsPickerBtn"
+              type="button"
+            >
+              <i class="fa-solid fa-circle-plus" style="font-size: 13px"></i>
+              Add Inscriptions
+            </button>
+            <div
+              class="arm-ins-group eq-ins-chosen-list"
+              id="insChosenList"
+            ></div>
+            <input type="hidden" id="armIns0" /><input
+              type="hidden"
+              id="armIns1"
+            />
+            <input type="hidden" id="armIns2" /><input
+              type="hidden"
+              id="armIns3"
+            />
+            <input type="hidden" id="armIns4" /><input
+              type="hidden"
+              id="armIns5"
+            />
+            <input type="hidden" id="armIns6" /><input
+              type="hidden"
+              id="armIns7"
+            />
+          </div>
+
+          <div class="eq-arm-modal-section">
+            <div class="eq-arm-modal-section-title">Set Bonuses</div>
+            <div class="eq-arm-set-preview" id="armSetBonusPreview"></div>
+          </div>
+        </div>
+
+        <div class="eq-arm-modal-footer">
+          <button class="secondary eq-arm-modal-clear-btn" id="armModalClear">
+            <i class="fa-solid fa-trash-can" style="font-size: 12px"></i>
+            Clear Slot
+          </button>
+          <button class="primary eq-arm-modal-save-btn" id="armModalSave">
+            <i class="fa-solid fa-check" style="font-size: 12px"></i>
+            Apply Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="eq-ins-picker-overlay" id="insPickerOverlay">
+      <div class="eq-ins-picker-modal">
+        <div class="eq-ins-picker-header">
+          <span class="eq-ins-picker-title"
+            >Choose Inscriptions <span id="insPickerCount">(0/8)</span></span
+          >
+          <button
+            class="eq-arm-modal-close"
+            id="insPickerClose"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark" style="font-size: 18px"></i>
+          </button>
+        </div>
+        <div class="eq-ins-picker-search-wrap">
+          <input
+            type="text"
+            id="insPickerSearch"
+            class="eq-input"
+            placeholder="Search inscriptions…"
+          />
+        </div>
+        <div class="eq-ins-picker-body" id="insPickerBody"></div>
+        <div class="eq-ins-picker-footer">
+          <div
+            class="arm-ins-group eq-ins-picker-selected-wrap"
+            id="insPickerSelectedWrap"
+          ></div>
+          <button class="secondary" id="insPickerClearAll" type="button">
+            <i class="fa-solid fa-trash-can" style="font-size: 12px"></i>
+            Clear All
+          </button>
+          <button class="primary" id="insPickerConfirm">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.2/dist/sql-wasm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/gameData.js"></script>
+    <script src="js/equipSchema.js"></script>
+    <script src="js/equipImport.js"></script>
+    <script src="js/equipPicker.js"></script>
+    <script src="js/equipArmament.js"></script>
+    <script src="js/equipment.js"></script>
+  </body>
+</html>

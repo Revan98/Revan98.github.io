@@ -1,0 +1,122 @@
+.shared-style-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  background: var(--table-bg);
+  border: 2px solid var(--table-border);
+  border-radius: 8px;
+  color: var(--text-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+  flex-shrink: 0;
+}
+.shared-style-btn:hover {
+  background: var(--row-hover-bg);
+  border-color: var(--chart-line);
+}
+.dt-wrap .dt-container {
+  color: var(--text-color);
+}
+.dt-wrap .dt-layout-row {
+  gap: 8px;
+  margin: 0 0 6px;
+}
+.dt-wrap .dt-buttons {
+  display: flex;
+  gap: 8px;
+}
+.dt-wrap .dt-buttons .dt-button.shared-style-btn {
+  margin: 0;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  background: var(--table-bg);
+  border: 2px solid var(--table-border);
+  border-radius: 8px;
+  color: var(--text-color);
+  box-shadow: none;
+}
+.dt-wrap .dt-buttons .dt-button.shared-style-btn:hover:not(.disabled) {
+  background: var(--row-hover-bg);
+  border-color: var(--chart-line);
+}
+.dt-wrap .dt-search label:empty {
+  display: none;
+}
+.dt-wrap .dt-search input {
+  width: 100%;
+  max-width: 280px;
+  margin: 0;
+  padding: 9px 12px 9px 28px;
+  border-radius: 8px;
+  border: 2px solid var(--table-border);
+  color: var(--text-color);
+  background: var(--table-bg) no-repeat 8px center / 16px 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E");
+}
+.dt-wrap .dt-scroll {
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.dt-wrap table.dataTable > :is(thead, tbody) > tr > :is(th, td) {
+  text-align: center;
+  vertical-align: middle;
+  box-shadow: none;
+}
+.dt-wrap table.dataTable > thead > tr > th {
+  background: var(--table-bg);
+  color: var(--text-color);
+  border-bottom: 2px solid var(--table-border);
+}
+.dt-wrap th .dt-column-header {
+  flex-direction: row;
+  justify-content: center;
+}
+.dt-wrap table.dataTable,
+.dt-wrap .dt-scroll-body {
+  background: var(--table-bg);
+  color: var(--text-color);
+}
+.dt-wrap table.dataTable > tbody > tr,
+.dt-wrap table.dataTable > tbody > tr > td {
+  background: var(--table-bg);
+}
+.dt-wrap table.dataTable > tbody > tr > td {
+  padding: 8px 12px;
+  border-top: 1px solid var(--table-border);
+}
+.dt-wrap table.dataTable > tbody > tr.row-alt > td {
+  background:
+    linear-gradient(var(--table-stripe-even), var(--table-stripe-even)),
+    var(--table-bg);
+}
+.dt-wrap table.dataTable > tbody > tr:hover > td {
+  background:
+    linear-gradient(var(--row-hover-bg), var(--row-hover-bg)), var(--table-bg);
+}
+.dt-wrap .dt-title {
+  font-weight: 600;
+  margin: 14px 0 8px;
+  color: var(--text-color);
+}
+.dt-wrap .dt-plain-box {
+  border: 1px solid var(--table-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.dt-wrap .dt-plain-box table.dataTable {
+  margin: 0 !important;
+  width: 100% !important;
+}
+.dt-wrap .dt-plain-box .dt-container {
+  padding: 0;
+}
+.dt-wrap .diff-positive,
+.dt-wrap .diff-negative {
+  font-weight: 600;
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Select Kingdom</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/shared.css" />
+    <link rel="stylesheet" href="css/index.css" />
+  </head>
+
+  <body>
+    <header class="navbar" id="navbar">
+      <div class="nav-container">
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <i class="fa-solid fa-bars icon-menu" style="font-size: 20px"></i>
+          <i class="fa-solid fa-xmark icon-close" style="font-size: 20px"></i>
+        </button>
+
+        <div class="nav-links" id="nav-links">
+          <a href="index.html" class="active">KD select</a>
+          <a href="playercard.html">Player Card</a>
+        </div>
+
+        <label class="theme-toggle">
+          <i class="fa-solid fa-sun" style="font-size: 16px"></i>
+          <input type="checkbox" id="toggle-theme" />
+          <span class="toggle-slider"></span>
+          <i class="fa-solid fa-moon" style="font-size: 16px"></i>
+        </label>
+      </div>
+    </header>
+
+    <main class="page-main">
+      <div class="container">
+        <a class="kingdom-box" href="selectkvk.html?kd=2552">Kingdom 2552</a>
+        <a class="kingdom-box" href="selectkvk.html?kd=2247">Kingdom 2247</a>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-bottom">
+        <span>Kingdom selection</span>
+      </div>
+    </footer>
+
+    <script src="js/common.js"></script>
+  </body>
+</html>
