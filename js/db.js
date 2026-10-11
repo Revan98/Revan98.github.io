@@ -5,7 +5,7 @@
    browser downloads it once, and bumping DB_VERSION busts the cache everywhere.
    ========================================================================== */
 
-const DB_VERSION = "13";
+const DB_VERSION = "14";
 const FIRST_KVK_WITH_SUMS = 8;
 
 let db = null;
