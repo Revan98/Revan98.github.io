@@ -1,0 +1,91 @@
+.container {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 35px;
+  align-items: center;
+  max-width: 1400px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+}
+.kingdom-box {
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  padding: 40px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-color);
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+a.kingdom-box {
+  display: block;
+  text-decoration: none;
+}
+a.kvk-box {
+  display: flex;
+}
+.kingdom-box:focus-visible {
+  outline: 2px solid var(--chart-line);
+  outline-offset: 3px;
+}
+.kingdom-box:hover {
+  background: rgb(211 211 211 / 0.2);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 0.2);
+}
+.kvk-select-heading {
+  text-align: center;
+  margin-bottom: -10px;
+}
+.kvk-select-heading h1 {
+  font-size: 1.6rem;
+}
+.kvk-box {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+}
+.kvk-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.kvk-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 12px;
+}
+.kvk-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kvk-stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+.kvk-stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.kvk-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  background: var(--button-primary-bg);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
