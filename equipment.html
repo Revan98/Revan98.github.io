@@ -28,28 +28,7 @@
         </button>
         <div class="nav-links" id="nav-links">
           <a href="index.html">KD Select</a>
-          <a href="dashboard.html">Dashboard</a>
           <a href="playercard.html">Player Card</a>
-          <div class="nav-dropdown" id="tools-dropdown">
-            <button
-              class="nav-dropdown-toggle active"
-              id="tools-toggle"
-              type="button"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              Tools
-              <i class="fa-solid fa-chevron-down nav-dropdown-caret"></i>
-            </button>
-            <div class="nav-dropdown-menu" id="tools-menu">
-              <a href="compare.html">Compare</a>
-              <a href="dkp.html">DKP Calculator</a>
-              <a href="merge.html">Merge</a>
-              <a href="equipment.html" class="active">Equipment Editor</a>
-              <a href="map.html">Aoo planner</a>
-              <a href="dbexplorer.html">DB Explorer</a>
-            </div>
-          </div>
         </div>
         <label class="theme-toggle">
           <i class="fa-solid fa-sun" style="font-size: 16px"></i>
@@ -67,20 +46,10 @@
             <div class="eq-field-group">
               <label class="eq-label">
                 <i class="fa-solid fa-database" style="font-size: 13px"></i>
-                Database File (.db)
+                Database
               </label>
               <div class="eq-file-row">
-                <label class="eq-file-btn" id="dbFileLabel">
-                  <i class="fa-solid fa-upload" style="font-size: 13px"></i>
-                  Choose File
-                  <input
-                    type="file"
-                    id="dbFileInput"
-                    accept=".db"
-                    style="display: none"
-                  />
-                </label>
-                <span class="eq-file-name" id="dbFileName">No file chosen</span>
+                <span class="eq-file-name">Supabase (live)</span>
                 <span class="eq-db-status" id="dbStatus"></span>
               </div>
             </div>
@@ -130,10 +99,6 @@
 
             <div class="eq-field-group eq-field-group--action">
               <div class="eq-action-row">
-                <button class="eq-create-db-btn secondary" id="createDbBtn">
-                  <i class="fa-solid fa-database" style="font-size: 13px"></i>
-                  Create Database
-                </button>
                 <button class="eq-new-btn secondary" id="newGovBtn" disabled>
                   <i class="fa-solid fa-user-plus" style="font-size: 13px"></i>
                   New Governor
@@ -144,20 +109,6 @@
                     style="font-size: 13px"
                   ></i>
                   Save Governor
-                </button>
-                <button
-                  class="eq-download-btn secondary"
-                  id="downloadDbBtn"
-                  disabled
-                >
-                  <i class="fa-solid fa-download" style="font-size: 13px"></i>
-                  Download Database
-                  <span
-                    class="eq-unsaved-dot"
-                    id="unsavedBadge"
-                    title="Unsaved changes"
-                    style="display: none"
-                  ></span>
                 </button>
               </div>
               <div class="eq-status-row">
@@ -192,9 +143,6 @@
             </button>
             <button class="eq-section-tab" data-tab="farmImport">
               Farm Accounts
-            </button>
-            <button class="eq-section-tab" data-tab="kvkImport">
-              KvK Import
             </button>
           </div>
 
@@ -307,66 +255,7 @@
                 </table>
               </div>
               <div class="eq-import-status" id="farmImportStatus">
-                Load a database to manage farm accounts.
-              </div>
-            </div>
-          </div>
-
-          <div id="kvkImportPanel" style="display: none">
-            <div class="eq-import-panel">
-              <div class="eq-import-head">
-                <div>
-                  <h2>KvK Import</h2>
-                  <p>
-                    Imports all sheets as snapshots into <code>kvks</code>,
-                    <code>snapshots</code>, <code>governors</code>, and
-                    <code>stats</code>.
-                  </p>
-                </div>
-                <button
-                  class="eq-import-btn primary"
-                  id="kvkImportBtn"
-                  disabled
-                >
-                  Import KvK
-                </button>
-              </div>
-              <div class="eq-import-grid eq-import-grid--kvk">
-                <label class="eq-import-field">
-                  <span>Kingdom</span>
-                  <input
-                    type="text"
-                    id="kvkKingdomInput"
-                    class="eq-input"
-                    placeholder="2552"
-                  />
-                </label>
-                <label class="eq-import-field">
-                  <span>KvK Number</span>
-                  <input
-                    type="number"
-                    id="kvkNumberInput"
-                    class="eq-input"
-                    min="1"
-                    placeholder="1"
-                  />
-                </label>
-                <label class="eq-import-field">
-                  <span>Name</span>
-                  <input
-                    type="text"
-                    id="kvkNameInput"
-                    class="eq-input"
-                    placeholder="KvK"
-                  />
-                </label>
-                <label class="eq-import-file">
-                  <span>KvK Excel File</span>
-                  <input type="file" id="kvkFileInput" accept=".xlsx,.xls" />
-                </label>
-                <div class="eq-import-status" id="kvkImportStatus">
-                  Load a database, then choose a KvK Excel file.
-                </div>
+                Connecting to the database…
               </div>
             </div>
           </div>
@@ -440,7 +329,8 @@
             id="detailAwk"
             class="eq-input eq-detail-input"
             min="0"
-            max="99"
+            max="5"
+            step="1"
             placeholder="0"
           />
         </label>
@@ -583,12 +473,11 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.2/dist/sql-wasm.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="js/common.js"></script>
     <script src="js/gameData.js"></script>
-    <script src="js/equipSchema.js"></script>
-    <script src="js/equipImport.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/equipData.js"></script>
+    <script src="js/equipFarms.js"></script>
     <script src="js/equipPicker.js"></script>
     <script src="js/equipArmament.js"></script>
     <script src="js/equipment.js"></script>
