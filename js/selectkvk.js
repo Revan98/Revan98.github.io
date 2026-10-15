@@ -50,12 +50,7 @@ function kvkBoxHtml(kd, k, names) {
 }
 
 async function initSelectKvk() {
-  const kd = getKDFromURL();
-  if (!kd) {
-    location.href = "index.html";
-    return;
-  }
-
+  const kd = '2247';
   const heading = document.getElementById("kvk-heading");
   const list = document.getElementById("kvk-list");
   const empty = document.getElementById("kvk-empty");
