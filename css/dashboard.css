@@ -820,3 +820,6 @@ body.dark .cell-tooltip {
   width: auto;
   align-items: flex-end;
 }
+.edit-eq {
+  text-decoration: none;
+}
