@@ -12,7 +12,7 @@ function listKvks(kd) {
 }
 
 async function loadKvkContext() {
-  const kd = getKDFromURL();
+  const kd = '2247';
   if (!kd) throw new Error("Invalid or missing kingdom ID");
 
   const kvkNumber = getKvkNumberFromURL();
