@@ -6,7 +6,7 @@ function formatCsvPercent(value) {
 }
 
 function getExportFileName() {
-  const kd = getKDFromURL() || "dkp";
+  const kd = '2247' || "dkp";
   const kvkPart = kvkCtx.kvkNumber ? `_kvk${kvkCtx.kvkNumber}` : "";
   const lastSnapshot =
     kvkCtx.snapshotDates[kvkCtx.snapshotDates.length - 1] || "export";
