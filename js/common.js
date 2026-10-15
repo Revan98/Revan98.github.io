@@ -3,9 +3,9 @@ function normalizeNumericId(value) {
   return /^\d+$/.test(id) ? id : null;
 }
 
-function getKDFromURL() {
+/* function getKDFromURL() {
   return normalizeNumericId(new URLSearchParams(location.search).get("kd"));
-}
+} */
 
 function getKvkNumberFromURL() {
   return normalizeNumericId(new URLSearchParams(location.search).get("kvk"));
