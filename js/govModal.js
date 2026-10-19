@@ -21,7 +21,6 @@ function formatSnapshotDate(snapshotDate) {
   if (/^\d{2}_\d{2}_\d{4}$/.test(snapshotDate)) {
     return snapshotDate.replaceAll("_", ".");
   }
-
   return snapshotDate;
 }
 
