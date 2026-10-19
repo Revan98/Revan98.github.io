@@ -1,9 +1,3 @@
-/* ==========================================================================
-   queries.js — every SQL query the pages run. All queries use bound
-   parameters and return plain objects (no positional column indexes).
-   Depends on: common.js, db.js. Call `await openDb()` first.
-   ========================================================================== */
-
 const kvkCtx = {
   kd: null,
   kvkId: null,
@@ -38,7 +32,7 @@ function listKvks(kd) {
 }
 
 function loadKvkContext() {
-  const kd = getKDFromURL();
+  const kd = 2247;
   if (!kd) throw new Error("Invalid or missing kingdom ID");
 
   const kvkNumber = getKvkNumberFromURL();
