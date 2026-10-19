@@ -1,5 +1,6 @@
 const SUPABASE_URL = "https://ctdxpoysboylxwkcsalc.supabase.co";
 const SUPABASE_KEY = "sb_publishable_I2g3gpcG5kqTtcIfBhw9pw_PdlKOwxu";
+
 const FIRST_KVK_WITH_SUMS = 8;
 
 function kvkHasSums(kvkNumber) {
@@ -12,7 +13,6 @@ try {
   const saved = JSON.parse(sessionStorage.getItem(SB_SESSION_KEY) || "null");
   if (saved && saved.expiresAt > Date.now()) sbSession = saved;
 } catch {
-
 }
 
 function sbUser() {
@@ -42,7 +42,6 @@ async function sbSignIn(email, password) {
   try {
     sessionStorage.setItem(SB_SESSION_KEY, JSON.stringify(sbSession));
   } catch {
-
   }
   return sbUser();
 }
@@ -52,7 +51,6 @@ function sbSignOut() {
   try {
     sessionStorage.removeItem(SB_SESSION_KEY);
   } catch {
-
   }
 }
 
@@ -83,7 +81,6 @@ async function sbFetch(path, options = {}) {
       const err = await res.json();
       detail = err.message || JSON.stringify(err);
     } catch {
-
     }
     throw new Error(`Database request failed (${res.status}): ${detail}`);
   }
@@ -106,10 +103,10 @@ async function sbSelectAll(table, query = "select=*") {
   }
 }
 
-function searchGovernorsByName(query) {
+function searchGovernorsByName(query, includeScans = false) {
   const q = String(query ?? "").trim();
   if (q.length < 2) return Promise.resolve([]);
-  return sbRpc("search_governors", { p_q: q }).then((rows) => {
+  return sbRpc("search_governors", { p_q: q, p_include_scans: includeScans }).then((rows) => {
     const seen = new Set();
     return rows.filter((r) => !seen.has(r.id) && seen.add(r.id));
   });
