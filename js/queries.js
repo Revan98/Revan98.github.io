@@ -1,13 +1,3 @@
-/* ==========================================================================
-   queries.js — everything the pages ask the database (Supabase functions in
-   supabase/website_api.sql). Depends on: common.js, supabase.js.
-
-   Governor details come as one "bundle" per governor (loadPlayerBundle). After
-   awaiting it, the loadX(govId) functions below read from that bundle
-   synchronously, so the rendering code does not need to be async.
-   ========================================================================== */
-
-/** The KvK the dashboard is showing; filled by loadKvkContext(). */
 const kvkCtx = {
   kd: null,
   kvkId: null,
@@ -17,13 +7,10 @@ const kvkCtx = {
   snapshotDates: [],
 };
 
-/* ---------- kingdom / KvK selection ---------- */
-
 function listKvks(kd) {
   return sbRpc("kvk_list", { p_kd: String(kd) });
 }
 
-/** Resolves ?kd=&kvk= into kvkCtx. Throws an Error with a user-facing message. */
 async function loadKvkContext() {
   const kd = getKDFromURL();
   if (!kd) throw new Error("Invalid or missing kingdom ID");
@@ -49,8 +36,6 @@ async function loadKvkContext() {
   return kvkCtx;
 }
 
-/* ---------- dashboard grid ---------- */
-
 function loadDashboardRows() {
   return sbRpc("dashboard_rows", {
     p_kd: kvkCtx.kd,
@@ -58,7 +43,6 @@ function loadDashboardRows() {
   });
 }
 
-/** One governor's per-snapshot diffs for the current KvK (modal chart). */
 function loadGovernorSeries(govId) {
   return sbRpc("governor_series", {
     p_gov: Number(govId),
@@ -66,15 +50,8 @@ function loadGovernorSeries(govId) {
   });
 }
 
-/* ---------- governor bundle ---------- */
-
 const playerBundles = new Map();
 
-/**
- * Fetches everything about one governor in a single request: kingdom, latest stats,
- * farm accounts, KvK history, equipment ... Pass `kd` to fix the kingdom, or leave it
- * null to detect it. Returns the bundle (also remembered for the loadX functions).
- */
 async function loadPlayerBundle(govId, kd = null) {
   const id = normalizeNumericId(govId);
   if (!id) return null;
