@@ -1,96 +1,13 @@
-async function searchPlayers(query) {
-  const [fromDb, fromScans] = await Promise.all([
-    searchGovernorsByName(query)
-      .then((rows) => rows.map((r) => ({ ...r, src: "kvk" })))
-      .catch((e) => {
-        console.warn("Name search failed:", e);
-        return [];
-      }),
-    Promise.resolve(searchByName(query, [{ db: scansDb, src: "scan" }])),
-  ]);
-
-  const q = String(query).trim().toLowerCase();
-  const seen = new Set();
-  const merged = [];
-  for (const r of [...fromDb, ...fromScans]) {
-    if (seen.has(String(r.id))) continue;
-    seen.add(String(r.id));
-    merged.push(r);
-  }
-  merged.sort((a, b) => {
-    const as = a.name.toLowerCase().startsWith(q);
-    const bs = b.name.toLowerCase().startsWith(q);
-    if (as !== bs) return as ? -1 : 1;
-    return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+function searchPlayers(query) {
+  return searchGovernorsByName(query, true).catch((e) => {
+    console.warn("Name search failed:", e);
+    return [];
   });
-  return merged.slice(0, 15);
 }
 
 let dbReady = false;
-let scansDb = null;
 
 loadEquipRefData(["inscriptions", "skins"]);
-
-const SCANS_DB_VERSION = "1";
-
-async function loadScansDatabase(SQL) {
-  try {
-    const res = await fetch(`scans_2247.db?v=${SCANS_DB_VERSION}`);
-    if (!res.ok) return;
-    const buf = await res.arrayBuffer();
-    scansDb = new SQL.Database(new Uint8Array(buf));
-  } catch (e) {
-    console.warn("scans_2247.db not available:", e);
-  }
-}
-
-function loadScanStats(govId) {
-  if (!scansDb) return null;
-  const safeId = normalizeNumericId(govId);
-  if (!safeId) return null;
-  try {
-    const snapRes = scansDb.exec(
-      `SELECT snapshot_id, snapshot_date FROM snapshots ORDER BY snapshot_date DESC LIMIT 1`,
-    );
-    if (!snapRes.length || !snapRes[0].values.length) return null;
-    const [snapId, snapDate] = snapRes[0].values[0];
-
-    const res = scansDb.exec(`
-      SELECT s.power, s.kill_points, s.deaths,
-             s.t1, s.t2, s.t3, s.t4, s.t5,
-             s.ranged_points, s.rss_gathered, s.rss_assistance,
-             s.helps, s.alliance, s.acclaim,
-             g.name
-      FROM stats s
-      JOIN governors g ON g.governor_id = s.governor_id
-      WHERE s.governor_id = ${safeId} AND s.snapshot_id = ${snapId}
-      LIMIT 1
-    `);
-    if (!res.length || !res[0].values.length) return null;
-    const r = res[0].values[0];
-    return {
-      snapDate,
-      power: r[0],
-      killPoints: r[1],
-      deaths: r[2],
-      t1: r[3],
-      t2: r[4],
-      t3: r[5],
-      t4: r[6],
-      t5: r[7],
-      rangedPoints: r[8],
-      rssGathered: r[9],
-      rssAssistance: r[10],
-      helps: r[11],
-      alliance: r[12],
-      acclaim: r[13],
-      name: r[14],
-    };
-  } catch (e) {
-    console.warn("loadScanStats error:", e);
-    return null;
-  }
-}
 
 const EQUIP_SLOTS = [
   { key: "helm", label: "Helm", id: "helmet" },
@@ -299,33 +216,21 @@ document.getElementById("back-btn").addEventListener("click", () => {
 });
 
 
-const dbLoadEl = document.getElementById("db-loading");
 const searchBtn = document.getElementById("search-btn");
 const inputEl = document.getElementById("player-id-input");
 
 showState("search");
-dbLoadEl.style.display = "flex";
-searchBtn.disabled = true;
+dbReady = true;
+inputEl.focus();
 
-(async () => {
-  try {
-    await loadScansDatabase(await getSqlJs());
-  } catch (e) {
-    console.warn("Scans file not available:", e);
-  }
-
-  dbReady = true;
-  dbLoadEl.style.display = "none";
-  searchBtn.disabled = false;
-  inputEl.focus();
-
+{
   const params = new URLSearchParams(window.location.search);
   const directId = normalizeNumericId(params.get("govId") || params.get("id"));
   if (directId) {
     inputEl.value = directId;
     renderPlayerCard(directId);
   }
-})();
+}
 
 async function doSearch() {
   if (!dbReady) return;
