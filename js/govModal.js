@@ -236,6 +236,13 @@ async function openGovModal(govId, govName) {
 
   if (vipEl) vipEl.innerHTML = "";
 
+  const editLink = document.getElementById("edit-eq");
+  if (editLink) {
+    editLink.href = safeGovId
+      ? `equipment.html?govId=${encodeURIComponent(safeGovId)}`
+      : "equipment.html";
+  }
+
   if (!safeGovId) {
     subtitle.textContent = "";
     body.innerHTML = `<div class="gov-modal-empty">Invalid governor ID.</div>`;
