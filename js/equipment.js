@@ -89,11 +89,20 @@ async function connectToDatabase() {
     updateImportButtons();
     updateAddSlotButtons();
     if (activeTab === "farmImport") renderFarmsTable();
+    openGovernorFromUrl();
   } catch (e) {
     console.error(e);
     setDbStatus("✗ Could not connect", "err");
     showToast("Could not connect to the database: " + e.message, "error");
   }
+}
+
+function openGovernorFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const id = normalizeNumericId(params.get("govId") || params.get("id"));
+  if (!id) return;
+  govIdInput.value = id;
+  loadGovernorById(id);
 }
 
 function applyCounts(counts) {
