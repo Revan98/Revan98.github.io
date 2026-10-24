@@ -1,11 +1,3 @@
-const loginCard = document.getElementById("login-card");
-const importCard = document.getElementById("import-card");
-const loginEmail = document.getElementById("login-email");
-const loginPassword = document.getElementById("login-password");
-const loginBtn = document.getElementById("login-btn");
-const loginStatus = document.getElementById("login-status");
-const signedInAs = document.getElementById("signed-in-as");
-const logoutBtn = document.getElementById("logout-btn");
 const kingdomInput = document.getElementById("kvk-kingdom");
 const numberInput = document.getElementById("kvk-number");
 const nameInput = document.getElementById("kvk-name");
@@ -14,73 +6,7 @@ const importBtn = document.getElementById("kvk-import-btn");
 const progressEl = document.getElementById("kvk-progress");
 const statusEl = document.getElementById("kvk-status");
 
-let isAdmin = false;
 let importing = false;
-const ROWS_PER_REQUEST = 1500;
-
-function setStatus(el, text, kind = "") {
-  el.textContent = text;
-  el.className = "muted" + (kind ? ` kvk-status-${kind}` : "");
-}
-
-async function refreshAuthUi() {
-  const user = sbUser();
-  loginCard.style.display = user ? "none" : "";
-  importCard.style.display = user ? "" : "none";
-  isAdmin = false;
-  if (!user) {
-    updateImportButton();
-    return;
-  }
-  signedInAs.textContent = user.email;
-  setStatus(statusEl, "Checking your access…");
-  try {
-    isAdmin = (await sbRpc("is_kvk_admin", {}, { auth: true })) === true;
-  } catch (e) {
-    sbSignOut();
-    setStatus(loginStatus, e.message, "err");
-    await refreshAuthUi();
-    return;
-  }
-  setStatus(
-    statusEl,
-    isAdmin
-      ? "Choose a KvK Excel file."
-      : "This account is not allowed to import KvK data.",
-    isAdmin ? "" : "err",
-  );
-  updateImportButton();
-}
-
-async function signIn() {
-  const email = loginEmail.value.trim();
-  const password = loginPassword.value;
-  if (!email || !password) {
-    setStatus(loginStatus, "Enter your email and password.", "err");
-    return;
-  }
-  loginBtn.disabled = true;
-  setStatus(loginStatus, "Signing in…");
-  try {
-    await sbSignIn(email, password);
-    loginPassword.value = "";
-    setStatus(loginStatus, "");
-    await refreshAuthUi();
-  } catch (e) {
-    setStatus(loginStatus, e.message, "err");
-  } finally {
-    loginBtn.disabled = false;
-  }
-}
-
-loginBtn.addEventListener("click", signIn);
-loginPassword.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") signIn();
-});
-logoutBtn.addEventListener("click", () => {
-  sbSignOut();
-  refreshAuthUi();
-});
 
 function headerMap(headers) {
   const map = {};
@@ -167,19 +93,9 @@ function parseWorkbook(workbook) {
   return { snapshots, problems };
 }
 
-async function readWorkbook(file) {
-  const bytes = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsArrayBuffer(file);
-  });
-  return XLSX.read(bytes, { type: "array" });
-}
-
 function updateImportButton() {
   const ready =
-    isAdmin &&
+    importIsAdmin &&
     !importing &&
     kingdomInput.value.trim() &&
     Number(numberInput.value) > 0 &&
@@ -188,7 +104,7 @@ function updateImportButton() {
 }
 
 async function runImport() {
-  if (!isAdmin || importing) return;
+  if (!importIsAdmin || importing) return;
   if (!window.XLSX) {
     setStatus(statusEl, "The Excel reader failed to load. Reload the page.", "err");
     return;
@@ -282,4 +198,8 @@ async function runImport() {
 fileInput.addEventListener("change", updateImportButton);
 importBtn.addEventListener("click", runImport);
 
-refreshAuthUi();
+document.addEventListener("import-auth", () => {
+  if (!importIsAdmin) setStatus(statusEl, "Choose a KvK Excel file.");
+  updateImportButton();
+});
+updateImportButton();
