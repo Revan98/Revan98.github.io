@@ -10,6 +10,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
     />
     <link rel="stylesheet" href="css/shared.css" />
+    <link rel="stylesheet" href="css/kvkimport.css" />
   </head>
 
   <body>
@@ -68,28 +69,60 @@
         </section>
 
         <section class="card" id="import-card" style="display: none">
-          <h2>KvK Import</h2>
-          <p>
-            Imports every sheet of the Excel file as a snapshot (sheet names are dates, e.g.
-            <code>08_02_2026</code>) into <code>kvks</code>, <code>snapshots</code>,
-            <code>governors</code> and <code>stats</code>. Importing the same KvK again
-            replaces its rows.
-          </p>
           <div class="put-in-row">
-            <label>Kingdom: <input id="kvk-kingdom" class="file" type="text" placeholder="2552" /></label>
-            <label>KvK number: <input id="kvk-number" class="file" type="number" min="1" placeholder="1" /></label>
-            <label>Name: <input id="kvk-name" class="file" type="text" placeholder="KvK" /></label>
-          </div>
-          <div class="put-in-row">
-            <label>Excel file: <input id="kvk-file" class="file" type="file" accept=".xlsx,.xls" /></label>
-          </div>
-          <div class="put-in-row">
-            <button id="kvk-import-btn" class="primary" disabled>Import KvK</button>
-            <progress id="kvk-progress" max="100" value="0"></progress>
             <span class="muted">Signed in as <strong id="signed-in-as"></strong></span>
             <button id="logout-btn" class="secondary">Sign out</button>
           </div>
-          <div id="kvk-status" class="muted">Choose a KvK Excel file.</div>
+          <div id="auth-status" class="muted"></div>
+
+          <div class="import-tabs">
+            <button class="import-tab active" data-tab="kvk">KvK Import</button>
+            <button class="import-tab" data-tab="scan">Scan Import</button>
+          </div>
+
+          <div class="import-panel active" id="panel-kvk">
+            <h2>KvK Import</h2>
+            <p>
+              Imports every sheet of the Excel file as a snapshot (sheet names are dates, e.g.
+              <code>08_02_2026</code>) into <code>kvks</code>, <code>snapshots</code>,
+              <code>governors</code> and <code>stats</code>. Importing the same KvK again
+              replaces its rows.
+            </p>
+            <div class="put-in-row">
+              <label>Kingdom: <input id="kvk-kingdom" class="file" type="text" placeholder="2552" /></label>
+              <label>KvK number: <input id="kvk-number" class="file" type="number" min="1" placeholder="1" /></label>
+              <label>Name: <input id="kvk-name" class="file" type="text" placeholder="KvK" /></label>
+            </div>
+            <div class="put-in-row">
+              <label>Excel file: <input id="kvk-file" class="file" type="file" accept=".xlsx,.xls" /></label>
+            </div>
+            <div class="put-in-row">
+              <button id="kvk-import-btn" class="primary" disabled>Import KvK</button>
+              <progress id="kvk-progress" max="100" value="0"></progress>
+            </div>
+            <div id="kvk-status" class="muted">Choose a KvK Excel file.</div>
+          </div>
+
+          <div class="import-panel" id="panel-scan">
+            <h2>Scan Import</h2>
+            <p>
+              Imports a scan of the kingdom's players (Excel or CSV, first sheet) for the Player
+              Card. Importing the same date again replaces that scan; the newest date is the one
+              the Player Card shows.
+            </p>
+            <div class="put-in-row">
+              <label>Scan date: <input id="scan-date" class="file" type="date" /></label>
+              <label>Scan file: <input id="scan-file" class="file" type="file" accept=".xlsx,.xls,.csv" /></label>
+            </div>
+            <div class="put-in-row">
+              <button id="scan-import-btn" class="primary" disabled>Import scan</button>
+              <progress id="scan-progress" max="100" value="0"></progress>
+            </div>
+            <div id="scan-status" class="muted"></div>
+            <div id="scan-columns" class="muted"></div>
+            <div id="scan-warning" class="muted"></div>
+            <div id="scan-existing" class="muted"></div>
+          </div>
         </section>
       </div>
     </main>
@@ -103,6 +136,8 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="js/common.js"></script>
     <script src="js/supabase.js"></script>
+    <script src="js/importPage.js"></script>
     <script src="js/kvkImport.js"></script>
+    <script src="js/scanImport.js"></script>
   </body>
 </html>
