@@ -21,7 +21,8 @@
         </button>
 
         <div class="nav-links" id="nav-links">
-          <a href="index.html">Select KvK</a>
+          <a href="index.html">KD Select</a>
+          <a href="dashboard.html">Dashboard</a>
           <a href="playercard.html" class="active">Player Card</a>
         </div>
 
@@ -93,6 +94,10 @@
             class="search-error"
             style="display: none"
           ></div>
+          <div id="db-loading" class="db-loading">
+            <div class="spinner"></div>
+            <span>Loading database…</span>
+          </div>
         </div>
 
         <div id="loading-state" class="loading-state" style="display: none">
@@ -302,7 +307,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.2/dist/sql-wasm.js"></script>
     <script src="js/common.js"></script>
-    <script src="js/supabase.js"></script>
+    <script src="js/db.js"></script>>
     <script src="js/queries.js"></script>
     <script src="js/gameData.js"></script>
     <script src="js/govCards.js"></script>
