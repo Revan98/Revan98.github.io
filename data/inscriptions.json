@@ -1157,6 +1157,30 @@
       "description": "The wielder's troop gains a 12.5% boost to smite damage dealt.",
       "rarity": "gold",
       "type": "Pincer II"
+    },
+    "rapidadvance": {
+      "name": "Rapid Advance",
+      "description": "The wielder’s troop gains a 7% boost to combo attack damage dealt. Whenever their troop deals combo attack damage, it has a 65% chance to ignore 50% of the hit troop’s Defense. This effect can trigger up to 3 times per turn. Cooldown: 3 seconds.",
+      "rarity": "gold",
+      "type": "Delta II"
+    },
+    "boldambitions": {
+      "name": "Bold Ambitions",
+      "description": "The wielder’s troop gains a 7% boost to combo attack damage dealt. Combo attacks launched by their troop are 20% more likely to trigger effects triggered by launching a basic attack.When their troop launches basic attacks, it has a 10% chance to gain 10 Rage per second for the next 3 seconds. This effect can trigger up to 1 time per turn and can stack up to 3 times.",
+      "rarity": "gold",
+      "type": "Delta II"
+    },
+    "impervious": {
+      "name": "Impervious:",
+      "description": "The wielder’s troop gains 2% damage resistance, and an additional 3% skill damage resistance. When their troop launches basic attacks, it has a 65% chance to take 3% less damage for 3 seconds. This effect can stack up to 5 times, and its duration resets whenever it gains another stack.",
+      "rarity": "gold",
+      "type": "Delta II"
+    },
+    "ragingtide": {
+      "name": "Raging Tide",
+      "description": "Combo Attack Damage Boost 12.5%.",
+      "rarity": "gold",
+      "type": "Delta II"
     }
   }
 }
