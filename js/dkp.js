@@ -270,7 +270,7 @@
       if (r.max_power === null) {
         if (power >= r.min_power) return Number(r.percentage);
       } else {
-        if (power >= r.min_power && power < r.max_power)
+        if (power >= r.min_power && power <= r.max_power)
           return Number(r.percentage);
       }
     }
@@ -292,7 +292,7 @@
     farmLinksPromise = (async () => {
       const rows = await sbSelectAll(
         "farm_accounts",
-        "select=player_id,main_id&acc_type=ilike.farm&main_id=not.is.null",
+        "select=player_id,main_id&acc_type=ilike.farm&main_id=not.is.null&order=player_id.asc",
       );
       const links = new Map();
       rows.forEach(({ player_id, main_id }) => {
@@ -305,6 +305,12 @@
       return links;
     })().catch((err) => {
       console.warn("[DKP] Farm rollup unavailable:", err);
+      farmLinksPromise = null;
+      showToast(
+        "Could not load farm accounts, so the Sum columns will NOT include farms. Run the calculation again.",
+        "error",
+        10000,
+      );
       return new Map();
     });
 
@@ -491,7 +497,6 @@
           }
         });
       }
-
       results.push(row);
     }
 
