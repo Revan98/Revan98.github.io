@@ -125,6 +125,7 @@ async function runImport() {
 
   try {
     const { snapshots, problems } = parseWorkbook(await readWorkbook(fileInput.files[0]));
+    snapshots.sort((a, b) => a.date.localeCompare(b.date));
     if (!snapshots.length) {
       throw new Error(problems.join(" ") || "The file has no usable sheets.");
     }
