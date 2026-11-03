@@ -26,7 +26,7 @@ function applyPercentFormats(ws, rows) {
     if (!isPercentColumn(header)) return;
     const colLetter = XLSX.utils.encode_col(colIdx);
     rows.forEach((_, rowIdx) => {
-      const cell = ws[`${colLetter}${rowIdx + 2}`]; // +2: header is row 1
+      const cell = ws[`${colLetter}${rowIdx + 2}`];
       if (cell && typeof cell.v === "number") cell.z = "0.00%";
     });
   });
@@ -61,7 +61,7 @@ function exportToXlsx(rows, name) {
 function exportToCsv(rows, name) {
   if (!hasExportRows(rows)) return;
   const columns = Object.keys(rows[0]);
-  const quote = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const quote = (v) => `"${String(csvSafeCell(v) ?? "").replace(/"/g, '""')}"`;
   const format = (col, v) =>
     isPercentColumn(col) && typeof v === "number" && Number.isFinite(v)
       ? `${(v * 100).toFixed(2)}%`
