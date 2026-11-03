@@ -19,11 +19,6 @@ const EQUIP_SLOTS = [
   { key: "accessory", label: "Acc.", id: "accessory" },
   { key: "accessory_sec", label: "Acc.2", id: "accessory_sec" },
 ];
-const ARM_SLOTS = Array.from({ length: 8 }, (_, i) => ({
-  prefix: `arm${i + 1}`,
-  label: `Arm ${i + 1}`,
-}));
-const SKIN_SLOTS = Array.from({ length: 8 }, (_, i) => `skin${i + 1}`);
 
 function isMarchEmpty(row, suffix) {
   return EQUIP_SLOTS.every((slot) => {
@@ -317,7 +312,16 @@ inputEl.addEventListener("input", () => {
 
 inputEl.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
-    doSearch();
+    const open = suggestionsEl.style.display !== "none";
+    const active = open
+      ? suggestionsEl.querySelectorAll(".name-suggestion-item")[activeSuggestionIdx]
+      : null;
+    if (active) {
+      e.preventDefault();
+      selectSuggestion(active.dataset.id);
+    } else {
+      doSearch();
+    }
     return;
   }
   if (suggestionsEl.style.display === "none") return;
@@ -340,9 +344,6 @@ inputEl.addEventListener("keydown", (e) => {
   );
   if (activeSuggestionIdx >= 0)
     items[activeSuggestionIdx].scrollIntoView({ block: "nearest" });
-  if (e.key === "Enter" && activeSuggestionIdx >= 0) {
-    selectSuggestion(items[activeSuggestionIdx].dataset.id);
-  }
 });
 
 inputEl.addEventListener("blur", () => {
