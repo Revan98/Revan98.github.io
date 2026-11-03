@@ -296,20 +296,7 @@ function drawEquipDiamond(ctx, iconMap, slots, centerX, topY, slotSize) {
 
 function buildEquipmentMarches(row) {
   if (!row) return [];
-  const MARCH_SUFFIXES = [
-    "",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-  ];
+  const MARCH_SUFFIXES = marchSuffixes(row);
   const marches = [];
   MARCH_SUFFIXES.forEach((suffix, idx) => {
     if (isMarchEmpty(row, suffix)) return;
@@ -327,7 +314,7 @@ function buildEquipmentMarches(row) {
 function buildArmamentsList(armRow) {
   if (!armRow) return [];
   const list = [];
-  ARM_SLOTS.forEach((arm) => {
+  armSlotsFor(armRow).forEach((arm) => {
     const name = armRow[arm.prefix];
     if (isEmptyVal(name)) return;
     const insKeys = [
@@ -363,7 +350,7 @@ function buildArmamentsList(armRow) {
 function buildPairsList(row) {
   if (!row) return [];
   const pairs = [];
-  for (let n = 1; n <= 12; n++) {
+  for (let n = 1; n <= pairCount(row); n++) {
     const c1 = row[`pair${n}_comm1`];
     const c2 = row[`pair${n}_comm2`];
     if (isEmptyVal(c1) && isEmptyVal(c2)) continue;
@@ -374,7 +361,7 @@ function buildPairsList(row) {
 
 function buildSkinsList(skinsRow) {
   if (!skinsRow) return [];
-  return SKIN_SLOTS.map((k) => skinsRow[k]).filter((v) => !isEmptyVal(v));
+  return skinKeysFor(skinsRow).map((k) => skinsRow[k]).filter((v) => !isEmptyVal(v));
 }
 
 function renderPosterContent(ctx, data, iconMap, W) {
