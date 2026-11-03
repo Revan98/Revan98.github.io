@@ -1,5 +1,3 @@
-let table;
-
 function formatCsvPercent(value) {
   const n = Number(value);
   return Number.isFinite(n) ? String(n).replace(".", ",") : "";
@@ -54,124 +52,129 @@ function renderDeadsPowerDiffStack(deadsDiff, powerDiff) {
   `;
 }
 
-function renderGovernor(row) {
+function renderGovernor(row, asCard = false) {
   const name = escapeHtml(row.name);
+  const tip = (text) => (asCard ? ` title="${text}"` : "");
   if (!row.id) {
     return `<div class="gov-name-stack"><div class="gov-name-value">${name}</div></div>`;
   }
   return (
     `<div class="gov-name-stack">` +
-    `<div class="gov-name-value gov-name-link" data-tip="View governor history">${name}</div>` +
-    `<a class="gov-id" data-tip="Copy governor ID"><span class="gov-id-text">${escapeHtml(row.id)}</span>` +
+    `<div class="gov-name-value gov-name-link"${tip("View governor history")}>${name}</div>` +
+    `<a class="gov-id"${tip("Copy governor ID")}><span class="gov-id-text">${escapeHtml(row.id)}</span>` +
     `<i class="fa-regular fa-copy gov-id-copy-icon"></i></a>` +
     `</div>`
   );
 }
 
-function stackedColumn(sortValue, renderDisplay) {
-  return (data, type, row) =>
-    type === "display" ? renderDisplay(row) : sortValue(row);
-}
-
 const TIP_FARMS = "with farms\nwithout farms";
 let hasSums = true;
+let gridApi = null;
+let allRows = [];
 
-function sumMetricColumn({ title, data, sumData, format, name }) {
+function sumMetricColumn({ headerName, field, sumField, format, colId, sort }) {
   return {
-    title,
-    data,
-    name,
-    className: "metric-stack-cell",
-    render: (value, type, row) => {
-      if (type !== "display") return num(hasSums ? row[sumData] : value);
+    colId: colId ?? field,
+    headerName,
+    cellClass: "metric-stack-cell",
+    sort,
+    valueGetter: (p) => num(hasSums ? p.data[sumField] : p.data[field]),
+    tooltipValueGetter: () => (hasSums ? TIP_FARMS : null),
+    cellRenderer: (p) => {
+      const row = p.data;
       return hasSums
-        ? renderMetricStack(value, row[sumData], format)
-        : `<div class="metric-stack"><div class="metric-base">${format(value)}</div></div>`;
-    },
-    createdCell: (td) => {
-      if (hasSums) td.dataset.tip = TIP_FARMS;
+        ? renderMetricStack(row[field], row[sumField], format)
+        : `<div class="metric-stack"><div class="metric-base">${format(row[field])}</div></div>`;
     },
   };
 }
 
-const VISIBLE_COLUMNS = [
+const noQuickFilter = () => "";
+
+const COLUMNS = [
   {
-    title: "#",
-    data: null,
-    defaultContent: "",
-    className: "row-num",
-    orderable: false,
-    width: "55px",
+    colId: "rank",
+    headerName: "#",
+    width: 55,
+    pinned: "left",
+    sortable: false,
+    cellClass: "row-num",
+    valueGetter: (p) => (p.node ? p.node.rowIndex + 1 : ""),
+    getQuickFilterText: noQuickFilter,
   },
   {
-    title: "Governor",
-    data: "name",
-    className: "gov-cell",
-    searchable: true,
-    render: (name, type, row) => {
-      if (type === "display") return renderGovernor(row);
-      if (type === "filter") return `${row.name ?? ""} ${row.id ?? ""}`;
-      return name ?? "";
+    colId: "name",
+    headerName: "Governor",
+    width: 190,
+    pinned: "left",
+    cellClass: "gov-cell",
+    valueGetter: (p) => p.data.name ?? "",
+    cellRenderer: (p) => renderGovernor(p.data),
+    tooltipValueGetter: (p) =>
+      p.data?.id ? "View governor history\nCopy governor ID" : null,
+    getQuickFilterText: (p) => `${p.data.name ?? ""} ${p.data.id ?? ""}`,
+  },
+  {
+    colId: "killPointsDiff",
+    headerName: "Killpoints",
+    valueGetter: (p) => num(p.data.killPointsDiff),
+    tooltipValueGetter: (p) => `Current KP: ${formatNumber(p.data.killPoints)}`,
+    cellRenderer: (p) => {
+      const r = p.data;
+      const cls = num(r.killPointsDiff) >= 0 ? "diff-positive" : "diff-negative";
+      return `<span class="${cls}">${formatSignedNumber(r.killPointsDiff)}</span>`;
     },
   },
   {
-    title: "Killpoints",
-    data: "killPointsDiff",
-    render: (v, type) => (type === "display" ? formatSignedNumber(v) : num(v)),
-    createdCell: (td, v, row) => {
-      td.classList.add(num(v) >= 0 ? "diff-positive" : "diff-negative");
-      td.dataset.tip = `Current KP: ${formatNumber(row.killPoints)}`;
-    },
+    colId: "t4t5",
+    headerName: "T4 / T5",
+    cellClass: "metric-stack-cell",
+    valueGetter: (p) => num(p.data.t4Diff) + num(p.data.t5Diff),
+    tooltipValueGetter: (p) =>
+      `Current T4: ${formatNumber(p.data.t4)}\nCurrent T5: ${formatNumber(p.data.t5)}`,
+    cellRenderer: (p) => renderTroopDiffStack(p.data.t4Diff, p.data.t5Diff),
   },
   {
-    title: "T4 / T5",
-    data: "t4Diff",
-    className: "metric-stack-cell",
-    render: stackedColumn(
-      (r) => num(r.t4Diff) + num(r.t5Diff),
-      (r) => renderTroopDiffStack(r.t4Diff, r.t5Diff),
-    ),
-    createdCell: (td, v, r) => {
-      td.dataset.tip = `Current T4: ${formatNumber(r.t4)}\nCurrent T5: ${formatNumber(r.t5)}`;
-    },
+    colId: "deadsPower",
+    headerName: "Deads / Power",
+    cellClass: "metric-stack-cell",
+    valueGetter: (p) => num(p.data.deadsDiff),
+    tooltipValueGetter: (p) =>
+      `Current Deads: ${formatNumber(p.data.deads)}\nCurrent Power: ${formatNumber(p.data.power)}`,
+    cellRenderer: (p) =>
+      renderDeadsPowerDiffStack(p.data.deadsDiff, p.data.powerDiff),
   },
   {
-    title: "Deads / Power",
-    data: "deadsDiff",
-    className: "metric-stack-cell",
-    render: stackedColumn(
-      (r) => num(r.deadsDiff),
-      (r) => renderDeadsPowerDiffStack(r.deadsDiff, r.powerDiff),
-    ),
-    createdCell: (td, v, r) => {
-      td.dataset.tip = `Current Deads: ${formatNumber(r.deads)}\nCurrent Power: ${formatNumber(r.power)}`;
-    },
-  },
-  {
-    title: "Acclaim",
-    data: "acclaim",
-    render: DataTable.render.number(",", ".", 0),
+    colId: "acclaim",
+    headerName: "Acclaim",
+    valueGetter: (p) => num(p.data.acclaim),
+    valueFormatter: (p) => (p.data?.acclaim == null ? "" : formatNumber(p.value)),
   },
   sumMetricColumn({
-    title: "Min DKP",
-    data: "minDkp",
-    sumData: "sumMinDkp",
+    headerName: "Min DKP",
+    field: "minDkp",
+    sumField: "sumMinDkp",
     format: formatNumber,
   }),
   sumMetricColumn({
-    title: "DKP",
-    data: "dkp",
-    sumData: "sumDkp",
+    headerName: "DKP",
+    field: "dkp",
+    sumField: "sumDkp",
     format: formatNumber,
-    name: "dkp",
+    colId: "dkp",
+    sort: "desc",
   }),
   sumMetricColumn({
-    title: "DKP %",
-    data: "dkpPercent",
-    sumData: "sumDkpPercent",
+    headerName: "DKP %",
+    field: "dkpPercent",
+    sumField: "sumDkpPercent",
     format: formatPercent,
   }),
-];
+].map((c) =>
+  c.pinned
+    ? c
+    : { flex: 1, minWidth: 130, getQuickFilterText: noQuickFilter, ...c },
+);
 
 const EXPORT_COLUMNS = [
   ["ID", "id"],
@@ -195,165 +198,205 @@ const EXPORT_COLUMNS = [
   ["Deads", "deads"],
   ["Power diff", "powerDiff"],
   ["Acclaim", "acclaim"],
-].map(([title, data, isPercent]) => ({
-  title,
-  data,
-  visible: false,
-  orderable: false,
-  render: isPercent
-    ? (v, type) => (type === "export" ? formatCsvPercent(v) : v)
-    : undefined,
-}));
+].map(([title, data, isPercent]) => ({ title, data, isPercent: !!isPercent }));
 
-const TABLE_COLUMNS = [...VISIBLE_COLUMNS, ...EXPORT_COLUMNS].map((c) => ({
-  searchable: false,
-  ...c,
-}));
-const DKP_COL = TABLE_COLUMNS.findIndex((c) => c.name === "dkp");
 const SUM_FIELDS = new Set(["sumMinDkp", "sumDkp", "sumDkpPercent"]);
-const exportColumnIndexes = () =>
-  EXPORT_COLUMNS.flatMap((c, i) =>
-    hasSums || !SUM_FIELDS.has(c.data) ? [VISIBLE_COLUMNS.length + i] : [],
-  );
-
+const exportColumns = () =>
+  EXPORT_COLUMNS.filter((c) => hasSums || !SUM_FIELDS.has(c.data));
 const exportFilename = () => getExportFileName().replace(/\.csv$/, "");
-const exportOptions = (orthogonal) => ({
-  columns: exportColumnIndexes(),
-  orthogonal,
-  stripHtml: false,
-  modifier: { search: "none", order: "current" },
-});
+
+function getRowsInGridOrder() {
+  const rows = [...allRows];
+  const sorts = gridApi
+    .getColumnState()
+    .filter((c) => c.sort)
+    .sort((a, b) => a.sortIndex - b.sortIndex)
+    .map((c) => ({
+      dir: c.sort === "desc" ? -1 : 1,
+      get: COLUMNS.find((d) => d.colId === c.colId).valueGetter,
+    }));
+  if (!sorts.length) return rows;
+  return rows.sort((a, b) => {
+    for (const { dir, get } of sorts) {
+      const va = get({ data: a });
+      const vb = get({ data: b });
+      const diff =
+        typeof va === "number" && typeof vb === "number"
+          ? va - vb
+          : String(va ?? "").localeCompare(String(vb ?? ""));
+      if (diff) return diff * dir;
+    }
+    return 0;
+  });
+}
+
+function saveBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportCsv() {
+  const cols = exportColumns();
+  const quote = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = [
+    cols.map((c) => quote(c.title)).join(";"),
+    ...getRowsInGridOrder().map((row) =>
+      cols
+        .map((c) =>
+          quote(
+            csvSafeCell(
+              c.isPercent ? formatCsvPercent(row[c.data]) : row[c.data],
+            ),
+          ),
+        )
+        .join(";"),
+    ),
+  ];
+  saveBlob(
+    new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" }),
+    `${exportFilename()}.csv`,
+  );
+}
+
+async function exportExcel() {
+  try {
+    await loadVendor("xlsx");
+  } catch (e) {
+    return showToast(e.message, "error");
+  }
+  const cols = exportColumns();
+  const aoa = [
+    cols.map((c) => c.title),
+    ...getRowsInGridOrder().map((row) => cols.map((c) => row[c.data] ?? null)),
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), "DKP");
+  XLSX.writeFile(wb, `${exportFilename()}.xlsx`, { compression: true });
+}
+
+const ROW_HEIGHT = 60;
+const HEADER_HEIGHT = 44;
+const GRID_MAX_HEIGHT = 700;
+
+function updateGridHeight() {
+  if (!gridApi) return;
+  const count = gridApi.getDisplayedRowCount();
+  const fits = count * ROW_HEIGHT + HEADER_HEIGHT + 2 <= GRID_MAX_HEIGHT;
+  const gridEl = document.getElementById("dkpGrid");
+  const wantLayout = fits ? "autoHeight" : "normal";
+  if (gridApi.getGridOption("domLayout") === wantLayout) return;
+  gridEl.style.height = fits ? "" : `${GRID_MAX_HEIGHT}px`;
+  gridApi.setGridOption("domLayout", wantLayout);
+}
+
+function makeToolbarButton(html, onClick) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "shared-style-btn";
+  btn.innerHTML = html;
+  btn.addEventListener("click", onClick);
+  return btn;
+}
+
+function buildToolbar() {
+  const bar = document.getElementById("dkpToolbar");
+  bar.replaceChildren();
+
+  const buttons = document.createElement("div");
+  buttons.className = "grid-toolbar-buttons";
+
+  const cardBtn = makeToolbarButton(CARD_BTN_TEXT, () => {
+    setCardMode(!cardMode);
+    cardBtn.innerHTML = cardMode ? TABLE_BTN_TEXT : CARD_BTN_TEXT;
+  });
+  const csvBtn = makeToolbarButton(
+    '<i class="fa-solid fa-download" style="font-size: 14px"></i> Export CSV',
+    exportCsv,
+  );
+  const xlsxBtn = makeToolbarButton(
+    '<i class="fa-solid fa-file-excel" style="font-size: 14px"></i> Export Excel',
+    exportExcel,
+  );
+  const copyHtml =
+    '<i class="fa-regular fa-copy" style="font-size: 14px"></i> Copy Top 18';
+  const copyBtn = makeToolbarButton(copyHtml, () => copyTop18(copyBtn, copyHtml));
+  buttons.append(cardBtn, csvBtn, xlsxBtn, copyBtn);
+
+  const searchWrap = document.createElement("div");
+  searchWrap.className = "grid-search";
+  const input = document.createElement("input");
+  input.type = "search";
+  input.placeholder = "Search...";
+  input.setAttribute("aria-label", "Search governors");
+  input.addEventListener("input", () =>
+    gridApi.setGridOption("quickFilterText", input.value),
+  );
+  searchWrap.appendChild(input);
+
+  bar.append(buttons, searchWrap);
+}
 
 function initTable(rowData) {
   hasSums = kvkHasSums(kvkCtx.kvkNumber);
+  allRows = rowData;
 
-  table = new DataTable("#dkpTable", {
-    data: rowData,
-    columns: TABLE_COLUMNS,
-    order: [[DKP_COL, "desc"]],
-    stripeClasses: [],
-    scroller: true,
-    scrollY: "700px",
-    scrollX: true,
-    scrollCollapse: true,
-    fixedColumns: { start: 2 },
-    rowCallback: (row, data, displayNum, displayIndexFull) => {
-      row.cells[0].textContent = displayIndexFull + 1;
-      row.classList.toggle("row-alt", displayIndexFull % 2 === 1);
-    },
+  const gridEl = document.getElementById("dkpGrid");
+  const fits = rowData.length * ROW_HEIGHT + HEADER_HEIGHT + 2 <= GRID_MAX_HEIGHT;
+  if (!fits) gridEl.style.height = `${GRID_MAX_HEIGHT}px`;
 
-    layout: {
-      topStart: {
-        buttons: [
-          {
-            text: CARD_BTN_TEXT,
-            className: "shared-style-btn",
-            action: function () {
-              setCardMode(!cardMode);
-              this.text(cardMode ? TABLE_BTN_TEXT : CARD_BTN_TEXT);
-            },
-          },
-          {
-            extend: "csvHtml5",
-            text: '<i class="fa-solid fa-download" style="font-size: 14px"></i> Export CSV',
-            className: "shared-style-btn",
-            filename: exportFilename,
-            fieldSeparator: ";",
-            newline: "\r\n",
-            bom: true,
-            exportOptions: exportOptions("export"),
-          },
-          {
-            extend: "excelHtml5",
-            text: '<i class="fa-solid fa-file-excel" style="font-size: 14px"></i> Export Excel',
-            className: "shared-style-btn",
-            filename: exportFilename,
-            title: null,
-            exportOptions: exportOptions("excel"),
-          },
-          {
-            text: '<i class="fa-regular fa-copy" style="font-size: 14px"></i> Copy Top 18',
-            className: "shared-style-btn",
-            action: copyTop18,
-          },
-        ],
-      },
-      topEnd: "search",
-      bottomStart: null,
-      bottomEnd: null,
+  gridApi = agGrid.createGrid(gridEl, {
+    theme: createSiteTheme(),
+    rowData,
+    columnDefs: COLUMNS,
+    defaultColDef: { resizable: true, suppressMovable: true },
+    rowHeight: ROW_HEIGHT,
+    headerHeight: HEADER_HEIGHT,
+    domLayout: fits ? "autoHeight" : "normal",
+    suppressCellFocus: true,
+    enableCellTextSelection: true,
+    tooltipShowDelay: 300,
+    localeText: { noMatchingRows: "No matching governors", noRowsToShow: "No governors" },
+    onCellClicked: (e) => {
+      if (e.colDef.colId === "name") onGovernorClick(e.event?.target, e.data);
     },
-    language: {
-      search: "",
-      searchPlaceholder: "Search...",
-      zeroRecords: "No matching governors",
+    onModelUpdated: () => {
+      if (!gridApi) return;
+      gridEl.classList.toggle("is-empty", gridApi.getDisplayedRowCount() === 0);
+      gridApi.refreshCells({ columns: ["rank"], force: true });
+      updateGridHeight();
+      if (cardMode) renderCards();
     },
   });
+
+  buildToolbar();
+
   cardsEl = document.createElement("div");
   cardsEl.id = "dkpCards";
   cardsEl.className = "dkp-cards";
-  table.table().container().querySelector(".dt-scroll").after(cardsEl);
-
-  table.on("draw", () => {
-    if (cardMode) renderCards();
-  });
-  table.table().container().addEventListener("click", onTableClick);
-  initCellTooltip(table.table().container());
+  cardsGridEl = document.createElement("div");
+  cardsGridEl.className = "dkp-cards-grid";
+  cardsEl.appendChild(cardsGridEl);
+  document.getElementById("dkpContainer").appendChild(cardsEl);
+  cardsEl.addEventListener("scroll", scheduleCardLayout, { passive: true });
+  new ResizeObserver(scheduleCardLayout).observe(cardsGridEl);
+  document.getElementById("gridWrapper").addEventListener("click", onCardClick);
 }
 
-const TIP_SHOW_DELAY = 300;
-
-function initCellTooltip(container) {
-  const tip = document.createElement("div");
-  tip.className = "cell-tooltip";
-  document.body.appendChild(tip);
-
-  let timer = null;
-  let activeEl = null;
-
-  const hide = () => {
-    clearTimeout(timer);
-    activeEl = null;
-    tip.classList.remove("visible");
-  };
-
-  const show = (el, x, y) => {
-    tip.textContent = el.dataset.tip;
-    tip.classList.add("visible");
-    const { width, height } = tip.getBoundingClientRect();
-    const gap = 12;
-    let left = x + gap;
-    let top = y + gap;
-    if (left + width > window.innerWidth - 8) left = x - width - gap;
-    if (top + height > window.innerHeight - 8) top = y - height - gap;
-    tip.style.left = `${Math.max(8, left)}px`;
-    tip.style.top = `${Math.max(8, top)}px`;
-  };
-
-  container.addEventListener("mouseover", (e) => {
-    const el = e.target.closest("[data-tip]");
-    if (!el || el === activeEl) return;
-    hide();
-    activeEl = el;
-    const { clientX, clientY } = e;
-    timer = setTimeout(() => show(el, clientX, clientY), TIP_SHOW_DELAY);
-  });
-  container.addEventListener("mouseout", (e) => {
-    if (activeEl && !activeEl.contains(e.relatedTarget)) hide();
-  });
-  container.addEventListener("scroll", hide, true);
-  container.addEventListener("click", hide);
-}
-
-function onTableClick(e) {
-  const nameEl = e.target.closest(".gov-name-link");
-  const idEl = e.target.closest(".gov-id");
-  if (!nameEl && !idEl) return;
-
+function onCardClick(e) {
   const card = e.target.closest(".dkp-card");
-  const row = card
-    ? table.row(Number(card.dataset.row)).data()
-    : table.row(e.target.closest("tr")).data();
-  if (!row) return;
+  if (card) onGovernorClick(e.target, cardRows[Number(card.dataset.row)]);
+}
+
+function onGovernorClick(target, row) {
+  const nameEl = target?.closest(".gov-name-link");
+  const idEl = target?.closest(".gov-id");
+  if ((!nameEl && !idEl) || !row) return;
 
   if (nameEl) {
     openGovModal(String(row.id), row.name || "");
@@ -374,15 +417,14 @@ function onTableClick(e) {
   });
 }
 
-async function copyTop18(e, dt, node, config) {
-  const rows = dt.rows().data().toArray();
+async function copyTop18(btn, originalHtml) {
   const dkpKey = hasSums ? "sumDkp" : "dkp";
-  if (!rows.length) {
+  if (!allRows.length) {
     showToast("No data loaded yet.", "info");
     return;
   }
 
-  const text = rows
+  const text = [...allRows]
     .sort((a, b) => num(b[dkpKey]) - num(a[dkpKey]))
     .slice(0, 18)
     .map((row, i) => `${i + 1}. ${row.id} ${row.name}`)
@@ -393,16 +435,18 @@ async function copyTop18(e, dt, node, config) {
     return;
   }
 
-  this.text("✓ Copied!");
-  this.disable();
+  btn.textContent = "✓ Copied!";
+  btn.disabled = true;
   setTimeout(() => {
-    this.text(config.text);
-    this.enable();
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
   }, 2000);
 }
 
 let cardsEl = null;
+let cardsGridEl = null;
 let cardMode = false;
+let cardRows = [];
 
 const CARD_BTN_TEXT =
   '<i class="fa-solid fa-table-cells-large" style="font-size: 14px"></i> Card view';
@@ -422,7 +466,7 @@ function renderCard(r, rowIdx, rank) {
     <div class="dkp-card" data-row="${rowIdx}">
       <div class="dkp-card-head">
         <span class="dkp-card-rank">${rank}</span>
-        ${renderGovernor(r)}
+        ${renderGovernor(r, true)}
       </div>
       ${field("Killpoints", `<span class="${kpCls}">${formatSignedNumber(r.killPointsDiff)}</span>`)}
       ${field("T4 / T5", renderTroopDiffStack(r.t4Diff, r.t5Diff))}
@@ -434,22 +478,64 @@ function renderCard(r, rowIdx, rank) {
     </div>`;
 }
 
+const CARD_BUFFER_ROWS = 2;
+let cardWindow = { start: -1, end: -1, cols: 0, stride: 0 };
+
+function layoutCards() {
+  const total = cardRows.length;
+  const cs = getComputedStyle(cardsGridEl);
+  const cols = Math.max(1, cs.gridTemplateColumns.split(" ").length);
+  const gap = parseFloat(cs.rowGap) || 0;
+  const first = cardsGridEl.firstElementChild;
+  const stride = (first ? first.offsetHeight : 330) + gap;
+  const rows = Math.ceil(total / cols);
+  const viewTop = Math.min(cardsEl.scrollTop, Math.max(0, rows * stride - cardsEl.clientHeight));
+  const firstRow = Math.max(0, Math.floor(viewTop / stride) - CARD_BUFFER_ROWS);
+  const lastRow = Math.min(
+    rows - 1,
+    Math.ceil((viewTop + cardsEl.clientHeight) / stride) + CARD_BUFFER_ROWS,
+  );
+  const start = firstRow * cols;
+  const end = Math.min(total, (lastRow + 1) * cols);
+
+  const same =
+    start === cardWindow.start &&
+    end === cardWindow.end &&
+    cols === cardWindow.cols &&
+    stride === cardWindow.stride;
+  if (same) return;
+  cardWindow = { start, end, cols, stride };
+
+  cardsGridEl.style.paddingTop = `${firstRow * stride}px`;
+  cardsGridEl.style.paddingBottom = `${Math.max(0, rows - lastRow - 1) * stride}px`;
+  let html = "";
+  for (let i = start; i < end; i++) html += renderCard(cardRows[i], i, i + 1);
+  cardsGridEl.innerHTML = html;
+
+  if (!first && cardsGridEl.firstElementChild) layoutCards();
+}
+
+let cardLayoutFrame = 0;
+function scheduleCardLayout() {
+  if (!cardMode || cardLayoutFrame) return;
+  cardLayoutFrame = requestAnimationFrame(() => {
+    cardLayoutFrame = 0;
+    layoutCards();
+  });
+}
+
 function renderCards() {
-  const rows = table.rows({ search: "applied", order: "applied" });
-  const idx = rows.indexes().toArray();
-  const data = rows.data().toArray();
-  cardsEl.innerHTML = data.map((r, i) => renderCard(r, idx[i], i + 1)).join("");
+  cardRows = [];
+  gridApi.forEachNodeAfterFilterAndSort((node) => cardRows.push(node.data));
+  cardWindow = { start: -1, end: -1, cols: 0, stride: 0 };
+  cardsEl.scrollTop = 0;
+  layoutCards();
 }
 
 function setCardMode(on) {
   cardMode = on;
-  table.table().container().classList.toggle("dkp-cards-on", on);
-  if (on) {
-    renderCards();
-  } else {
-    table.columns.adjust();
-    table.scroller?.measure?.(false);
-  }
+  document.getElementById("dkpContainer").classList.toggle("dkp-cards-on", on);
+  if (on) renderCards();
 }
 
 function renderTopPlayers(players, dkpKey) {
@@ -477,7 +563,6 @@ function renderTotals(rows = []) {
 
 async function initDashboard() {
   const spinner = document.getElementById("loading-spinner");
-  loadEquipRefData();
   try {
     await loadKvkContext();
     const rows = await loadDashboardRows();
