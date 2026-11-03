@@ -1,27 +1,51 @@
+if (window.agGrid) {
+  agGrid.ModuleRegistry.registerModules([agGrid.AllCommunityModule]);
+}
+
+const SITE_ROW_HEIGHT = 40;
+const SITE_HEADER_HEIGHT = 44;
+
+function createSiteTheme() {
+  return agGrid.themeQuartz.withParams({
+    browserColorScheme: "inherit",
+    fontFamily: "inherit",
+    fontSize: 14,
+    backgroundColor: "var(--table-bg)",
+    foregroundColor: "var(--text-color)",
+    borderColor: "var(--table-border)",
+    headerBackgroundColor: "var(--table-bg)",
+    headerTextColor: "var(--text-color)",
+    headerFontWeight: 700,
+    oddRowBackgroundColor: "var(--table-stripe-even)",
+    rowHoverColor: "var(--row-hover-bg)",
+    rowBorder: { style: "solid", width: 1, color: "var(--table-border)" },
+    headerRowBorder: { style: "solid", width: 2, color: "var(--table-border)" },
+    columnBorder: false,
+    wrapperBorder: { style: "solid", width: 1, color: "var(--table-border)" },
+    wrapperBorderRadius: 10,
+    cellHorizontalPadding: 12,
+    headerColumnResizeHandleColor: "transparent",
+    pinnedColumnBorder: { style: "solid", width: 1, color: "var(--table-border)" },
+    iconSize: 14,
+    tooltipBackgroundColor: "color-mix(in srgb, var(--text-color) 4%, var(--table-bg))",
+    tooltipTextColor: "var(--text-color)",
+    tooltipBorder: { style: "solid", width: 1, color: "var(--table-border)" },
+  });
+}
+
 const siteTables = new WeakMap();
 
 function destroySiteTable(container) {
-  const dt = siteTables.get(container);
-  if (dt) {
+  const entry = siteTables.get(container);
+  if (entry) {
     try {
-      dt.destroy();
+      entry.api.destroy();
     } catch (e) {
       console.warn("Could not destroy table:", e);
     }
     siteTables.delete(container);
   }
   container.replaceChildren();
-}
-
-function refreshSiteTable(container) {
-  const dt = siteTables.get(container);
-  if (!dt) return;
-  try {
-    dt.columns.adjust();
-    dt.scroller?.measure?.();
-  } catch (e) {
-    console.warn("Could not refresh table:", e);
-  }
 }
 
 function collectKeys(rows) {
@@ -41,6 +65,38 @@ function objectsToRows(rows, keys = collectKeys(rows)) {
   return { keys, data: rows.map((r) => keys.map((k) => r[k] ?? null)) };
 }
 
+function buildSiteColumnDefs(columns, order) {
+  return columns.map((c, i) => {
+    const def = {
+      colId: `c${i}`,
+      field: String(i), // rows are arrays, so the field is the index
+      headerName: c.title ?? "",
+      sortable: c.orderable !== false,
+    };
+    if (c.render) {
+      def.cellRenderer = (p) => c.render(p.value, "display", p.data) ?? "";
+    }
+    const ord = order.findIndex(([idx]) => idx === i);
+    if (ord !== -1) {
+      def.sort = order[ord][1] || "asc";
+      def.sortIndex = ord;
+    }
+    return def;
+  });
+}
+
+function createSiteSearch(onInput) {
+  const wrap = document.createElement("div");
+  wrap.className = "grid-search";
+  const input = document.createElement("input");
+  input.type = "search";
+  input.placeholder = "Search...";
+  input.setAttribute("aria-label", "Search table");
+  input.addEventListener("input", () => onInput(input.value));
+  wrap.appendChild(input);
+  return wrap;
+}
+
 function createSiteTable(container, options) {
   const {
     columns,
@@ -53,67 +109,59 @@ function createSiteTable(container, options) {
   } = options;
 
   destroySiteTable(container);
-  container.classList.add("dt-wrap");
+  container.classList.add("grid-wrap");
 
   if (title) {
     const heading = document.createElement("div");
-    heading.className = "dt-title";
+    heading.className = "grid-title";
     heading.textContent = title;
     container.appendChild(heading);
   }
 
   const host = document.createElement("div");
-  if (plain) host.className = "dt-plain-box";
-  const tableEl = document.createElement("table");
-  tableEl.className = "display";
-  tableEl.style.width = "100%";
-  host.appendChild(tableEl);
-  container.appendChild(host);
+  host.className = "grid-host";
+  const maxHeight = parseFloat(height);
+  const contentHeight = data.length * SITE_ROW_HEIGHT + SITE_HEADER_HEIGHT + 2;
+  const autoHeight = contentHeight <= maxHeight;
+  if (!autoHeight) host.style.height = height;
 
-  const config = {
-    data,
-    columns: columns.map((c) => ({
-      title: c.titleHtml ?? escapeHtml(c.title),
-      render: c.render ?? DataTable.render.text(),
-      className: c.className,
-      orderable: c.orderable,
-      defaultContent: "",
-    })),
-    order,
-    stripeClasses: [],
-    rowCallback: (row, _data, _num, displayIndexFull) => {
-      row.classList.toggle("row-alt", displayIndexFull % 2 === 1);
+  const gridOptions = {
+    theme: createSiteTheme(),
+    rowData: data,
+    columnDefs: buildSiteColumnDefs(columns, order),
+    defaultColDef: {
+      resizable: false,
+      suppressMovable: true,
+      minWidth: 90,
+      maxWidth: 700,
     },
-    language: {
-      search: "",
-      searchPlaceholder: "Search...",
-      zeroRecords: "No matching rows",
+    rowHeight: SITE_ROW_HEIGHT,
+    headerHeight: SITE_HEADER_HEIGHT,
+    domLayout: autoHeight ? "autoHeight" : "normal",
+    autoSizeStrategy: {
+      type: "fitCellContents",
+      scaleUpToFitGridWidth: true,
+      continuous: true,
+      shouldAutoSizeColumns: () => true,
     },
+    suppressCellFocus: true,
+    enableCellTextSelection: true,
+    tooltipShowDelay: 300,
+    localeText: { noMatchingRows: "No matching rows", noRowsToShow: "No rows" },
+    onModelUpdated: (e) =>
+      host.classList.toggle("is-empty", e.api.getDisplayedRowCount() === 0),
   };
 
-  if (plain) {
-    Object.assign(config, {
-      paging: false,
-      searching: false,
-      info: false,
-      layout: { topStart: null, topEnd: null, bottomStart: null, bottomEnd: null },
-    });
-  } else {
-    Object.assign(config, {
-      scroller: true,
-      scrollY: height,
-      scrollX: true,
-      scrollCollapse: true,
-      layout: {
-        topStart: null,
-        topEnd: search ? "search" : null,
-        bottomStart: null,
-        bottomEnd: null,
-      },
-    });
+  let api = null;
+  if (!plain && search) {
+    container.appendChild(
+      createSiteSearch((v) => api?.setGridOption("quickFilterText", v)),
+    );
   }
+  container.appendChild(host);
 
-  const dt = new DataTable(tableEl, config);
-  siteTables.set(container, dt);
-  return dt;
+  api = agGrid.createGrid(host, gridOptions);
+  siteTables.set(container, { api });
+
+  return api;
 }
