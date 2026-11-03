@@ -46,16 +46,18 @@ function loadRefFile(kind) {
 async function loadEquipRefData(kinds = DEFAULT_REF_KINDS) {
   await Promise.all(kinds.map(loadRefFile));
 
-  refData.inscriptionsByName = {};
-  for (const [key, info] of Object.entries(refData.inscriptions)) {
-    const nameKey = String(info.name || key).trim().toLowerCase();
-    refData.inscriptionsByName[nameKey] = { key, ...info };
+  if (kinds.includes("inscriptions") && !Object.keys(refData.inscriptionsByName).length) {
+    for (const [key, info] of Object.entries(refData.inscriptions)) {
+      const nameKey = String(info.name || key).trim().toLowerCase();
+      refData.inscriptionsByName[nameKey] = { key, ...info };
+    }
   }
-  refData.armamentsByKey = {};
-  for (const [key, info] of Object.entries(refData.armaments)) {
-    const entry = { key, ...info };
-    refData.armamentsByKey[normalizeArmamentKey(key)] = entry;
-    if (info.name) refData.armamentsByKey[normalizeArmamentKey(info.name)] = entry;
+  if (kinds.includes("armaments") && !Object.keys(refData.armamentsByKey).length) {
+    for (const [key, info] of Object.entries(refData.armaments)) {
+      const entry = { key, ...info };
+      refData.armamentsByKey[normalizeArmamentKey(key)] = entry;
+      if (info.name) refData.armamentsByKey[normalizeArmamentKey(info.name)] = entry;
+    }
   }
 }
 
@@ -108,6 +110,39 @@ const ARM_STAT_DEFS = Array.from({ length: ARM_STAT_COUNT }, (_, i) => {
 
 function armStatColumns(prefix) {
   return ARM_STAT_DEFS.map((s) => ({ n: prefix + s.nameKey, v: prefix + s.valKey }));
+}
+
+const MARCH_COLUMN_RE =
+  /^(?:helm|chest|weapon|gloves|legs|boots|accessory|accessory_sec)_(\d+)$/;
+
+function maxNumberedColumn(row, re) {
+  let max = 0;
+  if (!row) return max;
+  for (const key of Object.keys(row)) {
+    const m = re.exec(key);
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return max;
+}
+
+function marchSuffixes(row) {
+  const count = Math.max(1, maxNumberedColumn(row, MARCH_COLUMN_RE));
+  return Array.from({ length: count }, (_, i) => (i === 0 ? "" : String(i + 1)));
+}
+
+function pairCount(row) {
+  return maxNumberedColumn(row, /^pair(\d+)_comm[12]$/);
+}
+
+function armSlotsFor(row) {
+  return Array.from({ length: maxNumberedColumn(row, /^arm(\d+)$/) }, (_, i) => ({
+    prefix: `arm${i + 1}`,
+    label: `Arm ${i + 1}`,
+  }));
+}
+
+function skinKeysFor(row) {
+  return Array.from({ length: maxNumberedColumn(row, /^skin(\d+)$/) }, (_, i) => `skin${i + 1}`);
 }
 
 function isEmptyVal(v) {
