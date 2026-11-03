@@ -6,18 +6,13 @@
     <title>DKP Tool</title>
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.css"
+      integrity="sha512-x9WwyMYBnlXMNQ6kQ/Lyzu1NqIhLQKL5Oq6xByfXuRj7s9CskyCbLv/1IjqzJmXwFXWr0ov6jBV7Qbc0hh9nHg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     />
     <link rel="stylesheet" href="css/shared.css" />
-        <link
-      href="https://cdn.datatables.net/v/dt/dt-3.1.2/datatables.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.datatables.net/scroller/3.1.1/css/scroller.dataTables.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="css/datatable.css" />
+    <link rel="stylesheet" href="css/grid.css" />
     <link rel="stylesheet" href="css/dkp.css" />
   </head>
   <body>
@@ -47,8 +42,6 @@
               <a href="dkp.html" class="active">DKP Calculator</a>
               <a href="merge.html">Merge</a>
               <a href="equipment.html">Equipment Editor</a>
-              <a href="map.html">Aoo planner</a>
-              <a href="dbexplorer.html">DB Explorer</a>
               <a href="kvkimport.html">KvK Import</a>
             </div>
           </div>
@@ -248,10 +241,23 @@
       </div>
     </footer>
 
-    <script src="https://cdn.datatables.net/v/dt/dt-3.1.2/datatables.min.js"></script>
-    <script src="https://cdn.datatables.net/scroller/3.1.1/js/dataTables.scroller.min.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ag-grid/36.2.0/ag-grid-community.js"
+      integrity="sha512-PIsR+zmMPsKiHj4lGTVZI4v8d8P7uT/AASWS0EgH4fOKpkggPi7zEQWe5yg3ek/omNH+f+Afm6tdg5v2vp+yfw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"
+      integrity="sha512-AXreDm/maQt99+BKeuV5VUY8x0xBAZPX6OYenHRlRwG/C35PKcZ7GQXITTR8Zf3cLHeTfwVDLEMBBPf7laKtAA=="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"
+      integrity="sha512-+BMamP0e7wn39JGL8nKAZ3yAQT2dL5oaXWr4ZYlTGkKOaoXM/Yj7c4oy50Ngz5yoUutAG17flueD4F6QpTlPng=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
     <script src="js/common.js"></script>
     <script src="js/supabase.js"></script>
     <script src="js/siteTable.js"></script>
