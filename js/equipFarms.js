@@ -164,6 +164,36 @@ async function deleteFarmRow(id, name) {
   }
 }
 
+function filterFarmRows(q) {
+  const base = farmRows.filter(
+    (r) => String(r.name).toLowerCase().includes(q) || String(r.player_id).includes(q),
+  );
+  if (!/^\d+$/.test(q)) return base;
+
+  const id = Number(q);
+  const isMain = (r) => String(r.acc_type || "").toLowerCase() === "main";
+  const exact = farmRows.filter((r) => Number(r.player_id) === id);
+  const mainIds = new Set([id]);
+  exact.forEach((r) => {
+    const m = Number(r.main_id);
+    if (m && m !== id) mainIds.add(m);
+  });
+
+  const family = farmRows.filter(
+    (r) => mainIds.has(Number(r.player_id)) || mainIds.has(Number(r.main_id)),
+  );
+  if (!family.length) return base;
+
+  const seen = new Set();
+  const merged = [...family, ...base].filter((r) => {
+    const key = r.id ?? `${r.player_id}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return merged.sort((a, b) => Number(!isMain(a)) - Number(!isMain(b)));
+}
+
 async function renderFarmsTable(reload = false) {
   if (!farmsTableBody) return;
 
@@ -187,12 +217,7 @@ async function renderFarmsTable(reload = false) {
   if (farmNewRowOpen) farmsTableBody.appendChild(buildFarmRow(null));
 
   const q = (farmSearchInput?.value || "").trim().toLowerCase();
-  const rows = q
-    ? farmRows.filter(
-        (r) =>
-          String(r.name).toLowerCase().includes(q) || String(r.player_id).includes(q),
-      )
-    : farmRows;
+  const rows = q ? filterFarmRows(q) : farmRows;
 
   if (!rows.length && !farmNewRowOpen) {
     const tr = document.createElement("tr");
