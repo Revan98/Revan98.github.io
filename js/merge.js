@@ -87,8 +87,14 @@ async function handleFiles() {
     return;
   }
 
-  file1Data = await readExcel(file1);
-  file2Data = await readExcel(file2);
+  try {
+    file1Data = await readExcel(file1);
+    file2Data = await readExcel(file2);
+  } catch (e) {
+    console.error(e);
+    showToast("Could not read the file: " + (e.message || e), "error");
+    return;
+  }
 
   if (!file1Data.length || !file2Data.length) return;
 
@@ -119,10 +125,11 @@ async function doMerge() {
 
     progressEl.value = 10;
 
+    const keyOf = (v) => (v == null ? "" : String(v).trim());
     const map = new Map();
     for (const row of file2Data) {
-      const id = row[sourceIdColumn];
-      if (id == null) continue;
+      const id = keyOf(row[sourceIdColumn]);
+      if (!id) continue;
       map.set(id, row[mergeColumn]);
     }
 
@@ -132,8 +139,7 @@ async function doMerge() {
       if (i % 100 === 0) {
         progressEl.value = 40 + (i / file1Data.length) * 40;
       }
-      const id = row[idColumn];
-      const newVal = map.get(id);
+      const newVal = map.get(keyOf(row[idColumn]));
       if (newVal !== undefined) {
         return { ...row, [mergeColumn]: newVal };
       }
