@@ -23,6 +23,8 @@ let SKIN_COUNT = DEFAULT_SKIN_COUNT;
 
 let editorReady = false;
 let loadTicket = 0;
+let loadBlock = null;
+let loadedGovId = null;
 const dbStatus = document.getElementById("dbStatus");
 
 let currentMarch = 1;
@@ -75,7 +77,6 @@ const addMarchBtn = document.getElementById("addMarchBtn");
 const addPairBtn = document.getElementById("addPairBtn");
 const addArmBtn = document.getElementById("addArmBtn");
 const addSkinBtn = document.getElementById("addSkinBtn");
-
 
 async function connectToDatabase() {
   setDbStatus("Connecting…", "");
@@ -286,6 +287,8 @@ govIdInput.addEventListener("blur", () => {
 newGovBtn.addEventListener("click", () => {
   if (!editorReady) return;
   clearAllData();
+  loadBlock = null;
+  loadedGovId = null;
   hideGovIdSuggestions();
   govIdInput.value = "";
   govNameInput.value = "";
@@ -480,6 +483,9 @@ async function loadGovernorById(safeGovId) {
 
   const ticket = ++loadTicket;
   clearAllData();
+  govNameInput.value = "";
+  loadedGovId = null;
+  loadBlock = "Still loading this governor, wait a moment before saving.";
   setGovBadge("");
   showSaveStatus("Loading…", "info");
 
@@ -488,10 +494,15 @@ async function loadGovernorById(safeGovId) {
     data = await edLoadGovernor(safeGovId);
   } catch (e) {
     console.error("loadGovernor:", e);
-    if (ticket === loadTicket) showSaveStatus("Could not load governor: " + e.message, "err");
+    if (ticket === loadTicket) {
+      loadBlock = "Loading this governor failed. Reload it before saving, otherwise an empty record would overwrite it.";
+      showSaveStatus("Could not load governor: " + e.message, "err");
+    }
     return;
   }
   if (ticket !== loadTicket) return;
+  loadBlock = null;
+  loadedGovId = String(safeGovId);
   showSaveStatus("", "");
 
   if (data.name) govNameInput.value = data.name;
@@ -529,6 +540,16 @@ async function saveGovernor() {
   if (!safeGovId) {
     showSaveStatus("Enter a numeric Governor ID first.", "err");
     return;
+  }
+  if (loadBlock) {
+    showSaveStatus(loadBlock, "err");
+    return;
+  }
+  if (loadedGovId && loadedGovId !== safeGovId) {
+    const ok = confirm(
+      `The editor holds the data of governor ${loadedGovId}, but the ID field now says ${safeGovId}.\n\nSaving will overwrite governor ${safeGovId} with that data. Continue?`,
+    );
+    if (!ok) return;
   }
 
   const equipment = {};
@@ -574,6 +595,7 @@ async function saveGovernor() {
       skins,
       vip: vipLevel,
     });
+    loadedGovId = safeGovId;
     setGovBadge("loaded");
     showSaveStatus("✓ Governor saved.", "ok");
   } catch (e) {
