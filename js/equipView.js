@@ -9,18 +9,6 @@ const EQUIP_SLOTS = [
   { key: "accessory_sec", label: "Acc. 2", id: "accessory_sec" },
 ];
 
-const ARM_SLOTS = [
-  { prefix: "arm1", label: "Arm 1" },
-  { prefix: "arm2", label: "Arm 2" },
-  { prefix: "arm3", label: "Arm 3" },
-  { prefix: "arm4", label: "Arm 4" },
-  { prefix: "arm5", label: "Arm 5" },
-  { prefix: "arm6", label: "Arm 6" },
-  { prefix: "arm7", label: "Arm 7" },
-  { prefix: "arm8", label: "Arm 8" },
-];
-const SKIN_SLOTS = Array.from({ length: 8 }, (_, i) => `skin${i + 1}`);
-
 function isMarchEmpty(row, suffix) {
   return EQUIP_SLOTS.every((slot) => {
     const colKey = suffix ? `${slot.key}_${suffix}` : slot.key;
@@ -97,7 +85,7 @@ function renderPairBox(name) {
 }
 
 function renderPairsSection(row) {
-  const PAIR_COUNT = 12;
+  const PAIR_COUNT = pairCount(row);
   let pairCards = "";
   for (let n = 1; n <= PAIR_COUNT; n++) {
     const comm1 = row[`pair${n}_comm1`];
@@ -142,7 +130,7 @@ function renderSingleSkinItem(skinCode) {
 
 function renderCitySkinSection(skinsRow) {
   const owned = skinsRow
-    ? SKIN_SLOTS.map((key) => skinsRow[key]).filter((v) => !isEmptyVal(v))
+    ? skinKeysFor(skinsRow).map((key) => skinsRow[key]).filter((v) => !isEmptyVal(v))
     : [];
   if (!owned.length) {
     return `
@@ -170,7 +158,7 @@ function renderArmamentRow(armRow) {
       <div class="gov-modal-empty" style="padding:1rem 0;">No armament data found.</div>
     </div>`;
 
-  const arms = ARM_SLOTS.map((arm) => {
+  const arms = armSlotsFor(armRow).map((arm) => {
     const name = armRow[arm.prefix];
     if (isEmptyVal(name)) return "";
 
@@ -247,20 +235,7 @@ function renderEquipmentSection(govId) {
     return `<div class="equip-grid"><div class="equip-marches">${renderEmptyEquipmentMarch(1)}</div>${renderArmamentRow(armRow)}${citySkinHtml}</div>`;
   }
 
-  const MARCH_SUFFIXES = [
-    "",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-  ];
+  const MARCH_SUFFIXES = marchSuffixes(row);
   let marchRows = "";
 
   MARCH_SUFFIXES.forEach((suffix, idx) => {
