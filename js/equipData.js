@@ -24,7 +24,7 @@ function edSaveGovernor({ govId, name, equipment, armaments, skins, vip }) {
 function edListFarms() {
   return sbSelectAll(
     "farm_accounts",
-    "select=id,name,player_id,power,killpoints,deads,ch,acc_type,main_id&order=name.asc",
+    "select=id,name,player_id,power,killpoints,deads,ch,acc_type,main_id&order=name.asc,id.asc",
   );
 }
 
