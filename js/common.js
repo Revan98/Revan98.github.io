@@ -3,15 +3,19 @@ function normalizeNumericId(value) {
   return /^\d+$/.test(id) ? id : null;
 }
 
-/* function getKDFromURL() {
-  return normalizeNumericId(new URLSearchParams(location.search).get("kd"));
-} */
-
 function getKvkNumberFromURL() {
   return normalizeNumericId(new URLSearchParams(location.search).get("kvk"));
 }
 
 const num = (v) => Number(v) || 0;
+const CSV_FORMULA_START = /^[=+\-@\t\r]/;
+const CSV_NUMERIC_LIKE = /^[-+]?\d+([.,]\d+)?([eE][-+]?\d+)?%?$/;
+function csvSafeCell(value) {
+  if (typeof value !== "string") return value;
+  return CSV_FORMULA_START.test(value) && !CSV_NUMERIC_LIKE.test(value)
+    ? "'" + value
+    : value;
+}
 
 function formatNumber(value) {
   return Number(value || 0).toLocaleString("en-US");
@@ -93,21 +97,6 @@ function importToFloat(v) {
   if (v === null || v === undefined || v === "") return 0;
   const n = Number(String(v).replace(/,/g, "").trim());
   return Number.isFinite(n) ? n : 0;
-}
-
-const SQL_JS_FALLBACK_URL = "https://cdn.jsdelivr.net/npm/sql.js@1.14.2/dist/";
-let sqlJsPromise = null;
-
-function getSqlJs() {
-  if (!sqlJsPromise) {
-    const tag = document.querySelector('script[src*="sql-wasm"]');
-    const base = tag ? tag.src.replace(/sql-wasm[^/]*$/, "") : SQL_JS_FALLBACK_URL;
-    sqlJsPromise = initSqlJs({ locateFile: (f) => base + f });
-    sqlJsPromise.catch(() => {
-      sqlJsPromise = null;
-    });
-  }
-  return sqlJsPromise;
 }
 
 function searchByName(query, sources) {
@@ -278,3 +267,37 @@ function initToolsDropdown() {
 initTheme();
 initNav();
 initToolsDropdown();
+
+const VENDOR_SCRIPTS = {
+  xlsx: {
+    src: "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js",
+    integrity: "sha512-AXreDm/maQt99+BKeuV5VUY8x0xBAZPX6OYenHRlRwG/C35PKcZ7GQXITTR8Zf3cLHeTfwVDLEMBBPf7laKtAA==",
+    global: "XLSX",
+  },
+  chart: {
+    src: "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.6.1/chart.umd.min.js",
+    integrity: "sha512-vMRyUfXe50uUhhDC+fk6UYBA/1VPj+I7Jn+wK0A3+wSVeUgT9OCz/xoF2M8KFvrmUOlb4Anv0FQUw8NafuzYPw==",
+    global: "Chart",
+  },
+};
+const vendorLoads = {};
+
+function loadVendor(name) {
+  const lib = VENDOR_SCRIPTS[name];
+  if (window[lib.global]) return Promise.resolve();
+  vendorLoads[name] ??= new Promise((resolve, reject) => {
+    const el = document.createElement("script");
+    el.src = lib.src;
+    el.integrity = lib.integrity;
+    el.crossOrigin = "anonymous";
+    el.referrerPolicy = "no-referrer";
+    el.onload = resolve;
+    el.onerror = () => {
+      delete vendorLoads[name];
+      el.remove();
+      reject(new Error(`Could not load ${lib.global}. Check your connection and try again.`));
+    };
+    document.head.appendChild(el);
+  });
+  return vendorLoads[name];
+}
