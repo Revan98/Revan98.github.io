@@ -25,51 +25,65 @@ function formatSnapshotDate(snapshotDate) {
 }
 
 const CHART_SERIES = [
-  { key: "kpDiff", label: "KP Diff", secondary: false },
-  { key: "powerDiff", label: "Power Diff", secondary: true },
-  { key: "t4Diff", label: "T4 Diff", secondary: true },
-  { key: "t5Diff", label: "T5 Diff", secondary: true },
-  { key: "deadsDiff", label: "Deads Diff", secondary: true },
+  { key: "kpDiff", label: "KP Diff", color: "#dc3545" },
+  { key: "powerDiff", label: "Power Diff", color: "#007bff" },
+  { key: "t4Diff", label: "T4 Diff", color: "#28a745" },
+  { key: "t5Diff", label: "T5 Diff", color: "#ffc107" },
+  { key: "deadsDiff", label: "Deads Diff", color: "#6f42c1" },
 ];
-const CHART_COLORS = ["#dc3545", "#007bff", "#28a745", "#ffc107", "#6f42c1"];
 
-function buildChartDatasets(series) {
-  return CHART_SERIES.map((s, i) => ({
-    label: s.label,
-    data: series.map((row) => Number(row[s.key] || 0)),
-    tension: 0.25,
-    borderColor: CHART_COLORS[i],
-    backgroundColor: CHART_COLORS[i] + "33",
-    pointRadius: 3,
-    yAxisID: s.secondary ? "ySecondary" : "y",
-  }));
+let chartSeries = [];
+let activeChartKey = CHART_SERIES[0].key;
+
+const getChartStat = (key) =>
+  CHART_SERIES.find((s) => s.key === key) ?? CHART_SERIES[0];
+
+function chartStatData(stat) {
+  return chartSeries.map((row) => Number(row[stat.key] || 0));
 }
 
-function createChart(ctx, labels, datasets) {
+function renderChartButtons() {
+  return CHART_SERIES.map(
+    (s) =>
+      `<button type="button" class="chart-stat-btn${s.key === activeChartKey ? " active" : ""}" ` +
+      `data-key="${s.key}" aria-pressed="${s.key === activeChartKey}" ` +
+      `onclick="selectChartStat('${s.key}')">${s.label}</button>`,
+  ).join("");
+}
+
+function createChart(ctx, labels) {
+  const stat = getChartStat(activeChartKey);
   inlineChart = new Chart(ctx, {
     type: "line",
-    data: { labels, datasets },
+    data: {
+      labels,
+      datasets: [
+        {
+          label: stat.label,
+          data: chartStatData(stat),
+          tension: 0.25,
+          pointRadius: 3,
+          borderColor: stat.color,
+          backgroundColor: stat.color + "33",
+		  fill: "origin",
+        },
+      ],
+    },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: "index", intersect: false },
       plugins: {
-        title: {
-          display: false,
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (item) => `${item.dataset.label}: ${formatNumber(item.parsed.y)}`,
+          },
         },
-        legend: {},
       },
       scales: {
         x: {},
-        y: {
-          type: "linear",
-          position: "left",
-        },
-        ySecondary: {
-          type: "linear",
-          position: "right",
-          grid: { drawOnChartArea: false },
-        },
+        y: { ticks: { callback: (value) => formatCompact(value) } },
       },
     },
   });
@@ -86,20 +100,14 @@ function applyChartTheme() {
     ds.pointBorderColor = styles.pointBorder;
   });
 
-  inlineChart.options.plugins.legend.labels.color = styles.text;
   inlineChart.options.plugins.tooltip.backgroundColor = styles.tooltipBg;
   inlineChart.options.plugins.tooltip.titleColor = styles.text;
   inlineChart.options.plugins.tooltip.bodyColor = styles.text;
 
-  const axes = ["x", "y", "ySecondary"];
-  axes.forEach((axis) => {
-    if (inlineChart.options.scales[axis]) {
-      inlineChart.options.scales[axis].ticks.color = styles.text;
-      inlineChart.options.scales[axis].grid.color = styles.grid;
-      if (inlineChart.options.scales[axis].title) {
-        inlineChart.options.scales[axis].title.color = styles.text;
-      }
-    }
+  ["x", "y"].forEach((axis) => {
+    const scale = inlineChart.options.scales[axis];
+    scale.ticks.color = styles.text;
+    scale.grid.color = styles.grid;
   });
 
   inlineChart.update();
@@ -107,20 +115,40 @@ function applyChartTheme() {
 
 window.addEventListener("themechange", applyChartTheme);
 
+function selectChartStat(key) {
+  activeChartKey = getChartStat(key).key;
+  document.querySelectorAll(".chart-stat-btn").forEach((btn) => {
+    const on = btn.dataset.key === activeChartKey;
+    btn.classList.toggle("active", on);
+    btn.setAttribute("aria-pressed", on);
+  });
+  if (!inlineChart) return;
+
+  const stat = getChartStat(activeChartKey);
+  const ds = inlineChart.data.datasets[0];
+  ds.label = stat.label;
+  ds.data = chartStatData(stat);
+  ds.borderColor = stat.color;
+  ds.backgroundColor = stat.color + "33";
+  applyChartTheme();
+}
+
+function destroyChart() {
+  inlineChart?.destroy();
+  inlineChart = null;
+}
+
 async function updateChart(governorId) {
   const canvas = document.querySelector("#modal-chart");
   if (!canvas) return;
 
-  const series = await loadGovernorSeries(governorId);
+  const [series] = await Promise.all([loadGovernorSeries(governorId), loadVendor("chart")]);
   if (!document.body.contains(canvas)) return;
-  if (inlineChart) {
-    inlineChart.destroy();
-    inlineChart = null;
-  }
+  destroyChart();
+  chartSeries = series;
   createChart(
     canvas.getContext("2d"),
     series.map((row) => formatSnapshotDate(row.date)),
-    buildChartDatasets(series),
   );
 }
 
@@ -268,7 +296,7 @@ async function openGovModal(govId, govName) {
       }
     };
     try {
-      await loadPlayerBundle(govId, kvkCtx.kd);
+      await Promise.all([loadPlayerBundle(govId, kvkCtx.kd), loadEquipRefData()]);
       if (token !== govModalToken) return;
       const history = loadGovHistory(govId);
       const farmOwner = loadFarmOwner(govId);
@@ -279,6 +307,7 @@ async function openGovModal(govId, govName) {
         vipEl.innerHTML = renderVipBadge(profile ? profile.vip_level : "");
       const chartSection = `
 	    <div class="modal-chart-section">
+	      <div class="chart-stat-buttons" role="group" aria-label="Chart stat">${renderChartButtons()}</div>
 	      <div class="modal-chart" style="height:400px;">
 	        <canvas id="modal-chart"></canvas>
 	      </div>
@@ -312,7 +341,12 @@ async function openGovModal(govId, govName) {
         '<div class="gov-modal-tab-pane" id="govTabPane-equipment" style="display:none;">' +
         safeRender("equipment", () => renderEquipmentSection(govId)) +
         "</div>";
-      updateChart(govId);
+      updateChart(govId).catch((e) => {
+        console.error("updateChart:", e);
+        const canvas = document.querySelector("#modal-chart");
+        if (canvas?.parentElement)
+          canvas.parentElement.innerHTML = `<div class="gov-modal-empty">Could not load the chart.</div>`;
+      });
     } catch (err) {
       console.error("openGovModal:", err);
       body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(err))}</div>`;
@@ -321,6 +355,7 @@ async function openGovModal(govId, govName) {
 }
 
 function closeGovModal() {
+  destroyChart();
   document.getElementById("govModalOverlay").classList.remove("open");
   document.body.style.overflow = "";
 }
