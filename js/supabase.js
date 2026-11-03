@@ -84,7 +84,8 @@ async function sbFetch(path, options = {}) {
     }
     throw new Error(`Database request failed (${res.status}): ${detail}`);
   }
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 function sbRpc(fn, args = {}, options = {}) {
