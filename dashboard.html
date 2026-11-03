@@ -6,27 +6,14 @@
     <title>DKP stats</title>
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
-    />
-    <link
-      href="https://cdn.datatables.net/v/dt/dt-3.1.2/datatables.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.datatables.net/buttons/4.1.2/css/buttons.dataTables.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.datatables.net/scroller/3.1.1/css/scroller.dataTables.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.datatables.net/fixedcolumns/6.1.1/css/fixedColumns.dataTables.min.css"
-      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.css"
+      integrity="sha512-x9WwyMYBnlXMNQ6kQ/Lyzu1NqIhLQKL5Oq6xByfXuRj7s9CskyCbLv/1IjqzJmXwFXWr0ov6jBV7Qbc0hh9nHg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     />
     <link rel="stylesheet" href="css/shared.css" />
     <link rel="stylesheet" href="css/govcards.css" />
-    <link rel="stylesheet" href="css/datatable.css" />
+    <link rel="stylesheet" href="css/grid.css" />
     <link rel="stylesheet" href="css/dashboard.css" />
   </head>
   <body>
@@ -39,7 +26,7 @@
 
         <div class="nav-links" id="nav-links">
           <a href="index.html">Select KvK</a>
-          <a href="playercard.html" class="active">Player Card</a>
+          <a href="playercard.html">Player Card</a>
         </div>
 
         <label class="theme-toggle">
@@ -115,8 +102,11 @@
             <p>Loading data...</p>
           </div>
 
-          <div id="gridWrapper" class="grid-wrapper dt-wrap">
-            <table id="dkpTable" class="dkp-table"></table>
+          <div id="gridWrapper" class="grid-wrapper grid-wrap">
+            <div id="dkpToolbar" class="grid-toolbar"></div>
+            <div id="dkpContainer" class="dkp-container">
+              <div id="dkpGrid" class="dkp-grid-box"></div>
+            </div>
           </div>
         </section>
       </div>
@@ -152,15 +142,14 @@
       </div>
     </div>
     <div id="equipTooltip" class="equip-tooltip" style="display: none"></div>
-    <script src="https://cdn.datatables.net/v/dt/dt-3.1.2/datatables.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/4.1.2/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/4.1.2/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/scroller/3.1.1/js/dataTables.scroller.min.js"></script>
-    <script src="https://cdn.datatables.net/fixedcolumns/6.1.1/js/dataTables.fixedColumns.min.js"></script>
-    <script src="https://cdn.datatables.net/fixedcolumns/6.1.1/js/fixedColumns.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ag-grid/36.2.0/ag-grid-community.js"
+      integrity="sha512-PIsR+zmMPsKiHj4lGTVZI4v8d8P7uT/AASWS0EgH4fOKpkggPi7zEQWe5yg3ek/omNH+f+Afm6tdg5v2vp+yfw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
     <script src="js/common.js"></script>
+    <script src="js/siteTable.js"></script>
     <script src="js/supabase.js"></script>
     <script src="js/queries.js"></script>
     <script src="js/gameData.js"></script>
