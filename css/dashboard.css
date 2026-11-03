@@ -405,6 +405,33 @@
   display: flex;
   justify-content: center;
 }
+.chart-stat-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.chart-stat-btn {
+  background: var(--table-bg);
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text-color);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.chart-stat-btn:hover {
+  background: var(--row-hover-bg);
+}
+.chart-stat-btn.active {
+  border-color: var(--chart-line);
+  color: var(--chart-line);
+  font-weight: 600;
+}
 .modal-chart {
   margin: 0 auto 10px;
   max-width: 1050px;
@@ -698,43 +725,17 @@
   opacity: 1;
   transform: translateY(0);
 }
-#gridWrapper table.dataTable > tbody > tr > td {
-  height: 60px;
-  padding: 4px 8px;
+#gridWrapper .ag-cell {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
-#gridWrapper
-  table.dataTable
-  > :is(thead, tbody)
-  > tr
-  > :is(th, td):nth-child(2) {
-  box-shadow: 1px 0 0 var(--table-border);
+#gridWrapper .ag-cell.row-num {
+  padding-left: 4px;
+  padding-right: 4px;
 }
-#gridWrapper td.gov-cell {
+#gridWrapper .ag-cell.gov-cell {
   min-width: 155px;
   max-width: 220px;
-}
-.cell-tooltip {
-  position: fixed;
-  z-index: 10000;
-  display: none;
-  max-width: 320px;
-  padding: 8px 12px;
-  background: color-mix(in srgb, var(--text-color) 4%, var(--table-bg));
-  color: var(--text-color);
-  border: 1px solid var(--table-border);
-  border-radius: 8px;
-  box-shadow: 0 0 16px rgb(0 0 0 / 0.15);
-  font-size: 14px;
-  line-height: 1.4;
-  white-space: pre-line;
-  text-align: center;
-  pointer-events: none;
-}
-.cell-tooltip.visible {
-  display: block;
-}
-body.dark .cell-tooltip {
-  box-shadow: 0 0 16px rgb(0 0 0 / 0.5);
 }
 .collapsible-content > .kvk-gains-grid {
   margin-bottom: 0;
@@ -745,20 +746,23 @@ body.dark .cell-tooltip {
 #govModalSubtitle {
   margin-left: 10px;
 }
-#gridWrapper .dkp-cards-on .dt-scroll {
+#gridWrapper .dkp-cards-on .dkp-grid-box {
   display: none;
 }
 #gridWrapper .dkp-cards {
   display: none;
 }
 #gridWrapper .dkp-cards-on .dkp-cards {
+  display: block;
+  max-height: 700px;
+  overflow-y: auto;
+  padding: 2px 6px 2px 2px;
+}
+.dkp-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
   align-content: start;
-  max-height: 700px;
-  overflow-y: auto;
-  padding: 2px 6px 2px 2px;
 }
 .dkp-card {
   background: var(--table-bg);
