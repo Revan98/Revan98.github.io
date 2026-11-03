@@ -60,6 +60,9 @@ function compareData(df1, df2, keyColumn, option) {
     console.warn(
       "Duplicate key values detected; later rows overwrite earlier ones.",
     );
+    showToast(
+      "Duplicate key values found: later rows overwrite earlier ones, so some rows are missing from the result.",
+    );
   }
   const map1 = new Map(df1.map((r) => [normalizeKey(r[keyColumn]), r]));
   const map2 = new Map(df2.map((r) => [normalizeKey(r[keyColumn]), r]));
@@ -144,14 +147,10 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
     }
     const { matching, nonMatching } = compareData(df1, df2, keyCol, option);
     comparedResults = { matching, nonMatching };
-    if (!comparedResults || comparedResults.length === 0) {
-      setExportEnabled(false);
-      return;
-    }
     renderResultsGrids(matching, nonMatching);
     progressEl.value = 100;
     resultsInfo.textContent = `Comparison complete: ${matching.length} matching, ${nonMatching.length} non-matching rows.`;
-    setExportEnabled(true);
+    setExportEnabled(matching.length > 0 || nonMatching.length > 0);
   } catch (err) {
     console.error(err);
     showToast("Error: " + err);
