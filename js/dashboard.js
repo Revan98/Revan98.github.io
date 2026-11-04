@@ -326,7 +326,7 @@ function buildToolbar() {
   const copyHtml =
     '<i class="fa-regular fa-copy" style="font-size: 14px"></i> Copy Top 18';
   const copyBtn = makeToolbarButton(copyHtml, () => copyTop18(copyBtn, copyHtml));
-  buttons.append(cardBtn, csvBtn, xlsxBtn, copyBtn);
+  buttons.append(cardBtn, csvBtn, xlsxBtn, copyBtn, buildCardSortControls());
 
   const searchWrap = document.createElement("div");
   searchWrap.className = "grid-search";
@@ -511,7 +511,6 @@ function layoutCards() {
   let html = "";
   for (let i = start; i < end; i++) html += renderCard(cardRows[i], i, i + 1);
   cardsGridEl.innerHTML = html;
-
   if (!first && cardsGridEl.firstElementChild) layoutCards();
 }
 
@@ -524,9 +523,69 @@ function scheduleCardLayout() {
   });
 }
 
+const CARD_SORT_COLUMNS = ["name", "killPointsDiff", "t4t5", "deadsPower", "acclaim", "minDkp", "dkp", "dkpPercent"];
+const cardSortColumn = (colId) => COLUMNS.find((c) => c.colId === colId);
+let cardSort = { colId: "dkp", dir: "desc" };
+let cardSortEl = null;
+let cardSortDirBtn = null;
+
+function sortCardRows(rows) {
+  const get = cardSortColumn(cardSort.colId).valueGetter;
+  const dir = cardSort.dir === "desc" ? -1 : 1;
+  const keyed = rows.map((data, i) => ({ data, i, key: get({ data }) }));
+  keyed.sort((a, b) => {
+    const diff =
+      typeof a.key === "number" && typeof b.key === "number"
+        ? a.key - b.key
+        : String(a.key ?? "").localeCompare(String(b.key ?? ""));
+    return diff ? diff * dir : a.i - b.i;
+  });
+  return keyed.map((k) => k.data);
+}
+
+function updateCardSortDirBtn() {
+  const desc = cardSort.dir === "desc";
+  cardSortDirBtn.innerHTML = `<i class="fa-solid fa-arrow-${desc ? "down" : "up"}-wide-short" style="font-size: 14px"></i>`;
+  const label = desc ? "Sorted descending, click for ascending" : "Sorted ascending, click for descending";
+  cardSortDirBtn.title = label;
+  cardSortDirBtn.setAttribute("aria-label", label);
+}
+
+function buildCardSortControls() {
+  cardSortEl = document.createElement("div");
+  cardSortEl.className = "card-sort";
+  cardSortEl.hidden = !cardMode;
+
+  const select = document.createElement("select");
+  select.setAttribute("aria-label", "Sort cards by");
+  for (const colId of CARD_SORT_COLUMNS) {
+    const opt = document.createElement("option");
+    opt.value = colId;
+    opt.textContent = cardSortColumn(colId).headerName;
+    select.appendChild(opt);
+  }
+  select.value = cardSort.colId;
+  select.addEventListener("change", () => {
+    cardSort = { colId: select.value, dir: select.value === "name" ? "asc" : "desc" };
+    updateCardSortDirBtn();
+    renderCards();
+  });
+
+  cardSortDirBtn = makeToolbarButton("", () => {
+    cardSort.dir = cardSort.dir === "desc" ? "asc" : "desc";
+    updateCardSortDirBtn();
+    renderCards();
+  });
+  updateCardSortDirBtn();
+
+  cardSortEl.append(select, cardSortDirBtn);
+  return cardSortEl;
+}
+
 function renderCards() {
-  cardRows = [];
-  gridApi.forEachNodeAfterFilterAndSort((node) => cardRows.push(node.data));
+  const rows = [];
+  gridApi.forEachNodeAfterFilter((node) => rows.push(node.data));
+  cardRows = sortCardRows(rows);
   cardWindow = { start: -1, end: -1, cols: 0, stride: 0 };
   cardsEl.scrollTop = 0;
   layoutCards();
@@ -535,6 +594,7 @@ function renderCards() {
 function setCardMode(on) {
   cardMode = on;
   document.getElementById("dkpContainer").classList.toggle("dkp-cards-on", on);
+  cardSortEl.hidden = !on;
   if (on) renderCards();
 }
 
