@@ -827,3 +827,21 @@
 .edit-eq {
   text-decoration: none;
 }
+
+.card-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-sort[hidden] {
+  display: none;
+}
+.card-sort select {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  background: var(--table-bg);
+  border: 2px solid var(--table-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
