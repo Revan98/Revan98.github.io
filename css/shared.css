@@ -445,16 +445,15 @@ body.dark .hamburger {
 }
 footer {
   background: var(--nav-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid var(--table-border);
 }
 .footer-bottom {
   display: flex;
-  justify-content: center;
-  align-items: center;
   padding: 1.2rem 0;
   font-size: 0.8rem;
   color: var(--text-color);
-  text-align: center;
 }
 .primary {
   padding: 8px 14px;
