@@ -457,6 +457,10 @@ body.dark .hamburger {
   font-size: 0.8rem;
   color: var(--text-color);
   border-top: 1px solid var(--table-border);
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--table-border);
 }
 .primary {
   padding: 8px 14px;
