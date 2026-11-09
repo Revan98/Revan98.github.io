@@ -1,15 +1,56 @@
 {
-  "SoT": "Song of Troy",
-  "KB": "Keener Blades",
-  "KoB": "King of all Britain",
-  "SG": "Shifting Gears",
-  "AI": "Alliance Invictus",
-  "ToW": "Tides of War",
-  "SoS": "Storm of Stratagems",
-  "SO": "Siege of Orleans",
-  "WU": "Warriors Unbound",
-  "KoN": "King of the Nile",
-  "So8": "Strife of the Eight",
-  "HA": "Heroic Anthem",
-  "MA": "Mighty Assembly"
+  "skins": {
+    "SoT": {
+      "name": "Song of Troy",
+      "img": "sot"
+    },
+    "KB": {
+      "name": "Keener Blades",
+      "img": "kb"
+    },
+    "KoB": {
+      "name": "King of all Britain",
+      "img": "kob"
+    },
+    "SG": {
+      "name": "Shifting Gears",
+      "img": "sg"
+    },
+    "AI": {
+      "name": "Alliance Invictus",
+      "img": "ai"
+    },
+    "ToW": {
+      "name": "Tides of War",
+      "img": "tow"
+    },
+    "SoS": {
+      "name": "Storm of Stratagems",
+      "img": "sos"
+    },
+    "SO": {
+      "name": "Siege of Orleans",
+      "img": "so"
+    },
+    "WU": {
+      "name": "Warriors Unbound",
+      "img": "wu"
+    },
+    "KoN": {
+      "name": "King of the Nile",
+      "img": "kon"
+    },
+    "SoB": {
+      "name": "Strife of the Eight",
+      "img": "so8"
+    },
+    "HA": {
+      "name": "Heroic Anthem",
+      "img": "ha"
+    },
+    "MA": {
+      "name": "Mighty Assembly",
+      "img": "ma"
+    }
+  }
 }
