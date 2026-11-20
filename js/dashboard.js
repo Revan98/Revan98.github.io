@@ -1,22 +1,22 @@
 function formatCsvPercent(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? String(n).replace(".", ",") : "";
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? String(numericValue).replace(".", ",") : "";
 }
 
 function getExportFileName() {
-  const kd = '2247' || "dkp";
-  const kvkPart = kvkCtx.kvkNumber ? `_kvk${kvkCtx.kvkNumber}` : "";
+  const kingdomId = '2247' || "dkp";
+  const kvkPart = kvkContext.kvkNumber ? `_kvk${kvkContext.kvkNumber}` : "";
   const lastSnapshot =
-    kvkCtx.snapshotDates[kvkCtx.snapshotDates.length - 1] || "export";
-  return `DKP_${kd}${kvkPart}_${String(lastSnapshot).replaceAll("-", "_")}.csv`;
+    kvkContext.snapshotDates[kvkContext.snapshotDates.length - 1] || "export";
+  return `DKP_${kingdomId}${kvkPart}_${String(lastSnapshot).replaceAll("-", "_")}.csv`;
 }
 
 function renderMetricStack(baseValue, sumValue, formatter) {
   const base = formatter(baseValue);
-  const sum = formatter(sumValue);
+  const formattedSum = formatter(sumValue);
   return `
     <div class="metric-stack">
-      <div class="metric-base">${sum}</div>
+      <div class="metric-base">${formattedSum}</div>
       <div class="metric-rollup">${base}</div>
     </div>
   `;
@@ -54,34 +54,34 @@ function renderDeadsPowerDiffStack(deadsDiff, powerDiff) {
 
 function renderGovernor(row, asCard = false) {
   const name = escapeHtml(row.name);
-  const tip = (text) => (asCard ? ` title="${text}"` : "");
+  const titleAttribute = (text) => (asCard ? ` title="${text}"` : "");
   if (!row.id) {
     return `<div class="gov-name-stack"><div class="gov-name-value">${name}</div></div>`;
   }
   return (
     `<div class="gov-name-stack">` +
-    `<div class="gov-name-value gov-name-link"${tip("View governor history")}>${name}</div>` +
-    `<a class="gov-id"${tip("Copy governor ID")}><span class="gov-id-text">${escapeHtml(row.id)}</span>` +
+    `<div class="gov-name-value gov-name-link"${titleAttribute("View governor history")}>${name}</div>` +
+    `<a class="gov-id"${titleAttribute("Copy governor ID")}><span class="gov-id-text">${escapeHtml(row.id)}</span>` +
     `<i class="fa-regular fa-copy gov-id-copy-icon"></i></a>` +
     `</div>`
   );
 }
 
-const TIP_FARMS = "with farms\nwithout farms";
+const TOOLTIP_FARMS = "with farms\nwithout farms";
 let hasSums = true;
 let gridApi = null;
 let allRows = [];
 
-function sumMetricColumn({ headerName, field, sumField, format, colId, sort }) {
+function sumMetricColumn({ headerName, field, sumField, format, colId: columnId, sort }) {
   return {
-    colId: colId ?? field,
+    colId: columnId ?? field,
     headerName,
     cellClass: "metric-stack-cell",
     sort,
-    valueGetter: (p) => num(hasSums ? p.data[sumField] : p.data[field]),
-    tooltipValueGetter: () => (hasSums ? TIP_FARMS : null),
-    cellRenderer: (p) => {
-      const row = p.data;
+    valueGetter: (params) => toNumberOrZero(hasSums ? params.data[sumField] : params.data[field]),
+    tooltipValueGetter: () => (hasSums ? TOOLTIP_FARMS : null),
+    cellRenderer: (params) => {
+      const row = params.data;
       return hasSums
         ? renderMetricStack(row[field], row[sumField], format)
         : `<div class="metric-stack"><div class="metric-base">${format(row[field])}</div></div>`;
@@ -99,7 +99,7 @@ const COLUMNS = [
     pinned: "left",
     sortable: false,
     cellClass: "row-num",
-    valueGetter: (p) => (p.node ? p.node.rowIndex + 1 : ""),
+    valueGetter: (params) => (params.node ? params.node.rowIndex + 1 : ""),
     getQuickFilterText: noQuickFilter,
   },
   {
@@ -108,47 +108,47 @@ const COLUMNS = [
     width: 190,
     pinned: "left",
     cellClass: "gov-cell",
-    valueGetter: (p) => p.data.name ?? "",
-    cellRenderer: (p) => renderGovernor(p.data),
-    tooltipValueGetter: (p) =>
-      p.data?.id ? "View governor history\nCopy governor ID" : null,
-    getQuickFilterText: (p) => `${p.data.name ?? ""} ${p.data.id ?? ""}`,
+    valueGetter: (params) => params.data.name ?? "",
+    cellRenderer: (params) => renderGovernor(params.data),
+    tooltipValueGetter: (params) =>
+      params.data?.id ? "View governor history\nCopy governor ID" : null,
+    getQuickFilterText: (params) => `${params.data.name ?? ""} ${params.data.id ?? ""}`,
   },
   {
     colId: "killPointsDiff",
     headerName: "Killpoints",
-    valueGetter: (p) => num(p.data.killPointsDiff),
-    tooltipValueGetter: (p) => `Current KP: ${formatNumber(p.data.killPoints)}`,
-    cellRenderer: (p) => {
-      const r = p.data;
-      const cls = num(r.killPointsDiff) >= 0 ? "diff-positive" : "diff-negative";
-      return `<span class="${cls}">${formatSignedNumber(r.killPointsDiff)}</span>`;
+    valueGetter: (params) => toNumberOrZero(params.data.killPointsDiff),
+    tooltipValueGetter: (params) => `Current KP: ${formatNumber(params.data.killPoints)}`,
+    cellRenderer: (params) => {
+      const row = params.data;
+      const cssClass = toNumberOrZero(row.killPointsDiff) >= 0 ? "diff-positive" : "diff-negative";
+      return `<span class="${cssClass}">${formatSignedNumber(row.killPointsDiff)}</span>`;
     },
   },
   {
     colId: "t4t5",
     headerName: "T4 / T5",
     cellClass: "metric-stack-cell",
-    valueGetter: (p) => num(p.data.t4Diff) + num(p.data.t5Diff),
-    tooltipValueGetter: (p) =>
-      `Current T4: ${formatNumber(p.data.t4)}\nCurrent T5: ${formatNumber(p.data.t5)}`,
-    cellRenderer: (p) => renderTroopDiffStack(p.data.t4Diff, p.data.t5Diff),
+    valueGetter: (params) => toNumberOrZero(params.data.t4Diff) + toNumberOrZero(params.data.t5Diff),
+    tooltipValueGetter: (params) =>
+      `Current T4: ${formatNumber(params.data.t4)}\nCurrent T5: ${formatNumber(params.data.t5)}`,
+    cellRenderer: (params) => renderTroopDiffStack(params.data.t4Diff, params.data.t5Diff),
   },
   {
     colId: "deadsPower",
     headerName: "Deads / Power",
     cellClass: "metric-stack-cell",
-    valueGetter: (p) => num(p.data.deadsDiff),
-    tooltipValueGetter: (p) =>
-      `Current Deads: ${formatNumber(p.data.deads)}\nCurrent Power: ${formatNumber(p.data.power)}`,
-    cellRenderer: (p) =>
-      renderDeadsPowerDiffStack(p.data.deadsDiff, p.data.powerDiff),
+    valueGetter: (params) => toNumberOrZero(params.data.deadsDiff),
+    tooltipValueGetter: (params) =>
+      `Current Deads: ${formatNumber(params.data.deads)}\nCurrent Power: ${formatNumber(params.data.power)}`,
+    cellRenderer: (params) =>
+      renderDeadsPowerDiffStack(params.data.deadsDiff, params.data.powerDiff),
   },
   {
     colId: "acclaim",
     headerName: "Acclaim",
-    valueGetter: (p) => num(p.data.acclaim),
-    valueFormatter: (p) => (p.data?.acclaim == null ? "" : formatNumber(p.value)),
+    valueGetter: (params) => toNumberOrZero(params.data.acclaim),
+    valueFormatter: (params) => (params.data?.acclaim == null ? "" : formatNumber(params.value)),
   },
   sumMetricColumn({
     headerName: "Min DKP",
@@ -170,10 +170,10 @@ const COLUMNS = [
     sumField: "sumDkpPercent",
     format: formatPercent,
   }),
-].map((c) =>
-  c.pinned
-    ? c
-    : { flex: 1, minWidth: 130, getQuickFilterText: noQuickFilter, ...c },
+].map((columnDefinition) =>
+  columnDefinition.pinned
+    ? columnDefinition
+    : { flex: 1, minWidth: 130, getQuickFilterText: noQuickFilter, ...columnDefinition },
 );
 
 const EXPORT_COLUMNS = [
@@ -202,29 +202,29 @@ const EXPORT_COLUMNS = [
 
 const SUM_FIELDS = new Set(["sumMinDkp", "sumDkp", "sumDkpPercent"]);
 const exportColumns = () =>
-  EXPORT_COLUMNS.filter((c) => hasSums || !SUM_FIELDS.has(c.data));
+  EXPORT_COLUMNS.filter((exportColumn) => hasSums || !SUM_FIELDS.has(exportColumn.data));
 const exportFilename = () => getExportFileName().replace(/\.csv$/, "");
 
 function getRowsInGridOrder() {
   const rows = [...allRows];
   const sorts = gridApi
     .getColumnState()
-    .filter((c) => c.sort)
-    .sort((a, b) => a.sortIndex - b.sortIndex)
-    .map((c) => ({
-      dir: c.sort === "desc" ? -1 : 1,
-      get: COLUMNS.find((d) => d.colId === c.colId).valueGetter,
+    .filter((column) => column.sort)
+    .sort((firstColumn, secondColumn) => firstColumn.sortIndex - secondColumn.sortIndex)
+    .map((column) => ({
+      dir: column.sort === "desc" ? -1 : 1,
+      get: COLUMNS.find((sourceColumn) => sourceColumn.colId === column.colId).valueGetter,
     }));
   if (!sorts.length) return rows;
-  return rows.sort((a, b) => {
-    for (const { dir, get } of sorts) {
-      const va = get({ data: a });
-      const vb = get({ data: b });
+  return rows.sort((firstRow, secondRow) => {
+    for (const { dir: direction, get: getSortValue } of sorts) {
+      const firstValue = getSortValue({ data: firstRow });
+      const secondValue = getSortValue({ data: secondRow });
       const diff =
-        typeof va === "number" && typeof vb === "number"
-          ? va - vb
-          : String(va ?? "").localeCompare(String(vb ?? ""));
-      if (diff) return diff * dir;
+        typeof firstValue === "number" && typeof secondValue === "number"
+          ? firstValue - secondValue
+          : String(firstValue ?? "").localeCompare(String(secondValue ?? ""));
+      if (diff) return diff * direction;
     }
     return 0;
   });
@@ -232,26 +232,26 @@ function getRowsInGridOrder() {
 
 function saveBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  const downloadLink = document.createElement("a");
+  downloadLink.href = url;
+  downloadLink.download = filename;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
   URL.revokeObjectURL(url);
 }
 
 function exportCsv() {
-  const cols = exportColumns();
-  const quote = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const columns = exportColumns();
+  const quote = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
   const lines = [
-    cols.map((c) => quote(c.title)).join(";"),
+    columns.map((column) => quote(column.title)).join(";"),
     ...getRowsInGridOrder().map((row) =>
-      cols
-        .map((c) =>
+      columns
+        .map((column) =>
           quote(
             csvSafeCell(
-              c.isPercent ? formatCsvPercent(row[c.data]) : row[c.data],
+              column.isPercent ? formatCsvPercent(row[column.data]) : row[column.data],
             ),
           ),
         )
@@ -267,17 +267,17 @@ function exportCsv() {
 async function exportExcel() {
   try {
     await loadVendor("xlsx");
-  } catch (e) {
-    return showToast(e.message, "error");
+  } catch (event) {
+    return showToast(event.message, "error");
   }
-  const cols = exportColumns();
-  const aoa = [
-    cols.map((c) => c.title),
-    ...getRowsInGridOrder().map((row) => cols.map((c) => row[c.data] ?? null)),
+  const columns = exportColumns();
+  const rowsAsArrays = [
+    columns.map((column) => column.title),
+    ...getRowsInGridOrder().map((row) => columns.map((column) => row[column.data] ?? null)),
   ];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), "DKP");
-  XLSX.writeFile(wb, `${exportFilename()}.xlsx`, { compression: true });
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rowsAsArrays), "DKP");
+  XLSX.writeFile(workbook, `${exportFilename()}.xlsx`, { compression: true });
 }
 
 const ROW_HEIGHT = 60;
@@ -288,45 +288,45 @@ function updateGridHeight() {
   if (!gridApi) return;
   const count = gridApi.getDisplayedRowCount();
   const fits = count * ROW_HEIGHT + HEADER_HEIGHT + 2 <= GRID_MAX_HEIGHT;
-  const gridEl = document.getElementById("dkpGrid");
+  const gridElement = document.getElementById("dkpGrid");
   const wantLayout = fits ? "autoHeight" : "normal";
   if (gridApi.getGridOption("domLayout") === wantLayout) return;
-  gridEl.style.height = fits ? "" : `${GRID_MAX_HEIGHT}px`;
+  gridElement.style.height = fits ? "" : `${GRID_MAX_HEIGHT}px`;
   gridApi.setGridOption("domLayout", wantLayout);
 }
 
 function makeToolbarButton(html, onClick) {
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "shared-style-btn";
-  btn.innerHTML = html;
-  btn.addEventListener("click", onClick);
-  return btn;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "shared-style-btn";
+  button.innerHTML = html;
+  button.addEventListener("click", onClick);
+  return button;
 }
 
 function buildToolbar() {
-  const bar = document.getElementById("dkpToolbar");
-  bar.replaceChildren();
+  const toolbar = document.getElementById("dkpToolbar");
+  toolbar.replaceChildren();
 
   const buttons = document.createElement("div");
   buttons.className = "grid-toolbar-buttons";
 
-  const cardBtn = makeToolbarButton(CARD_BTN_TEXT, () => {
+  const cardButton = makeToolbarButton(CARD_BUTTON_TEXT, () => {
     setCardMode(!cardMode);
-    cardBtn.innerHTML = cardMode ? TABLE_BTN_TEXT : CARD_BTN_TEXT;
+    cardButton.innerHTML = cardMode ? TABLE_BUTTON_TEXT : CARD_BUTTON_TEXT;
   });
-  const csvBtn = makeToolbarButton(
+  const csvButton = makeToolbarButton(
     '<i class="fa-solid fa-download" style="font-size: 14px"></i> Export CSV',
     exportCsv,
   );
-  const xlsxBtn = makeToolbarButton(
+  const xlsxButton = makeToolbarButton(
     '<i class="fa-solid fa-file-excel" style="font-size: 14px"></i> Export Excel',
     exportExcel,
   );
   const copyHtml =
     '<i class="fa-regular fa-copy" style="font-size: 14px"></i> Copy Top 18';
-  const copyBtn = makeToolbarButton(copyHtml, () => copyTop18(copyBtn, copyHtml));
-  buttons.append(cardBtn, csvBtn, xlsxBtn, copyBtn, buildCardSortControls());
+  const copyButton = makeToolbarButton(copyHtml, () => copyTop18(copyButton, copyHtml));
+  buttons.append(cardButton, csvButton, xlsxButton, copyButton, buildCardSortControls());
 
   const searchWrap = document.createElement("div");
   searchWrap.className = "grid-search";
@@ -339,18 +339,18 @@ function buildToolbar() {
   );
   searchWrap.appendChild(input);
 
-  bar.append(buttons, searchWrap);
+  toolbar.append(buttons, searchWrap);
 }
 
 function initTable(rowData) {
-  hasSums = kvkHasSums(kvkCtx.kvkNumber);
+  hasSums = kvkHasSums(kvkContext.kvkNumber);
   allRows = rowData;
 
-  const gridEl = document.getElementById("dkpGrid");
+  const gridElement = document.getElementById("dkpGrid");
   const fits = rowData.length * ROW_HEIGHT + HEADER_HEIGHT + 2 <= GRID_MAX_HEIGHT;
-  if (!fits) gridEl.style.height = `${GRID_MAX_HEIGHT}px`;
+  if (!fits) gridElement.style.height = `${GRID_MAX_HEIGHT}px`;
 
-  gridApi = agGrid.createGrid(gridEl, {
+  gridApi = agGrid.createGrid(gridElement, {
     theme: createSiteTheme(),
     rowData,
     columnDefs: COLUMNS,
@@ -362,12 +362,12 @@ function initTable(rowData) {
     enableCellTextSelection: true,
     tooltipShowDelay: 300,
     localeText: { noMatchingRows: "No matching governors", noRowsToShow: "No governors" },
-    onCellClicked: (e) => {
-      if (e.colDef.colId === "name") onGovernorClick(e.event?.target, e.data);
+    onCellClicked: (event) => {
+      if (event.colDef.colId === "name") onGovernorClick(event.event?.target, event.data);
     },
     onModelUpdated: () => {
       if (!gridApi) return;
-      gridEl.classList.toggle("is-empty", gridApi.getDisplayedRowCount() === 0);
+      gridElement.classList.toggle("is-empty", gridApi.getDisplayedRowCount() === 0);
       gridApi.refreshCells({ columns: ["rank"], force: true });
       updateGridHeight();
       if (cardMode) renderCards();
@@ -376,48 +376,48 @@ function initTable(rowData) {
 
   buildToolbar();
 
-  cardsEl = document.createElement("div");
-  cardsEl.id = "dkpCards";
-  cardsEl.className = "dkp-cards";
-  cardsGridEl = document.createElement("div");
-  cardsGridEl.className = "dkp-cards-grid";
-  cardsEl.appendChild(cardsGridEl);
-  document.getElementById("dkpContainer").appendChild(cardsEl);
-  cardsEl.addEventListener("scroll", scheduleCardLayout, { passive: true });
-  new ResizeObserver(scheduleCardLayout).observe(cardsGridEl);
+  cardsElement = document.createElement("div");
+  cardsElement.id = "dkpCards";
+  cardsElement.className = "dkp-cards";
+  cardsGridElement = document.createElement("div");
+  cardsGridElement.className = "dkp-cards-grid";
+  cardsElement.appendChild(cardsGridElement);
+  document.getElementById("dkpContainer").appendChild(cardsElement);
+  cardsElement.addEventListener("scroll", scheduleCardLayout, { passive: true });
+  new ResizeObserver(scheduleCardLayout).observe(cardsGridElement);
   document.getElementById("gridWrapper").addEventListener("click", onCardClick);
 }
 
-function onCardClick(e) {
-  const card = e.target.closest(".dkp-card");
-  if (card) onGovernorClick(e.target, cardRows[Number(card.dataset.row)]);
+function onCardClick(event) {
+  const card = event.target.closest(".dkp-card");
+  if (card) onGovernorClick(event.target, cardRows[Number(card.dataset.row)]);
 }
 
 function onGovernorClick(target, row) {
-  const nameEl = target?.closest(".gov-name-link");
-  const idEl = target?.closest(".gov-id");
-  if ((!nameEl && !idEl) || !row) return;
+  const nameElement = target?.closest(".gov-name-link");
+  const idElement = target?.closest(".gov-id");
+  if ((!nameElement && !idElement) || !row) return;
 
-  if (nameEl) {
-    openGovModal(String(row.id), row.name || "");
+  if (nameElement) {
+    openGovernorModal(String(row.id), row.name || "");
     return;
   }
 
-  if (idEl.classList.contains("gov-id-copied")) return;
-  copyText(String(row.id)).then((ok) => {
-    if (!ok) return showToast("Could not copy governor ID", "error");
-    const idText = idEl.querySelector(".gov-id-text");
+  if (idElement.classList.contains("gov-id-copied")) return;
+  copyText(String(row.id)).then((copied) => {
+    if (!copied) return showToast("Could not copy governor ID", "error");
+    const idText = idElement.querySelector(".gov-id-text");
     const original = idText.textContent;
     idText.textContent = "Copied!";
-    idEl.classList.add("gov-id-copied");
+    idElement.classList.add("gov-id-copied");
     setTimeout(() => {
       idText.textContent = original;
-      idEl.classList.remove("gov-id-copied");
+      idElement.classList.remove("gov-id-copied");
     }, 1200);
   });
 }
 
-async function copyTop18(btn, originalHtml) {
+async function copyTop18(button, originalHtml) {
   const dkpKey = hasSums ? "sumDkp" : "dkp";
   if (!allRows.length) {
     showToast("No data loaded yet.", "info");
@@ -425,9 +425,9 @@ async function copyTop18(btn, originalHtml) {
   }
 
   const text = [...allRows]
-    .sort((a, b) => num(b[dkpKey]) - num(a[dkpKey]))
+    .sort((firstAllRow, secondAllRow) => toNumberOrZero(secondAllRow[dkpKey]) - toNumberOrZero(firstAllRow[dkpKey]))
     .slice(0, 18)
-    .map((row, i) => `${i + 1}. ${row.id} ${row.name}`)
+    .map((row, index) => `${index + 1}. ${row.id} ${row.name}`)
     .join("\n");
 
   if (!(await copyText(text))) {
@@ -435,46 +435,46 @@ async function copyTop18(btn, originalHtml) {
     return;
   }
 
-  btn.textContent = "✓ Copied!";
-  btn.disabled = true;
+  button.textContent = "✓ Copied!";
+  button.disabled = true;
   setTimeout(() => {
-    btn.innerHTML = originalHtml;
-    btn.disabled = false;
+    button.innerHTML = originalHtml;
+    button.disabled = false;
   }, 2000);
 }
 
-let cardsEl = null;
-let cardsGridEl = null;
+let cardsElement = null;
+let cardsGridElement = null;
 let cardMode = false;
 let cardRows = [];
 
-const CARD_BTN_TEXT =
+const CARD_BUTTON_TEXT =
   '<i class="fa-solid fa-table-cells-large" style="font-size: 14px"></i> Card view';
-const TABLE_BTN_TEXT =
+const TABLE_BUTTON_TEXT =
   '<i class="fa-solid fa-table" style="font-size: 14px"></i> Table view';
 
-function renderCard(r, rowIdx, rank) {
-  const metric = (base, sum, fmt) =>
+function renderCard(row, rowIndex, rank) {
+  const metric = (base, sum, formatValue) =>
     hasSums
-      ? renderMetricStack(base, sum, fmt)
-      : `<div class="metric-stack"><div class="metric-base">${fmt(base)}</div></div>`;
+      ? renderMetricStack(base, sum, formatValue)
+      : `<div class="metric-stack"><div class="metric-base">${formatValue(base)}</div></div>`;
   const field = (label, html) =>
     `<div class="dkp-card-field"><span class="dkp-card-label">${label}</span><div class="dkp-card-value">${html}</div></div>`;
-  const kpCls = num(r.killPointsDiff) >= 0 ? "diff-positive" : "diff-negative";
+  const kpCssClass = toNumberOrZero(row.killPointsDiff) >= 0 ? "diff-positive" : "diff-negative";
 
   return `
-    <div class="dkp-card" data-row="${rowIdx}">
+    <div class="dkp-card" data-row="${rowIndex}">
       <div class="dkp-card-head">
         <span class="dkp-card-rank">${rank}</span>
-        ${renderGovernor(r, true)}
+        ${renderGovernor(row, true)}
       </div>
-      ${field("Killpoints", `<span class="${kpCls}">${formatSignedNumber(r.killPointsDiff)}</span>`)}
-      ${field("T4 / T5", renderTroopDiffStack(r.t4Diff, r.t5Diff))}
-      ${field("Deads / Power", renderDeadsPowerDiffStack(r.deadsDiff, r.powerDiff))}
-      ${field("Acclaim", formatNumber(r.acclaim))}
-      ${field("Min DKP", metric(r.minDkp, r.sumMinDkp, formatNumber))}
-      ${field("DKP", metric(r.dkp, r.sumDkp, formatNumber))}
-      ${field("DKP %", metric(r.dkpPercent, r.sumDkpPercent, formatPercent))}
+      ${field("Killpoints", `<span class="${kpCssClass}">${formatSignedNumber(row.killPointsDiff)}</span>`)}
+      ${field("T4 / T5", renderTroopDiffStack(row.t4Diff, row.t5Diff))}
+      ${field("Deads / Power", renderDeadsPowerDiffStack(row.deadsDiff, row.powerDiff))}
+      ${field("Acclaim", formatNumber(row.acclaim))}
+      ${field("Min DKP", metric(row.minDkp, row.sumMinDkp, formatNumber))}
+      ${field("DKP", metric(row.dkp, row.sumDkp, formatNumber))}
+      ${field("DKP %", metric(row.dkpPercent, row.sumDkpPercent, formatPercent))}
     </div>`;
 }
 
@@ -483,35 +483,35 @@ let cardWindow = { start: -1, end: -1, cols: 0, stride: 0 };
 
 function layoutCards() {
   const total = cardRows.length;
-  const cs = getComputedStyle(cardsGridEl);
-  const cols = Math.max(1, cs.gridTemplateColumns.split(" ").length);
-  const gap = parseFloat(cs.rowGap) || 0;
-  const first = cardsGridEl.firstElementChild;
-  const stride = (first ? first.offsetHeight : 330) + gap;
-  const rows = Math.ceil(total / cols);
-  const viewTop = Math.min(cardsEl.scrollTop, Math.max(0, rows * stride - cardsEl.clientHeight));
+  const computedStyle = getComputedStyle(cardsGridElement);
+  const columns = Math.max(1, computedStyle.gridTemplateColumns.split(" ").length);
+  const rowGap = parseFloat(computedStyle.rowGap) || 0;
+  const first = cardsGridElement.firstElementChild;
+  const stride = (first ? first.offsetHeight : 330) + rowGap;
+  const rows = Math.ceil(total / columns);
+  const viewTop = Math.min(cardsElement.scrollTop, Math.max(0, rows * stride - cardsElement.clientHeight));
   const firstRow = Math.max(0, Math.floor(viewTop / stride) - CARD_BUFFER_ROWS);
   const lastRow = Math.min(
     rows - 1,
-    Math.ceil((viewTop + cardsEl.clientHeight) / stride) + CARD_BUFFER_ROWS,
+    Math.ceil((viewTop + cardsElement.clientHeight) / stride) + CARD_BUFFER_ROWS,
   );
-  const start = firstRow * cols;
-  const end = Math.min(total, (lastRow + 1) * cols);
+  const start = firstRow * columns;
+  const endIndex = Math.min(total, (lastRow + 1) * columns);
 
   const same =
     start === cardWindow.start &&
-    end === cardWindow.end &&
-    cols === cardWindow.cols &&
+    endIndex === cardWindow.end &&
+    columns === cardWindow.cols &&
     stride === cardWindow.stride;
   if (same) return;
-  cardWindow = { start, end, cols, stride };
+  cardWindow = { start, end: endIndex, cols: columns, stride };
 
-  cardsGridEl.style.paddingTop = `${firstRow * stride}px`;
-  cardsGridEl.style.paddingBottom = `${Math.max(0, rows - lastRow - 1) * stride}px`;
+  cardsGridElement.style.paddingTop = `${firstRow * stride}px`;
+  cardsGridElement.style.paddingBottom = `${Math.max(0, rows - lastRow - 1) * stride}px`;
   let html = "";
-  for (let i = start; i < end; i++) html += renderCard(cardRows[i], i, i + 1);
-  cardsGridEl.innerHTML = html;
-  if (!first && cardsGridEl.firstElementChild) layoutCards();
+  for (let index = start; index < endIndex; index++) html += renderCard(cardRows[index], index, index + 1);
+  cardsGridElement.innerHTML = html;
+  if (!first && cardsGridElement.firstElementChild) layoutCards();
 }
 
 let cardLayoutFrame = 0;
@@ -524,62 +524,62 @@ function scheduleCardLayout() {
 }
 
 const CARD_SORT_COLUMNS = ["name", "killPointsDiff", "t4t5", "deadsPower", "acclaim", "minDkp", "dkp", "dkpPercent"];
-const cardSortColumn = (colId) => COLUMNS.find((c) => c.colId === colId);
+const cardSortColumn = (columnId) => COLUMNS.find((column) => column.colId === columnId);
 let cardSort = { colId: "dkp", dir: "desc" };
-let cardSortEl = null;
-let cardSortDirBtn = null;
+let cardSortElement = null;
+let cardSortDirectionButton = null;
 
 function sortCardRows(rows) {
-  const get = cardSortColumn(cardSort.colId).valueGetter;
-  const dir = cardSort.dir === "desc" ? -1 : 1;
-  const keyed = rows.map((data, i) => ({ data, i, key: get({ data }) }));
-  keyed.sort((a, b) => {
+  const getSortValue = cardSortColumn(cardSort.colId).valueGetter;
+  const direction = cardSort.dir === "desc" ? -1 : 1;
+  const keyed = rows.map((data, index) => ({ data, i: index, key: getSortValue({ data }) }));
+  keyed.sort((firstEntry, secondEntry) => {
     const diff =
-      typeof a.key === "number" && typeof b.key === "number"
-        ? a.key - b.key
-        : String(a.key ?? "").localeCompare(String(b.key ?? ""));
-    return diff ? diff * dir : a.i - b.i;
+      typeof firstEntry.key === "number" && typeof secondEntry.key === "number"
+        ? firstEntry.key - secondEntry.key
+        : String(firstEntry.key ?? "").localeCompare(String(secondEntry.key ?? ""));
+    return diff ? diff * direction : firstEntry.i - secondEntry.i;
   });
-  return keyed.map((k) => k.data);
+  return keyed.map((entry) => entry.data);
 }
 
-function updateCardSortDirBtn() {
+function updateCardSortDirectionButton() {
   const desc = cardSort.dir === "desc";
-  cardSortDirBtn.innerHTML = `<i class="fa-solid fa-arrow-${desc ? "down" : "up"}-wide-short" style="font-size: 14px"></i>`;
+  cardSortDirectionButton.innerHTML = `<i class="fa-solid fa-arrow-${desc ? "down" : "up"}-wide-short" style="font-size: 14px"></i>`;
   const label = desc ? "Sorted descending, click for ascending" : "Sorted ascending, click for descending";
-  cardSortDirBtn.title = label;
-  cardSortDirBtn.setAttribute("aria-label", label);
+  cardSortDirectionButton.title = label;
+  cardSortDirectionButton.setAttribute("aria-label", label);
 }
 
 function buildCardSortControls() {
-  cardSortEl = document.createElement("div");
-  cardSortEl.className = "card-sort";
-  cardSortEl.hidden = !cardMode;
+  cardSortElement = document.createElement("div");
+  cardSortElement.className = "card-sort";
+  cardSortElement.hidden = !cardMode;
 
   const select = document.createElement("select");
   select.setAttribute("aria-label", "Sort cards by");
-  for (const colId of CARD_SORT_COLUMNS) {
-    const opt = document.createElement("option");
-    opt.value = colId;
-    opt.textContent = cardSortColumn(colId).headerName;
-    select.appendChild(opt);
+  for (const columnId of CARD_SORT_COLUMNS) {
+    const option = document.createElement("option");
+    option.value = columnId;
+    option.textContent = cardSortColumn(columnId).headerName;
+    select.appendChild(option);
   }
   select.value = cardSort.colId;
   select.addEventListener("change", () => {
     cardSort = { colId: select.value, dir: select.value === "name" ? "asc" : "desc" };
-    updateCardSortDirBtn();
+    updateCardSortDirectionButton();
     renderCards();
   });
 
-  cardSortDirBtn = makeToolbarButton("", () => {
+  cardSortDirectionButton = makeToolbarButton("", () => {
     cardSort.dir = cardSort.dir === "desc" ? "asc" : "desc";
-    updateCardSortDirBtn();
+    updateCardSortDirectionButton();
     renderCards();
   });
-  updateCardSortDirBtn();
+  updateCardSortDirectionButton();
 
-  cardSortEl.append(select, cardSortDirBtn);
-  return cardSortEl;
+  cardSortElement.append(select, cardSortDirectionButton);
+  return cardSortElement;
 }
 
 function renderCards() {
@@ -587,37 +587,37 @@ function renderCards() {
   gridApi.forEachNodeAfterFilter((node) => rows.push(node.data));
   cardRows = sortCardRows(rows);
   cardWindow = { start: -1, end: -1, cols: 0, stride: 0 };
-  cardsEl.scrollTop = 0;
+  cardsElement.scrollTop = 0;
   layoutCards();
 }
 
-function setCardMode(on) {
-  cardMode = on;
-  document.getElementById("dkpContainer").classList.toggle("dkp-cards-on", on);
-  cardSortEl.hidden = !on;
-  if (on) renderCards();
+function setCardMode(enabled) {
+  cardMode = enabled;
+  document.getElementById("dkpContainer").classList.toggle("dkp-cards-on", enabled);
+  cardSortElement.hidden = !enabled;
+  if (enabled) renderCards();
 }
 
 function renderTopPlayers(players, dkpKey) {
-  document.querySelectorAll("#top-players .player-box").forEach((box) => {
-    const p = players[Number(box.dataset.rank) - 1];
-    box.querySelector(".player-name").textContent = p?.name ?? "";
-    box.querySelector(".player-id").textContent = p ? `ID: ${p.id ?? ""}` : "";
-    const dkpEl = box.querySelector(".player-dkp");
-    if (dkpEl) {
-      const dkp = p ? Number(p[dkpKey]) : NaN;
-      dkpEl.textContent = Number.isNaN(dkp) ? "" : `${dkp.toLocaleString()} DKP`;
+  document.querySelectorAll("#top-players .player-box").forEach((playerBox) => {
+    const player = players[Number(playerBox.dataset.rank) - 1];
+    playerBox.querySelector(".player-name").textContent = player?.name ?? "";
+    playerBox.querySelector(".player-id").textContent = player ? `ID: ${player.id ?? ""}` : "";
+    const dkpElement = playerBox.querySelector(".player-dkp");
+    if (dkpElement) {
+      const dkp = player ? Number(player[dkpKey]) : NaN;
+      dkpElement.textContent = Number.isNaN(dkp) ? "" : `${dkp.toLocaleString()} DKP`;
     }
-    box.style.visibility = p ? "" : "hidden";
+    playerBox.style.visibility = player ? "" : "hidden";
   });
 }
 
 function renderTotals(rows = []) {
   const fields = { t4: "t4Diff", t5: "t5Diff", deads: "deadsDiff", kp: "killPointsDiff" };
   for (const [stat, field] of Object.entries(fields)) {
-    const total = rows.reduce((sum, r) => sum + num(r[field]), 0);
-    const el = document.querySelector(`.stat-box[data-stat="${stat}"] .stat-value`);
-    if (el) el.textContent = total.toLocaleString();
+    const total = rows.reduce((sum, row) => sum + toNumberOrZero(row[field]), 0);
+    const element = document.querySelector(`.stat-box[data-stat="${stat}"] .stat-value`);
+    if (element) element.textContent = total.toLocaleString();
   }
 }
 
@@ -625,21 +625,22 @@ async function initDashboard() {
   const spinner = document.getElementById("loading-spinner");
   try {
     await loadKvkContext();
+    initTimeline();
     const rows = await loadDashboardRows();
 
     initTable(rows);
 
     const dkpKey = hasSums ? "sumDkp" : "dkp";
-    const top3 = [...rows].sort((a, b) => num(b[dkpKey]) - num(a[dkpKey])).slice(0, 3);
+    const top3 = [...rows].sort((firstRow, secondRow) => toNumberOrZero(secondRow[dkpKey]) - toNumberOrZero(firstRow[dkpKey])).slice(0, 3);
     renderTopPlayers(top3, dkpKey);
     renderTotals(rows);
 
     requestAnimationFrame(() =>
       document.getElementById("gridWrapper").classList.add("visible"),
     );
-  } catch (e) {
-    console.error(e);
-    showToast(e.message || "Failed to load data", "error");
+  } catch (event) {
+    console.error(event);
+    showToast(event.message || "Failed to load data", "error");
   } finally {
     spinner.style.display = "none";
   }
