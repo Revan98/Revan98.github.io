@@ -1,15 +1,15 @@
 async function loadKvkNames() {
   try {
-    const res = await fetch("data/kvknames.json");
-    const raw = await res.json();
+    const response = await fetch("data/kvknames.json");
+    const raw = await response.json();
     const out = {};
     for (const [abbr, skin] of Object.entries(raw.skins || {})) {
       out[abbr.toLowerCase()] = skin;
       if (skin.img && !(skin.img in out)) out[skin.img.toLowerCase()] = skin;
     }
     return out;
-  } catch (e) {
-    console.error("Failed to load kvknames.json:", e);
+  } catch (event) {
+    console.error("Failed to load kvknames.json:", event);
     return {};
   }
 }
@@ -31,8 +31,8 @@ function expandKvkName(rawName, kvkNumber, names) {
   return rawName;
 }
 
-function formatTotal(n) {
-  return Number(n) > 0 ? formatCompact(n) : "—";
+function formatTotal(total) {
+  return Number(total) > 0 ? formatCompact(total) : "—";
 }
 
 function statHtml(label, value) {
@@ -43,40 +43,40 @@ function statHtml(label, value) {
     </div>`;
 }
 
-function kvkBoxHtml(kd, k, names) {
-  const label = expandKvkName(k.name, k.kvkNumber, names);
-  const badge = k.isLatest ? '<span class="kvk-badge">Latest</span>' : "";
-  const skin = findKvkSkin(k.name, names);
-  const bgStyle = skin && skin.img
+function kvkBoxHtml(kingdomId, key, names) {
+  const label = expandKvkName(key.name, key.kvkNumber, names);
+  const badge = key.isLatest ? '<span class="kvk-badge">Latest</span>' : "";
+  const skin = findKvkSkin(key.name, names);
+  const backgroundStyle = skin && skin.img
     ? ` style="--kvk-bg: url('${new URL(`icons/kvks/${encodeURIComponent(skin.img)}.webp`, document.baseURI).href}')"`
     : "";
-  const href = `dashboard.html?kd=${encodeURIComponent(kd)}&kvk=${encodeURIComponent(k.kvkNumber)}`;
+  const href = `dashboard.html?kd=${encodeURIComponent(kingdomId)}&kvk=${encodeURIComponent(key.kvkNumber)}`;
   return `
-    <a class="kingdom-box kvk-box${bgStyle ? " has-bg" : ""}" href="${href}"${bgStyle}>
+    <a class="kingdom-box kvk-box${backgroundStyle ? " has-bg" : ""}" href="${href}"${backgroundStyle}>
       <div class="kvk-title">${escapeHtml(label)} ${badge}</div>
       <div class="kvk-stats">
-        ${statHtml("Kill Points", k.kp)}
-        ${statHtml("T4 Kills", k.t4)}
-        ${statHtml("T5 Kills", k.t5)}
-        ${statHtml("Deads", k.deads)}
-        ${statHtml("Acclaim", k.acclaim)}
+        ${statHtml("Kill Points", key.kp)}
+        ${statHtml("T4 Kills", key.t4)}
+        ${statHtml("T5 Kills", key.t5)}
+        ${statHtml("Deads", key.deads)}
+        ${statHtml("Acclaim", key.acclaim)}
       </div>
     </a>`;
 }
 
 async function initSelectKvk() {
-  const kd = '2247';
+  const kingdomId = '2247';
   const heading = document.getElementById("kvk-heading");
   const list = document.getElementById("kvk-list");
   const empty = document.getElementById("kvk-empty");
-  heading.innerHTML = `<h1>Kingdom ${kd}</h1><p class="muted">Select a KvK</p>`;
+  heading.innerHTML = `<h1>Kingdom ${kingdomId}</h1><p class="muted">Select a KvK</p>`;
 
   let names;
   let kvks;
   try {
-    [names, kvks] = await Promise.all([loadKvkNames(), listKvks(kd)]);
-  } catch (e) {
-    console.error("Failed to load KvK data:", e);
+    [names, kvks] = await Promise.all([loadKvkNames(), listKvks(kingdomId)]);
+  } catch (event) {
+    console.error("Failed to load KvK data:", event);
     empty.textContent = "Failed to load KvK data.";
     empty.style.display = "block";
     return;
@@ -88,7 +88,7 @@ async function initSelectKvk() {
   }
 
   list.className = "container";
-  list.innerHTML = kvks.map((k) => kvkBoxHtml(kd, k, names)).join("");
+  list.innerHTML = kvks.map((kvk) => kvkBoxHtml(kingdomId, kvk, names)).join("");
 }
 
 initSelectKvk();
