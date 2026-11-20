@@ -2,7 +2,7 @@ let file1Data = [];
 let file2Data = [];
 let mergedResults = null;
 
-const progressEl = document.getElementById("progress");
+const progressElement = document.getElementById("progress");
 const resultsInfo = document.getElementById("merge-results-info");
 function setExportEnabled(enabled) {
   ["export-xlsx", "export-csv", "export-json"].forEach((id) => {
@@ -15,8 +15,8 @@ setExportEnabled(false);
 function diffRender(value, type) {
   if (type !== "display" || value === null || value === undefined || value === "")
     return value ?? "";
-  const cls = Number(value) >= 0 ? "diff-positive" : "diff-negative";
-  return `<span class="${cls}">${escapeHtml(value)}</span>`;
+  const cssClass = Number(value) >= 0 ? "diff-positive" : "diff-negative";
+  return `<span class="${cssClass}">${escapeHtml(value)}</span>`;
 }
 
 function renderResultsTable(rows) {
@@ -24,50 +24,50 @@ function renderResultsTable(rows) {
   gridDiv.style.display = "block";
   const { keys, data } = objectsToRows(rows);
   createSiteTable(gridDiv, {
-    columns: keys.map((k) => ({
-      title: k,
-      render: k.endsWith("Diff") ? diffRender : undefined,
+    columns: keys.map((key) => ({
+      title: key,
+      render: key.endsWith("Diff") ? diffRender : undefined,
     })),
     data,
   });
 }
 
-function fillSelect(selectEl, columns) {
-  selectEl.replaceChildren();
-  columns.forEach((col) => {
+function fillSelect(selectElement, columns) {
+  selectElement.replaceChildren();
+  columns.forEach((column) => {
     const option = document.createElement("option");
-    option.value = col;
-    option.textContent = col;
-    selectEl.appendChild(option);
+    option.value = column;
+    option.textContent = column;
+    selectElement.appendChild(option);
   });
 }
 
 async function readExcel(file) {
   if (!file) throw new Error("No file provided");
   const arrBuf = await file.arrayBuffer();
-  const wb = XLSX.read(arrBuf, { type: "array" });
-  const firstSheet = wb.SheetNames[0];
-  const sheet = wb.Sheets[firstSheet];
+  const workbook = XLSX.read(arrBuf, { type: "array" });
+  const firstSheet = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[firstSheet];
   const json = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
   return json.map((row) => {
     const normalized = {};
-    Object.keys(row).forEach((k) => {
-      const key = String(k).trim().toLowerCase();
-      const val = row[k];
-      if (["character id", "id"].includes(key)) normalized.ID = val;
-      else if (["username", "name"].includes(key)) normalized.Name = val;
-      else if (["current power", "power"].includes(key)) normalized.Power = val;
+    Object.keys(row).forEach((columnKey) => {
+      const key = String(columnKey).trim().toLowerCase();
+      const value = row[columnKey];
+      if (["character id", "id"].includes(key)) normalized.ID = value;
+      else if (["username", "name"].includes(key)) normalized.Name = value;
+      else if (["current power", "power"].includes(key)) normalized.Power = value;
       else if (["total kill points", "killpoints", "kills"].includes(key))
-        normalized.Killpoints = val;
-      else if (["deaths", "deads"].includes(key)) normalized.Deads = val;
+        normalized.Killpoints = value;
+      else if (["deaths", "deads"].includes(key)) normalized.Deads = value;
       else if (["t4", "t4 kills", "tier 4 kills"].includes(key))
-        normalized["T4 Kills"] = val;
+        normalized["T4 Kills"] = value;
       else if (["t5", "t5 kills", "tier 5 kills"].includes(key))
-        normalized["T5 Kills"] = val;
+        normalized["T5 Kills"] = value;
       else if (["ch", "city hall", "cityhall", "city hall level"].includes(key))
-        normalized.CH = val;
-      else normalized[key] = val;
+        normalized.CH = value;
+      else normalized[key] = value;
     });
     return normalized;
   });
@@ -76,7 +76,7 @@ async function readExcel(file) {
 async function handleFiles() {
   setExportEnabled(false);
   mergedResults = null;
-  progressEl.value = 0;
+  progressElement.value = 0;
   const file1 = document.getElementById("file1").files[0];
   const file2 = document.getElementById("file2").files[0];
   const selectors = document.getElementById("columnSelectors");
@@ -90,9 +90,9 @@ async function handleFiles() {
   try {
     file1Data = await readExcel(file1);
     file2Data = await readExcel(file2);
-  } catch (e) {
-    console.error(e);
-    showToast("Could not read the file: " + (e.message || e), "error");
+  } catch (event) {
+    console.error(event);
+    showToast("Could not read the file: " + (event.message || event), "error");
     return;
   }
 
@@ -113,8 +113,8 @@ async function handleFiles() {
 }
 
 async function doMerge() {
-  const mergeBtn = document.getElementById("mergeBtn");
-  mergeBtn.disabled = true;
+  const mergeButton = document.getElementById("mergeBtn");
+  mergeButton.disabled = true;
   try {
     const idColumn = document.getElementById("idColumn").value;
     const sourceIdColumn = document.getElementById("sourceIdColumn").value;
@@ -123,9 +123,9 @@ async function doMerge() {
     if (!idColumn || !sourceIdColumn || !mergeColumn)
       return showToast("Please select columns first.");
 
-    progressEl.value = 10;
+    progressElement.value = 10;
 
-    const keyOf = (v) => (v == null ? "" : String(v).trim());
+    const keyOf = (value) => (value == null ? "" : String(value).trim());
     const map = new Map();
     for (const row of file2Data) {
       const id = keyOf(row[sourceIdColumn]);
@@ -133,20 +133,20 @@ async function doMerge() {
       map.set(id, row[mergeColumn]);
     }
 
-    progressEl.value = 40;
+    progressElement.value = 40;
 
-    mergedResults = file1Data.map((row, i) => {
-      if (i % 100 === 0) {
-        progressEl.value = 40 + (i / file1Data.length) * 40;
+    mergedResults = file1Data.map((row, index) => {
+      if (index % 100 === 0) {
+        progressElement.value = 40 + (index / file1Data.length) * 40;
       }
-      const newVal = map.get(keyOf(row[idColumn]));
-      if (newVal !== undefined) {
-        return { ...row, [mergeColumn]: newVal };
+      const newValue = map.get(keyOf(row[idColumn]));
+      if (newValue !== undefined) {
+        return { ...row, [mergeColumn]: newValue };
       }
       return row;
     });
 
-    progressEl.value = 80;
+    progressElement.value = 80;
     if (!mergedResults || mergedResults.length === 0) {
       setExportEnabled(false);
       return;
@@ -154,11 +154,11 @@ async function doMerge() {
 
     renderResultsTable(mergedResults);
 
-    progressEl.value = 100;
+    progressElement.value = 100;
     resultsInfo.textContent = `Merged ${mergedResults.length} rows using File 1 ID "${idColumn}", File 2 ID "${sourceIdColumn}", and column "${mergeColumn}" from File 2.`;
     setExportEnabled(true);
   } finally {
-    mergeBtn.disabled = false;
+    mergeButton.disabled = false;
   }
 }
 
