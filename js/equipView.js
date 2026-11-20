@@ -5,7 +5,7 @@ const EQUIPMENT_SLOTS = [
   { key: "gloves", label: "Gloves", id: "gloves" },
   { key: "legs", label: "Legs", id: "legs" },
   { key: "boots", label: "Boots", id: "boots" },
-  { key: "accessory", label: "Acc.", id: "accessory" },
+  { key: "accessory", label: "Accessory", id: "accessory" },
   { key: "accessory_sec", label: "Acc. 2", id: "accessory_sec" },
 ];
 
