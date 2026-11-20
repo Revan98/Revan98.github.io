@@ -2,35 +2,35 @@ const kingdomInput = document.getElementById("kvk-kingdom");
 const numberInput = document.getElementById("kvk-number");
 const nameInput = document.getElementById("kvk-name");
 const fileInput = document.getElementById("kvk-file");
-const importBtn = document.getElementById("kvk-import-btn");
-const progressEl = document.getElementById("kvk-progress");
-const statusEl = document.getElementById("kvk-status");
+const importButton = document.getElementById("kvk-import-btn");
+const progressElement = document.getElementById("kvk-progress");
+const statusElement = document.getElementById("kvk-status");
 
 let importing = false;
 
 function headerMap(headers) {
-  const map = {};
-  headers.forEach((header, idx) => {
+  const rowsByKey = {};
+  headers.forEach((header, index) => {
     const key = String(header ?? "").trim();
-    if (key) map[key] = idx;
+    if (key) rowsByKey[key] = index;
   });
-  return map;
+  return rowsByKey;
 }
 
 function rowValue(row, headers, columnName, fallback = 0) {
-  const idx = headers[columnName];
-  return idx === undefined ? fallback : row[idx];
+  const index = headers[columnName];
+  return index === undefined ? fallback : row[index];
 }
 
 function normalizeImportDate(sheetName) {
   const name = String(sheetName).trim();
-  let iso = name;
+  let isoDate = name;
   if (/^\d{2}_\d{2}_\d{4}$/.test(name)) {
-    const [d, m, y] = name.split("_");
-    iso = `${y}-${m}-${d}`;
+    const [day, month, year] = name.split("_");
+    isoDate = `${year}-${month}-${day}`;
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso) || Number.isNaN(Date.parse(iso))) return null;
-  return iso;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate) || Number.isNaN(Date.parse(isoDate))) return null;
+  return isoDate;
 }
 
 function toStatRow(row, headers) {
@@ -100,13 +100,13 @@ function updateImportButton() {
     kingdomInput.value.trim() &&
     Number(numberInput.value) > 0 &&
     fileInput.files.length > 0;
-  importBtn.disabled = !ready;
+  importButton.disabled = !ready;
 }
 
 async function runImport() {
   if (!importIsAdmin || importing) return;
   if (!window.XLSX) {
-    setStatus(statusEl, "The Excel reader failed to load. Reload the page.", "err");
+    setStatus(statusElement, "The Excel reader failed to load. Reload the page.", "err");
     return;
   }
 
@@ -114,35 +114,35 @@ async function runImport() {
   const kvkNumber = importToInt(numberInput.value);
   const kvkName = nameInput.value.trim() || "KvK";
   if (!kingdom || !kvkNumber) {
-    setStatus(statusEl, "Enter the kingdom and KvK number first.", "err");
+    setStatus(statusElement, "Enter the kingdom and KvK number first.", "err");
     return;
   }
 
   importing = true;
   updateImportButton();
-  progressEl.value = 0;
-  setStatus(statusEl, "Reading the Excel file…");
+  progressElement.value = 0;
+  setStatus(statusElement, "Reading the Excel file…");
 
   try {
     const { snapshots, problems } = parseWorkbook(await readWorkbook(fileInput.files[0]));
-    snapshots.sort((a, b) => a.date.localeCompare(b.date));
+    snapshots.sort((firstSnapshot, secondSnapshot) => firstSnapshot.date.localeCompare(secondSnapshot.date));
     if (!snapshots.length) {
       throw new Error(problems.join(" ") || "The file has no usable sheets.");
     }
 
-    const totalRows = snapshots.reduce((n, s) => n + s.rows.length, 0);
+    const totalRows = snapshots.reduce((total, snapshot) => total + snapshot.rows.length, 0);
     let sentRows = 0;
     let kvkId = null;
     let lastSnapshotId = null;
 
     for (const snap of snapshots) {
-      for (let i = 0; i < snap.rows.length; i += ROWS_PER_REQUEST) {
+      for (let index = 0; index < snap.rows.length; index += ROWS_PER_REQUEST) {
         setStatus(
-          statusEl,
+          statusElement,
           `Importing sheet "${snap.sheet}" (${snap.date}) — ${sentRows.toLocaleString()} / ${totalRows.toLocaleString()} rows…`,
         );
-        const chunk = snap.rows.slice(i, i + ROWS_PER_REQUEST);
-        const res = await sbRpc(
+        const chunk = snap.rows.slice(index, index + ROWS_PER_REQUEST);
+        const result = await supabaseRpc(
           "kvk_import_snapshot",
           {
             p_kingdom: kingdom,
@@ -153,38 +153,38 @@ async function runImport() {
           },
           { auth: true },
         );
-        kvkId = res.kvkId;
-        lastSnapshotId = res.snapshotId;
+        kvkId = result.kvkId;
+        lastSnapshotId = result.snapshotId;
         sentRows += chunk.length;
-        progressEl.value = Math.round((sentRows / totalRows) * 95);
+        progressElement.value = Math.round((sentRows / totalRows) * 95);
       }
     }
 
-    setStatus(statusEl, "Finishing…");
-    await sbRpc(
+    setStatus(statusElement, "Finishing…");
+    await supabaseRpc(
       "kvk_import_finish",
       { p_kvk_id: kvkId, p_last_snapshot_id: lastSnapshotId },
       { auth: true },
     );
-    progressEl.value = 100;
+    progressElement.value = 100;
 
     const notes = problems.length ? ` Notes: ${problems.join(" ")}` : "";
     setStatus(
-      statusEl,
+      statusElement,
       `Imported ${snapshots.length} snapshot${snapshots.length === 1 ? "" : "s"} and ${totalRows.toLocaleString()} stat rows into KvK ${kvkNumber} of kingdom ${kingdom}. It is now the latest KvK.${notes}`,
       "ok",
     );
     showToast("KvK imported.", "success");
-  } catch (e) {
-    console.error("KvK import failed:", e);
-    progressEl.value = 0;
+  } catch (event) {
+    console.error("KvK import failed:", event);
+    progressElement.value = 0;
     setStatus(
-      statusEl,
-      "Import failed: " + e.message + " (Anything already sent was saved; running the import again replaces it.)",
+      statusElement,
+      "Import failed: " + event.message + " (Anything already sent was saved; running the import again replaces it.)",
       "err",
     );
-    if (/signed out|expired|JWT/i.test(e.message)) {
-      sbSignOut();
+    if (/signed out|expired|JWT/i.test(event.message)) {
+      supabaseSignOut();
       await refreshAuthUi();
     }
   } finally {
@@ -193,14 +193,14 @@ async function runImport() {
   }
 }
 
-[kingdomInput, numberInput, nameInput, fileInput].forEach((el) =>
-  el.addEventListener("input", updateImportButton),
+[kingdomInput, numberInput, nameInput, fileInput].forEach((element) =>
+  element.addEventListener("input", updateImportButton),
 );
 fileInput.addEventListener("change", updateImportButton);
-importBtn.addEventListener("click", runImport);
+importButton.addEventListener("click", runImport);
 
 document.addEventListener("import-auth", () => {
-  if (!importIsAdmin) setStatus(statusEl, "Choose a KvK Excel file.");
+  if (!importIsAdmin) setStatus(statusElement, "Choose a KvK Excel file.");
   updateImportButton();
 });
 updateImportButton();
