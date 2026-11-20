@@ -7,7 +7,7 @@ function getKvkNumberFromURL() {
   return normalizeNumericId(new URLSearchParams(location.search).get("kvk"));
 }
 
-const num = (v) => Number(v) || 0;
+const toNumberOrZero = (value) => Number(value) || 0;
 const CSV_FORMULA_START = /^[=+\-@\t\r]/;
 const CSV_NUMERIC_LIKE = /^[-+]?\d+([.,]\d+)?([eE][-+]?\d+)?%?$/;
 function csvSafeCell(value) {
@@ -22,29 +22,29 @@ function formatNumber(value) {
 }
 
 function formatSignedNumber(value) {
-  const n = Number(value) || 0;
-  return `${n >= 0 ? "+" : ""}${n.toLocaleString("en-US")}`;
+  const numericValue = Number(value) || 0;
+  return `${numericValue >= 0 ? "+" : ""}${numericValue.toLocaleString("en-US")}`;
 }
 
 function formatPercent(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? `${(n * 100).toFixed(2)}%` : "";
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? `${(numericValue * 100).toFixed(2)}%` : "";
 }
 
 function formatCompact(value) {
-  const n = Number(value) || 0;
-  const abs = Math.abs(n);
-  const sign = n < 0 ? "-" : "";
+  const numericValue = Number(value) || 0;
+  const absoluteValue = Math.abs(numericValue);
+  const sign = numericValue < 0 ? "-" : "";
   for (const [size, suffix] of [
     [1e9, "B"],
     [1e6, "M"],
     [1e3, "K"],
   ]) {
-    if (abs >= size) {
-      return sign + (abs / size).toFixed(2).replace(/\.?0+$/, "") + suffix;
+    if (absoluteValue >= size) {
+      return sign + (absoluteValue / size).toFixed(2).replace(/\.?0+$/, "") + suffix;
     }
   }
-  return String(n);
+  return String(numericValue);
 }
 
 const HTML_ESCAPES = {
@@ -58,9 +58,9 @@ const HTML_ESCAPES = {
   "=": "&#x3D;",
 };
 
-function escapeHtml(str) {
-  if (str == null) return "";
-  return String(str).replace(/[&<>"'`=/]/g, (s) => HTML_ESCAPES[s]);
+function escapeHtml(string) {
+  if (string == null) return "";
+  return String(string).replace(/[&<>"'`=/]/g, (character) => HTML_ESCAPES[character]);
 }
 
 const escapeAttr = escapeHtml;
@@ -70,44 +70,44 @@ async function copyText(text) {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand("copy");
-    ta.remove();
-    return ok;
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.select();
+    const copied = document.execCommand("copy");
+    textArea.remove();
+    return copied;
   }
 }
 
-function importToInt(v) {
-  if (v === null || v === undefined || v === "") return 0;
-  const n = Number(String(v).replace(/,/g, "").trim());
-  return Number.isFinite(n) ? Math.trunc(n) : 0;
+function importToInt(value) {
+  if (value === null || value === undefined || value === "") return 0;
+  const numericValue = Number(String(value).replace(/,/g, "").trim());
+  return Number.isFinite(numericValue) ? Math.trunc(numericValue) : 0;
 }
 
-function importToText(v, fallback = "") {
-  if (v === null || v === undefined || String(v).trim() === "") return fallback;
-  return String(v).trim();
+function importToText(value, fallback = "") {
+  if (value === null || value === undefined || String(value).trim() === "") return fallback;
+  return String(value).trim();
 }
 
-function importToFloat(v) {
-  if (v === null || v === undefined || v === "") return 0;
-  const n = Number(String(v).replace(/,/g, "").trim());
-  return Number.isFinite(n) ? n : 0;
+function importToFloat(value) {
+  if (value === null || value === undefined || value === "") return 0;
+  const numericValue = Number(String(value).replace(/,/g, "").trim());
+  return Number.isFinite(numericValue) ? numericValue : 0;
 }
 
 function searchByName(query, sources) {
-  const q = String(query ?? "").trim().toLowerCase();
-  if (q.length < 2) return [];
+  const normalizedQuery = String(query ?? "").trim().toLowerCase();
+  if (normalizedQuery.length < 2) return [];
 
-  const pattern = "%" + q.replace(/[\\%_]/g, "\\$&") + "%";
+  const pattern = "%" + normalizedQuery.replace(/[\\%_]/g, "\\$&") + "%";
   const results = [];
   const seen = new Set();
 
-  for (const { db: database, src } of sources) {
+  for (const { db: database, src: source } of sources) {
     if (!database) continue;
     let stmt;
     try {
@@ -122,22 +122,22 @@ function searchByName(query, sources) {
         const key = String(id);
         if (seen.has(key)) continue;
         seen.add(key);
-        results.push({ id: key, name: name || key, src });
+        results.push({ id: key, name: name || key, src: source });
       }
-    } catch (e) {
-      console.warn(`Name search (${src}):`, e);
+    } catch (event) {
+      console.warn(`Name search (${source}):`, event);
     } finally {
       stmt?.free();
     }
   }
 
-  results.sort((a, b) => {
-    const al = a.name.toLowerCase();
-    const bl = b.name.toLowerCase();
-    const aStarts = al.startsWith(q);
-    const bStarts = bl.startsWith(q);
+  results.sort((firstResult, secondResult) => {
+    const firstName = firstResult.name.toLowerCase();
+    const secondName = secondResult.name.toLowerCase();
+    const aStarts = firstName.startsWith(normalizedQuery);
+    const bStarts = secondName.startsWith(normalizedQuery);
     if (aStarts !== bStarts) return aStarts ? -1 : 1;
-    return al.localeCompare(bl);
+    return firstName.localeCompare(secondName);
   });
   return results.slice(0, 15);
 }
@@ -171,12 +171,12 @@ function showToast(message, type = "info", duration = 5000) {
   text.className = "toast-message";
   text.textContent = message;
 
-  const closeBtn = document.createElement("button");
-  closeBtn.className = "toast-close";
-  closeBtn.setAttribute("aria-label", "Dismiss");
-  closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+  const closeButton = document.createElement("button");
+  closeButton.className = "toast-close";
+  closeButton.setAttribute("aria-label", "Dismiss");
+  closeButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
 
-  toast.append(icon, text, closeBtn);
+  toast.append(icon, text, closeButton);
   getToastContainer().appendChild(toast);
   requestAnimationFrame(() => toast.classList.add("show"));
 
@@ -187,7 +187,7 @@ function showToast(message, type = "info", duration = 5000) {
       once: true,
     });
   };
-  closeBtn.addEventListener("click", remove);
+  closeButton.addEventListener("click", remove);
   if (duration > 0) setTimeout(remove, duration);
 }
 
@@ -218,27 +218,27 @@ function initTheme() {
   );
 }
 
-function initNav() {
+function initNavigation() {
   const hamburger = document.getElementById("hamburger");
-  const navLinks = document.getElementById("nav-links");
-  if (!hamburger || !navLinks) return;
+  const navigationLinks = document.getElementById("nav-links");
+  if (!hamburger || !navigationLinks) return;
 
   const close = () => {
-    navLinks.classList.remove("show");
+    navigationLinks.classList.remove("show");
     hamburger.classList.remove("open");
   };
 
   hamburger.addEventListener("click", () => {
-    navLinks.classList.toggle("show");
+    navigationLinks.classList.toggle("show");
     hamburger.classList.toggle("open");
   });
-  document.addEventListener("click", (e) => {
-    if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) close();
+  document.addEventListener("click", (event) => {
+    if (!hamburger.contains(event.target) && !navigationLinks.contains(event.target)) close();
   });
-  navLinks.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
+  navigationLinks.querySelectorAll("a").forEach((link) => link.addEventListener("click", close));
 
   const current = location.pathname.split("/").pop();
-  navLinks.querySelectorAll("a").forEach((link) => {
+  navigationLinks.querySelectorAll("a").forEach((link) => {
     if (link.getAttribute("href") === current) {
       link.setAttribute("href", current + location.search);
     }
@@ -254,18 +254,18 @@ function initToolsDropdown() {
     menu.classList.remove("show");
     toggle.setAttribute("aria-expanded", "false");
   };
-  toggle.addEventListener("click", (e) => {
-    e.stopPropagation();
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
     toggle.setAttribute("aria-expanded", menu.classList.toggle("show"));
   });
-  document.addEventListener("click", (e) => {
-    if (!toggle.contains(e.target) && !menu.contains(e.target)) close();
+  document.addEventListener("click", (event) => {
+    if (!toggle.contains(event.target) && !menu.contains(event.target)) close();
   });
-  menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
+  menu.querySelectorAll("a").forEach((link) => link.addEventListener("click", close));
 }
 
 initTheme();
-initNav();
+initNavigation();
 initToolsDropdown();
 
 const VENDOR_SCRIPTS = {
@@ -283,21 +283,21 @@ const VENDOR_SCRIPTS = {
 const vendorLoads = {};
 
 function loadVendor(name) {
-  const lib = VENDOR_SCRIPTS[name];
-  if (window[lib.global]) return Promise.resolve();
+  const vendorLibrary = VENDOR_SCRIPTS[name];
+  if (window[vendorLibrary.global]) return Promise.resolve();
   vendorLoads[name] ??= new Promise((resolve, reject) => {
-    const el = document.createElement("script");
-    el.src = lib.src;
-    el.integrity = lib.integrity;
-    el.crossOrigin = "anonymous";
-    el.referrerPolicy = "no-referrer";
-    el.onload = resolve;
-    el.onerror = () => {
+    const element = document.createElement("script");
+    element.src = vendorLibrary.src;
+    element.integrity = vendorLibrary.integrity;
+    element.crossOrigin = "anonymous";
+    element.referrerPolicy = "no-referrer";
+    element.onload = resolve;
+    element.onerror = () => {
       delete vendorLoads[name];
-      el.remove();
-      reject(new Error(`Could not load ${lib.global}. Check your connection and try again.`));
+      element.remove();
+      reject(new Error(`Could not load ${vendorLibrary.global}. Check your connection and try again.`));
     };
-    document.head.appendChild(el);
+    document.head.appendChild(element);
   });
   return vendorLoads[name];
 }
