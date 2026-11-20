@@ -165,7 +165,39 @@
                 Add March
               </button>
             </div>
-            <div class="eq-slot-grid" id="slotGrid"></div>
+            <div class="eq-march-layout">
+              <section class="eq-items-pane" aria-label="Items for selected slot">
+                <div class="eq-items-head">
+                  <div class="eq-items-title" id="itemsPaneTitle">Items</div>
+                  <div class="eq-picker-search-wrap">
+                    <i class="fa-solid fa-magnifying-glass" style="font-size: 13px"></i>
+                    <input
+                      type="text"
+                      id="itemsPaneSearch"
+                      class="eq-picker-search"
+                      placeholder="Search…"
+                      autocomplete="off"
+                      disabled
+                    />
+                  </div>
+                  <button
+                    class="eq-clear-btn secondary"
+                    id="itemsPaneClear"
+                    type="button"
+                    disabled
+                  >
+                    <i class="fa-solid fa-trash-can" style="font-size: 13px"></i>
+                    Clear Slot
+                  </button>
+                </div>
+                <div class="eq-picker-body eq-items-scroll" id="itemsPaneBody">
+                  <div class="eq-picker-empty">
+                    Select equipment slot to display items.
+                  </div>
+                </div>
+              </section>
+              <div class="eq-doll" id="slotGrid"></div>
+            </div>
           </div>
 
           <div id="pairsPanel" style="display: none">
@@ -476,6 +508,7 @@
     <script src="js/supabase.js"></script>
     <script src="js/equipData.js"></script>
     <script src="js/equipFarms.js"></script>
+    <script src="js/equipView.js"></script>
     <script src="js/equipPicker.js"></script>
     <script src="js/equipArmament.js"></script>
     <script src="js/equipment.js"></script>
