@@ -1,16 +1,5 @@
 "use strict";
 
-const EQUIPMENT_SLOTS = [
-  { key: "helm", label: "Helm" },
-  { key: "chest", label: "Chest" },
-  { key: "weapon", label: "Weapon" },
-  { key: "gloves", label: "Gloves" },
-  { key: "legs", label: "Legs" },
-  { key: "boots", label: "Boots" },
-  { key: "accessory", label: "Accessory" },
-  { key: "accessory_sec", label: "Acc. 2" },
-];
-
 const DEFAULT_MARCH_COUNT = 12;
 const DEFAULT_PAIR_COUNT = 12;
 const DEFAULT_ARMAMENT_COUNT = 8;
@@ -679,43 +668,73 @@ document.getElementById("marchTabs").addEventListener("click", (event) => {
   renderSlotGrid();
 });
 
+let equipSelectedSlot = null;
+
+function selectEquipSlot(slotKey) {
+  const changed = slotKey !== equipSelectedSlot;
+  equipSelectedSlot = slotKey;
+  if (changed) {
+    document.getElementById("itemsPaneSearch").value = "";
+  }
+  renderSlotGrid();
+  if (changed) document.getElementById("itemsPaneBody").scrollTop = 0;
+}
+
+function renderEquipItemsPane() {
+  const body = document.getElementById("itemsPaneBody");
+  const title = document.getElementById("itemsPaneTitle");
+  const search = document.getElementById("itemsPaneSearch");
+  const clearButton = document.getElementById("itemsPaneClear");
+
+  const slot = EQUIPMENT_SLOTS.find((equipmentSlot) => equipmentSlot.key === equipSelectedSlot);
+  if (!slot) {
+    title.textContent = "Items";
+    search.value = "";
+    search.disabled = true;
+    clearButton.disabled = true;
+    body.innerHTML = '<div class="eq-picker-empty">Select equipment slot to display items.</div>';
+    return;
+  }
+
+  title.textContent = `${slot.label} · March ${currentMarch}`;
+  search.disabled = false;
+  clearButton.disabled = false;
+
+  const target = { type: "equip", marchIdx: currentMarch - 1, slotKey: slot.key };
+  pickerTarget = target;
+  loadIconManifest();
+  const scrollTop = body.scrollTop;
+  renderPickerItems(search.value.trim(), body, target);
+  body.scrollTop = scrollTop;
+}
+
 function renderSlotGrid() {
   const grid = document.getElementById("slotGrid");
   const marchIndex = currentMarch - 1;
-  grid.innerHTML = "";
 
-  for (const slot of EQUIPMENT_SLOTS) {
+  const slotsHtml = EQUIPMENT_SLOTS.map((slot) => {
     const slotData = marchData[marchIndex][slot.key];
-    const hasItem = !!slotData.item;
-    const card = document.createElement("div");
-    card.className = "eq-slot-card" + (hasItem ? " has-item" : "");
-    if (hasItem) {
-      card.dataset.tipCode = slotData.item;
-      card.dataset.tipKind = "item";
-    }
+    return renderEquipmentBox(slot, slotData.item, slotData.awk, slotData.tal, currentMarch);
+  }).join("");
+  grid.innerHTML = `<div class="equip-slots">${slotsHtml}</div>`;
 
-    card.innerHTML = `
-      <span class="eq-slot-label">${escapeHtml(slot.label)}</span>
-      <div class="eq-slot-img-box">
-        ${
-          hasItem
-            ? `<img src="${iconPath(slotData.item, "item")}" alt="${escapeHtml(slotData.item)}" loading="lazy"
-                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-             <div class="eq-slot-placeholder" style="display:none;">?</div>`
-            : `<div class="eq-slot-placeholder">+</div>`
-        }
-      </div>
-      <span class="eq-slot-item-name">${hasItem ? escapeHtml(slotData.item) : "—"}</span>
-      <div class="eq-slot-stats">
-        <span class="eq-slot-stat${hasItem && slotData.awk ? " filled" : ""}">Awk: ${hasItem && slotData.awk ? escapeHtml(slotData.awk) : "—"}</span>
-        <span class="eq-slot-stat${hasItem && slotData.tal ? " filled" : ""}">Tal: ${hasItem && slotData.tal ? escapeHtml(slotData.tal) : "—"}</span>
-      </div>`;
+  grid.querySelectorAll(".equip-slot").forEach((element) => {
+    const slot = EQUIPMENT_SLOTS.find((equipmentSlot) => equipmentSlot.id === element.dataset.slot);
+    element.classList.add("equip-slot--pick");
+    element.classList.toggle("is-selected", slot.key === equipSelectedSlot);
+    element.setAttribute("role", "button");
+    element.setAttribute("tabindex", "0");
+    element.setAttribute("aria-label", `${slot.label} — March ${currentMarch}`);
+    element.addEventListener("click", () => selectEquipSlot(slot.key));
+    element.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        selectEquipSlot(slot.key);
+      }
+    });
+  });
 
-    card.addEventListener("click", () =>
-      openPicker({ type: "equip", marchIdx: marchIndex, slotKey: slot.key }),
-    );
-    grid.appendChild(card);
-  }
+  renderEquipItemsPane();
 }
 
 function renderPairsGrid() {
@@ -866,6 +885,15 @@ pickerOverlay.addEventListener("click", (event) => {
 pickerSearch.addEventListener("input", () =>
   renderPickerItems(pickerSearch.value.trim()),
 );
+
+document
+  .getElementById("itemsPaneSearch")
+  .addEventListener("input", renderEquipItemsPane);
+document.getElementById("itemsPaneClear").addEventListener("click", () => {
+  if (!equipSelectedSlot) return;
+  pickerTarget = { type: "equip", marchIdx: currentMarch - 1, slotKey: equipSelectedSlot };
+  clearPickerSlot();
+});
 
 const detailPopup = document.getElementById("detailPopup");
 const detailBackdrop = document.getElementById("detailBackdrop");
