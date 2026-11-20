@@ -36,7 +36,7 @@ let chartSeries = [];
 let activeChartKey = CHART_SERIES[0].key;
 
 const getChartStat = (key) =>
-  CHART_SERIES.find((s) => s.key === key) ?? CHART_SERIES[0];
+  CHART_SERIES.find((seriesItem) => seriesItem.key === key) ?? CHART_SERIES[0];
 
 function chartStatData(stat) {
   return chartSeries.map((row) => Number(row[stat.key] || 0));
@@ -44,16 +44,16 @@ function chartStatData(stat) {
 
 function renderChartButtons() {
   return CHART_SERIES.map(
-    (s) =>
-      `<button type="button" class="chart-stat-btn${s.key === activeChartKey ? " active" : ""}" ` +
-      `data-key="${s.key}" aria-pressed="${s.key === activeChartKey}" ` +
-      `onclick="selectChartStat('${s.key}')">${s.label}</button>`,
+    (seriesEntry) =>
+      `<button type="button" class="chart-stat-btn${seriesEntry.key === activeChartKey ? " active" : ""}" ` +
+      `data-key="${seriesEntry.key}" aria-pressed="${seriesEntry.key === activeChartKey}" ` +
+      `onclick="selectChartStat('${seriesEntry.key}')">${seriesEntry.label}</button>`,
   ).join("");
 }
 
-function createChart(ctx, labels) {
+function createChart(context, labels) {
   const stat = getChartStat(activeChartKey);
-  inlineChart = new Chart(ctx, {
+  inlineChart = new Chart(context, {
     type: "line",
     data: {
       labels,
@@ -95,9 +95,9 @@ function applyChartTheme() {
   if (!inlineChart) return;
 
   const styles = CHART_STYLES[getCurrentTheme()];
-  inlineChart.data.datasets.forEach((ds) => {
-    ds.pointBackgroundColor = ds.borderColor;
-    ds.pointBorderColor = styles.pointBorder;
+  inlineChart.data.datasets.forEach((dataset) => {
+    dataset.pointBackgroundColor = dataset.borderColor;
+    dataset.pointBorderColor = styles.pointBorder;
   });
 
   inlineChart.options.plugins.tooltip.backgroundColor = styles.tooltipBg;
@@ -117,19 +117,19 @@ window.addEventListener("themechange", applyChartTheme);
 
 function selectChartStat(key) {
   activeChartKey = getChartStat(key).key;
-  document.querySelectorAll(".chart-stat-btn").forEach((btn) => {
-    const on = btn.dataset.key === activeChartKey;
-    btn.classList.toggle("active", on);
-    btn.setAttribute("aria-pressed", on);
+  document.querySelectorAll(".chart-stat-btn").forEach((button) => {
+    const isActive = button.dataset.key === activeChartKey;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", isActive);
   });
   if (!inlineChart) return;
 
   const stat = getChartStat(activeChartKey);
-  const ds = inlineChart.data.datasets[0];
-  ds.label = stat.label;
-  ds.data = chartStatData(stat);
-  ds.borderColor = stat.color;
-  ds.backgroundColor = stat.color + "33";
+  const dataset = inlineChart.data.datasets[0];
+  dataset.label = stat.label;
+  dataset.data = chartStatData(stat);
+  dataset.borderColor = stat.color;
+  dataset.backgroundColor = stat.color + "33";
   applyChartTheme();
 }
 
@@ -175,9 +175,9 @@ function renderCollapsibleSection(title, content, defaultOpen = false) {
   `;
 }
 
-function switchGovModalTab(tab) {
-  document.querySelectorAll(".gov-modal-tab").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.tab === tab);
+function switchGovernorModalTab(tab) {
+  document.querySelectorAll(".gov-modal-tab").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === tab);
   });
   document.querySelectorAll(".gov-modal-tab-pane").forEach((pane) => {
     pane.style.display = pane.id === `govTabPane-${tab}` ? "block" : "none";
@@ -185,8 +185,8 @@ function switchGovModalTab(tab) {
 }
 
 function expandAllSections() {
-  document.querySelectorAll(".collapsible-content").forEach((el) => {
-    el.style.display = "block";
+  document.querySelectorAll(".collapsible-content").forEach((element) => {
+    element.style.display = "block";
   });
 
   document.querySelectorAll(".collapsible-icon").forEach((icon) => {
@@ -195,8 +195,8 @@ function expandAllSections() {
 }
 
 function collapseAllSections() {
-  document.querySelectorAll(".collapsible-content").forEach((el) => {
-    el.style.display = "none";
+  document.querySelectorAll(".collapsible-content").forEach((element) => {
+    element.style.display = "none";
   });
 
   document.querySelectorAll(".collapsible-icon").forEach((icon) => {
@@ -205,15 +205,15 @@ function collapseAllSections() {
 }
 
 function toggleSection(id) {
-  const el = document.getElementById(id);
-  const header = el.previousElementSibling;
+  const element = document.getElementById(id);
+  const header = element.previousElementSibling;
   const icon = header.querySelector(".collapsible-icon");
 
-  if (el.style.display === "none") {
-    el.style.display = "block";
+  if (element.style.display === "none") {
+    element.style.display = "block";
     icon.textContent = "−";
   } else {
-    el.style.display = "none";
+    element.style.display = "none";
     icon.textContent = "+";
   }
 }
@@ -242,7 +242,7 @@ function renderFarmKvKBoxes(rows) {
     return `<div class="gov-modal-empty">No KvK data found for farm accounts.</div>`;
 
   const kvkBlocks = renderFarmKvKGroups(rows)
-    .map((g) => renderCollapsibleSection(g.kvk, g.html, false))
+    .map((group) => renderCollapsibleSection(group.kvk, group.html, false))
     .join("");
 
   return renderCollapsibleSection(
@@ -252,26 +252,26 @@ function renderFarmKvKBoxes(rows) {
   );
 }
 
-let govModalToken = 0;
+let governorModalToken = 0;
 
-async function openGovModal(govId, govName) {
-  const token = ++govModalToken;
+async function openGovernorModal(governorId, governorName) {
+  const token = ++governorModalToken;
   const overlay = document.getElementById("govModalOverlay");
   const body = document.getElementById("govModalBody");
   const subtitle = document.getElementById("govModalSubtitle");
-  const vipEl = document.getElementById("govModalVip");
-  const safeGovId = normalizeNumericId(govId);
+  const vipElement = document.getElementById("govModalVip");
+  const safeGovernorId = normalizeNumericId(governorId);
 
-  if (vipEl) vipEl.innerHTML = "";
+  if (vipElement) vipElement.innerHTML = "";
 
   const editLink = document.getElementById("edit-eq");
   if (editLink) {
-    editLink.href = safeGovId
-      ? `equipment.html?govId=${encodeURIComponent(safeGovId)}`
+    editLink.href = safeGovernorId
+      ? `equipment.html?govId=${encodeURIComponent(safeGovernorId)}`
       : "equipment.html";
   }
 
-  if (!safeGovId) {
+  if (!safeGovernorId) {
     subtitle.textContent = "";
     body.innerHTML = `<div class="gov-modal-empty">Invalid governor ID.</div>`;
     overlay.classList.add("open");
@@ -279,32 +279,32 @@ async function openGovModal(govId, govName) {
     return;
   }
 
-  govId = safeGovId;
+  governorId = safeGovernorId;
 
-  subtitle.textContent = govName ? `${govName} (${govId})` : `ID: ${govId}`;
+  subtitle.textContent = governorName ? `${governorName} (${governorId})` : `ID: ${governorId}`;
   body.innerHTML = `<div class="gov-modal-loading"><div class="spinner"></div><span>Loading…</span></div>`;
   overlay.classList.add("open");
   document.body.style.overflow = "hidden";
 
   {
-    const safeRender = (label, fn) => {
+    const safeRender = (label, renderCallback) => {
       try {
-        return fn();
-      } catch (e) {
-        console.error("[modal:" + label + "]", e);
+        return renderCallback();
+      } catch (event) {
+        console.error("[modal:" + label + "]", event);
         return "";
       }
     };
     try {
-      await Promise.all([loadPlayerBundle(govId, kvkCtx.kd), loadEquipRefData()]);
-      if (token !== govModalToken) return;
-      const history = loadGovHistory(govId);
-      const farmOwner = loadFarmOwner(govId);
-      const farms = loadGovernorFarms(govId);
-      const farmKvK = loadFarmKvKStats(govId);
-      const profile = loadPlayerProfile(govId);
-      if (vipEl)
-        vipEl.innerHTML = renderVipBadge(profile ? profile.vip_level : "");
+      await Promise.all([loadPlayerBundle(governorId, kvkContext.kd), loadEquipmentReferenceData()]);
+      if (token !== governorModalToken) return;
+      const history = loadGovernorHistory(governorId);
+      const farmOwner = loadFarmOwner(governorId);
+      const farms = loadGovernorFarms(governorId);
+      const farmKvK = loadFarmKvKStats(governorId);
+      const profile = loadPlayerProfile(governorId);
+      if (vipElement)
+        vipElement.innerHTML = renderVipBadge(profile ? profile.vip_level : "");
       const chartSection = `
 	    <div class="modal-chart-section">
 	      <div class="chart-stat-buttons" role="group" aria-label="Chart stat">${renderChartButtons()}</div>
@@ -315,9 +315,9 @@ async function openGovModal(govId, govName) {
 	  `;
       body.innerHTML =
         '<div class="gov-modal-tabs">' +
-        '  <button type="button" class="gov-modal-tab active" data-tab="chart" onclick="switchGovModalTab(\'chart\')">Chart</button>' +
-        '  <button type="button" class="gov-modal-tab" data-tab="stats" onclick="switchGovModalTab(\'stats\')">Statistics</button>' +
-        '  <button type="button" class="gov-modal-tab" data-tab="equipment" onclick="switchGovModalTab(\'equipment\')">Equipment</button>' +
+        '  <button type="button" class="gov-modal-tab active" data-tab="chart" onclick="switchGovernorModalTab(\'chart\')">Chart</button>' +
+        '  <button type="button" class="gov-modal-tab" data-tab="stats" onclick="switchGovernorModalTab(\'stats\')">Statistics</button>' +
+        '  <button type="button" class="gov-modal-tab" data-tab="equipment" onclick="switchGovernorModalTab(\'equipment\')">Equipment</button>' +
         "</div>" +
         '<div class="gov-modal-tab-pane" id="govTabPane-chart">' +
         chartSection +
@@ -339,22 +339,22 @@ async function openGovModal(govId, govName) {
         safeRender("farmKvK", () => renderFarmKvKBoxes(farmKvK)) +
         "</div>" +
         '<div class="gov-modal-tab-pane" id="govTabPane-equipment" style="display:none;">' +
-        safeRender("equipment", () => renderEquipmentSection(govId)) +
+        safeRender("equipment", () => renderEquipmentSection(governorId)) +
         "</div>";
-      updateChart(govId).catch((e) => {
-        console.error("updateChart:", e);
+      updateChart(governorId).catch((error) => {
+        console.error("updateChart:", error);
         const canvas = document.querySelector("#modal-chart");
         if (canvas?.parentElement)
           canvas.parentElement.innerHTML = `<div class="gov-modal-empty">Could not load the chart.</div>`;
       });
-    } catch (err) {
-      console.error("openGovModal:", err);
-      body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(err))}</div>`;
+    } catch (error) {
+      console.error("openGovernorModal:", error);
+      body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(error))}</div>`;
     }
   }
 }
 
-function closeGovModal() {
+function closeGovernorModal() {
   destroyChart();
   document.getElementById("govModalOverlay").classList.remove("open");
   document.body.style.overflow = "";
@@ -362,12 +362,12 @@ function closeGovModal() {
 
 document
   .getElementById("govModalClose")
-  .addEventListener("click", closeGovModal);
+  .addEventListener("click", closeGovernorModal);
 
-document.getElementById("govModalOverlay").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) closeGovModal();
+document.getElementById("govModalOverlay").addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) closeGovernorModal();
 });
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeGovModal();
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeGovernorModal();
 });
