@@ -1,6 +1,6 @@
 "use strict";
 
-const EQUIP_SLOTS = [
+const EQUIPMENT_SLOTS = [
   { key: "helm", label: "Helm" },
   { key: "chest", label: "Chest" },
   { key: "weapon", label: "Weapon" },
@@ -13,26 +13,26 @@ const EQUIP_SLOTS = [
 
 const DEFAULT_MARCH_COUNT = 12;
 const DEFAULT_PAIR_COUNT = 12;
-const DEFAULT_ARM_COUNT = 8;
+const DEFAULT_ARMAMENT_COUNT = 8;
 const DEFAULT_SKIN_COUNT = 8;
 
 let MARCH_COUNT = DEFAULT_MARCH_COUNT;
 let PAIR_COUNT = DEFAULT_PAIR_COUNT;
-let ARM_COUNT = DEFAULT_ARM_COUNT;
+let ARMAMENT_COUNT = DEFAULT_ARMAMENT_COUNT;
 let SKIN_COUNT = DEFAULT_SKIN_COUNT;
 
 let editorReady = false;
 let loadTicket = 0;
 let loadBlock = null;
-let loadedGovId = null;
-const dbStatus = document.getElementById("dbStatus");
+let loadedGovernorId = null;
+const databaseStatus = document.getElementById("dbStatus");
 
 let currentMarch = 1;
 let activeTab = "equipment";
 
 const marchData = Array.from({ length: MARCH_COUNT }, () =>
   Object.fromEntries(
-    EQUIP_SLOTS.map((s) => [s.key, { item: "", awk: "", tal: "" }]),
+    EQUIPMENT_SLOTS.map((equipmentSlot) => [equipmentSlot.key, { item: "", awk: "", tal: "" }]),
   ),
 );
 
@@ -51,50 +51,50 @@ function resizeDataArray(arr, newLen, factory) {
 let pickerTarget = null;
 let pickerSelectedItem = "";
 let allIconNames = [];
-let allCommNames = [];
+let allCommanderNames = [];
 let allSkinNames = [];
 
 
 (async () => {
-  buildArmStatRows();
+  buildArmamentStatRows();
   const connected = connectToDatabase();
-  await loadEquipRefData();
+  await loadEquipmentReferenceData();
   populateArmamentSelects();
   loadIconManifest();
   loadSkinManifest();
   await connected;
-  preloadIconsFromDb();
+  preloadIconsFromDatabase();
 })();
 
-const loadGovBtn = document.getElementById("loadGovBtn");
-const saveBtn = document.getElementById("saveBtn");
-const newGovBtn = document.getElementById("newGovBtn");
+const loadGovernorButton = document.getElementById("loadGovBtn");
+const saveButton = document.getElementById("saveBtn");
+const newGovernorButton = document.getElementById("newGovBtn");
 const farmImportStatus = document.getElementById("farmImportStatus");
 const farmSearchInput = document.getElementById("farmSearchInput");
-const farmAddNewBtn = document.getElementById("farmAddNewBtn");
+const farmAddNewButton = document.getElementById("farmAddNewBtn");
 const farmsTableBody = document.getElementById("farmsTableBody");
-const addMarchBtn = document.getElementById("addMarchBtn");
-const addPairBtn = document.getElementById("addPairBtn");
-const addArmBtn = document.getElementById("addArmBtn");
-const addSkinBtn = document.getElementById("addSkinBtn");
+const addMarchButton = document.getElementById("addMarchBtn");
+const addPairButton = document.getElementById("addPairBtn");
+const addArmamentButton = document.getElementById("addArmBtn");
+const addSkinButton = document.getElementById("addSkinBtn");
 
 async function connectToDatabase() {
-  setDbStatus("Connecting…", "");
+  setDatabaseStatus("Connecting…", "");
   try {
-    applyCounts(await edInit());
+    applyCounts(await loadEditorInitialData());
     editorReady = true;
-    setDbStatus("✓ Connected", "ok");
-    loadGovBtn.disabled = false;
-    saveBtn.disabled = false;
-    newGovBtn.disabled = false;
+    setDatabaseStatus("✓ Connected", "ok");
+    loadGovernorButton.disabled = false;
+    saveButton.disabled = false;
+    newGovernorButton.disabled = false;
     updateImportButtons();
     updateAddSlotButtons();
     if (activeTab === "farmImport") renderFarmsTable();
     openGovernorFromUrl();
-  } catch (e) {
-    console.error(e);
-    setDbStatus("✗ Could not connect", "err");
-    showToast("Could not connect to the database: " + e.message, "error");
+  } catch (event) {
+    console.error(event);
+    setDatabaseStatus("✗ Could not connect", "err");
+    showToast("Could not connect to the database: " + event.message, "error");
   }
 }
 
@@ -102,24 +102,24 @@ function openGovernorFromUrl() {
   const params = new URLSearchParams(location.search);
   const id = normalizeNumericId(params.get("govId") || params.get("id"));
   if (!id) return;
-  govIdInput.value = id;
+  governorIdInput.value = id;
   loadGovernorById(id);
 }
 
 function applyCounts(counts) {
   MARCH_COUNT = counts.march_count;
   PAIR_COUNT = counts.pair_count;
-  ARM_COUNT = counts.arm_count;
+  ARMAMENT_COUNT = counts.arm_count;
   SKIN_COUNT = counts.skin_count;
 
   resizeDataArray(marchData, MARCH_COUNT, () =>
     Object.fromEntries(
-      EQUIP_SLOTS.map((s) => [s.key, { item: "", awk: "", tal: "" }]),
+      EQUIPMENT_SLOTS.map((equipmentSlot) => [equipmentSlot.key, { item: "", awk: "", tal: "" }]),
     ),
   );
   resizeDataArray(pairsData, PAIR_COUNT, () => ({ comm1: "", comm2: "" }));
   resizeDataArray(skinsData, SKIN_COUNT, () => "");
-  rebuildArmSlots();
+  rebuildArmamentSlots();
 
   if (currentMarch > MARCH_COUNT) currentMarch = 1;
   renderMarchTabs();
@@ -133,199 +133,199 @@ function applyCounts(counts) {
 async function addSlot(kind, label) {
   if (!editorReady) return;
   try {
-    const counts = await edAddSlot(kind);
+    const counts = await addEditorSlot(kind);
     applyCounts(counts);
     showToast(`Added ${label} ${counts[kind + "_count"]}`, "success");
-  } catch (e) {
-    showToast("Could not add the slot: " + e.message, "error");
+  } catch (event) {
+    showToast("Could not add the slot: " + event.message, "error");
   }
 }
-addMarchBtn?.addEventListener("click", () => addSlot("march", "March"));
-addPairBtn?.addEventListener("click", () => addSlot("pair", "Pair Row"));
-addArmBtn?.addEventListener("click", () => addSlot("arm", "Armament Slot"));
-addSkinBtn?.addEventListener("click", () => addSlot("skin", "Skin Slot"));
+addMarchButton?.addEventListener("click", () => addSlot("march", "March"));
+addPairButton?.addEventListener("click", () => addSlot("pair", "Pair Row"));
+addArmamentButton?.addEventListener("click", () => addSlot("arm", "Armament Slot"));
+addSkinButton?.addEventListener("click", () => addSlot("skin", "Skin Slot"));
 
 function updateImportButtons() {
-  if (farmAddNewBtn) farmAddNewBtn.disabled = !editorReady;
+  if (farmAddNewButton) farmAddNewButton.disabled = !editorReady;
   if (farmSearchInput) farmSearchInput.disabled = !editorReady;
 }
 
 function updateAddSlotButtons() {
-  [addMarchBtn, addPairBtn, addArmBtn, addSkinBtn].forEach((btn) => {
-    if (btn) btn.disabled = !editorReady;
+  [addMarchButton, addPairButton, addArmamentButton, addSkinButton].forEach((button) => {
+    if (button) button.disabled = !editorReady;
   });
 }
 
-function setDbStatus(msg, cls) {
-  dbStatus.textContent = msg;
-  dbStatus.className = "eq-db-status" + (cls ? " " + cls : "");
+function setDatabaseStatus(message, cssClass) {
+  databaseStatus.textContent = message;
+  databaseStatus.className = "eq-db-status" + (cssClass ? " " + cssClass : "");
 }
 
-function setImportStatus(el, msg, cls) {
-  if (!el) return;
-  el.textContent = msg;
-  el.className = "eq-import-status" + (cls ? " " + cls : "");
+function setImportStatus(element, message, cssClass) {
+  if (!element) return;
+  element.textContent = message;
+  element.className = "eq-import-status" + (cssClass ? " " + cssClass : "");
 }
 
 
 farmSearchInput?.addEventListener("input", () => renderFarmsTable());
-farmAddNewBtn?.addEventListener("click", () => {
+farmAddNewButton?.addEventListener("click", () => {
   farmNewRowOpen = true;
   renderFarmsTable();
 });
 
-const govIdInput = document.getElementById("govIdInput");
-const govNameInput = document.getElementById("govNameInput");
-const VIP_LEVELS = Array.from({ length: 19 }, (_, i) => i + 1);
+const governorIdInput = document.getElementById("govIdInput");
+const governorNameInput = document.getElementById("govNameInput");
+const VIP_LEVELS = Array.from({ length: 19 }, (_, index) => index + 1);
 const SVIP_VALUE = 20;
 let vipLevel = null;
 const saveStatus = document.getElementById("saveStatus");
-const govBadge = document.getElementById("govBadge");
+const governorBadge = document.getElementById("govBadge");
 
-loadGovBtn.addEventListener("click", loadGovernor);
+loadGovernorButton.addEventListener("click", loadGovernor);
 
-const govIdSuggestionsEl = document.getElementById("govIdSuggestions");
-let govIdActiveSuggestionIdx = -1;
+const governorIdSuggestionsElement = document.getElementById("govIdSuggestions");
+let governorIdActiveSuggestionIndex = -1;
 
-function showGovIdSuggestions(matches) {
-  govIdActiveSuggestionIdx = -1;
-  govIdSuggestionsEl.innerHTML = matches
+function showGovernorIdSuggestions(matches) {
+  governorIdActiveSuggestionIndex = -1;
+  governorIdSuggestionsElement.innerHTML = matches
     .map(
-      (m, i) =>
-        `<div class="name-suggestion-item" data-id="${escapeHtml(m.id)}" data-idx="${i}">
-      <span class="name-suggestion-name">${escapeHtml(m.name)}</span>
-      <span class="name-suggestion-id">${escapeHtml(m.id)}</span>
+      (match, index) =>
+        `<div class="name-suggestion-item" data-id="${escapeHtml(match.id)}" data-idx="${index}">
+      <span class="name-suggestion-name">${escapeHtml(match.name)}</span>
+      <span class="name-suggestion-id">${escapeHtml(match.id)}</span>
     </div>`,
     )
     .join("");
-  govIdSuggestionsEl.style.display = "block";
-  govIdSuggestionsEl
+  governorIdSuggestionsElement.style.display = "block";
+  governorIdSuggestionsElement
     .querySelectorAll(".name-suggestion-item")
     .forEach((item) => {
-      item.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        selectGovIdSuggestion(item.dataset.id);
+      item.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        selectGovernorIdSuggestion(item.dataset.id);
       });
     });
 }
 
-function hideGovIdSuggestions() {
-  govIdSuggestionsEl.style.display = "none";
-  govIdSuggestionsEl.innerHTML = "";
-  govIdActiveSuggestionIdx = -1;
+function hideGovernorIdSuggestions() {
+  governorIdSuggestionsElement.style.display = "none";
+  governorIdSuggestionsElement.innerHTML = "";
+  governorIdActiveSuggestionIndex = -1;
 }
 
-function selectGovIdSuggestion(id) {
-  hideGovIdSuggestions();
-  govIdInput.value = id;
+function selectGovernorIdSuggestion(id) {
+  hideGovernorIdSuggestions();
+  governorIdInput.value = id;
   loadGovernor();
 }
 
-let govSuggestTicket = 0;
-govIdInput.addEventListener("input", () => {
+let governorSuggestTicket = 0;
+governorIdInput.addEventListener("input", () => {
   if (!editorReady) return;
-  const val = govIdInput.value.trim();
-  if (!val || normalizeNumericId(val) || val.length < 2) {
-    hideGovIdSuggestions();
+  const value = governorIdInput.value.trim();
+  if (!value || normalizeNumericId(value) || value.length < 2) {
+    hideGovernorIdSuggestions();
     return;
   }
-  const ticket = ++govSuggestTicket;
-  searchGovernorsByName(val)
+  const ticket = ++governorSuggestTicket;
+  searchGovernorsByName(value)
     .then((matches) => {
-      if (ticket !== govSuggestTicket) return;
-      if (matches.length) showGovIdSuggestions(matches);
-      else hideGovIdSuggestions();
+      if (ticket !== governorSuggestTicket) return;
+      if (matches.length) showGovernorIdSuggestions(matches);
+      else hideGovernorIdSuggestions();
     })
-    .catch(() => hideGovIdSuggestions());
+    .catch(() => hideGovernorIdSuggestions());
 });
 
-govIdInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
+governorIdInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
     if (
-      govIdSuggestionsEl.style.display !== "none" &&
-      govIdActiveSuggestionIdx >= 0
+      governorIdSuggestionsElement.style.display !== "none" &&
+      governorIdActiveSuggestionIndex >= 0
     ) {
-      const items = govIdSuggestionsEl.querySelectorAll(
+      const items = governorIdSuggestionsElement.querySelectorAll(
         ".name-suggestion-item",
       );
-      selectGovIdSuggestion(items[govIdActiveSuggestionIdx].dataset.id);
+      selectGovernorIdSuggestion(items[governorIdActiveSuggestionIndex].dataset.id);
       return;
     }
-    hideGovIdSuggestions();
+    hideGovernorIdSuggestions();
     loadGovernor();
     return;
   }
-  if (govIdSuggestionsEl.style.display === "none") return;
-  const items = govIdSuggestionsEl.querySelectorAll(".name-suggestion-item");
+  if (governorIdSuggestionsElement.style.display === "none") return;
+  const items = governorIdSuggestionsElement.querySelectorAll(".name-suggestion-item");
   if (!items.length) return;
-  if (e.key === "ArrowDown") {
-    e.preventDefault();
-    govIdActiveSuggestionIdx = Math.min(
-      govIdActiveSuggestionIdx + 1,
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    governorIdActiveSuggestionIndex = Math.min(
+      governorIdActiveSuggestionIndex + 1,
       items.length - 1,
     );
-  } else if (e.key === "ArrowUp") {
-    e.preventDefault();
-    govIdActiveSuggestionIdx = Math.max(govIdActiveSuggestionIdx - 1, -1);
-  } else if (e.key === "Escape") {
-    hideGovIdSuggestions();
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    governorIdActiveSuggestionIndex = Math.max(governorIdActiveSuggestionIndex - 1, -1);
+  } else if (event.key === "Escape") {
+    hideGovernorIdSuggestions();
     return;
   } else {
     return;
   }
-  items.forEach((item, i) =>
-    item.classList.toggle("is-active", i === govIdActiveSuggestionIdx),
+  items.forEach((item, index) =>
+    item.classList.toggle("is-active", index === governorIdActiveSuggestionIndex),
   );
-  if (govIdActiveSuggestionIdx >= 0)
-    items[govIdActiveSuggestionIdx].scrollIntoView({ block: "nearest" });
+  if (governorIdActiveSuggestionIndex >= 0)
+    items[governorIdActiveSuggestionIndex].scrollIntoView({ block: "nearest" });
 });
 
-govIdInput.addEventListener("blur", () => {
-  setTimeout(hideGovIdSuggestions, 150);
+governorIdInput.addEventListener("blur", () => {
+  setTimeout(hideGovernorIdSuggestions, 150);
 });
 
-newGovBtn.addEventListener("click", () => {
+newGovernorButton.addEventListener("click", () => {
   if (!editorReady) return;
   clearAllData();
   loadBlock = null;
-  loadedGovId = null;
-  hideGovIdSuggestions();
-  govIdInput.value = "";
-  govNameInput.value = "";
+  loadedGovernorId = null;
+  hideGovernorIdSuggestions();
+  governorIdInput.value = "";
+  governorNameInput.value = "";
   vipLevel = null;
   renderVipGrid();
-  setGovBadge("new");
+  setGovernorBadge("new");
   renderActiveTab();
   showSaveStatus("Fill in the Governor ID & Name, then save.", "info");
-  govIdInput.focus();
+  governorIdInput.focus();
 });
 
 function clearAllData() {
-  for (let mi = 0; mi < MARCH_COUNT; mi++)
-    for (const s of EQUIP_SLOTS)
-      marchData[mi][s.key] = { item: "", awk: "", tal: "" };
-  for (let n = 0; n < PAIR_COUNT; n++) pairsData[n] = { comm1: "", comm2: "" };
-  for (let i = 0; i < SKIN_COUNT; i++) skinsData[i] = "";
+  for (let marchIndex = 0; marchIndex < MARCH_COUNT; marchIndex++)
+    for (const slot of EQUIPMENT_SLOTS)
+      marchData[marchIndex][slot.key] = { item: "", awk: "", tal: "" };
+  for (let pairIndex = 0; pairIndex < PAIR_COUNT; pairIndex++) pairsData[pairIndex] = { comm1: "", comm2: "" };
+  for (let index = 0; index < SKIN_COUNT; index++) skinsData[index] = "";
   armamentsRow = null;
   vipLevel = null;
 }
 
-function setGovBadge(type) {
-  govBadge.className = "eq-gov-badge" + (type ? " " + type : "");
-  govBadge.textContent =
+function setGovernorBadge(type) {
+  governorBadge.className = "eq-gov-badge" + (type ? " " + type : "");
+  governorBadge.textContent =
     type === "new" ? "New Governor" : type === "loaded" ? "Loaded" : "";
 }
 
-let ARM_SLOTS = [];
-function rebuildArmSlots() {
-  ARM_SLOTS = Array.from({ length: ARM_COUNT }, (_, i) => ({
-    prefix: `arm${i + 1}`,
-    label: `Arm ${i + 1}`,
+let ARMAMENT_SLOTS = [];
+function rebuildArmamentSlots() {
+  ARMAMENT_SLOTS = Array.from({ length: ARMAMENT_COUNT }, (_, index) => ({
+    prefix: `arm${index + 1}`,
+    label: `Arm ${index + 1}`,
   }));
 }
-rebuildArmSlots();
+rebuildArmamentSlots();
 
-const ARM_INS_KEYS = [
+const ARMAMENT_INSCRIPTION_KEYS = [
   "_ins",
   "_ins2",
   "_ins3",
@@ -337,12 +337,12 @@ const ARM_INS_KEYS = [
 ];
 let armamentsRow = null;
 
-function isArmEmpty(v) {
-  if (v === null || v === undefined || v === "") return true;
-  return ["none", "0"].includes(String(v).trim().toLowerCase());
+function isArmamentEmpty(value) {
+  if (value === null || value === undefined || value === "") return true;
+  return ["none", "0"].includes(String(value).trim().toLowerCase());
 }
 
-function getArmTier(name) {
+function getArmamentTier(name) {
   const info = getInscriptionInfo(name);
   return info ? info.rarity : "gray";
 }
@@ -351,107 +351,107 @@ function renderArmamentsGrid() {
   const grid = document.getElementById("armGrid");
   grid.innerHTML = "";
 
-  for (const arm of ARM_SLOTS) {
-    const name = armamentsRow ? armamentsRow[arm.prefix] : null;
-    const isEmpty = isArmEmpty(name);
+  for (const armament of ARMAMENT_SLOTS) {
+    const name = armamentsRow ? armamentsRow[armament.prefix] : null;
+    const isSlotEmpty = isArmamentEmpty(name);
 
     const inscriptions =
-      !isEmpty && armamentsRow
-        ? ARM_INS_KEYS.map((k) => armamentsRow[`${arm.prefix}${k}`])
-            .filter((v) => !isArmEmpty(v))
-            .map((v) => {
-              const tier = getArmTier(String(v));
-              return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(String(v).trim())}" data-tip-kind="inscription">${escapeHtml(String(v))}</span>`;
+      !isSlotEmpty && armamentsRow
+        ? ARMAMENT_INSCRIPTION_KEYS.map((armamentInscriptionKey) => armamentsRow[`${armament.prefix}${armamentInscriptionKey}`])
+            .filter((value) => !isArmamentEmpty(value))
+            .map((value) => {
+              const tier = getArmamentTier(String(value));
+              return `<span class="arm-ins tier-${tier}" data-tip-code="${escapeHtml(String(value).trim())}" data-tip-kind="inscription">${escapeHtml(String(value))}</span>`;
             })
             .join("")
         : "";
 
     const stats =
-      !isEmpty && armamentsRow
-        ? ARM_STAT_DEFS.filter(
-            (s) =>
-              !isArmEmpty(armamentsRow[`${arm.prefix}${s.nameKey}`]) &&
-              !isArmEmpty(armamentsRow[`${arm.prefix}${s.valKey}`]),
+      !isSlotEmpty && armamentsRow
+        ? ARMAMENT_STAT_DEFINITIONS.filter(
+            (armamentStatDefinition) =>
+              !isArmamentEmpty(armamentsRow[`${armament.prefix}${armamentStatDefinition.nameKey}`]) &&
+              !isArmamentEmpty(armamentsRow[`${armament.prefix}${armamentStatDefinition.valKey}`]),
           )
             .map(
-              (s) =>
-                `<span class="eq-arm-stat-tag"><span class="eq-arm-stat-name">${escapeHtml(String(armamentsRow[`${arm.prefix}${s.nameKey}`]))}</span><span class="eq-arm-stat-val">${escapeHtml(String(armamentsRow[`${arm.prefix}${s.valKey}`]))}%</span></span>`,
+              (armamentStatDefinition) =>
+                `<span class="eq-arm-stat-tag"><span class="eq-arm-stat-name">${escapeHtml(String(armamentsRow[`${armament.prefix}${armamentStatDefinition.nameKey}`]))}</span><span class="eq-arm-stat-val">${escapeHtml(String(armamentsRow[`${armament.prefix}${armamentStatDefinition.valKey}`]))}%</span></span>`,
             )
             .join("")
         : "";
 
-    const div = document.createElement("div");
-    div.className = "eq-arm-card" + (isEmpty ? " eq-arm-card--empty" : "");
-    div.innerHTML = `
+    const slotBox = document.createElement("div");
+    slotBox.className = "eq-arm-card" + (isSlotEmpty ? " eq-arm-card--empty" : "");
+    slotBox.innerHTML = `
       <div class="eq-arm-header">
-        <span class="eq-arm-slot-label">${escapeHtml(arm.label)}</span>
-        <span class="eq-arm-name${isEmpty ? " eq-arm-name--empty" : ""}">${isEmpty ? "— empty —" : escapeHtml(String(name))}</span>
-        <button class="eq-arm-edit-btn" title="${isEmpty ? "Add armament" : "Edit armament"}">${isEmpty ? "+" : "✎"}</button>
+        <span class="eq-arm-slot-label">${escapeHtml(armament.label)}</span>
+        <span class="eq-arm-name${isSlotEmpty ? " eq-arm-name--empty" : ""}">${isSlotEmpty ? "— empty —" : escapeHtml(String(name))}</span>
+        <button class="eq-arm-edit-btn" title="${isSlotEmpty ? "Add armament" : "Edit armament"}">${isSlotEmpty ? "+" : "✎"}</button>
       </div>
       ${inscriptions ? `<div class="arm-ins-group">${inscriptions}</div>` : ""}
       ${stats ? `<div class="eq-arm-stats-row">${stats}</div>` : ""}
     `;
-    div.querySelector(".eq-arm-edit-btn").addEventListener("click", (e) => {
-      e.stopPropagation();
-      openArmamentEditor(arm.prefix, arm.label);
+    slotBox.querySelector(".eq-arm-edit-btn").addEventListener("click", (event) => {
+      event.stopPropagation();
+      openArmamentEditor(armament.prefix, armament.label);
     });
-    div.addEventListener("click", () =>
-      openArmamentEditor(arm.prefix, arm.label),
+    slotBox.addEventListener("click", () =>
+      openArmamentEditor(armament.prefix, armament.label),
     );
-    grid.appendChild(div);
+    grid.appendChild(slotBox);
   }
 }
 
-function colKey(slotKey, mi) {
-  const sfx = mi === 0 ? "" : String(mi + 1);
-  return sfx ? `${slotKey}_${sfx}` : slotKey;
+function slotColumnKey(slotKey, marchIndex) {
+  const suffix = marchIndex === 0 ? "" : String(marchIndex + 1);
+  return suffix ? `${slotKey}_${suffix}` : slotKey;
 }
-function lvlKey(slotKey, mi) {
-  const sfx = mi === 0 ? "" : String(mi + 1);
-  return sfx ? `${slotKey}_lvl_${sfx}` : `${slotKey}_lvl`;
+function slotLevelKey(slotKey, marchIndex) {
+  const suffix = marchIndex === 0 ? "" : String(marchIndex + 1);
+  return suffix ? `${slotKey}_lvl_${suffix}` : `${slotKey}_lvl`;
 }
-function talKey(slotKey, mi) {
-  const sfx = mi === 0 ? "" : String(mi + 1);
-  return sfx ? `${slotKey}_tal_${sfx}` : `${slotKey}_tal`;
+function slotTalentKey(slotKey, marchIndex) {
+  const suffix = marchIndex === 0 ? "" : String(marchIndex + 1);
+  return suffix ? `${slotKey}_tal_${suffix}` : `${slotKey}_tal`;
 }
 
-function isEmpty(v) {
-  if (v === null || v === undefined || v === "") return true;
-  return ["none", "0"].includes(String(v).trim().toLowerCase());
+function isEmptyOrNone(value) {
+  if (value === null || value === undefined || value === "") return true;
+  return ["none", "0"].includes(String(value).trim().toLowerCase());
 }
 
 function populateMarchData(row) {
-  for (let mi = 0; mi < MARCH_COUNT; mi++)
-    for (const slot of EQUIP_SLOTS) {
-      const item = row[colKey(slot.key, mi)];
-      const awk = row[lvlKey(slot.key, mi)];
-      const tal = row[talKey(slot.key, mi)];
-      marchData[mi][slot.key] = {
-        item: isEmpty(item) ? "" : String(item),
-        awk: isEmpty(awk) ? "" : clampAwaken(awk),
-        tal: isEmpty(tal) ? "" : String(tal),
+  for (let marchIndex = 0; marchIndex < MARCH_COUNT; marchIndex++)
+    for (const slot of EQUIPMENT_SLOTS) {
+      const item = row[slotColumnKey(slot.key, marchIndex)];
+      const awaken = row[slotLevelKey(slot.key, marchIndex)];
+      const talent = row[slotTalentKey(slot.key, marchIndex)];
+      marchData[marchIndex][slot.key] = {
+        item: isEmptyOrNone(item) ? "" : String(item),
+        awk: isEmptyOrNone(awaken) ? "" : clampAwaken(awaken),
+        tal: isEmptyOrNone(talent) ? "" : String(talent),
       };
     }
 }
 
 function populatePairsData(row) {
-  for (let n = 0; n < PAIR_COUNT; n++) {
-    const c1 = row[`pair${n + 1}_comm1`];
-    const c2 = row[`pair${n + 1}_comm2`];
-    pairsData[n] = {
-      comm1: isEmpty(c1) ? "" : String(c1),
-      comm2: isEmpty(c2) ? "" : String(c2),
+  for (let pairIndex = 0; pairIndex < PAIR_COUNT; pairIndex++) {
+    const firstCommander = row[`pair${pairIndex + 1}_comm1`];
+    const secondCommander = row[`pair${pairIndex + 1}_comm2`];
+    pairsData[pairIndex] = {
+      comm1: isEmptyOrNone(firstCommander) ? "" : String(firstCommander),
+      comm2: isEmptyOrNone(secondCommander) ? "" : String(secondCommander),
     };
   }
 }
 
 async function loadGovernor() {
   if (!editorReady) return;
-  const rawId = govIdInput.value.trim();
-  const safeGovId = normalizeNumericId(rawId);
+  const rawId = governorIdInput.value.trim();
+  const safeGovernorId = normalizeNumericId(rawId);
 
-  if (safeGovId) {
-    await loadGovernorById(safeGovId);
+  if (safeGovernorId) {
+    await loadGovernorById(safeGovernorId);
     return;
   }
   if (!rawId) {
@@ -462,8 +462,8 @@ async function loadGovernor() {
   let matches;
   try {
     matches = await searchGovernorsByName(rawId);
-  } catch (e) {
-    showSaveStatus("Search failed: " + e.message, "err");
+  } catch (event) {
+    showSaveStatus("Search failed: " + event.message, "err");
     return;
   }
   if (!matches.length) {
@@ -471,59 +471,59 @@ async function loadGovernor() {
     return;
   }
   if (matches.length === 1) {
-    govIdInput.value = matches[0].id;
+    governorIdInput.value = matches[0].id;
     await loadGovernorById(matches[0].id);
   } else {
-    showGovIdSuggestions(matches);
+    showGovernorIdSuggestions(matches);
   }
 }
 
-async function loadGovernorById(safeGovId) {
-  if (!editorReady || !safeGovId) return;
+async function loadGovernorById(safeGovernorId) {
+  if (!editorReady || !safeGovernorId) return;
 
   const ticket = ++loadTicket;
   clearAllData();
-  govNameInput.value = "";
-  loadedGovId = null;
+  governorNameInput.value = "";
+  loadedGovernorId = null;
   loadBlock = "Still loading this governor, wait a moment before saving.";
-  setGovBadge("");
+  setGovernorBadge("");
   showSaveStatus("Loading…", "info");
 
   let data;
   try {
-    data = await edLoadGovernor(safeGovId);
-  } catch (e) {
-    console.error("loadGovernor:", e);
+    data = await loadEditorGovernor(safeGovernorId);
+  } catch (event) {
+    console.error("loadGovernor:", event);
     if (ticket === loadTicket) {
       loadBlock = "Loading this governor failed. Reload it before saving, otherwise an empty record would overwrite it.";
-      showSaveStatus("Could not load governor: " + e.message, "err");
+      showSaveStatus("Could not load governor: " + event.message, "err");
     }
     return;
   }
   if (ticket !== loadTicket) return;
   loadBlock = null;
-  loadedGovId = String(safeGovId);
+  loadedGovernorId = String(safeGovernorId);
   showSaveStatus("", "");
 
-  if (data.name) govNameInput.value = data.name;
+  if (data.name) governorNameInput.value = data.name;
 
   if (data.equipment) {
     populateMarchData(data.equipment);
     populatePairsData(data.equipment);
-    setGovBadge("loaded");
+    setGovernorBadge("loaded");
   } else {
-    setGovBadge("new");
+    setGovernorBadge("new");
     showSaveStatus("No equipment record found — starting fresh for this ID.", "info");
   }
 
   const vip = data.profile?.vip_level;
-  vipLevel = isEmpty(vip) ? null : Number(vip);
+  vipLevel = isEmptyOrNone(vip) ? null : Number(vip);
   renderVipGrid();
 
   armamentsRow = data.armaments ?? null;
-  for (let i = 0; i < SKIN_COUNT; i++) {
-    const v = data.skins?.[`skin${i + 1}`];
-    skinsData[i] = isEmpty(v) ? "" : String(v);
+  for (let index = 0; index < SKIN_COUNT; index++) {
+    const value = data.skins?.[`skin${index + 1}`];
+    skinsData[index] = isEmptyOrNone(value) ? "" : String(value);
   }
 
   renderSlotGrid();
@@ -532,12 +532,12 @@ async function loadGovernorById(safeGovId) {
   renderSkinGrid();
 }
 
-saveBtn.addEventListener("click", saveGovernor);
+saveButton.addEventListener("click", saveGovernor);
 
 async function saveGovernor() {
   if (!editorReady) return;
-  const safeGovId = normalizeNumericId(govIdInput.value);
-  if (!safeGovId) {
+  const safeGovernorId = normalizeNumericId(governorIdInput.value);
+  if (!safeGovernorId) {
     showSaveStatus("Enter a numeric Governor ID first.", "err");
     return;
   }
@@ -545,85 +545,85 @@ async function saveGovernor() {
     showSaveStatus(loadBlock, "err");
     return;
   }
-  if (loadedGovId && loadedGovId !== safeGovId) {
-    const ok = confirm(
-      `The editor holds the data of governor ${loadedGovId}, but the ID field now says ${safeGovId}.\n\nSaving will overwrite governor ${safeGovId} with that data. Continue?`,
+  if (loadedGovernorId && loadedGovernorId !== safeGovernorId) {
+    const confirmed = confirm(
+      `The editor holds the data of governor ${loadedGovernorId}, but the ID field now says ${safeGovernorId}.\n\nSaving will overwrite governor ${safeGovernorId} with that data. Continue?`,
     );
-    if (!ok) return;
+    if (!confirmed) return;
   }
 
   const equipment = {};
-  for (let mi = 0; mi < MARCH_COUNT; mi++) {
-    for (const slot of EQUIP_SLOTS) {
-      const d = marchData[mi][slot.key];
-      equipment[colKey(slot.key, mi)] = d.item || "none";
-      equipment[lvlKey(slot.key, mi)] = d.awk === "" ? null : Number(clampAwaken(d.awk));
-      equipment[talKey(slot.key, mi)] = d.tal || "none";
+  for (let marchIndex = 0; marchIndex < MARCH_COUNT; marchIndex++) {
+    for (const slot of EQUIPMENT_SLOTS) {
+      const slotData = marchData[marchIndex][slot.key];
+      equipment[slotColumnKey(slot.key, marchIndex)] = slotData.item || "none";
+      equipment[slotLevelKey(slot.key, marchIndex)] = slotData.awk === "" ? null : Number(clampAwaken(slotData.awk));
+      equipment[slotTalentKey(slot.key, marchIndex)] = slotData.tal || "none";
     }
   }
-  for (let n = 0; n < PAIR_COUNT; n++) {
-    equipment[`pair${n + 1}_comm1`] = pairsData[n].comm1 || "none";
-    equipment[`pair${n + 1}_comm2`] = pairsData[n].comm2 || "none";
+  for (let pairIndex = 0; pairIndex < PAIR_COUNT; pairIndex++) {
+    equipment[`pair${pairIndex + 1}_comm1`] = pairsData[pairIndex].comm1 || "none";
+    equipment[`pair${pairIndex + 1}_comm2`] = pairsData[pairIndex].comm2 || "none";
   }
 
   let armaments = null;
   if (armamentsRow) {
     armaments = {};
-    for (const arm of ARM_SLOTS) {
-      const p = arm.prefix;
-      armaments[p] = armamentsRow[p] ?? "none";
-      for (const k of ARM_INS_KEYS) armaments[`${p}${k}`] = armamentsRow[`${p}${k}`] ?? "none";
-      for (const s of ARM_STAT_DEFS) {
-        armaments[`${p}${s.nameKey}`] = armamentsRow[`${p}${s.nameKey}`] ?? "none";
-        const value = armamentsRow[`${p}${s.valKey}`];
-        armaments[`${p}${s.valKey}`] = isArmEmpty(value) ? null : Number(value);
+    for (const armament of ARMAMENT_SLOTS) {
+      const prefix = armament.prefix;
+      armaments[prefix] = armamentsRow[prefix] ?? "none";
+      for (const key of ARMAMENT_INSCRIPTION_KEYS) armaments[`${prefix}${key}`] = armamentsRow[`${prefix}${key}`] ?? "none";
+      for (const statDefinition of ARMAMENT_STAT_DEFINITIONS) {
+        armaments[`${prefix}${statDefinition.nameKey}`] = armamentsRow[`${prefix}${statDefinition.nameKey}`] ?? "none";
+        const value = armamentsRow[`${prefix}${statDefinition.valKey}`];
+        armaments[`${prefix}${statDefinition.valKey}`] = isArmamentEmpty(value) ? null : Number(value);
       }
     }
   }
 
   const skins = {};
-  for (let i = 0; i < SKIN_COUNT; i++) skins[`skin${i + 1}`] = skinsData[i] || "none";
+  for (let index = 0; index < SKIN_COUNT; index++) skins[`skin${index + 1}`] = skinsData[index] || "none";
 
-  saveBtn.disabled = true;
+  saveButton.disabled = true;
   showSaveStatus("Saving…", "info");
   try {
-    await edSaveGovernor({
-      govId: safeGovId,
-      name: govNameInput.value.trim(),
+    await saveEditorGovernor({
+      govId: safeGovernorId,
+      name: governorNameInput.value.trim(),
       equipment,
       armaments,
       skins,
       vip: vipLevel,
     });
-    loadedGovId = safeGovId;
-    setGovBadge("loaded");
+    loadedGovernorId = safeGovernorId;
+    setGovernorBadge("loaded");
     showSaveStatus("✓ Governor saved.", "ok");
-  } catch (e) {
-    console.error("saveGovernor:", e);
-    showSaveStatus("Error: " + e.message, "err");
+  } catch (event) {
+    console.error("saveGovernor:", event);
+    showSaveStatus("Error: " + event.message, "err");
   } finally {
-    saveBtn.disabled = false;
+    saveButton.disabled = false;
   }
 }
 
-function showSaveStatus(msg, cls) {
-  saveStatus.textContent = msg;
-  saveStatus.className = "eq-save-status" + (cls ? " " + cls : "");
+function showSaveStatus(message, cssClass) {
+  saveStatus.textContent = message;
+  saveStatus.className = "eq-save-status" + (cssClass ? " " + cssClass : "");
   clearTimeout(saveStatus._t);
-  if (msg && (cls === "ok" || cls === "info"))
+  if (message && (cssClass === "ok" || cssClass === "info"))
     saveStatus._t = setTimeout(() => {
       saveStatus.textContent = "";
       saveStatus.className = "eq-save-status";
     }, 5000);
 }
 
-document.querySelectorAll(".eq-section-tab").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    activeTab = btn.dataset.tab;
+document.querySelectorAll(".eq-section-tab").forEach((button) => {
+  button.addEventListener("click", () => {
+    activeTab = button.dataset.tab;
 
     document
       .querySelectorAll(".eq-section-tab")
-      .forEach((b) => b.classList.toggle("active", b === btn));
+      .forEach((sectionTab) => sectionTab.classList.toggle("active", sectionTab === button));
 
     for (const tabName of [
       "equipment",
@@ -657,40 +657,40 @@ function renderMarchTabs() {
   const tabs = document.getElementById("marchTabs");
   if (!tabs) return;
   tabs.innerHTML = "";
-  for (let i = 1; i <= MARCH_COUNT; i++) {
+  for (let index = 1; index <= MARCH_COUNT; index++) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "eq-tab" + (i === currentMarch ? " active" : "");
-    button.dataset.march = String(i);
-    button.textContent = `March ${i}`;
+    button.className = "eq-tab" + (index === currentMarch ? " active" : "");
+    button.dataset.march = String(index);
+    button.textContent = `March ${index}`;
     tabs.appendChild(button);
   }
 }
 
 renderMarchTabs();
 
-document.getElementById("marchTabs").addEventListener("click", (e) => {
-  const tab = e.target.closest(".eq-tab");
+document.getElementById("marchTabs").addEventListener("click", (event) => {
+  const tab = event.target.closest(".eq-tab");
   if (!tab) return;
   currentMarch = Number(tab.dataset.march);
   document
     .querySelectorAll("#marchTabs .eq-tab")
-    .forEach((t) => t.classList.toggle("active", t === tab));
+    .forEach((marchTab) => marchTab.classList.toggle("active", marchTab === tab));
   renderSlotGrid();
 });
 
 function renderSlotGrid() {
   const grid = document.getElementById("slotGrid");
-  const mi = currentMarch - 1;
+  const marchIndex = currentMarch - 1;
   grid.innerHTML = "";
 
-  for (const slot of EQUIP_SLOTS) {
-    const d = marchData[mi][slot.key];
-    const hasItem = !!d.item;
+  for (const slot of EQUIPMENT_SLOTS) {
+    const slotData = marchData[marchIndex][slot.key];
+    const hasItem = !!slotData.item;
     const card = document.createElement("div");
     card.className = "eq-slot-card" + (hasItem ? " has-item" : "");
     if (hasItem) {
-      card.dataset.tipCode = d.item;
+      card.dataset.tipCode = slotData.item;
       card.dataset.tipKind = "item";
     }
 
@@ -699,20 +699,20 @@ function renderSlotGrid() {
       <div class="eq-slot-img-box">
         ${
           hasItem
-            ? `<img src="${iconPath(d.item, "item")}" alt="${escapeHtml(d.item)}" loading="lazy"
+            ? `<img src="${iconPath(slotData.item, "item")}" alt="${escapeHtml(slotData.item)}" loading="lazy"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
              <div class="eq-slot-placeholder" style="display:none;">?</div>`
             : `<div class="eq-slot-placeholder">+</div>`
         }
       </div>
-      <span class="eq-slot-item-name">${hasItem ? escapeHtml(d.item) : "—"}</span>
+      <span class="eq-slot-item-name">${hasItem ? escapeHtml(slotData.item) : "—"}</span>
       <div class="eq-slot-stats">
-        <span class="eq-slot-stat${hasItem && d.awk ? " filled" : ""}">Awk: ${hasItem && d.awk ? escapeHtml(d.awk) : "—"}</span>
-        <span class="eq-slot-stat${hasItem && d.tal ? " filled" : ""}">Tal: ${hasItem && d.tal ? escapeHtml(d.tal) : "—"}</span>
+        <span class="eq-slot-stat${hasItem && slotData.awk ? " filled" : ""}">Awk: ${hasItem && slotData.awk ? escapeHtml(slotData.awk) : "—"}</span>
+        <span class="eq-slot-stat${hasItem && slotData.tal ? " filled" : ""}">Tal: ${hasItem && slotData.tal ? escapeHtml(slotData.tal) : "—"}</span>
       </div>`;
 
     card.addEventListener("click", () =>
-      openPicker({ type: "equip", marchIdx: mi, slotKey: slot.key }),
+      openPicker({ type: "equip", marchIdx: marchIndex, slotKey: slot.key }),
     );
     grid.appendChild(card);
   }
@@ -722,18 +722,18 @@ function renderPairsGrid() {
   const grid = document.getElementById("pairsGrid");
   grid.innerHTML = "";
 
-  for (let n = 0; n < PAIR_COUNT; n++) {
-    const p = pairsData[n];
+  for (let pairIndex = 0; pairIndex < PAIR_COUNT; pairIndex++) {
+    const pair = pairsData[pairIndex];
     const row = document.createElement("div");
     row.className = "eq-pair-row";
-    row.innerHTML = `<span class="eq-pair-label">Pair ${n + 1}</span>`;
+    row.innerHTML = `<span class="eq-pair-label">Pair ${pairIndex + 1}</span>`;
 
     for (const slot of ["comm1", "comm2"]) {
-      const name = p[slot];
-      const hasComm = !!name;
+      const name = pair[slot];
+      const hasCommander = !!name;
       const card = document.createElement("div");
-      card.className = "eq-pair-card" + (hasComm ? " has-item" : "");
-      if (hasComm) {
+      card.className = "eq-pair-card" + (hasCommander ? " has-item" : "");
+      if (hasCommander) {
         card.dataset.tipCode = name;
         card.dataset.tipKind = "commander";
       }
@@ -741,26 +741,26 @@ function renderPairsGrid() {
       card.innerHTML = `
         <div class="eq-pair-img-box">
           ${
-            hasComm
+            hasCommander
               ? `<img src="${iconPath(name, "commander")}" alt="${escapeHtml(name)}" loading="lazy"
                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                <div class="eq-slot-placeholder" style="display:none;">?</div>`
               : `<div class="eq-slot-placeholder">+</div>`
           }
         </div>
-        <span class="eq-pair-comm-name">${hasComm ? escapeHtml(name) : "—"}</span>
-        ${hasComm ? `<button class="eq-pair-clear" title="Clear this commander">×</button>` : ""}`;
+        <span class="eq-pair-comm-name">${hasCommander ? escapeHtml(name) : "—"}</span>
+        ${hasCommander ? `<button class="eq-pair-clear" title="Clear this commander">×</button>` : ""}`;
 
-      card.addEventListener("click", (ev) => {
-        if (ev.target.classList.contains("eq-pair-clear")) return;
-        openPicker({ type: "pair", pairIdx: n, slot });
+      card.addEventListener("click", (event) => {
+        if (event.target.classList.contains("eq-pair-clear")) return;
+        openPicker({ type: "pair", pairIdx: pairIndex, slot });
       });
 
-      const clearBtn = card.querySelector(".eq-pair-clear");
-      if (clearBtn) {
-        clearBtn.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          pairsData[n][slot] = "";
+      const clearButton = card.querySelector(".eq-pair-clear");
+      if (clearButton) {
+        clearButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          pairsData[pairIndex][slot] = "";
           renderPairsGrid();
         });
       }
@@ -777,8 +777,8 @@ function renderSkinGrid() {
   if (!grid) return;
   grid.innerHTML = "";
 
-  for (let i = 0; i < SKIN_COUNT; i++) {
-    const name = skinsData[i];
+  for (let index = 0; index < SKIN_COUNT; index++) {
+    const name = skinsData[index];
     const hasItem = !!name;
     const card = document.createElement("div");
     card.className = "eq-slot-card" + (hasItem ? " has-item" : "");
@@ -788,7 +788,7 @@ function renderSkinGrid() {
     }
 
     card.innerHTML = `
-      <span class="eq-slot-label">Skin ${i + 1}</span>
+      <span class="eq-slot-label">Skin ${index + 1}</span>
       <div class="eq-slot-img-box">
         ${
           hasItem
@@ -801,16 +801,16 @@ function renderSkinGrid() {
       <span class="eq-slot-item-name">${hasItem ? escapeHtml(name) : "—"}</span>
       ${hasItem ? `<button class="eq-pair-clear" title="Clear this skin">×</button>` : ""}`;
 
-    card.addEventListener("click", (ev) => {
-      if (ev.target.classList.contains("eq-pair-clear")) return;
-      openPicker({ type: "skin", skinIdx: i });
+    card.addEventListener("click", (event) => {
+      if (event.target.classList.contains("eq-pair-clear")) return;
+      openPicker({ type: "skin", skinIdx: index });
     });
 
-    const clearBtn = card.querySelector(".eq-pair-clear");
-    if (clearBtn) {
-      clearBtn.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        skinsData[i] = "";
+    const clearButton = card.querySelector(".eq-pair-clear");
+    if (clearButton) {
+      clearButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        skinsData[index] = "";
         renderSkinGrid();
       });
     }
@@ -825,24 +825,24 @@ function renderVipGrid() {
   grid.innerHTML = "";
 
   const buttons = [
-    ...VIP_LEVELS.map((n) => ({ label: String(n), value: n })),
+    ...VIP_LEVELS.map((level) => ({ label: String(level), value: level })),
     { label: "SVIP", value: SVIP_VALUE },
   ];
 
   for (const { label, value } of buttons) {
     const isSelected = vipLevel === value;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className =
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className =
       "eq-vip-btn" +
       (isSelected ? " selected" : "") +
       (value === SVIP_VALUE ? " svip" : "");
-    btn.textContent = label;
-    btn.addEventListener("click", () => {
+    button.textContent = label;
+    button.addEventListener("click", () => {
       vipLevel = isSelected ? null : value;
       renderVipGrid();
     });
-    grid.appendChild(btn);
+    grid.appendChild(button);
   }
 }
 
@@ -855,13 +855,13 @@ const pickerOverlay = document.getElementById("pickerOverlay");
 const pickerBody = document.getElementById("pickerBody");
 const pickerSearch = document.getElementById("pickerSearch");
 const pickerClose = document.getElementById("pickerClose");
-const pickerClearBtn = document.getElementById("pickerClearBtn");
+const pickerClearButton = document.getElementById("pickerClearBtn");
 const pickerSlotLabel = document.getElementById("pickerSlotLabel");
 
 pickerClose.addEventListener("click", closePicker);
-pickerClearBtn.addEventListener("click", clearPickerSlot);
-pickerOverlay.addEventListener("click", (e) => {
-  if (e.target === pickerOverlay) closePicker();
+pickerClearButton.addEventListener("click", clearPickerSlot);
+pickerOverlay.addEventListener("click", (event) => {
+  if (event.target === pickerOverlay) closePicker();
 });
 pickerSearch.addEventListener("input", () =>
   renderPickerItems(pickerSearch.value.trim()),
@@ -869,54 +869,54 @@ pickerSearch.addEventListener("input", () =>
 
 const detailPopup = document.getElementById("detailPopup");
 const detailBackdrop = document.getElementById("detailBackdrop");
-const detailImg = document.getElementById("detailImg");
+const detailImage = document.getElementById("detailImg");
 const detailItemName = document.getElementById("detailItemName");
-const detailAwk = document.getElementById("detailAwk");
+const detailAwaken = document.getElementById("detailAwk");
 const MAX_AWAKEN_LEVEL = 5;
 
 function clampAwaken(value) {
   const text = String(value ?? "").trim();
   if (text === "") return "";
-  const n = Number(text);
-  if (!Number.isFinite(n)) return "";
-  return String(Math.min(MAX_AWAKEN_LEVEL, Math.max(0, Math.round(n))));
+  const numericValue = Number(text);
+  if (!Number.isFinite(numericValue)) return "";
+  return String(Math.min(MAX_AWAKEN_LEVEL, Math.max(0, Math.round(numericValue))));
 }
 
-detailAwk.max = MAX_AWAKEN_LEVEL;
-detailAwk.addEventListener("input", () => {
-  if (detailAwk.value !== "" && Number(detailAwk.value) > MAX_AWAKEN_LEVEL) {
-    detailAwk.value = MAX_AWAKEN_LEVEL;
-  } else if (detailAwk.value !== "" && Number(detailAwk.value) < 0) {
-    detailAwk.value = 0;
+detailAwaken.max = MAX_AWAKEN_LEVEL;
+detailAwaken.addEventListener("input", () => {
+  if (detailAwaken.value !== "" && Number(detailAwaken.value) > MAX_AWAKEN_LEVEL) {
+    detailAwaken.value = MAX_AWAKEN_LEVEL;
+  } else if (detailAwaken.value !== "" && Number(detailAwaken.value) < 0) {
+    detailAwaken.value = 0;
   }
 });
-const detailTal = document.getElementById("detailTal");
+const detailTalent = document.getElementById("detailTal");
 const detailSlotTitle = document.getElementById("detailSlotTitle");
 const detailClose = document.getElementById("detailClose");
 const detailConfirm = document.getElementById("detailConfirm");
 
 let detailTarget = null;
 
-function openDetailPopup(marchIdx, slotKey) {
-  detailTarget = { marchIdx, slotKey };
-  const d = marchData[marchIdx][slotKey];
-  const slot = EQUIP_SLOTS.find((s) => s.key === slotKey);
-  detailSlotTitle.textContent = `${slot?.label ?? slotKey} — March ${marchIdx + 1}`;
-  detailItemName.textContent = d.item;
-  detailImg.src = iconPath(d.item, "item");
-  detailImg.alt = d.item;
-  detailImg.onerror = () => {
-    detailImg.style.display = "none";
+function openDetailPopup(marchIndex, slotKey) {
+  detailTarget = { marchIdx: marchIndex, slotKey };
+  const slotData = marchData[marchIndex][slotKey];
+  const slot = EQUIPMENT_SLOTS.find((equipmentSlot) => equipmentSlot.key === slotKey);
+  detailSlotTitle.textContent = `${slot?.label ?? slotKey} — March ${marchIndex + 1}`;
+  detailItemName.textContent = slotData.item;
+  detailImage.src = iconPath(slotData.item, "item");
+  detailImage.alt = slotData.item;
+  detailImage.onerror = () => {
+    detailImage.style.display = "none";
   };
-  detailImg.style.display = "";
-  detailAwk.value = d.awk ?? "";
+  detailImage.style.display = "";
+  detailAwaken.value = slotData.awk ?? "";
 
-  const talVal = (d.tal ?? "").toLowerCase();
-  setTalentBtn(talVal === "yes" ? "yes" : talVal === "no" ? "no" : "");
+  const talentValue = (slotData.tal ?? "").toLowerCase();
+  setTalentButton(talentValue === "yes" ? "yes" : talentValue === "no" ? "no" : "");
 
   detailPopup.style.display = "block";
   detailBackdrop.style.display = "block";
-  detailAwk.focus();
+  detailAwaken.focus();
 }
 
 function closeDetailPopup() {
@@ -928,33 +928,33 @@ function closeDetailPopup() {
 detailClose.addEventListener("click", closeDetailPopup);
 detailBackdrop.addEventListener("click", closeDetailPopup);
 
-function setTalentBtn(val) {
-  detailTal.value = val;
+function setTalentButton(value) {
+  detailTalent.value = value;
   document
     .getElementById("talBtnYes")
-    .classList.toggle("active", val === "yes");
-  document.getElementById("talBtnNo").classList.toggle("active", val === "no");
+    .classList.toggle("active", value === "yes");
+  document.getElementById("talBtnNo").classList.toggle("active", value === "no");
 }
 document
   .getElementById("talBtnYes")
-  .addEventListener("click", () => setTalentBtn("yes"));
+  .addEventListener("click", () => setTalentButton("yes"));
 document
   .getElementById("talBtnNo")
-  .addEventListener("click", () => setTalentBtn("no"));
+  .addEventListener("click", () => setTalentButton("no"));
 
 detailConfirm.addEventListener("click", () => {
   if (!detailTarget) return;
   marchData[detailTarget.marchIdx][detailTarget.slotKey].awk = clampAwaken(
-    detailAwk.value,
+    detailAwaken.value,
   );
   marchData[detailTarget.marchIdx][detailTarget.slotKey].tal =
-    detailTal.value.trim();
+    detailTalent.value.trim();
   closeDetailPopup();
   renderSlotGrid();
 });
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
     if (document.getElementById("armModalOverlay").classList.contains("open"))
       closeArmamentEditor();
     else if (detailPopup.style.display === "block") closeDetailPopup();
@@ -962,8 +962,8 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-document.getElementById("armModalOverlay").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) closeArmamentEditor();
+document.getElementById("armModalOverlay").addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) closeArmamentEditor();
 });
 document
   .getElementById("armModalClose")
@@ -972,37 +972,37 @@ document
   .getElementById("armModalSave")
   .addEventListener("click", saveArmamentEditor);
 document.getElementById("armModalClear").addEventListener("click", () => {
-  if (!armEditorPrefix) return;
+  if (!armamentEditorPrefix) return;
   document.getElementById("armModalName").value = "";
-  ARM_STAT_DEFS.forEach((_, i) => {
-    document.getElementById(`armStatName${i}`).value = "";
-    document.getElementById(`armStatVal${i}`).value = "";
+  ARMAMENT_STAT_DEFINITIONS.forEach((_, index) => {
+    document.getElementById(`armStatName${index}`).value = "";
+    document.getElementById(`armStatVal${index}`).value = "";
   });
-  ARM_INS_KEYS.forEach((_, i) => {
-    document.getElementById(`armIns${i}`).value = "";
+  ARMAMENT_INSCRIPTION_KEYS.forEach((_, index) => {
+    document.getElementById(`armIns${index}`).value = "";
   });
-  renderInsChosenList();
-  renderArmSetBonus();
+  renderInscriptionChosenList();
+  renderArmamentSetBonus();
 });
 document
   .getElementById("armModalName")
-  .addEventListener("input", renderArmSetBonus);
+  .addEventListener("input", renderArmamentSetBonus);
 
 document
   .getElementById("openInsPickerBtn")
-  .addEventListener("click", openInsPicker);
+  .addEventListener("click", openInscriptionPicker);
 document
   .getElementById("insPickerClose")
-  .addEventListener("click", closeInsPicker);
+  .addEventListener("click", closeInscriptionPicker);
 document
   .getElementById("insPickerConfirm")
-  .addEventListener("click", confirmInsPicker);
+  .addEventListener("click", confirmInscriptionPicker);
 document
   .getElementById("insPickerClearAll")
-  .addEventListener("click", clearInsPickerSelection);
+  .addEventListener("click", clearInscriptionPickerSelection);
 document
   .getElementById("insPickerSearch")
-  .addEventListener("input", (e) => renderInsPickerList(e.target.value.trim()));
-document.getElementById("insPickerOverlay").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) closeInsPicker();
+  .addEventListener("input", (event) => renderInscriptionPickerList(event.target.value.trim()));
+document.getElementById("insPickerOverlay").addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) closeInscriptionPicker();
 });
