@@ -1,47 +1,49 @@
 (() => {
   localforage.config({ name: "dkp_web_app" });
 
-  const KEY_MULT = "multipliers";
-  const KEY_PR = "power_ranges";
-  const KEY_VAC = "vacation_list";
-  const KEY_MIN = "min_dkp";
+  const KEY_MULTIPLIERS = "multipliers";
+  const KEY_POWER_RANGES = "power_ranges";
+  const KEY_VACATION_LIST = "vacation_list";
+  const KEY_MIN_DKP = "min_dkp";
+  const KEY_MIN_DKP_SIG = "min_dkp_signature";
 
-  const t4El = document.getElementById("t4");
-  const t5El = document.getElementById("t5");
-  const deadsEl = document.getElementById("deads");
-  const saveMultBtn = document.getElementById("save-multipliers");
+  const t4Element = document.getElementById("t4");
+  const t5Element = document.getElementById("t5");
+  const deadsElement = document.getElementById("deads");
+  const saveMultiplierButton = document.getElementById("save-multipliers");
 
-  const prMin = document.getElementById("pr-min");
-  const prMax = document.getElementById("pr-max");
-  const prPercent = document.getElementById("pr-percent");
-  const prAddBtn = document.getElementById("pr-add");
-  const prSaveBtn = document.getElementById("pr-save");
+  const powerRangeMin = document.getElementById("pr-min");
+  const powerRangeMax = document.getElementById("pr-max");
+  const powerRangePercent = document.getElementById("pr-percent");
+  const powerRangeAddButton = document.getElementById("pr-add");
+  const powerRangeSaveButton = document.getElementById("pr-save");
 
-  const vacInput = document.getElementById("vacation-input");
-  const vacSaveBtn = document.getElementById("vac-save");
-  const vacClearBtn = document.getElementById("vac-clear");
+  const vacationInput = document.getElementById("vacation-input");
+  const vacationSaveButton = document.getElementById("vac-save");
+  const vacationClearButton = document.getElementById("vac-clear");
 
-  const file1El = document.getElementById("file1");
-  const file2El = document.getElementById("file2");
-  const runBtn = document.getElementById("run-dkp");
-  const progressEl = document.getElementById("progress");
+  const file1Element = document.getElementById("file1");
+  const file2Element = document.getElementById("file2");
+  const runButton = document.getElementById("run-dkp");
+  const progressElement = document.getElementById("progress");
   const resultsInfo = document.getElementById("results-info");
 
   const exportX = document.getElementById("export-xlsx");
   const exportC = document.getElementById("export-csv");
   const exportJ = document.getElementById("export-json");
 
-  const exportSettingsBtn = document.getElementById("export-settings");
-  const importSettingsBtn = document.getElementById("import-settings");
+  const exportSettingsButton = document.getElementById("export-settings");
+  const importSettingsButton = document.getElementById("import-settings");
   const importSettingsFile = document.getElementById("import-settings-file");
-  const clearMinBtn = document.getElementById("clear-min-dkp");
+  const clearMinButton = document.getElementById("clear-min-dkp");
 
-  const ignoreChEl = document.getElementById("ignore-ch");
+  const ignoreCityHallElement = document.getElementById("ignore-ch");
 
   let powerRanges = [];
   let multipliers = { t4: 0.0, t5: 0.0, deads: 0.0 };
   let vacationList = [];
   let minDkpMap = {};
+  let minDkpSignature = null;
   let lastResults = null;
   let skippedCount = 0;
   let farmLinksPromise = null;
@@ -55,81 +57,98 @@
   setExportEnabled(false);
 
   async function loadAllFromStorage() {
-    const m = await localforage.getItem(KEY_MULT);
-    if (m) multipliers = m;
-    const pr = await localforage.getItem(KEY_PR);
-    if (Array.isArray(pr)) powerRanges = pr.slice();
-    const v = await localforage.getItem(KEY_VAC);
-    if (Array.isArray(v)) vacationList = v.slice();
-    const md = await localforage.getItem(KEY_MIN);
-    if (md && typeof md === "object") minDkpMap = md;
+    const savedMultipliers = await localforage.getItem(KEY_MULTIPLIERS);
+    if (savedMultipliers) multipliers = savedMultipliers;
+    const savedPowerRanges = await localforage.getItem(KEY_POWER_RANGES);
+    if (Array.isArray(savedPowerRanges)) powerRanges = savedPowerRanges.slice();
+    const savedVacationList = await localforage.getItem(KEY_VACATION_LIST);
+    if (Array.isArray(savedVacationList)) vacationList = savedVacationList.slice();
+    const savedMinDkpMap = await localforage.getItem(KEY_MIN_DKP);
+    if (savedMinDkpMap && typeof savedMinDkpMap === "object") minDkpMap = savedMinDkpMap;
+    const savedSignature = await localforage.getItem(KEY_MIN_DKP_SIG);
+    minDkpSignature = typeof savedSignature === "string" ? savedSignature : null;
+  }
+
+  function getPowerRangesSignature() {
+    return JSON.stringify(
+      powerRanges
+        .map((range) => [
+          Number(range.min_power),
+          range.max_power === null || range.max_power === undefined ? null : Number(range.max_power),
+          Number(range.percentage),
+        ])
+        .sort((a, b) => a[0] - b[0]),
+    );
   }
 
   async function saveMultipliers() {
     multipliers = {
-      t4: parseFloat(t4El.value) || 0,
-      t5: parseFloat(t5El.value) || 0,
-      deads: parseFloat(deadsEl.value) || 0,
+      t4: parseFloat(t4Element.value) || 0,
+      t5: parseFloat(t5Element.value) || 0,
+      deads: parseFloat(deadsElement.value) || 0,
     };
-    await localforage.setItem(KEY_MULT, multipliers);
+    await localforage.setItem(KEY_MULTIPLIERS, multipliers);
     showToast("Multipliers saved locally.");
   }
 
   async function savePowerRangesToStorage() {
-    powerRanges.sort((a, b) => a.min_power - b.min_power);
-    await localforage.setItem(KEY_PR, powerRanges);
+    powerRanges.sort((firstPowerRange, secondPowerRange) => firstPowerRange.min_power - secondPowerRange.min_power);
+    await localforage.setItem(KEY_POWER_RANGES, powerRanges);
     showToast("Power ranges saved locally.");
   }
 
   async function saveVacationList() {
-    const raw = vacInput.value.trim();
+    const raw = vacationInput.value.trim();
     if (!raw) {
       vacationList = [];
     } else {
       vacationList = raw
         .split(",")
-        .map((s) => s.trim())
+        .map((entry) => entry.trim())
         .filter(Boolean);
     }
-    await localforage.setItem(KEY_VAC, vacationList);
+    await localforage.setItem(KEY_VACATION_LIST, vacationList);
     showToast("Vacation list saved.");
   }
 
   async function clearVacationList() {
     if (!confirm("Clear vacation list (set to empty)?")) return;
     vacationList = [];
-    vacInput.value = "";
-    await localforage.setItem(KEY_VAC, vacationList);
+    vacationInput.value = "";
+    await localforage.setItem(KEY_VACATION_LIST, vacationList);
     showToast("Vacation list cleared.");
   }
 
   async function saveMinDkpMap() {
-    await localforage.setItem(KEY_MIN, minDkpMap);
+    await localforage.setItem(KEY_MIN_DKP, minDkpMap);
+    await localforage.setItem(KEY_MIN_DKP_SIG, minDkpSignature);
   }
 
   async function clearAllMinDkp() {
     if (!confirm("Are you sure? This will remove all stored Min DKP values."))
       return;
-    await localforage.removeItem(KEY_MIN);
+    await localforage.removeItem(KEY_MIN_DKP);
+    await localforage.removeItem(KEY_MIN_DKP_SIG);
     minDkpMap = {};
+    minDkpSignature = null;
     showToast("All Min DKP values cleared.");
   }
 
-  function validatePowerRange(newItem, ranges, editingIdx = null) {
-    const others = ranges.filter((_, i) => i !== editingIdx);
+  function validatePowerRange(newItem, ranges, editingIndex = null) {
+    const others = ranges.filter((_, index) => index !== editingIndex);
 
-    for (const r of others) {
-      const rMin = r.min_power;
-      const rMax = r.max_power ?? Infinity;
+    for (const otherRange of others) {
+      const rMin = otherRange.min_power;
+      const rMax = otherRange.max_power ?? Infinity;
       const nMin = newItem.min_power;
       const nMax = newItem.max_power ?? Infinity;
       const overlaps = nMin <= rMax && nMax >= rMin;
       if (overlaps) {
-        return `Range ${nMin}-${newItem.max_power ?? "∞"} overlaps with existing range ${rMin}-${r.max_power ?? "∞"}.`;
+        return `Range ${nMin}-${newItem.max_power ?? "∞"} overlaps with existing range ${rMin}-${otherRange.max_power ?? "∞"}.`;
       }
       if (newItem.max_power === null) {
         const hasInfinity = ranges.some(
-          (r, i) => i !== editingIdx && r.max_power === null,
+          (range, index) => index !== editingIndex && range.max_power === null,
         );
         if (hasInfinity) {
           return "Only one open-ended (∞) range is allowed.";
@@ -140,10 +159,10 @@
   }
 
   function renderPowerRanges() {
-    const rowActions = (idx, type) =>
+    const rowActions = (index, type) =>
       type === "display"
-        ? `<button class="primary pr-edit" data-idx="${idx}">Edit</button>
-           <button class="secondary pr-delete" data-idx="${idx}">Delete</button>`
+        ? `<button class="primary pr-edit" data-idx="${index}">Edit</button>
+           <button class="secondary pr-delete" data-idx="${index}">Delete</button>`
         : "";
     createSiteTable(document.querySelector("#power-table"), {
       plain: true,
@@ -153,36 +172,36 @@
         { title: "%" },
         { title: "Actions", render: rowActions, orderable: false },
       ],
-      data: powerRanges.map((r, i) => [r.min_power, r.max_power, r.percentage, i]),
+      data: powerRanges.map((powerRange, index) => [powerRange.min_power, powerRange.max_power, powerRange.percentage, index]),
     });
   }
 
-  document.querySelector("#power-table").addEventListener("click", async (e) => {
-    const btn = e.target.closest(".pr-edit, .pr-delete");
-    if (!btn) return;
-    const idx = Number(btn.dataset.idx);
-    const row = powerRanges[idx];
+  document.querySelector("#power-table").addEventListener("click", async (event) => {
+    const button = event.target.closest(".pr-edit, .pr-delete");
+    if (!button) return;
+    const index = Number(button.dataset.idx);
+    const row = powerRanges[index];
     if (!row) return;
 
-    if (btn.classList.contains("pr-edit")) {
-      prMin.value = row.min_power;
-      prMax.value = row.max_power ?? "";
-      prPercent.value = row.percentage;
-      prAddBtn.dataset.editIdx = idx;
-      prAddBtn.textContent = "Update";
+    if (button.classList.contains("pr-edit")) {
+      powerRangeMin.value = row.min_power;
+      powerRangeMax.value = row.max_power ?? "";
+      powerRangePercent.value = row.percentage;
+      powerRangeAddButton.dataset.editIdx = index;
+      powerRangeAddButton.textContent = "Update";
     } else {
       if (!confirm("Delete this range?")) return;
-      powerRanges.splice(idx, 1);
+      powerRanges.splice(index, 1);
       await savePowerRangesToStorage();
       renderPowerRanges();
     }
   });
 
-  prAddBtn.addEventListener("click", async () => {
-    const minv = parseInt(prMin.value, 10);
+  powerRangeAddButton.addEventListener("click", async () => {
+    const minv = parseInt(powerRangeMin.value, 10);
     if (Number.isNaN(minv)) return showToast("Min power must be an integer");
 
-    const maxRaw = prMax.value.trim();
+    const maxRaw = powerRangeMax.value.trim();
     const maxv =
       maxRaw === ""
         ? null
@@ -196,13 +215,13 @@
       return showToast("Max power must be greater than or equal to Min power.");
     }
 
-    const perc = parseFloat(prPercent.value);
-    if (Number.isNaN(perc)) return showToast("Percentage required (e.g. 0.6)");
+    const percent = parseFloat(powerRangePercent.value);
+    if (Number.isNaN(percent)) return showToast("Percentage required (e.g. 0.6)");
 
-    const item = { min_power: minv, max_power: maxv, percentage: perc };
-    const editIdx =
-      "editIdx" in prAddBtn.dataset ? Number(prAddBtn.dataset.editIdx) : null;
-    const error = validatePowerRange(item, powerRanges, editIdx);
+    const item = { min_power: minv, max_power: maxv, percentage: percent };
+    const editIndex =
+      "editIdx" in powerRangeAddButton.dataset ? Number(powerRangeAddButton.dataset.editIdx) : null;
+    const error = validatePowerRange(item, powerRanges, editIndex);
     if (error) {
       showToast(
         error +
@@ -211,10 +230,10 @@
       return;
     }
 
-    if (editIdx !== null) {
-      powerRanges[editIdx] = item;
-      delete prAddBtn.dataset.editIdx;
-      prAddBtn.textContent = "Add / Update";
+    if (editIndex !== null) {
+      powerRanges[editIndex] = item;
+      delete powerRangeAddButton.dataset.editIdx;
+      powerRangeAddButton.textContent = "Add / Update";
     } else {
       powerRanges.push(item);
     }
@@ -222,10 +241,10 @@
     await savePowerRangesToStorage();
     renderPowerRanges();
 
-    prMin.value = prMax.value = prPercent.value = "";
+    powerRangeMin.value = powerRangeMax.value = powerRangePercent.value = "";
   });
 
-  prSaveBtn.addEventListener("click", async () => {
+  powerRangeSaveButton.addEventListener("click", async () => {
     await savePowerRangesToStorage();
     renderPowerRanges();
   });
@@ -233,53 +252,53 @@
   async function readSpreadsheetFile(file) {
     if (!file) throw new Error("No file provided");
     const arrBuf = await file.arrayBuffer();
-    const wb = XLSX.read(arrBuf, { type: "array" });
-    const first = wb.SheetNames[0];
-    const sheet = wb.Sheets[first];
+    const workbook = XLSX.read(arrBuf, { type: "array" });
+    const first = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[first];
     const json = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
     return json.map((row) => {
       const normalized = {};
-      Object.keys(row).forEach((k) => {
-        const key = String(k).trim().toLowerCase();
-        const val = row[k];
-        if (["character id", "id"].includes(key)) normalized.ID = val;
-        else if (["username", "name"].includes(key)) normalized.Name = val;
+      Object.keys(row).forEach((columnKey) => {
+        const key = String(columnKey).trim().toLowerCase();
+        const value = row[columnKey];
+        if (["character id", "id"].includes(key)) normalized.ID = value;
+        else if (["username", "name"].includes(key)) normalized.Name = value;
         else if (["current power", "power"].includes(key))
-          normalized.Power = val;
+          normalized.Power = value;
         else if (["total kill points", "killpoints", "kills"].includes(key))
-          normalized.Killpoints = val;
-        else if (["deaths", "deads"].includes(key)) normalized.Deads = val;
+          normalized.Killpoints = value;
+        else if (["deaths", "deads"].includes(key)) normalized.Deads = value;
         else if (["t4", "t4 kills", "tier 4 kills"].includes(key))
-          normalized["T4 Kills"] = val;
+          normalized["T4 Kills"] = value;
         else if (["t5", "t5 kills", "tier 5 kills"].includes(key))
-          normalized["T5 Kills"] = val;
+          normalized["T5 Kills"] = value;
         else if (
           ["ch", "city hall", "cityhall", "city hall level"].includes(key)
         )
-          normalized.CH = val;
-        else if (["acclaim"].includes(key)) normalized["Acclaim"] = val;
-        else normalized[k] = val;
+          normalized.CH = value;
+        else if (["acclaim"].includes(key)) normalized["Acclaim"] = value;
+        else normalized[columnKey] = value;
       });
       return normalized;
     });
   }
 
   function getMinDkpPercent(power) {
-    for (const r of powerRanges) {
-      if (r.max_power === null) {
-        if (power >= r.min_power) return Number(r.percentage);
+    for (const powerRange of powerRanges) {
+      if (powerRange.max_power === null) {
+        if (power >= powerRange.min_power) return Number(powerRange.percentage);
       } else {
-        if (power >= r.min_power && power <= r.max_power)
-          return Number(r.percentage);
+        if (power >= powerRange.min_power && power <= powerRange.max_power)
+          return Number(powerRange.percentage);
       }
     }
     return 0.6;
   }
 
-  function safeNum(v) {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
+  function safeNumber(value) {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : 0;
   }
 
   function isVacationRow(row) {
@@ -290,7 +309,7 @@
     if (farmLinksPromise) return farmLinksPromise;
 
     farmLinksPromise = (async () => {
-      const rows = await sbSelectAll(
+      const rows = await supabaseSelectAll(
         "farm_accounts",
         "select=player_id,main_id&acc_type=ilike.farm&main_id=not.is.null&order=player_id.asc",
       );
@@ -303,8 +322,8 @@
         links.get(mainId).push(farmId);
       });
       return links;
-    })().catch((err) => {
-      console.warn("[DKP] Farm rollup unavailable:", err);
+    })().catch((error) => {
+      console.warn("[DKP] Farm rollup unavailable:", error);
       farmLinksPromise = null;
       showToast(
         "Could not load farm accounts, so the Sum columns will NOT include farms. Run the calculation again.",
@@ -326,8 +345,8 @@
 
     rows.forEach((row) => {
       if (isVacationRow(row)) return;
-      row["Sum Min DKP"] = Math.round(safeNum(row["Min DKP"]));
-      row["Sum DKP"] = Math.round(safeNum(row.DKP));
+      row["Sum Min DKP"] = Math.round(safeNumber(row["Min DKP"]));
+      row["Sum DKP"] = Math.round(safeNumber(row.DKP));
       row["Sum DKP%"] = row["Sum Min DKP"]
         ? Number((row["Sum DKP"] / row["Sum Min DKP"]).toFixed(4))
         : 0;
@@ -338,14 +357,14 @@
       const main = byId.get(mainId);
       if (!main || isVacationRow(main)) return;
 
-      let sumMinDkp = safeNum(main["Min DKP"]);
-      let sumDkp = safeNum(main.DKP);
+      let sumMinDkp = safeNumber(main["Min DKP"]);
+      let sumDkp = safeNumber(main.DKP);
 
       farmIds.forEach((farmId) => {
         const farm = byId.get(farmId);
         if (!farm || isVacationRow(farm)) return;
-        sumMinDkp += safeNum(farm["Min DKP"]);
-        sumDkp += safeNum(farm.DKP);
+        sumMinDkp += safeNumber(farm["Min DKP"]);
+        sumDkp += safeNumber(farm.DKP);
       });
 
       main["Sum Min DKP"] = Math.round(sumMinDkp);
@@ -356,7 +375,7 @@
     });
   }
 
-  function getChFromRow(row) {
+  function getCityHallLevelFromRow(row) {
     if (
       !row ||
       row.CH === undefined ||
@@ -364,53 +383,53 @@
       String(row.CH).trim() === ""
     )
       return null;
-    const n = Number(row.CH);
-    return Number.isFinite(n) ? n : null;
+    const cityHallLevel = Number(row.CH);
+    return Number.isFinite(cityHallLevel) ? cityHallLevel : null;
   }
 
   async function calculateDkp({ mode = "lilithdata" } = {}) {
     setExportEnabled(false);
-    const f1 = file1El.files[0];
-    const f2 = file2El.files[0];
-    if (!f1 || !f2) return showToast("Please select both files.");
-    if (!/\.xlsx$/i.test(f1.name) || !/\.xlsx$/i.test(f2.name)) {
+    const firstFile = file1Element.files[0];
+    const secondFile = file2Element.files[0];
+    if (!firstFile || !secondFile) return showToast("Please select both files.");
+    if (!/\.xlsx$/i.test(firstFile.name) || !/\.xlsx$/i.test(secondFile.name)) {
       return showToast("Please select .xlsx files only.");
     }
-    progressEl.value = 5;
+    progressElement.value = 5;
 
     const [df1Raw, df2Raw] = await Promise.all([
-      readSpreadsheetFile(f1),
-      readSpreadsheetFile(f2),
+      readSpreadsheetFile(firstFile),
+      readSpreadsheetFile(secondFile),
     ]);
-    progressEl.value = 20;
+    progressElement.value = 20;
 
     const mapById = (arr) => {
-      const m = {};
-      arr.forEach((r) => {
-        const idS = String(r.ID ?? "").trim();
-        if (!idS) return;
-        m[idS] = r;
+      const rowsById = {};
+      arr.forEach((row) => {
+        const idString = String(row.ID ?? "").trim();
+        if (!idString) return;
+        rowsById[idString] = row;
       });
-      return m;
+      return rowsById;
     };
 
     const map1 = mapById(df1Raw);
     const map2 = mapById(df2Raw);
 
-    progressEl.value = 35;
+    progressElement.value = 35;
 
     const allIdsSet = new Set([...Object.keys(map1), ...Object.keys(map2)]);
     const allIds = Array.from(allIdsSet);
     let filteredIds;
 
-    if (ignoreChEl.checked) {
+    if (ignoreCityHallElement.checked) {
       filteredIds = allIds;
       skippedCount = 0;
     } else {
       filteredIds = allIds.filter((id) => {
-        const ch1 = getChFromRow(map1[id]);
-        const ch2 = getChFromRow(map2[id]);
-        if ((ch1 !== null && ch1 >= 25) || (ch2 !== null && ch2 >= 25))
+        const firstCityHallLevel = getCityHallLevelFromRow(map1[id]);
+        const secondCityHallLevel = getCityHallLevelFromRow(map2[id]);
+        if ((firstCityHallLevel !== null && firstCityHallLevel >= 25) || (secondCityHallLevel !== null && secondCityHallLevel >= 25))
           return true;
         return false;
       });
@@ -419,81 +438,81 @@
     }
 
     await ensureMinDkpForIds(filteredIds, df1Raw, df2Raw, map1, map2);
-    progressEl.value = 55;
+    progressElement.value = 55;
 
     const results = [];
-    const t4 = multipliers.t4,
-      t5 = multipliers.t5,
-      deads = multipliers.deads;
+    const tier4Multiplier = multipliers.t4,
+      tier5Multiplier = multipliers.t5,
+      deadsMultiplier = multipliers.deads;
 
     for (const id of filteredIds) {
-      const a = map1[id] || {};
-      const b = map2[id] || {};
-      const name = (b.Name ?? a.Name ?? "Missing") + "";
-      const powerVal = safeNum(b.Power ?? a.Power ?? 0);
-      let t4g = 0,
-        t5g = 0,
-        deg = 0,
-        kp = 0;
+      const startRow = map1[id] || {};
+      const endRow = map2[id] || {};
+      const name = (endRow.Name ?? startRow.Name ?? "Missing") + "";
+      const powerValue = safeNumber(endRow.Power ?? startRow.Power ?? 0);
+      let tier4Gain = 0,
+        tier5Gain = 0,
+        deadsGain = 0,
+        killPointsGain = 0;
       if (mode === "default") {
-        t4g = safeNum(b["T4 Kills"]) - safeNum(a["T4 Kills"]);
-        t5g = safeNum(b["T5 Kills"]) - safeNum(a["T5 Kills"]);
-        deg = safeNum(b.Deads) - safeNum(a.Deads);
-        kp = safeNum(b.Killpoints) - safeNum(a.Killpoints);
+        tier4Gain = safeNumber(endRow["T4 Kills"]) - safeNumber(startRow["T4 Kills"]);
+        tier5Gain = safeNumber(endRow["T5 Kills"]) - safeNumber(startRow["T5 Kills"]);
+        deadsGain = safeNumber(endRow.Deads) - safeNumber(startRow.Deads);
+        killPointsGain = safeNumber(endRow.Killpoints) - safeNumber(startRow.Killpoints);
       } else {
-        t4g = safeNum(b["T4 Kills"]);
-        t5g = safeNum(b["T5 Kills"]);
-        deg =
-          safeNum(b["T1 Deaths"]) +
-          safeNum(b["T2 Deaths"]) +
-          safeNum(b["T3 Deaths"]) +
-          safeNum(b["T4 Deaths"]) +
-          safeNum(b["T5 Deaths"]);
-        kp = safeNum(b.Killpoints);
+        tier4Gain = safeNumber(endRow["T4 Kills"]);
+        tier5Gain = safeNumber(endRow["T5 Kills"]);
+        deadsGain =
+          safeNumber(endRow["T1 Deaths"]) +
+          safeNumber(endRow["T2 Deaths"]) +
+          safeNumber(endRow["T3 Deaths"]) +
+          safeNumber(endRow["T4 Deaths"]) +
+          safeNumber(endRow["T5 Deaths"]);
+        killPointsGain = safeNumber(endRow.Killpoints);
       }
 
       const minDkp =
         minDkpMap[id] !== undefined
           ? Number(minDkpMap[id])
-          : Math.round(powerVal * getMinDkpPercent(powerVal));
-      const DKP = Math.round(t4g * t4 + t5g * t5 + deg * deads);
-      const DKPpercent = minDkp ? DKP / minDkp : 0;
+          : Math.round(powerValue * getMinDkpPercent(powerValue));
+      const dkpScore = Math.round(tier4Gain * tier4Multiplier + tier5Gain * tier5Multiplier + deadsGain * deadsMultiplier);
+      const dkpPercent = minDkp ? dkpScore / minDkp : 0;
 
       const status =
-        a.Power === undefined || a.Power === null || a.Power === ""
+        startRow.Power === undefined || startRow.Power === null || startRow.Power === ""
           ? "missing in start"
-          : b.Power === undefined || b.Power === null || b.Power === ""
+          : endRow.Power === undefined || endRow.Power === null || endRow.Power === ""
             ? "missing in new"
             : "OK";
 
       const row = {
         ID: id,
         Name: name,
-        Power: powerVal,
-        "KP gained": Math.round(kp),
-        "T4 gained": Math.round(t4g),
-        "T5 gained": Math.round(t5g),
-        "Deads gained": Math.round(deg),
+        Power: powerValue,
+        "KP gained": Math.round(killPointsGain),
+        "T4 gained": Math.round(tier4Gain),
+        "T5 gained": Math.round(tier5Gain),
+        "Deads gained": Math.round(deadsGain),
         "Min DKP": Math.round(minDkp),
-        DKP: Math.round(DKP),
-        "DKP%": Number.isFinite(DKPpercent) ? Number(DKPpercent.toFixed(4)) : 0,
+        DKP: Math.round(dkpScore),
+        "DKP%": Number.isFinite(dkpPercent) ? Number(dkpPercent.toFixed(4)) : 0,
         "Sum Min DKP": 0,
         "Sum DKP": 0,
         "Sum DKP%": 0,
         Status: status,
-        "T4 Kills": safeNum(b["T4 Kills"] ?? a["T4 Kills"]),
-        "T5 Kills": safeNum(b["T5 Kills"] ?? a["T5 Kills"]),
-        Killpoints: safeNum(b.Killpoints ?? a.Killpoints),
-        Deads: safeNum(b.Deads ?? a.Deads),
-        "Power diff": Math.round(safeNum(b.Power) - safeNum(a.Power)),
-        Acclaim: safeNum(b["Acclaim"]),
+        "T4 Kills": safeNumber(endRow["T4 Kills"] ?? startRow["T4 Kills"]),
+        "T5 Kills": safeNumber(endRow["T5 Kills"] ?? startRow["T5 Kills"]),
+        Killpoints: safeNumber(endRow.Killpoints ?? startRow.Killpoints),
+        Deads: safeNumber(endRow.Deads ?? startRow.Deads),
+        "Power diff": Math.round(safeNumber(endRow.Power) - safeNumber(startRow.Power)),
+        Acclaim: safeNumber(endRow["Acclaim"]),
         Vacation: isVacationRow({ ID: id }) ? "YES" : "NO",
       };
 
       if (status === "missing in start" || status === "missing in new") {
-        Object.keys(row).forEach((k) => {
-          if (!["ID", "Name", "Power", "Status", "Vacation"].includes(k)) {
-            row[k] = 0;
+        Object.keys(row).forEach((key) => {
+          if (!["ID", "Name", "Power", "Status", "Vacation"].includes(key)) {
+            row[key] = 0;
           }
         });
       }
@@ -504,7 +523,7 @@
 
     const visibleResults = results;
 
-    visibleResults.sort((x, y) => y.DKP - x.DKP);
+    visibleResults.sort((firstVisibleResult, secondVisibleResult) => secondVisibleResult.DKP - firstVisibleResult.DKP);
 
     lastResults = visibleResults;
     if (!visibleResults || visibleResults.length === 0) {
@@ -513,52 +532,58 @@
     }
     createResultsGrid(visibleResults);
     setExportEnabled(true);
-    progressEl.value = 100;
+    progressElement.value = 100;
     resultsInfo.textContent = `Calculated ${visibleResults.length} rows (skipped ${skippedCount} due to CH<25).`;
   }
 
   async function ensureMinDkpForIds(allIds, df1, df2, map1, map2) {
+    const currentSignature = getPowerRangesSignature();
+    if (minDkpSignature !== currentSignature) {
+      minDkpMap = {};
+      minDkpSignature = currentSignature;
+      await saveMinDkpMap();
+    }
     const toInsert = [];
     for (const gid of allIds) {
-      const gidStr = String(gid).trim();
-      if (gidStr === "") continue;
-      if (minDkpMap[gidStr] !== undefined) continue;
+      const gidString = String(gid).trim();
+      if (gidString === "") continue;
+      if (minDkpMap[gidString] !== undefined) continue;
 
       const findPower = (arr, map) => {
         const row =
-          (map && map[gidStr]) ||
+          (map && map[gidString]) ||
           arr.find(
-            (r) =>
-              String(r.ID).trim() === gidStr &&
-              r.Power != null &&
-              r.Power !== "",
+            (candidateRow) =>
+              String(candidateRow.ID).trim() === gidString &&
+              candidateRow.Power != null &&
+              candidateRow.Power !== "",
           );
         if (!row) return null;
-        const p = Number(row.Power);
-        return Number.isFinite(p) ? p : null;
+        const parsedPower = Number(row.Power);
+        return Number.isFinite(parsedPower) ? parsedPower : null;
       };
       let power = findPower(df1, map1);
       if (power === null) power = findPower(df2, map2);
       if (power === null) {
         console.warn(
-          `[DKP] No Power for ID ${gidStr} — skipping min_dkp calculation`,
+          `[DKP] No Power for ID ${gidString} — skipping min_dkp calculation`,
         );
         continue;
       }
-      const perc = getMinDkpPercent(power);
-      const minDkp = Math.round(power * perc);
-      minDkpMap[gidStr] = minDkp;
-      toInsert.push({ id: gidStr, minDkp });
+      const percent = getMinDkpPercent(power);
+      const minDkp = Math.round(power * percent);
+      minDkpMap[gidString] = minDkp;
+      toInsert.push({ id: gidString, minDkp });
     }
     if (toInsert.length) await saveMinDkpMap();
   }
 
   function createResultsGrid(rows) {
     if (!rows || !rows.length) return;
-    const el = document.querySelector("#result-table");
-    el.style.display = "block";
+    const element = document.querySelector("#result-table");
+    element.style.display = "block";
     const { keys, data } = objectsToRows(rows);
-    createSiteTable(el, { columns: keys.map((k) => ({ title: k })), data });
+    createSiteTable(element, { columns: keys.map((key) => ({ title: key })), data });
   }
 
   async function exportSettings() {
@@ -567,23 +592,24 @@
       power_ranges: powerRanges,
       vacation_list: vacationList,
       min_dkp: minDkpMap,
+      min_dkp_signature: minDkpSignature,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `dkp-settings-${getExportTimestamp()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    const downloadLink = document.createElement("a");
+    downloadLink.href = url;
+    downloadLink.download = `dkp-settings-${getExportTimestamp()}.json`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
     URL.revokeObjectURL(url);
   }
 
-  importSettingsBtn.addEventListener("click", () => importSettingsFile.click());
-  importSettingsFile.addEventListener("change", async (ev) => {
-    const file = ev.target.files && ev.target.files[0];
+  importSettingsButton.addEventListener("click", () => importSettingsFile.click());
+  importSettingsFile.addEventListener("change", async (event) => {
+    const file = event.target.files && event.target.files[0];
     if (!file) return;
     try {
       const txt = await file.text();
@@ -593,26 +619,29 @@
         throw new Error("Invalid file format.");
       if (parsed.multipliers) {
         multipliers = parsed.multipliers;
-        await localforage.setItem(KEY_MULT, multipliers);
+        await localforage.setItem(KEY_MULTIPLIERS, multipliers);
       }
       if (Array.isArray(parsed.power_ranges)) {
         powerRanges = parsed.power_ranges;
-        await localforage.setItem(KEY_PR, powerRanges);
+        await localforage.setItem(KEY_POWER_RANGES, powerRanges);
         renderPowerRanges();
       }
       if (Array.isArray(parsed.vacation_list)) {
         vacationList = parsed.vacation_list;
-        await localforage.setItem(KEY_VAC, vacationList);
+        await localforage.setItem(KEY_VACATION_LIST, vacationList);
       }
       if (parsed.min_dkp && typeof parsed.min_dkp === "object") {
         minDkpMap = parsed.min_dkp;
-        await localforage.setItem(KEY_MIN, minDkpMap);
+        minDkpSignature =
+          typeof parsed.min_dkp_signature === "string" ? parsed.min_dkp_signature : null;
+        await localforage.setItem(KEY_MIN_DKP, minDkpMap);
+        await localforage.setItem(KEY_MIN_DKP_SIG, minDkpSignature);
       }
       showToast("Settings imported successfully.");
       populateUIFromMemory();
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to import settings: " + (err.message || err));
+    } catch (error) {
+      console.error(error);
+      showToast("Failed to import settings: " + (error.message || error));
     } finally {
       importSettingsFile.value = "";
     }
@@ -623,37 +652,37 @@
 
     populateUIFromMemory();
     renderPowerRanges();
-    progressEl.value = 0;
+    progressElement.value = 0;
 
-    progressEl.value = 0;
+    progressElement.value = 0;
     resultsInfo.textContent = "Ready.";
   }
 
   function populateUIFromMemory() {
-    t4El.value = multipliers.t4 ?? 0;
-    t5El.value = multipliers.t5 ?? 0;
-    deadsEl.value = multipliers.deads ?? 0;
-    vacInput.value = (vacationList || []).join(", ");
+    t4Element.value = multipliers.t4 ?? 0;
+    t5Element.value = multipliers.t5 ?? 0;
+    deadsElement.value = multipliers.deads ?? 0;
+    vacationInput.value = (vacationList || []).join(", ");
   }
 
-  saveMultBtn.addEventListener("click", saveMultipliers);
-  vacSaveBtn.addEventListener("click", saveVacationList);
-  vacClearBtn.addEventListener("click", clearVacationList);
+  saveMultiplierButton.addEventListener("click", saveMultipliers);
+  vacationSaveButton.addEventListener("click", saveVacationList);
+  vacationClearButton.addEventListener("click", clearVacationList);
 
-  runBtn.addEventListener("click", async () => {
-    multipliers.t4 = parseFloat(t4El.value) || 0;
-    multipliers.t5 = parseFloat(t5El.value) || 0;
-    multipliers.deads = parseFloat(deadsEl.value) || 0;
+  runButton.addEventListener("click", async () => {
+    multipliers.t4 = parseFloat(t4Element.value) || 0;
+    multipliers.t5 = parseFloat(t5Element.value) || 0;
+    multipliers.deads = parseFloat(deadsElement.value) || 0;
     const mode = document.querySelector('input[name="mode"]:checked').value;
-    progressEl.value = 2;
+    progressElement.value = 2;
     try {
       await calculateDkp({ mode });
       await saveMinDkpMap();
-    } catch (err) {
-      console.error(err);
-      showToast("Error during calculation: " + (err.message || err));
+    } catch (error) {
+      console.error(error);
+      showToast("Error during calculation: " + (error.message || error));
     } finally {
-      progressEl.value = 100;
+      progressElement.value = 100;
     }
   });
 
@@ -661,9 +690,9 @@
   exportC.addEventListener("click", () => exportToCsv(lastResults, "dkp"));
   exportJ.addEventListener("click", () => exportToJson(lastResults, "dkp"));
 
-  exportSettingsBtn.addEventListener("click", exportSettings);
-  clearMinBtn.addEventListener("click", clearAllMinDkp);
+  exportSettingsButton.addEventListener("click", exportSettings);
+  clearMinButton.addEventListener("click", clearAllMinDkp);
 
-  init().catch((err) => console.error("Init error", err));
+  init().catch((error) => console.error("Init error", error));
 
 })();
