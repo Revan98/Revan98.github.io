@@ -40,8 +40,8 @@ function destroySiteTable(container) {
   if (entry) {
     try {
       entry.api.destroy();
-    } catch (e) {
-      console.warn("Could not destroy table:", e);
+    } catch (event) {
+      console.warn("Could not destroy table:", event);
     }
     siteTables.delete(container);
   }
@@ -52,36 +52,36 @@ function collectKeys(rows) {
   const keys = [];
   const seen = new Set();
   for (const row of rows)
-    for (const k of Object.keys(row)) {
-      if (!seen.has(k)) {
-        seen.add(k);
-        keys.push(k);
+    for (const key of Object.keys(row)) {
+      if (!seen.has(key)) {
+        seen.add(key);
+        keys.push(key);
       }
     }
   return keys;
 }
 
 function objectsToRows(rows, keys = collectKeys(rows)) {
-  return { keys, data: rows.map((r) => keys.map((k) => r[k] ?? null)) };
+  return { keys, data: rows.map((row) => keys.map((key) => row[key] ?? null)) };
 }
 
-function buildSiteColumnDefs(columns, order) {
-  return columns.map((c, i) => {
-    const def = {
-      colId: `c${i}`,
-      field: String(i), // rows are arrays, so the field is the index
-      headerName: c.title ?? "",
-      sortable: c.orderable !== false,
+function buildSiteColumnDefinitions(columns, order) {
+  return columns.map((column, index) => {
+    const columnDefinition = {
+      colId: `c${index}`,
+      field: String(index), // rows are arrays, so the field is the index
+      headerName: column.title ?? "",
+      sortable: column.orderable !== false,
     };
-    if (c.render) {
-      def.cellRenderer = (p) => c.render(p.value, "display", p.data) ?? "";
+    if (column.render) {
+      columnDefinition.cellRenderer = (params) => column.render(params.value, "display", params.data) ?? "";
     }
-    const ord = order.findIndex(([idx]) => idx === i);
-    if (ord !== -1) {
-      def.sort = order[ord][1] || "asc";
-      def.sortIndex = ord;
+    const orderPosition = order.findIndex(([orderedIndex]) => orderedIndex === index);
+    if (orderPosition !== -1) {
+      columnDefinition.sort = order[orderPosition][1] || "asc";
+      columnDefinition.sortIndex = orderPosition;
     }
-    return def;
+    return columnDefinition;
   });
 }
 
@@ -128,7 +128,7 @@ function createSiteTable(container, options) {
   const gridOptions = {
     theme: createSiteTheme(),
     rowData: data,
-    columnDefs: buildSiteColumnDefs(columns, order),
+    columnDefs: buildSiteColumnDefinitions(columns, order),
     defaultColDef: {
       resizable: false,
       suppressMovable: true,
@@ -148,20 +148,20 @@ function createSiteTable(container, options) {
     enableCellTextSelection: true,
     tooltipShowDelay: 300,
     localeText: { noMatchingRows: "No matching rows", noRowsToShow: "No rows" },
-    onModelUpdated: (e) =>
-      host.classList.toggle("is-empty", e.api.getDisplayedRowCount() === 0),
+    onModelUpdated: (event) =>
+      host.classList.toggle("is-empty", event.api.getDisplayedRowCount() === 0),
   };
 
-  let api = null;
+  let gridApi = null;
   if (!plain && search) {
     container.appendChild(
-      createSiteSearch((v) => api?.setGridOption("quickFilterText", v)),
+      createSiteSearch((value) => gridApi?.setGridOption("quickFilterText", value)),
     );
   }
   container.appendChild(host);
 
-  api = agGrid.createGrid(host, gridOptions);
-  siteTables.set(container, { api });
+  gridApi = agGrid.createGrid(host, gridOptions);
+  siteTables.set(container, { api: gridApi });
 
-  return api;
+  return gridApi;
 }
