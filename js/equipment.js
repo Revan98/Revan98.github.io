@@ -668,6 +668,7 @@ document.getElementById("marchTabs").addEventListener("click", (event) => {
   renderSlotGrid();
 });
 
+// Slot currently selected in the equipment tab (slot key, e.g. "helm") or null.
 let equipSelectedSlot = null;
 
 function selectEquipSlot(slotKey) {
@@ -743,39 +744,37 @@ function renderPairsGrid() {
 
   for (let pairIndex = 0; pairIndex < PAIR_COUNT; pairIndex++) {
     const pair = pairsData[pairIndex];
-    const row = document.createElement("div");
-    row.className = "eq-pair-row";
-    row.innerHTML = `<span class="eq-pair-label">Pair ${pairIndex + 1}</span>`;
+    const card = document.createElement("div");
+    card.className = "pair-card";
+    card.innerHTML = `<span class="pair-card-label">Pairing ${pairIndex + 1}</span><div class="pair-card-boxes"></div>`;
+    const boxes = card.querySelector(".pair-card-boxes");
 
     for (const slot of ["comm1", "comm2"]) {
       const name = pair[slot];
       const hasCommander = !!name;
-      const card = document.createElement("div");
-      card.className = "eq-pair-card" + (hasCommander ? " has-item" : "");
-      if (hasCommander) {
-        card.dataset.tipCode = name;
-        card.dataset.tipKind = "commander";
-      }
+      const cell = document.createElement("div");
+      cell.className = "eq-pair-cell";
+      cell.setAttribute("role", "button");
+      cell.setAttribute("tabindex", "0");
+      cell.setAttribute("aria-label", `Pairing ${pairIndex + 1} — Commander ${slot === "comm1" ? 1 : 2}`);
+      cell.innerHTML =
+        renderPairBox(name) +
+        (hasCommander ? `<button type="button" class="eq-pair-x" title="Clear this commander" aria-label="Clear this commander">×</button>` : "");
 
-      card.innerHTML = `
-        <div class="eq-pair-img-box">
-          ${
-            hasCommander
-              ? `<img src="${iconPath(name, "commander")}" alt="${escapeHtml(name)}" loading="lazy"
-                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-               <div class="eq-slot-placeholder" style="display:none;">?</div>`
-              : `<div class="eq-slot-placeholder">+</div>`
-          }
-        </div>
-        <span class="eq-pair-comm-name">${hasCommander ? escapeHtml(name) : "—"}</span>
-        ${hasCommander ? `<button class="eq-pair-clear" title="Clear this commander">×</button>` : ""}`;
-
-      card.addEventListener("click", (event) => {
-        if (event.target.classList.contains("eq-pair-clear")) return;
-        openPicker({ type: "pair", pairIdx: pairIndex, slot });
+      const open = () => openPicker({ type: "pair", pairIdx: pairIndex, slot });
+      cell.addEventListener("click", (event) => {
+        if (event.target.closest(".eq-pair-x")) return;
+        open();
+      });
+      cell.addEventListener("keydown", (event) => {
+        if (event.target !== cell) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          open();
+        }
       });
 
-      const clearButton = card.querySelector(".eq-pair-clear");
+      const clearButton = cell.querySelector(".eq-pair-x");
       if (clearButton) {
         clearButton.addEventListener("click", (event) => {
           event.stopPropagation();
@@ -784,10 +783,10 @@ function renderPairsGrid() {
         });
       }
 
-      row.appendChild(card);
+      boxes.appendChild(cell);
     }
 
-    grid.appendChild(row);
+    grid.appendChild(card);
   }
 }
 
