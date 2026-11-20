@@ -1,15 +1,15 @@
 function searchPlayers(query) {
-  return searchGovernorsByName(query, true).catch((e) => {
-    console.warn("Name search failed:", e);
+  return searchGovernorsByName(query, true).catch((error) => {
+    console.warn("Name search failed:", error);
     return [];
   });
 }
 
-let dbReady = false;
+let databaseReady = false;
 
-loadEquipRefData(["inscriptions", "skins"]);
+loadEquipmentReferenceData(["inscriptions", "skins"]);
 
-const EQUIP_SLOTS = [
+const EQUIPMENT_SLOTS = [
   { key: "helm", label: "Helm", id: "helmet" },
   { key: "chest", label: "Chest", id: "chest" },
   { key: "weapon", label: "Weapon", id: "weapon" },
@@ -21,42 +21,42 @@ const EQUIP_SLOTS = [
 ];
 
 function isMarchEmpty(row, suffix) {
-  return EQUIP_SLOTS.every((slot) => {
-    const colKey = suffix ? `${slot.key}_${suffix}` : slot.key;
-    return isEmptyVal(row[colKey]);
+  return EQUIPMENT_SLOTS.every((slot) => {
+    const slotColumnKey = suffix ? `${slot.key}_${suffix}` : slot.key;
+    return isEmptyValue(row[slotColumnKey]);
   });
 }
-function getEquipRarity(name) {
-  if (isEmptyVal(name)) return "empty";
-  const n = String(name).trim().toLowerCase();
-  if (n.endsWith("gray")) return "gray";
-  if (n.endsWith("gr")) return "green";
-  if (n.endsWith("g")) return "gold";
-  if (n.endsWith("p")) return "purple";
-  if (n.endsWith("b")) return "blue";
+function getEquipmentRarityByName(name) {
+  if (isEmptyValue(name)) return "empty";
+  const normalizedName = String(name).trim().toLowerCase();
+  if (normalizedName.endsWith("gray")) return "gray";
+  if (normalizedName.endsWith("gr")) return "green";
+  if (normalizedName.endsWith("g")) return "gold";
+  if (normalizedName.endsWith("p")) return "purple";
+  if (normalizedName.endsWith("b")) return "blue";
   return "unknown";
 }
 
-async function renderStatCard(govId) {
-  const el = document.getElementById("pc-scan-stats");
-  el.style.display = "";
-  el.innerHTML = `<div class="poster-loading"><div class="spinner"></div><span>Building player card image…</span></div>`;
+async function renderStatCard(governorId) {
+  const element = document.getElementById("pc-scan-stats");
+  element.style.display = "";
+  element.innerHTML = `<div class="poster-loading"><div class="spinner"></div><span>Building player card image…</span></div>`;
 
   try {
-    const dataUrl = await buildStatPosterDataUrl(govId);
-    el.innerHTML = `
+    const dataUrl = await buildStatPosterDataUrl(governorId);
+    element.innerHTML = `
       <img class="poster-image" src="${dataUrl}" alt="Player stat card" draggable="false">
-      <a class="poster-download" href="${dataUrl}" download="player-${escapeHtml(String(govId))}.png">
+      <a class="poster-download" href="${dataUrl}" download="player-${escapeHtml(String(governorId))}.png">
         <i class="fa-solid fa-download"></i> Download image
       </a>`;
-  } catch (e) {
-    console.error("renderStatCard:", e);
-    el.innerHTML = `<div class="pc-equip-empty">Could not build the player image.</div>`;
+  } catch (event) {
+    console.error("renderStatCard:", event);
+    element.innerHTML = `<div class="pc-equip-empty">Could not build the player image.</div>`;
   }
 }
 
-async function renderPlayerCard(govId) {
-  const safeId = normalizeNumericId(govId);
+async function renderPlayerCard(governorId) {
+  const safeId = normalizeNumericId(governorId);
   if (!safeId) {
     showError("Invalid governor ID.");
     return;
@@ -67,9 +67,9 @@ async function renderPlayerCard(govId) {
   {
     try {
       await loadPlayerBundle(safeId);
-      const kd = detectKingdom(safeId);
+      const kingdomId = detectKingdom(safeId);
 
-      if (!kd) {
+      if (!kingdomId) {
         const scanData = loadScanStats(safeId);
         if (!scanData) {
           showState("search");
@@ -98,14 +98,14 @@ async function renderPlayerCard(govId) {
         return;
       }
 
-      const accType = getAccType(safeId);
+      const accountType = getAccountType(safeId);
       const isMain = resolveFarmMainId(safeId) === safeId;
-      const isFarm = accType === "farm";
+      const isFarm = accountType === "farm";
       const farms = isMain ? loadGovernorFarms(safeId) : [];
-      const farmIds = farms.map((f) => f.id);
+      const farmIds = farms.map((farm) => farm.id);
       const farmKvK = farmIds.length ? loadFarmKvKStats(safeId) : [];
       const farmOwner = isFarm ? loadFarmOwner(safeId) : null;
-      const history = loadGovHistory(safeId);
+      const history = loadGovernorHistory(safeId);
 
       renderStatCard(safeId);
 
@@ -136,10 +136,10 @@ async function renderPlayerCard(govId) {
 
       initCollapsibleSections();
       showState("card");
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       showState("search");
-      showError("Error loading player data: " + String(err));
+      showError("Error loading player data: " + String(error));
     }
   }
 }
@@ -154,14 +154,14 @@ function renderFarmKvKCards(rows) {
   const container = document.getElementById("pc-farm-kvk-table");
   container.innerHTML = renderFarmKvKGroups(rows)
     .map(
-      (g, idx) => `<div class="pc-farm-kvk-group${idx === 0 ? " is-open" : ""}">
+      (group, index) => `<div class="pc-farm-kvk-group${index === 0 ? " is-open" : ""}">
       <div class="pc-farm-kvk-label">
-        ${escapeHtml(g.kvk)}
+        ${escapeHtml(group.kvk)}
         <svg class="pc-farm-kvk-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
           <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
         </svg>
       </div>
-      <div class="pc-farm-kvk-body">${g.html}</div>
+      <div class="pc-farm-kvk-body">${group.html}</div>
     </div>`,
     )
     .join("");
@@ -199,10 +199,10 @@ function showState(state) {
   }
 }
 
-function showError(msg) {
-  const el = document.getElementById("search-error");
-  el.textContent = msg;
-  el.style.display = "block";
+function showError(message) {
+  const element = document.getElementById("search-error");
+  element.textContent = message;
+  element.style.display = "block";
 }
 
 document.getElementById("back-btn").addEventListener("click", () => {
@@ -211,42 +211,42 @@ document.getElementById("back-btn").addEventListener("click", () => {
 });
 
 
-const searchBtn = document.getElementById("search-btn");
-const inputEl = document.getElementById("player-id-input");
+const searchButton = document.getElementById("search-btn");
+const inputElement = document.getElementById("player-id-input");
 
 showState("search");
-dbReady = true;
-inputEl.focus();
+databaseReady = true;
+inputElement.focus();
 
 {
   const params = new URLSearchParams(window.location.search);
   const directId = normalizeNumericId(params.get("govId") || params.get("id"));
   if (directId) {
-    inputEl.value = directId;
+    inputElement.value = directId;
     renderPlayerCard(directId);
   }
 }
 
 async function doSearch() {
-  if (!dbReady) return;
-  const val = inputEl.value.trim();
-  if (!val) {
+  if (!databaseReady) return;
+  const value = inputElement.value.trim();
+  if (!value) {
     showError("Please enter a governor ID or name.");
     return;
   }
   hideSuggestions();
-  if (normalizeNumericId(val)) {
+  if (normalizeNumericId(value)) {
     document.getElementById("search-error").style.display = "none";
-    renderPlayerCard(val);
+    renderPlayerCard(value);
   } else {
-    const matches = await searchPlayers(val);
+    const matches = await searchPlayers(value);
     if (!matches.length) {
-      showError(`No player found matching "${val}".`);
+      showError(`No player found matching "${value}".`);
       return;
     }
     if (matches.length === 1) {
       document.getElementById("search-error").style.display = "none";
-      inputEl.value = matches[0].id;
+      inputElement.value = matches[0].id;
       renderPlayerCard(matches[0].id);
     } else {
       showSuggestions(matches);
@@ -255,98 +255,98 @@ async function doSearch() {
 }
 
 let suggestTicket = 0;
-const suggestionsEl = document.getElementById("name-suggestions");
-let activeSuggestionIdx = -1;
+const suggestionsElement = document.getElementById("name-suggestions");
+let activeSuggestionIndex = -1;
 
 function showSuggestions(matches) {
-  activeSuggestionIdx = -1;
-  suggestionsEl.innerHTML = matches
+  activeSuggestionIndex = -1;
+  suggestionsElement.innerHTML = matches
     .map(
-      (m, i) =>
-        `<div class="name-suggestion-item" data-id="${escapeHtml(m.id)}" data-idx="${i}">
-      <span class="name-suggestion-name">${escapeHtml(m.name)}</span>
-      <span class="name-suggestion-id">${escapeHtml(m.id)}</span>
+      (match, index) =>
+        `<div class="name-suggestion-item" data-id="${escapeHtml(match.id)}" data-idx="${index}">
+      <span class="name-suggestion-name">${escapeHtml(match.name)}</span>
+      <span class="name-suggestion-id">${escapeHtml(match.id)}</span>
     </div>`,
     )
     .join("");
-  suggestionsEl.style.display = "block";
-  suggestionsEl.querySelectorAll(".name-suggestion-item").forEach((item) => {
-    item.addEventListener("mousedown", (e) => {
-      e.preventDefault();
+  suggestionsElement.style.display = "block";
+  suggestionsElement.querySelectorAll(".name-suggestion-item").forEach((item) => {
+    item.addEventListener("mousedown", (event) => {
+      event.preventDefault();
       selectSuggestion(item.dataset.id);
     });
   });
 }
 
 function hideSuggestions() {
-  suggestionsEl.style.display = "none";
-  suggestionsEl.innerHTML = "";
-  activeSuggestionIdx = -1;
+  suggestionsElement.style.display = "none";
+  suggestionsElement.innerHTML = "";
+  activeSuggestionIndex = -1;
 }
 
 function selectSuggestion(id) {
   hideSuggestions();
-  inputEl.value = id;
+  inputElement.value = id;
   document.getElementById("search-error").style.display = "none";
   renderPlayerCard(id);
 }
 
-inputEl.addEventListener("input", () => {
-  if (!dbReady) return;
-  const val = inputEl.value.trim();
-  if (!val || normalizeNumericId(val)) {
+inputElement.addEventListener("input", () => {
+  if (!databaseReady) return;
+  const value = inputElement.value.trim();
+  if (!value || normalizeNumericId(value)) {
     hideSuggestions();
     return;
   }
-  if (val.length < 2) {
+  if (value.length < 2) {
     hideSuggestions();
     return;
   }
   const ticket = ++suggestTicket;
-  searchPlayers(val).then((matches) => {
+  searchPlayers(value).then((matches) => {
     if (ticket !== suggestTicket) return;
     if (matches.length) showSuggestions(matches);
     else hideSuggestions();
   });
 });
 
-inputEl.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    const open = suggestionsEl.style.display !== "none";
+inputElement.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    const open = suggestionsElement.style.display !== "none";
     const active = open
-      ? suggestionsEl.querySelectorAll(".name-suggestion-item")[activeSuggestionIdx]
+      ? suggestionsElement.querySelectorAll(".name-suggestion-item")[activeSuggestionIndex]
       : null;
     if (active) {
-      e.preventDefault();
+      event.preventDefault();
       selectSuggestion(active.dataset.id);
     } else {
       doSearch();
     }
     return;
   }
-  if (suggestionsEl.style.display === "none") return;
-  const items = suggestionsEl.querySelectorAll(".name-suggestion-item");
+  if (suggestionsElement.style.display === "none") return;
+  const items = suggestionsElement.querySelectorAll(".name-suggestion-item");
   if (!items.length) return;
-  if (e.key === "ArrowDown") {
-    e.preventDefault();
-    activeSuggestionIdx = Math.min(activeSuggestionIdx + 1, items.length - 1);
-  } else if (e.key === "ArrowUp") {
-    e.preventDefault();
-    activeSuggestionIdx = Math.max(activeSuggestionIdx - 1, -1);
-  } else if (e.key === "Escape") {
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, items.length - 1);
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
+  } else if (event.key === "Escape") {
     hideSuggestions();
     return;
   } else {
     return;
   }
-  items.forEach((item, i) =>
-    item.classList.toggle("is-active", i === activeSuggestionIdx),
+  items.forEach((item, index) =>
+    item.classList.toggle("is-active", index === activeSuggestionIndex),
   );
-  if (activeSuggestionIdx >= 0)
-    items[activeSuggestionIdx].scrollIntoView({ block: "nearest" });
+  if (activeSuggestionIndex >= 0)
+    items[activeSuggestionIndex].scrollIntoView({ block: "nearest" });
 });
 
-inputEl.addEventListener("blur", () => {
+inputElement.addEventListener("blur", () => {
   setTimeout(hideSuggestions, 150);
 });
-searchBtn.addEventListener("click", doSearch);
+searchButton.addEventListener("click", doSearch);
