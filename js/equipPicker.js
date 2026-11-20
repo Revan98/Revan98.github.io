@@ -1,4 +1,4 @@
-const EQUIP_PREFIX_MAP = {
+const EQUIPMENT_PREFIX_MAP = {
   helm: "h",
   chest: "c",
   weapon: "w",
@@ -9,40 +9,40 @@ const EQUIP_PREFIX_MAP = {
   accessory_sec: "a",
 };
 
-const EQUIP_ICON_RE = /^[hcwglba]\d/i;
+const EQUIPMENT_ICON_REGEX = /^[hcwglba]\d/i;
 
-function isEquipIcon(name) {
-  return EQUIP_ICON_RE.test(name);
+function isEquipmentIcon(name) {
+  return EQUIPMENT_ICON_REGEX.test(name);
 }
 
 function iconsForSlot(slotKey) {
-  const prefix = EQUIP_PREFIX_MAP[slotKey];
+  const prefix = EQUIPMENT_PREFIX_MAP[slotKey];
   if (!prefix) return allIconNames;
-  return allIconNames.filter((n) => n.charAt(0).toLowerCase() === prefix);
+  return allIconNames.filter((allIconName) => allIconName.charAt(0).toLowerCase() === prefix);
 }
 
 function loadIconManifest() {
-  if (allIconNames.length && allCommNames.length) return;
+  if (allIconNames.length && allCommanderNames.length) return;
 
-  const itemKeys = Object.keys(refData.items || {});
-  const commKeys = Object.keys(refData.commanders || {});
+  const itemKeys = Object.keys(referenceData.items || {});
+  const commanderKeys = Object.keys(referenceData.commanders || {});
 
-  if (itemKeys.length || commKeys.length) {
-    allIconNames = itemKeys.filter((n) => isEquipIcon(n)).sort();
-    allCommNames = commKeys.sort();
+  if (itemKeys.length || commanderKeys.length) {
+    allIconNames = itemKeys.filter((itemKey) => isEquipmentIcon(itemKey)).sort();
+    allCommanderNames = commanderKeys.sort();
     return;
   }
 
 }
 
-function loadCommManifest() {
+function loadCommanderManifest() {
   loadIconManifest();
 }
 
 function loadSkinManifest() {
   if (allSkinNames.length) return;
 
-  const skinKeys = Object.keys(refData.skins || {});
+  const skinKeys = Object.keys(referenceData.skins || {});
   if (skinKeys.length) {
     allSkinNames = skinKeys.sort();
     return;
@@ -50,65 +50,65 @@ function loadSkinManifest() {
 
 }
 
-async function scrapeSkinNamesFromDb() {
+async function scrapeSkinNamesFromDatabase() {
   try {
     const names = new Set();
-    for (const row of await sbSelectAll("skins", "select=*")) {
-      for (const [col, v] of Object.entries(row)) {
-        if (!/^skin\d+$/.test(col) || !v || ["none", "0"].includes(String(v).toLowerCase())) continue;
-        names.add(String(v).trim());
+    for (const row of await supabaseSelectAll("skins", "select=*")) {
+      for (const [column, value] of Object.entries(row)) {
+        if (!/^skin\d+$/.test(column) || !value || ["none", "0"].includes(String(value).toLowerCase())) continue;
+        names.add(String(value).trim());
       }
     }
     allSkinNames = [...names].sort();
-  } catch (e) {
-    console.warn("Could not read skin names:", e);
+  } catch (event) {
+    console.warn("Could not read skin names:", event);
   }
 }
 
 function _scrapeIconsFromRows(rows) {
   try {
     if (!rows.length) return;
-    const itemCols = Object.keys(rows[0]).filter(
-      (c) =>
-        !c.endsWith("_lvl") &&
-        !c.includes("_tal") &&
-        !["player_id", "name", "acc_type"].includes(c) &&
-        !c.startsWith("pair") &&
-        !/_(lvl|tal)_\d+$/.test(c),
+    const itemColumns = Object.keys(rows[0]).filter(
+      (key) =>
+        !key.endsWith("_lvl") &&
+        !key.includes("_tal") &&
+        !["player_id", "name", "acc_type"].includes(key) &&
+        !key.startsWith("pair") &&
+        !/_(lvl|tal)_\d+$/.test(key),
     );
-    const pairCols = new Set();
-    for (const c of Object.keys(rows[0])) if (/^pair\d+_comm[12]$/.test(c)) pairCols.add(c);
+    const pairColumns = new Set();
+    for (const column of Object.keys(rows[0])) if (/^pair\d+_comm[12]$/.test(column)) pairColumns.add(column);
 
-    const equipNames = new Set();
-    const commNames = new Set();
+    const equipmentNames = new Set();
+    const commanderNames = new Set();
     for (const row of rows.slice(0, 500)) {
-      for (const c of itemCols) {
-        const v = row[c];
-        if (!v || ["none", "0"].includes(String(v).toLowerCase())) continue;
-        if (isEquipIcon(String(v).trim())) equipNames.add(String(v).trim());
+      for (const column of itemColumns) {
+        const value = row[column];
+        if (!value || ["none", "0"].includes(String(value).toLowerCase())) continue;
+        if (isEquipmentIcon(String(value).trim())) equipmentNames.add(String(value).trim());
       }
-      for (const c of pairCols) {
-        const v = row[c];
-        if (!v || ["none", "0"].includes(String(v).toLowerCase())) continue;
-        commNames.add(String(v).trim());
+      for (const column of pairColumns) {
+        const value = row[column];
+        if (!value || ["none", "0"].includes(String(value).toLowerCase())) continue;
+        commanderNames.add(String(value).trim());
       }
     }
-    allIconNames = [...equipNames].sort();
-    allCommNames = [...commNames].sort();
-  } catch (e) {
-    console.warn("icon scrape failed:", e);
+    allIconNames = [...equipmentNames].sort();
+    allCommanderNames = [...commanderNames].sort();
+  } catch (event) {
+    console.warn("icon scrape failed:", event);
   }
 }
-async function preloadIconsFromDb() {
-  if (!allIconNames.length || !allCommNames.length) {
+async function preloadIconsFromDatabase() {
+  if (!allIconNames.length || !allCommanderNames.length) {
     try {
-      _scrapeIconsFromRows(await edEquipmentRows());
-    } catch (e) {
-      console.warn("Could not read equipment rows for icon names:", e);
+      _scrapeIconsFromRows(await loadAllEquipmentRows());
+    } catch (event) {
+      console.warn("Could not read equipment rows for icon names:", event);
     }
   }
   loadSkinManifest();
-  if (!allSkinNames.length) await scrapeSkinNamesFromDb();
+  if (!allSkinNames.length) await scrapeSkinNamesFromDatabase();
 }
 
 async function openPicker(target) {
@@ -116,7 +116,7 @@ async function openPicker(target) {
   pickerSearch.value = "";
 
   if (target.type === "equip") {
-    const slot = EQUIP_SLOTS.find((s) => s.key === target.slotKey);
+    const slot = EQUIPMENT_SLOTS.find((equipmentSlot) => equipmentSlot.key === target.slotKey);
     pickerSlotLabel.textContent = `– ${slot?.label ?? target.slotKey} · March ${target.marchIdx + 1}`;
     pickerSelectedItem = marchData[target.marchIdx][target.slotKey].item;
     loadIconManifest();
@@ -125,10 +125,10 @@ async function openPicker(target) {
     pickerSelectedItem = skinsData[target.skinIdx];
     loadSkinManifest();
   } else {
-    const lbl = target.slot === "comm1" ? "Commander 1" : "Commander 2";
-    pickerSlotLabel.textContent = `– ${lbl} · Pair ${target.pairIdx + 1}`;
+    const label = target.slot === "comm1" ? "Commander 1" : "Commander 2";
+    pickerSlotLabel.textContent = `– ${label} · Pair ${target.pairIdx + 1}`;
     pickerSelectedItem = pairsData[target.pairIdx][target.slot];
-    loadCommManifest();
+    loadCommanderManifest();
   }
 
   pickerOverlay.classList.add("open");
@@ -164,11 +164,11 @@ function clearPickerSlot() {
 }
 
 function renderPickerItems(filter) {
-  const q = filter.toLowerCase();
+  const query = filter.toLowerCase();
 
   let base;
   if (pickerTarget?.type === "pair") {
-    base = allCommNames;
+    base = allCommanderNames;
   } else if (pickerTarget?.type === "equip") {
     base = iconsForSlot(pickerTarget.slotKey);
   } else if (pickerTarget?.type === "skin") {
@@ -180,23 +180,23 @@ function renderPickerItems(filter) {
   const candidates = new Set(base);
 
   if (pickerTarget?.type === "equip") {
-    const prefix = EQUIP_PREFIX_MAP[pickerTarget.slotKey];
-    for (let mi = 0; mi < MARCH_COUNT; mi++)
-      for (const s of EQUIP_SLOTS)
+    const prefix = EQUIPMENT_PREFIX_MAP[pickerTarget.slotKey];
+    for (let marchIndex = 0; marchIndex < MARCH_COUNT; marchIndex++)
+      for (const slot of EQUIPMENT_SLOTS)
         if (
-          marchData[mi][s.key].item &&
+          marchData[marchIndex][slot.key].item &&
           (!prefix ||
-            marchData[mi][s.key].item.charAt(0).toLowerCase() === prefix)
+            marchData[marchIndex][slot.key].item.charAt(0).toLowerCase() === prefix)
         )
-          candidates.add(marchData[mi][s.key].item);
+          candidates.add(marchData[marchIndex][slot.key].item);
   } else if (pickerTarget?.type === "pair") {
-    for (let n = 0; n < PAIR_COUNT; n++) {
-      if (pairsData[n].comm1) candidates.add(pairsData[n].comm1);
-      if (pairsData[n].comm2) candidates.add(pairsData[n].comm2);
+    for (let pairIndex = 0; pairIndex < PAIR_COUNT; pairIndex++) {
+      if (pairsData[pairIndex].comm1) candidates.add(pairsData[pairIndex].comm1);
+      if (pairsData[pairIndex].comm2) candidates.add(pairsData[pairIndex].comm2);
     }
   } else if (pickerTarget?.type === "skin") {
-    for (let i = 0; i < SKIN_COUNT; i++)
-      if (skinsData[i]) candidates.add(skinsData[i]);
+    for (let index = 0; index < SKIN_COUNT; index++)
+      if (skinsData[index]) candidates.add(skinsData[index]);
   }
 
   const kindForInfo =
@@ -216,11 +216,11 @@ function renderPickerItems(filter) {
     return info && info.name ? String(info.name) : "";
   };
 
-  let list = [...candidates].sort((a, b) => a.localeCompare(b));
-  if (q)
+  let list = [...candidates].sort((firstCandidate, secondCandidate) => firstCandidate.localeCompare(secondCandidate));
+  if (query)
     list = list.filter(
-      (n) =>
-        n.toLowerCase().includes(q) || fullNameOf(n).toLowerCase().includes(q),
+      (name) =>
+        name.toLowerCase().includes(query) || fullNameOf(name).toLowerCase().includes(query),
     );
 
   if (!list.length) {
@@ -235,7 +235,7 @@ function renderPickerItems(filter) {
   }
 
   pickerBody.innerHTML = "";
-  const tipKind =
+  const tooltipKind =
     pickerTarget?.type === "pair"
       ? "commander"
       : pickerTarget?.type === "skin"
@@ -246,9 +246,9 @@ function renderPickerItems(filter) {
     div.className =
       "eq-picker-item" + (name === pickerSelectedItem ? " selected" : "");
     div.dataset.tipCode = name;
-    div.dataset.tipKind = tipKind;
+    div.dataset.tipKind = tooltipKind;
     div.innerHTML = `
-      <img src="${iconPath(name, tipKind)}" alt="${escapeHtml(name)}" loading="lazy"
+      <img src="${iconPath(name, tooltipKind)}" alt="${escapeHtml(name)}" loading="lazy"
            onerror="this.style.display='none'">
       <span class="eq-picker-item-name">${escapeHtml(fullNameOf(name) || name)}</span>`;
     div.addEventListener("click", () => selectPickerItem(name));
