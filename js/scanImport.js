@@ -1,6 +1,6 @@
 const scanDateInput = document.getElementById("scan-date");
 const scanFileInput = document.getElementById("scan-file");
-const scanImportBtn = document.getElementById("scan-import-btn");
+const scanImportButton = document.getElementById("scan-import-btn");
 const scanProgress = document.getElementById("scan-progress");
 const scanStatus = document.getElementById("scan-status");
 const scanColumns = document.getElementById("scan-columns");
@@ -40,23 +40,23 @@ let scanRows = [];
 let latestScan = null;
 let scanImporting = false;
 
-const normalizeHeader = (h) => String(h ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+const normalizeHeader = (header) => String(header ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
 function matchScanColumns(headerRow) {
   const normalized = headerRow.map(normalizeHeader);
   const columns = {};
   const used = new Set();
   for (const field of SCAN_FIELDS) {
-    const idx = normalized.findIndex((h, i) => !used.has(i) && field.aliases.includes(h));
-    if (idx >= 0) {
-      columns[field.key] = idx;
-      used.add(idx);
+    const index = normalized.findIndex((header, candidateIndex) => !used.has(candidateIndex) && field.aliases.includes(header));
+    if (index >= 0) {
+      columns[field.key] = index;
+      used.add(index);
     }
   }
   return {
     columns,
-    missing: SCAN_FIELDS.filter((f) => columns[f.key] === undefined),
-    unused: headerRow.filter((h, i) => !used.has(i) && String(h ?? "").trim() !== ""),
+    missing: SCAN_FIELDS.filter((scanField) => columns[scanField.key] === undefined),
+    unused: headerRow.filter((header, index) => !used.has(index) && String(header ?? "").trim() !== ""),
   };
 }
 
@@ -82,10 +82,10 @@ function parseScanSheet(workbook) {
 }
 
 function describeScan(match, count) {
-  const found = SCAN_FIELDS.filter((f) => match.columns[f.key] !== undefined).map((f) => f.label);
+  const found = SCAN_FIELDS.filter((scanField) => match.columns[scanField.key] !== undefined).map((scanField) => scanField.label);
   const lines = [`${count.toLocaleString()} players found. Columns used: ${found.join(", ") || "none"}.`];
-  const missingRequired = match.missing.filter((f) => f.required).map((f) => f.label);
-  const missingOptional = match.missing.filter((f) => !f.required).map((f) => f.label);
+  const missingRequired = match.missing.filter((field) => field.required).map((field) => field.label);
+  const missingOptional = match.missing.filter((field) => !field.required).map((field) => field.label);
   if (missingRequired.length) lines.push(`Required columns missing: ${missingRequired.join(", ")}.`);
   if (missingOptional.length) lines.push(`Not in the file (saved as empty): ${missingOptional.join(", ")}.`);
   if (match.unused.length) lines.push(`Ignored columns: ${match.unused.join(", ")}.`);
@@ -93,7 +93,7 @@ function describeScan(match, count) {
 }
 
 function updateScanButton() {
-  scanImportBtn.disabled = !(
+  scanImportButton.disabled = !(
     importIsAdmin &&
     !scanImporting &&
     scanRows.length > 0 &&
@@ -118,13 +118,13 @@ function updateScanWarning() {
 
 async function showExistingScans() {
   try {
-    const scans = await sbRpc("scan_overview");
+    const scans = await supabaseRpc("scan_overview");
     latestScan = scans[0] || null;
     updateScanWarning();
     scanExisting.textContent = scans.length
       ? "Scans on the site: " +
         scans
-          .map((s, i) => `${s.date} (${s.rows} players)${i === 0 ? " — shown on the Player Card" : ""}`)
+          .map((scan, index) => `${scan.date} (${scan.rows} players)${index === 0 ? " — shown on the Player Card" : ""}`)
           .join("; ")
       : "No scans on the site yet.";
   } catch {
@@ -145,7 +145,7 @@ scanFileInput.addEventListener("change", async () => {
   try {
     setStatus(scanStatus, "Reading the file…");
     const { rows, match } = parseScanSheet(await readWorkbook(scanFileInput.files[0]));
-    const blocked = match.missing.some((f) => f.required);
+    const blocked = match.missing.some((field) => field.required);
     scanColumns.textContent = describeScan(match, rows.length);
     if (blocked || !rows.length) {
       setStatus(
@@ -160,9 +160,9 @@ scanFileInput.addEventListener("change", async () => {
     scanRows = rows;
     updateScanWarning();
     setStatus(scanStatus, "Ready to import.");
-  } catch (e) {
-    console.error("Scan file:", e);
-    setStatus(scanStatus, "Could not read the file: " + e.message, "err");
+  } catch (event) {
+    console.error("Scan file:", event);
+    setStatus(scanStatus, "Could not read the file: " + event.message, "err");
   }
   updateScanButton();
 });
@@ -180,10 +180,10 @@ async function runScanImport() {
   scanProgress.value = 0;
   try {
     let sent = 0;
-    for (let i = 0; i < scanRows.length; i += ROWS_PER_REQUEST) {
+    for (let index = 0; index < scanRows.length; index += ROWS_PER_REQUEST) {
       setStatus(scanStatus, `Importing… ${sent.toLocaleString()} / ${scanRows.length.toLocaleString()} players`);
-      const chunk = scanRows.slice(i, i + ROWS_PER_REQUEST);
-      await sbRpc("scan_import", { p_date: date, p_rows: chunk }, { auth: true });
+      const chunk = scanRows.slice(index, index + ROWS_PER_REQUEST);
+      await supabaseRpc("scan_import", { p_date: date, p_rows: chunk }, { auth: true });
       sent += chunk.length;
       scanProgress.value = Math.round((sent / scanRows.length) * 100);
     }
@@ -194,12 +194,12 @@ async function runScanImport() {
     );
     showToast("Scan imported.", "success");
     showExistingScans();
-  } catch (e) {
-    console.error("Scan import failed:", e);
+  } catch (event) {
+    console.error("Scan import failed:", event);
     scanProgress.value = 0;
-    setStatus(scanStatus, "Import failed: " + e.message + " (Running the import again replaces what was sent.)", "err");
-    if (/signed out|expired|JWT/i.test(e.message)) {
-      sbSignOut();
+    setStatus(scanStatus, "Import failed: " + event.message + " (Running the import again replaces what was sent.)", "err");
+    if (/signed out|expired|JWT/i.test(event.message)) {
+      supabaseSignOut();
       await refreshAuthUi();
     }
   } finally {
@@ -213,7 +213,7 @@ scanDateInput.addEventListener("input", () => {
   updateScanWarning();
   updateScanButton();
 });
-scanImportBtn.addEventListener("click", runScanImport);
+scanImportButton.addEventListener("click", runScanImport);
 document.addEventListener("import-auth", updateScanButton);
 setStatus(scanStatus, "Choose a scan file.");
 showExistingScans();
