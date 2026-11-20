@@ -1,4 +1,4 @@
-const kvkCtx = {
+const kvkContext = {
   kd: null,
   kvkId: null,
   kvkNumber: null,
@@ -7,110 +7,110 @@ const kvkCtx = {
   snapshotDates: [],
 };
 
-function listKvks(kd) {
-  return sbRpc("kvk_list", { p_kd: String(kd) });
+function listKvks(kingdomId) {
+  return supabaseRpc("kvk_list", { p_kd: String(kingdomId) });
 }
 
 async function loadKvkContext() {
-  const kd = '2247';
-  if (!kd) throw new Error("Invalid or missing kingdom ID");
+  const kingdomId = '2247';
+  if (!kingdomId) throw new Error("Invalid or missing kingdom ID");
 
   const kvkNumber = getKvkNumberFromURL();
-  const ctx = await sbRpc("kvk_context", {
-    p_kd: kd,
+  const context = await supabaseRpc("kvk_context", {
+    p_kd: kingdomId,
     p_kvk: kvkNumber ? Number(kvkNumber) : null,
   });
-  if (!ctx) throw new Error("No KvK found in DB for this kingdom/KvK selection");
+  if (!context) throw new Error("No KvK found in DB for this kingdom/KvK selection");
 
-  const last = ctx.snapshots.find((s) => s.isLast === true);
+  const last = context.snapshots.find((snapshot) => snapshot.isLast === true);
   if (!last) throw new Error("This KvK has no final snapshot yet");
 
-  Object.assign(kvkCtx, {
-    kd,
-    kvkId: ctx.kvk.id,
-    kvkNumber: ctx.kvk.kvkNumber,
-    kvkName: ctx.kvk.name,
+  Object.assign(kvkContext, {
+    kd: kingdomId,
+    kvkId: context.kvk.id,
+    kvkNumber: context.kvk.kvkNumber,
+    kvkName: context.kvk.name,
     lastSnapshotId: last.id,
-    snapshotDates: ctx.snapshots.map((s) => s.date),
+    snapshotDates: context.snapshots.map((snapshot) => snapshot.date),
   });
-  return kvkCtx;
+  return kvkContext;
 }
 
 function loadDashboardRows() {
-  return sbRpc("dashboard_rows", {
-    p_kd: kvkCtx.kd,
-    p_snapshot_id: kvkCtx.lastSnapshotId,
+  return supabaseRpc("dashboard_rows", {
+    p_kd: kvkContext.kd,
+    p_snapshot_id: kvkContext.lastSnapshotId,
   });
 }
 
-function loadGovernorSeries(govId) {
-  return sbRpc("governor_series", {
-    p_gov: Number(govId),
-    p_kvk_id: kvkCtx.kvkId,
+function loadGovernorSeries(governorId) {
+  return supabaseRpc("governor_series", {
+    p_gov: Number(governorId),
+    p_kvk_id: kvkContext.kvkId,
   });
 }
 
 const playerBundles = new Map();
 
-async function loadPlayerBundle(govId, kd = null) {
-  const id = normalizeNumericId(govId);
+async function loadPlayerBundle(governorId, kingdomId = null) {
+  const id = normalizeNumericId(governorId);
   if (!id) return null;
-  const bundle = await sbRpc("player_card", {
+  const bundle = await supabaseRpc("player_card", {
     p_gov: Number(id),
-    p_kd: kd,
+    p_kd: kingdomId,
     p_first_sums: FIRST_KVK_WITH_SUMS,
   });
   playerBundles.set(id, bundle);
   return bundle;
 }
 
-function bundleOf(govId) {
-  return playerBundles.get(String(normalizeNumericId(govId))) ?? null;
+function getPlayerBundle(governorId) {
+  return playerBundles.get(String(normalizeNumericId(governorId))) ?? null;
 }
 
-function detectKingdom(govId) {
-  return bundleOf(govId)?.kd ?? null;
+function detectKingdom(governorId) {
+  return getPlayerBundle(governorId)?.kd ?? null;
 }
-function loadGovernorInfo(govId) {
-  return bundleOf(govId)?.info ?? null;
+function loadGovernorInfo(governorId) {
+  return getPlayerBundle(governorId)?.info ?? null;
 }
-function getAccType(govId) {
-  return bundleOf(govId)?.accType ?? null;
+function getAccountType(governorId) {
+  return getPlayerBundle(governorId)?.accType ?? null;
 }
-function loadCH(govId) {
-  return bundleOf(govId)?.ch ?? null;
+function loadCityHallLevel(governorId) {
+  return getPlayerBundle(governorId)?.ch ?? null;
 }
-function resolveFarmMainId(govId) {
-  const b = bundleOf(govId);
-  return b ? String(b.mainId) : null;
+function resolveFarmMainId(governorId) {
+  const bundle = getPlayerBundle(governorId);
+  return bundle ? String(bundle.mainId) : null;
 }
-function loadGovernorFarms(govId) {
-  return bundleOf(govId)?.farms ?? [];
+function loadGovernorFarms(governorId) {
+  return getPlayerBundle(governorId)?.farms ?? [];
 }
-function getGovernorFarmIds(govId) {
-  return loadGovernorFarms(govId).map((farm) => farm.id);
+function getGovernorFarmIds(governorId) {
+  return loadGovernorFarms(governorId).map((farm) => farm.id);
 }
-function loadFarmOwner(govId) {
-  return bundleOf(govId)?.owner ?? null;
+function loadFarmOwner(governorId) {
+  return getPlayerBundle(governorId)?.owner ?? null;
 }
-function loadGovHistory(govId) {
-  return bundleOf(govId)?.history ?? [];
+function loadGovernorHistory(governorId) {
+  return getPlayerBundle(governorId)?.history ?? [];
 }
-function loadFarmKvKStats(govId) {
-  return bundleOf(govId)?.farmKvK ?? [];
+function loadFarmKvKStats(governorId) {
+  return getPlayerBundle(governorId)?.farmKvK ?? [];
 }
-function loadGovernorEquipment(govId) {
-  return bundleOf(govId)?.equipment ?? null;
+function loadGovernorEquipment(governorId) {
+  return getPlayerBundle(governorId)?.equipment ?? null;
 }
-function loadGovernorArmaments(govId) {
-  return bundleOf(govId)?.armaments ?? null;
+function loadGovernorArmaments(governorId) {
+  return getPlayerBundle(governorId)?.armaments ?? null;
 }
-function loadGovernorSkins(govId) {
-  return bundleOf(govId)?.skins ?? null;
+function loadGovernorSkins(governorId) {
+  return getPlayerBundle(governorId)?.skins ?? null;
 }
-function loadPlayerProfile(govId) {
-  return bundleOf(govId)?.profile ?? null;
+function loadPlayerProfile(governorId) {
+  return getPlayerBundle(governorId)?.profile ?? null;
 }
-function loadScanStats(govId) {
-  return bundleOf(govId)?.scan ?? null;
+function loadScanStats(governorId) {
+  return getPlayerBundle(governorId)?.scan ?? null;
 }
