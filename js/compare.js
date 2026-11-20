@@ -1,5 +1,5 @@
 let comparedResults = { matching: [], nonMatching: [] };
-const progressEl = document.getElementById("progressBar");
+const progressElement = document.getElementById("progressBar");
 const resultsInfo = document.getElementById("compare-results-info");
 
 function setExportEnabled(enabled) {
@@ -14,18 +14,18 @@ async function readFile(file) {
   const name = file.name.toLowerCase();
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = (event) => {
       try {
         if (name.endsWith(".xlsx") || name.endsWith(".csv")) {
-          const wb = XLSX.read(e.target.result, { type: "array" });
+          const workbook = XLSX.read(event.target.result, { type: "array" });
 
-          const first = wb.SheetNames[0];
-          resolve(XLSX.utils.sheet_to_json(wb.Sheets[first], { defval: null }));
+          const first = workbook.SheetNames[0];
+          resolve(XLSX.utils.sheet_to_json(workbook.Sheets[first], { defval: null }));
         } else if (name.endsWith(".json")) {
-          resolve(JSON.parse(e.target.result));
+          resolve(JSON.parse(event.target.result));
         } else reject("Unsupported file format");
-      } catch (err) {
-        reject(err);
+      } catch (error) {
+        reject(error);
       }
     };
     if (name.endsWith(".xlsx") || name.endsWith(".csv"))
@@ -37,26 +37,26 @@ async function readFile(file) {
 function compareRows(row1, row2, prefix1 = "File1_", prefix2 = "File2_") {
   const compared = {};
   if (row1)
-    for (const [k, v] of Object.entries(row1)) compared[prefix1 + k] = v;
+    for (const [key, value] of Object.entries(row1)) compared[prefix1 + key] = value;
   if (row2)
-    for (const [k, v] of Object.entries(row2)) compared[prefix2 + k] = v;
+    for (const [key, value] of Object.entries(row2)) compared[prefix2 + key] = value;
   return compared;
 }
 
 function hasDuplicateKeys(data, key) {
   const seen = new Set();
-  for (const r of data) {
-    const k = r[key] == null ? r[key] : String(r[key]).trim();
-    if (seen.has(k)) return true;
-    seen.add(k);
+  for (const row of data) {
+    const keyValue = row[key] == null ? row[key] : String(row[key]).trim();
+    if (seen.has(keyValue)) return true;
+    seen.add(keyValue);
   }
   return false;
 }
 
-function compareData(df1, df2, keyColumn, option) {
-  const normalizeKey = (v) =>
-    v === null || v === undefined ? v : String(v).trim();
-  if (hasDuplicateKeys(df1, keyColumn) || hasDuplicateKeys(df2, keyColumn)) {
+function compareData(firstRows, secondRows, keyColumn, option) {
+  const normalizeKey = (value) =>
+    value === null || value === undefined ? value : String(value).trim();
+  if (hasDuplicateKeys(firstRows, keyColumn) || hasDuplicateKeys(secondRows, keyColumn)) {
     console.warn(
       "Duplicate key values detected; later rows overwrite earlier ones.",
     );
@@ -64,26 +64,26 @@ function compareData(df1, df2, keyColumn, option) {
       "Duplicate key values found: later rows overwrite earlier ones, so some rows are missing from the result.",
     );
   }
-  const map1 = new Map(df1.map((r) => [normalizeKey(r[keyColumn]), r]));
-  const map2 = new Map(df2.map((r) => [normalizeKey(r[keyColumn]), r]));
+  const map1 = new Map(firstRows.map((row) => [normalizeKey(row[keyColumn]), row]));
+  const map2 = new Map(secondRows.map((row) => [normalizeKey(row[keyColumn]), row]));
   const allKeys = new Set([...map1.keys(), ...map2.keys()]);
 
   const matching = [];
   const nonMatching = [];
 
   for (const key of allKeys) {
-    const in1 = map1.has(key);
-    const in2 = map2.has(key);
+    const existsInFirst = map1.has(key);
+    const existsInSecond = map2.has(key);
 
-    if (in1 && in2) {
+    if (existsInFirst && existsInSecond) {
       matching.push(compareRows(map1.get(key), map2.get(key)));
     } else if (
       option === "both" ||
-      (option === "pierwszy" && in1) ||
-      (option === "drugi" && in2)
+      (option === "pierwszy" && existsInFirst) ||
+      (option === "drugi" && existsInSecond)
     ) {
       nonMatching.push(
-        compareRows(in1 ? map1.get(key) : null, in2 ? map2.get(key) : null),
+        compareRows(existsInFirst ? map1.get(key) : null, existsInSecond ? map2.get(key) : null),
       );
     }
   }
@@ -91,17 +91,17 @@ function compareData(df1, df2, keyColumn, option) {
 }
 
 function renderCompareTable(containerId, label, rows, emptyText) {
-  const el = document.getElementById(containerId);
-  el.style.display = "block";
+  const element = document.getElementById(containerId);
+  element.style.display = "block";
   if (!rows.length) {
-    destroySiteTable(el);
-    el.innerHTML = `<div class="muted">${emptyText}</div>`;
+    destroySiteTable(element);
+    element.innerHTML = `<div class="muted">${emptyText}</div>`;
     return;
   }
   const { keys, data } = objectsToRows(rows);
-  createSiteTable(el, {
+  createSiteTable(element, {
     title: `${label} (${rows.length.toLocaleString()} rows)`,
-    columns: keys.map((k) => ({ title: k })),
+    columns: keys.map((key) => ({ title: key })),
     data,
   });
 }
@@ -120,41 +120,41 @@ document.getElementById("compareBtn").addEventListener("click", async () => {
   setExportEnabled(false);
   const file1 = document.getElementById("file1").files[0];
   const file2 = document.getElementById("file2").files[0];
-  const keyCol = document.getElementById("keyColumn").value.trim();
+  const keyColumn = document.getElementById("keyColumn").value.trim();
   const option = document.getElementById("compareOption").value;
-  if (!file1 || !file2 || !keyCol)
+  if (!file1 || !file2 || !keyColumn)
     return showToast("Please select both files and a key column.");
   if (!/\.xlsx$/i.test(file1.name) || !/\.xlsx$/i.test(file2.name)) {
     return showToast("Please select .xlsx files only.");
   }
 
-  progressEl.value = 5;
+  progressElement.value = 5;
   resultsInfo.textContent = "Reading files...";
 
   try {
-    const df1 = await readFile(file1);
-    progressEl.value = 30;
-    const df2 = await readFile(file2);
-    progressEl.value = 60;
-    if (!df1.length || !df2.length) {
+    const firstRows = await readFile(file1);
+    progressElement.value = 30;
+    const secondRows = await readFile(file2);
+    progressElement.value = 60;
+    if (!firstRows.length || !secondRows.length) {
       showToast("One of the files is empty.");
       return;
     }
 
-    if (!(keyCol in df1[0]) || !(keyCol in df2[0])) {
-      showToast(`Key column "${keyCol}" not found in both files.`);
+    if (!(keyColumn in firstRows[0]) || !(keyColumn in secondRows[0])) {
+      showToast(`Key column "${keyColumn}" not found in both files.`);
       return;
     }
-    const { matching, nonMatching } = compareData(df1, df2, keyCol, option);
+    const { matching, nonMatching } = compareData(firstRows, secondRows, keyColumn, option);
     comparedResults = { matching, nonMatching };
     renderResultsGrids(matching, nonMatching);
-    progressEl.value = 100;
+    progressElement.value = 100;
     resultsInfo.textContent = `Comparison complete: ${matching.length} matching, ${nonMatching.length} non-matching rows.`;
     setExportEnabled(matching.length > 0 || nonMatching.length > 0);
-  } catch (err) {
-    console.error(err);
-    showToast("Error: " + err);
-    progressEl.value = 0;
+  } catch (error) {
+    console.error(error);
+    showToast("Error: " + error);
+    progressElement.value = 0;
     resultsInfo.textContent = "Comparison failed.";
   }
 });
