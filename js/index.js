@@ -29,12 +29,12 @@ function showToast(message, type = "info", duration = 5000) {
   text.className = "toast-message";
   text.textContent = message;
 
-  const closeBtn = document.createElement("button");
-  closeBtn.className = "toast-close";
-  closeBtn.setAttribute("aria-label", "Dismiss");
-  closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+  const closeButton = document.createElement("button");
+  closeButton.className = "toast-close";
+  closeButton.setAttribute("aria-label", "Dismiss");
+  closeButton.innerHTML = '<i class="fa-solid fa-xmark"></i>';
 
-  toast.append(icon, text, closeBtn);
+  toast.append(icon, text, closeButton);
   container.appendChild(toast);
 
   requestAnimationFrame(() => toast.classList.add("show"));
@@ -47,31 +47,31 @@ function showToast(message, type = "info", duration = 5000) {
     });
   };
 
-  closeBtn.addEventListener("click", remove);
+  closeButton.addEventListener("click", remove);
   if (duration > 0) setTimeout(remove, duration);
 }
 
-function selectKingdom(kd) {
-  window.location.href = "selectkvk.html?kd=" + kd;
+function selectKingdom(kingdomId) {
+  window.location.href = "selectkvk.html?kd=" + kingdomId;
 }
 
 const hamburger = document.getElementById("hamburger");
-const navLinks = document.getElementById("nav-links");
+const navigationLinks = document.getElementById("nav-links");
 hamburger.addEventListener("click", () => {
-  navLinks.classList.toggle("show");
+  navigationLinks.classList.toggle("show");
   hamburger.classList.toggle("open");
 });
 
-document.addEventListener("click", (e) => {
-  if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
-    navLinks.classList.remove("show");
+document.addEventListener("click", (event) => {
+  if (!hamburger.contains(event.target) && !navigationLinks.contains(event.target)) {
+    navigationLinks.classList.remove("show");
     hamburger.classList.remove("open");
   }
 });
 
-navLinks.querySelectorAll("a").forEach((link) => {
+navigationLinks.querySelectorAll("a").forEach((link) => {
   link.addEventListener("click", () => {
-    navLinks.classList.remove("show");
+    navigationLinks.classList.remove("show");
     hamburger.classList.remove("open");
   });
 });
