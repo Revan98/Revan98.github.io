@@ -1,9 +1,3 @@
-/* ==========================================================================
-   govModal.js — the governor modal: chart, statistics (history, farms) and
-   the tab/collapsible plumbing. Equipment tab lives in equipment.js.
-   Depends on: common.js, queries.js, govCards.js, equipView.js, Chart.js.
-   ========================================================================== */
-
 let inlineChart = null;
 
 const CHART_STYLES = {
@@ -27,56 +21,69 @@ function formatSnapshotDate(snapshotDate) {
   if (/^\d{2}_\d{2}_\d{4}$/.test(snapshotDate)) {
     return snapshotDate.replaceAll("_", ".");
   }
-
   return snapshotDate;
 }
 
 const CHART_SERIES = [
-  { key: "kpDiff", label: "KP Diff", secondary: false },
-  { key: "powerDiff", label: "Power Diff", secondary: true },
-  { key: "t4Diff", label: "T4 Diff", secondary: true },
-  { key: "t5Diff", label: "T5 Diff", secondary: true },
-  { key: "deadsDiff", label: "Deads Diff", secondary: true },
+  { key: "kpDiff", label: "KP Diff", color: "#dc3545" },
+  { key: "powerDiff", label: "Power Diff", color: "#007bff" },
+  { key: "t4Diff", label: "T4 Diff", color: "#28a745" },
+  { key: "t5Diff", label: "T5 Diff", color: "#ffc107" },
+  { key: "deadsDiff", label: "Deads Diff", color: "#6f42c1" },
 ];
-const CHART_COLORS = ["#dc3545", "#007bff", "#28a745", "#ffc107", "#6f42c1"];
 
-function buildChartDatasets(series) {
-  return CHART_SERIES.map((s, i) => ({
-    label: s.label,
-    data: series.map((row) => Number(row[s.key] || 0)),
-    tension: 0.25,
-    borderColor: CHART_COLORS[i],
-    backgroundColor: CHART_COLORS[i] + "33",
-    pointRadius: 3,
-    yAxisID: s.secondary ? "ySecondary" : "y",
-  }));
+let chartSeries = [];
+let activeChartKey = CHART_SERIES[0].key;
+
+const getChartStat = (key) =>
+  CHART_SERIES.find((seriesItem) => seriesItem.key === key) ?? CHART_SERIES[0];
+
+function chartStatData(stat) {
+  return chartSeries.map((row) => Number(row[stat.key] || 0));
 }
 
-function createChart(ctx, labels, datasets) {
-  inlineChart = new Chart(ctx, {
+function renderChartButtons() {
+  return CHART_SERIES.map(
+    (seriesEntry) =>
+      `<button type="button" class="chart-stat-btn${seriesEntry.key === activeChartKey ? " active" : ""}" ` +
+      `data-key="${seriesEntry.key}" aria-pressed="${seriesEntry.key === activeChartKey}" ` +
+      `onclick="selectChartStat('${seriesEntry.key}')">${seriesEntry.label}</button>`,
+  ).join("");
+}
+
+function createChart(context, labels) {
+  const stat = getChartStat(activeChartKey);
+  inlineChart = new Chart(context, {
     type: "line",
-    data: { labels, datasets },
+    data: {
+      labels,
+      datasets: [
+        {
+          label: stat.label,
+          data: chartStatData(stat),
+          tension: 0.25,
+          pointRadius: 3,
+          borderColor: stat.color,
+          backgroundColor: stat.color + "33",
+		  fill: "origin",
+        },
+      ],
+    },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: "index", intersect: false },
       plugins: {
-        title: {
-          display: false,
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (item) => `${item.dataset.label}: ${formatNumber(item.parsed.y)}`,
+          },
         },
-        legend: {},
       },
       scales: {
         x: {},
-        y: {
-          type: "linear",
-          position: "left",
-        },
-        ySecondary: {
-          type: "linear",
-          position: "right",
-          grid: { drawOnChartArea: false },
-        },
+        y: { ticks: { callback: (value) => formatCompact(value) } },
       },
     },
   });
@@ -88,25 +95,19 @@ function applyChartTheme() {
   if (!inlineChart) return;
 
   const styles = CHART_STYLES[getCurrentTheme()];
-  inlineChart.data.datasets.forEach((ds) => {
-    ds.pointBackgroundColor = ds.borderColor;
-    ds.pointBorderColor = styles.pointBorder;
+  inlineChart.data.datasets.forEach((dataset) => {
+    dataset.pointBackgroundColor = dataset.borderColor;
+    dataset.pointBorderColor = styles.pointBorder;
   });
 
-  inlineChart.options.plugins.legend.labels.color = styles.text;
   inlineChart.options.plugins.tooltip.backgroundColor = styles.tooltipBg;
   inlineChart.options.plugins.tooltip.titleColor = styles.text;
   inlineChart.options.plugins.tooltip.bodyColor = styles.text;
 
-  const axes = ["x", "y", "ySecondary"];
-  axes.forEach((axis) => {
-    if (inlineChart.options.scales[axis]) {
-      inlineChart.options.scales[axis].ticks.color = styles.text;
-      inlineChart.options.scales[axis].grid.color = styles.grid;
-      if (inlineChart.options.scales[axis].title) {
-        inlineChart.options.scales[axis].title.color = styles.text;
-      }
-    }
+  ["x", "y"].forEach((axis) => {
+    const scale = inlineChart.options.scales[axis];
+    scale.ticks.color = styles.text;
+    scale.grid.color = styles.grid;
   });
 
   inlineChart.update();
@@ -114,19 +115,40 @@ function applyChartTheme() {
 
 window.addEventListener("themechange", applyChartTheme);
 
-function updateChart(governorId) {
+function selectChartStat(key) {
+  activeChartKey = getChartStat(key).key;
+  document.querySelectorAll(".chart-stat-btn").forEach((button) => {
+    const isActive = button.dataset.key === activeChartKey;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", isActive);
+  });
+  if (!inlineChart) return;
+
+  const stat = getChartStat(activeChartKey);
+  const dataset = inlineChart.data.datasets[0];
+  dataset.label = stat.label;
+  dataset.data = chartStatData(stat);
+  dataset.borderColor = stat.color;
+  dataset.backgroundColor = stat.color + "33";
+  applyChartTheme();
+}
+
+function destroyChart() {
+  inlineChart?.destroy();
+  inlineChart = null;
+}
+
+async function updateChart(governorId) {
   const canvas = document.querySelector("#modal-chart");
   if (!canvas) return;
 
-  const series = loadGovernorSeries(governorId);
-  if (inlineChart) {
-    inlineChart.destroy();
-    inlineChart = null;
-  }
+  const [series] = await Promise.all([loadGovernorSeries(governorId), loadVendor("chart")]);
+  if (!document.body.contains(canvas)) return;
+  destroyChart();
+  chartSeries = series;
   createChart(
     canvas.getContext("2d"),
     series.map((row) => formatSnapshotDate(row.date)),
-    buildChartDatasets(series),
   );
 }
 
@@ -153,9 +175,9 @@ function renderCollapsibleSection(title, content, defaultOpen = false) {
   `;
 }
 
-function switchGovModalTab(tab) {
-  document.querySelectorAll(".gov-modal-tab").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.tab === tab);
+function switchGovernorModalTab(tab) {
+  document.querySelectorAll(".gov-modal-tab").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === tab);
   });
   document.querySelectorAll(".gov-modal-tab-pane").forEach((pane) => {
     pane.style.display = pane.id === `govTabPane-${tab}` ? "block" : "none";
@@ -163,8 +185,8 @@ function switchGovModalTab(tab) {
 }
 
 function expandAllSections() {
-  document.querySelectorAll(".collapsible-content").forEach((el) => {
-    el.style.display = "block";
+  document.querySelectorAll(".collapsible-content").forEach((element) => {
+    element.style.display = "block";
   });
 
   document.querySelectorAll(".collapsible-icon").forEach((icon) => {
@@ -173,8 +195,8 @@ function expandAllSections() {
 }
 
 function collapseAllSections() {
-  document.querySelectorAll(".collapsible-content").forEach((el) => {
-    el.style.display = "none";
+  document.querySelectorAll(".collapsible-content").forEach((element) => {
+    element.style.display = "none";
   });
 
   document.querySelectorAll(".collapsible-icon").forEach((icon) => {
@@ -183,15 +205,15 @@ function collapseAllSections() {
 }
 
 function toggleSection(id) {
-  const el = document.getElementById(id);
-  const header = el.previousElementSibling;
+  const element = document.getElementById(id);
+  const header = element.previousElementSibling;
   const icon = header.querySelector(".collapsible-icon");
 
-  if (el.style.display === "none") {
-    el.style.display = "block";
+  if (element.style.display === "none") {
+    element.style.display = "block";
     icon.textContent = "−";
   } else {
-    el.style.display = "none";
+    element.style.display = "none";
     icon.textContent = "+";
   }
 }
@@ -220,7 +242,7 @@ function renderFarmKvKBoxes(rows) {
     return `<div class="gov-modal-empty">No KvK data found for farm accounts.</div>`;
 
   const kvkBlocks = renderFarmKvKGroups(rows)
-    .map((g) => renderCollapsibleSection(g.kvk, g.html, false))
+    .map((group) => renderCollapsibleSection(group.kvk, group.html, false))
     .join("");
 
   return renderCollapsibleSection(
@@ -230,16 +252,26 @@ function renderFarmKvKBoxes(rows) {
   );
 }
 
-function openGovModal(govId, govName) {
+let governorModalToken = 0;
+
+async function openGovernorModal(governorId, governorName) {
+  const token = ++governorModalToken;
   const overlay = document.getElementById("govModalOverlay");
   const body = document.getElementById("govModalBody");
   const subtitle = document.getElementById("govModalSubtitle");
-  const vipEl = document.getElementById("govModalVip");
-  const safeGovId = normalizeNumericId(govId);
+  const vipElement = document.getElementById("govModalVip");
+  const safeGovernorId = normalizeNumericId(governorId);
 
-  if (vipEl) vipEl.innerHTML = "";
+  if (vipElement) vipElement.innerHTML = "";
 
-  if (!safeGovId) {
+  const editLink = document.getElementById("edit-eq");
+  if (editLink) {
+    editLink.href = safeGovernorId
+      ? `equipment.html?govId=${encodeURIComponent(safeGovernorId)}`
+      : "equipment.html";
+  }
+
+  if (!safeGovernorId) {
     subtitle.textContent = "";
     body.innerHTML = `<div class="gov-modal-empty">Invalid governor ID.</div>`;
     overlay.classList.add("open");
@@ -247,33 +279,35 @@ function openGovModal(govId, govName) {
     return;
   }
 
-  govId = safeGovId;
+  governorId = safeGovernorId;
 
-  subtitle.textContent = govName ? `${govName} (${govId})` : `ID: ${govId}`;
+  subtitle.textContent = governorName ? `${governorName} (${governorId})` : `ID: ${governorId}`;
   body.innerHTML = `<div class="gov-modal-loading"><div class="spinner"></div><span>Loading…</span></div>`;
   overlay.classList.add("open");
   document.body.style.overflow = "hidden";
 
-  setTimeout(() => {
-    const safeRender = (label, fn) => {
+  {
+    const safeRender = (label, renderCallback) => {
       try {
-        return fn();
-      } catch (e) {
-        console.error("[modal:" + label + "]", e);
+        return renderCallback();
+      } catch (event) {
+        console.error("[modal:" + label + "]", event);
         return "";
       }
     };
     try {
-      const history = loadGovHistory(govId);
-      const farmOwner = loadFarmOwner(govId);
-      const farms = loadGovernorFarms(govId);
-      const farmIds = farms.map((f) => f.id);
-      const farmKvK = loadFarmKvKStats(farmIds);
-      const profile = loadPlayerProfile(govId);
-      if (vipEl)
-        vipEl.innerHTML = renderVipBadge(profile ? profile.vip_level : "");
+      await Promise.all([loadPlayerBundle(governorId, kvkContext.kd), loadEquipmentReferenceData()]);
+      if (token !== governorModalToken) return;
+      const history = loadGovernorHistory(governorId);
+      const farmOwner = loadFarmOwner(governorId);
+      const farms = loadGovernorFarms(governorId);
+      const farmKvK = loadFarmKvKStats(governorId);
+      const profile = loadPlayerProfile(governorId);
+      if (vipElement)
+        vipElement.innerHTML = renderVipBadge(profile ? profile.vip_level : "");
       const chartSection = `
 	    <div class="modal-chart-section">
+	      <div class="chart-stat-buttons" role="group" aria-label="Chart stat">${renderChartButtons()}</div>
 	      <div class="modal-chart" style="height:400px;">
 	        <canvas id="modal-chart"></canvas>
 	      </div>
@@ -281,9 +315,9 @@ function openGovModal(govId, govName) {
 	  `;
       body.innerHTML =
         '<div class="gov-modal-tabs">' +
-        '  <button type="button" class="gov-modal-tab active" data-tab="chart" onclick="switchGovModalTab(\'chart\')">Chart</button>' +
-        '  <button type="button" class="gov-modal-tab" data-tab="stats" onclick="switchGovModalTab(\'stats\')">Statistics</button>' +
-        '  <button type="button" class="gov-modal-tab" data-tab="equipment" onclick="switchGovModalTab(\'equipment\')">Equipment</button>' +
+        '  <button type="button" class="gov-modal-tab active" data-tab="chart" onclick="switchGovernorModalTab(\'chart\')">Chart</button>' +
+        '  <button type="button" class="gov-modal-tab" data-tab="stats" onclick="switchGovernorModalTab(\'stats\')">Statistics</button>' +
+        '  <button type="button" class="gov-modal-tab" data-tab="equipment" onclick="switchGovernorModalTab(\'equipment\')">Equipment</button>' +
         "</div>" +
         '<div class="gov-modal-tab-pane" id="govTabPane-chart">' +
         chartSection +
@@ -305,31 +339,35 @@ function openGovModal(govId, govName) {
         safeRender("farmKvK", () => renderFarmKvKBoxes(farmKvK)) +
         "</div>" +
         '<div class="gov-modal-tab-pane" id="govTabPane-equipment" style="display:none;">' +
-        safeRender("equipment", () => renderEquipmentSection(govId)) +
+        safeRender("equipment", () => renderEquipmentSection(governorId)) +
         "</div>";
-      setTimeout(() => {
-        updateChart(govId);
-      }, 0);
-    } catch (err) {
-      console.error("openGovModal:", err);
-      body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(err))}</div>`;
+      updateChart(governorId).catch((error) => {
+        console.error("updateChart:", error);
+        const canvas = document.querySelector("#modal-chart");
+        if (canvas?.parentElement)
+          canvas.parentElement.innerHTML = `<div class="gov-modal-empty">Could not load the chart.</div>`;
+      });
+    } catch (error) {
+      console.error("openGovernorModal:", error);
+      body.innerHTML = `<div class="gov-modal-empty">Error: ${escapeHtml(String(error))}</div>`;
     }
-  }, 50);
+  }
 }
 
-function closeGovModal() {
+function closeGovernorModal() {
+  destroyChart();
   document.getElementById("govModalOverlay").classList.remove("open");
   document.body.style.overflow = "";
 }
 
 document
   .getElementById("govModalClose")
-  .addEventListener("click", closeGovModal);
+  .addEventListener("click", closeGovernorModal);
 
-document.getElementById("govModalOverlay").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) closeGovModal();
+document.getElementById("govModalOverlay").addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) closeGovernorModal();
 });
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeGovModal();
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeGovernorModal();
 });

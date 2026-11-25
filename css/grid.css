@@ -1,0 +1,97 @@
+.shared-style-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  background: var(--table-bg);
+  border: 2px solid var(--table-border);
+  border-radius: 8px;
+  color: var(--text-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+  flex-shrink: 0;
+}
+.shared-style-btn:hover {
+  background: var(--row-hover-bg);
+  border-color: var(--chart-line);
+}
+.grid-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.grid-toolbar .grid-search {
+  margin-left: auto;
+}
+.grid-toolbar-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.grid-toolbar-buttons .shared-style-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.grid-wrap {
+  color: var(--text-color);
+}
+.grid-wrap > .grid-search {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 8px;
+}
+.grid-search input {
+  width: 100%;
+  min-width: 200px;
+  max-width: 280px;
+  margin: 0;
+  padding: 9px 12px 9px 28px;
+  border-radius: 8px;
+  border: 2px solid var(--table-border);
+  color: var(--text-color);
+  background: var(--table-bg) no-repeat 8px center / 16px 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E");
+}
+.grid-title {
+  font-weight: 600;
+  margin: 14px 0 8px;
+  color: var(--text-color);
+}
+.grid-host {
+  width: 100%;
+}
+.grid-wrap .ag-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+}
+.grid-wrap .ag-header-cell-label {
+  justify-content: center;
+}
+.grid-wrap .grid-empty {
+  color: var(--text-color);
+  opacity: 0.7;
+}
+.grid-wrap .diff-positive,
+.grid-wrap .diff-negative {
+  font-weight: 600;
+}
+.grid-wrap .ag-layout-auto-height .ag-grid-scrolling-rows {
+  min-height: 0;
+}
+.grid-wrap .is-empty .ag-grid-scrolling-rows {
+  min-height: 70px;
+}
+.ag-tooltip {
+  max-width: 320px;
+  white-space: pre-line;
+  text-align: center;
+}

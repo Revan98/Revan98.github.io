@@ -1,10 +1,4 @@
-/* ==========================================================================
-   equipPicker.js — equipment editor: icon manifests and the item / commander / skin picker.
-   Load it before equipment.js (see equipment.html). Declarations only:
-   everything here is called later from equipment.js handlers.
-   ========================================================================== */
-
-const EQUIP_PREFIX_MAP = {
+const EQUIPMENT_PREFIX_MAP = {
   helm: "h",
   chest: "c",
   weapon: "w",
@@ -15,143 +9,121 @@ const EQUIP_PREFIX_MAP = {
   accessory_sec: "a",
 };
 
-const EQUIP_ICON_RE = /^[hcwglba]\d/i;
+const EQUIPMENT_ICON_REGEX = /^[hcwglba]\d/i;
 
-function isEquipIcon(name) {
-  return EQUIP_ICON_RE.test(name);
+function isEquipmentIcon(name) {
+  return EQUIPMENT_ICON_REGEX.test(name);
 }
 
 function iconsForSlot(slotKey) {
-  const prefix = EQUIP_PREFIX_MAP[slotKey];
+  const prefix = EQUIPMENT_PREFIX_MAP[slotKey];
   if (!prefix) return allIconNames;
-  return allIconNames.filter((n) => n.charAt(0).toLowerCase() === prefix);
+  return allIconNames.filter((allIconName) => allIconName.charAt(0).toLowerCase() === prefix);
 }
 
 function loadIconManifest() {
-  if (allIconNames.length && allCommNames.length) return;
+  if (allIconNames.length && allCommanderNames.length) return;
 
-  const itemKeys = Object.keys(refData.items || {});
-  const commKeys = Object.keys(refData.commanders || {});
+  const itemKeys = Object.keys(referenceData.items || {});
+  const commanderKeys = Object.keys(referenceData.commanders || {});
 
-  if (itemKeys.length || commKeys.length) {
-    allIconNames = itemKeys.filter((n) => isEquipIcon(n)).sort();
-    allCommNames = commKeys.sort();
+  if (itemKeys.length || commanderKeys.length) {
+    allIconNames = itemKeys.filter((itemKey) => isEquipmentIcon(itemKey)).sort();
+    allCommanderNames = commanderKeys.sort();
     return;
   }
 
-  if (!db) return;
-  _scrapeIconsFromDb();
 }
 
-function loadCommManifest() {
+function loadCommanderManifest() {
   loadIconManifest();
 }
 
 function loadSkinManifest() {
   if (allSkinNames.length) return;
 
-  const skinKeys = Object.keys(refData.skins || {});
+  const skinKeys = Object.keys(referenceData.skins || {});
   if (skinKeys.length) {
     allSkinNames = skinKeys.sort();
     return;
   }
 
-  if (!db) return;
+}
+
+async function scrapeSkinNamesFromDatabase() {
   try {
-    const t = db.exec(
-      `SELECT name FROM sqlite_master WHERE type='table' AND name='skins'`,
-    );
-    if (!t.length || !t[0].values.length) return;
-    const cols = db.exec(`PRAGMA table_info(skins)`);
-    if (!cols.length) return;
-    const skinCols = cols[0].values
-      .map((r) => r[1])
-      .filter((c) => c.startsWith("skin"));
-    if (!skinCols.length) return;
-    const res = db.exec(`SELECT ${skinCols.join(",")} FROM skins LIMIT 500`);
     const names = new Set();
-    if (res.length) {
-      res[0].values.forEach((row) =>
-        row.forEach((v) => {
-          if (!v || ["none", "0"].includes(String(v).toLowerCase())) return;
-          names.add(String(v).trim());
-        }),
-      );
+    for (const row of await supabaseSelectAll("skins", "select=*")) {
+      for (const [column, value] of Object.entries(row)) {
+        if (!/^skin\d+$/.test(column) || !value || ["none", "0"].includes(String(value).toLowerCase())) continue;
+        names.add(String(value).trim());
+      }
     }
     allSkinNames = [...names].sort();
-  } catch (e) {}
+  } catch (event) {
+    console.warn("Could not read skin names:", event);
+  }
 }
 
-function _scrapeIconsFromDb() {
+function _scrapeIconsFromRows(rows) {
   try {
-    const cols = db.exec(`PRAGMA table_info(equipment)`);
-    if (!cols.length) return;
-    const itemCols = cols[0].values
-      .map((r) => r[1])
-      .filter(
-        (c) =>
-          !c.endsWith("_lvl") &&
-          !c.includes("_tal") &&
-          !["player_id", "name", "acc_type"].includes(c) &&
-          !c.startsWith("pair") &&
-          !/_(lvl|tal)_\d+$/.test(c),
-      );
-    if (!itemCols.length) return;
-
-    const pairCols = [];
-    for (let n = 1; n <= 12; n++)
-      pairCols.push(`pair${n}_comm1`, `pair${n}_comm2`);
-
-    const equipNames = new Set();
-    const commNames = new Set();
-
-    const res = db.exec(
-      `SELECT ${[...itemCols, ...pairCols].join(",")} FROM equipment LIMIT 500`,
+    if (!rows.length) return;
+    const itemColumns = Object.keys(rows[0]).filter(
+      (key) =>
+        !key.endsWith("_lvl") &&
+        !key.includes("_tal") &&
+        !["player_id", "name", "acc_type"].includes(key) &&
+        !key.startsWith("pair") &&
+        !/_(lvl|tal)_\d+$/.test(key),
     );
-    if (res.length) {
-      const allCols = res[0].columns;
-      const pairSet = new Set(pairCols);
-      res[0].values.forEach((row) =>
-        row.forEach((v, i) => {
-          if (!v || ["none", "0"].includes(String(v).toLowerCase())) return;
-          const name = String(v).trim();
-          if (pairSet.has(allCols[i])) {
-            commNames.add(name);
-          } else {
-            if (isEquipIcon(name)) equipNames.add(name);
-          }
-        }),
-      );
+    const pairColumns = new Set();
+    for (const column of Object.keys(rows[0])) if (/^pair\d+_comm[12]$/.test(column)) pairColumns.add(column);
+
+    const equipmentNames = new Set();
+    const commanderNames = new Set();
+    for (const row of rows.slice(0, 500)) {
+      for (const column of itemColumns) {
+        const value = row[column];
+        if (!value || ["none", "0"].includes(String(value).toLowerCase())) continue;
+        if (isEquipmentIcon(String(value).trim())) equipmentNames.add(String(value).trim());
+      }
+      for (const column of pairColumns) {
+        const value = row[column];
+        if (!value || ["none", "0"].includes(String(value).toLowerCase())) continue;
+        commanderNames.add(String(value).trim());
+      }
     }
-
-    allIconNames = [...equipNames].sort();
-    allCommNames = [...commNames].sort();
-  } catch (e) {}
+    allIconNames = [...equipmentNames].sort();
+    allCommanderNames = [...commanderNames].sort();
+  } catch (event) {
+    console.warn("icon scrape failed:", event);
+  }
 }
-
-async function preloadIconsFromDb() {
-  if (!allIconNames.length || !allCommNames.length) _scrapeIconsFromDb();
+async function preloadIconsFromDatabase() {
+  if (!allIconNames.length || !allCommanderNames.length) {
+    try {
+      _scrapeIconsFromRows(await loadAllEquipmentRows());
+    } catch (event) {
+      console.warn("Could not read equipment rows for icon names:", event);
+    }
+  }
   loadSkinManifest();
+  if (!allSkinNames.length) await scrapeSkinNamesFromDatabase();
 }
 
 async function openPicker(target) {
   pickerTarget = target;
   pickerSearch.value = "";
 
-  if (target.type === "equip") {
-    const slot = EQUIP_SLOTS.find((s) => s.key === target.slotKey);
-    pickerSlotLabel.textContent = `– ${slot?.label ?? target.slotKey} · March ${target.marchIdx + 1}`;
-    pickerSelectedItem = marchData[target.marchIdx][target.slotKey].item;
-    loadIconManifest();
-  } else if (target.type === "skin") {
+  if (target.type === "skin") {
     pickerSlotLabel.textContent = `– Skin ${target.skinIdx + 1}`;
     pickerSelectedItem = skinsData[target.skinIdx];
     loadSkinManifest();
   } else {
-    const lbl = target.slot === "comm1" ? "Commander 1" : "Commander 2";
-    pickerSlotLabel.textContent = `– ${lbl} · Pair ${target.pairIdx + 1}`;
+    const label = target.slot === "comm1" ? "Commander 1" : "Commander 2";
+    pickerSlotLabel.textContent = `– ${label} · Pair ${target.pairIdx + 1}`;
     pickerSelectedItem = pairsData[target.pairIdx][target.slot];
-    loadCommManifest();
+    loadCommanderManifest();
   }
 
   pickerOverlay.classList.add("open");
@@ -186,15 +158,19 @@ function clearPickerSlot() {
   }
 }
 
-function renderPickerItems(filter) {
-  const q = filter.toLowerCase();
+function renderPickerItems(filter, container = pickerBody, target = pickerTarget) {
+  const query = filter.toLowerCase();
+  const selectedItem =
+    target?.type === "equip"
+      ? marchData[target.marchIdx][target.slotKey].item
+      : pickerSelectedItem;
 
   let base;
-  if (pickerTarget?.type === "pair") {
-    base = allCommNames;
-  } else if (pickerTarget?.type === "equip") {
-    base = iconsForSlot(pickerTarget.slotKey);
-  } else if (pickerTarget?.type === "skin") {
+  if (target?.type === "pair") {
+    base = allCommanderNames;
+  } else if (target?.type === "equip") {
+    base = iconsForSlot(target.slotKey);
+  } else if (target?.type === "skin") {
     base = allSkinNames;
   } else {
     base = allIconNames;
@@ -202,30 +178,30 @@ function renderPickerItems(filter) {
 
   const candidates = new Set(base);
 
-  if (pickerTarget?.type === "equip") {
-    const prefix = EQUIP_PREFIX_MAP[pickerTarget.slotKey];
-    for (let mi = 0; mi < MARCH_COUNT; mi++)
-      for (const s of EQUIP_SLOTS)
+  if (target?.type === "equip") {
+    const prefix = EQUIPMENT_PREFIX_MAP[target.slotKey];
+    for (let marchIndex = 0; marchIndex < MARCH_COUNT; marchIndex++)
+      for (const slot of EQUIPMENT_SLOTS)
         if (
-          marchData[mi][s.key].item &&
+          marchData[marchIndex][slot.key].item &&
           (!prefix ||
-            marchData[mi][s.key].item.charAt(0).toLowerCase() === prefix)
+            marchData[marchIndex][slot.key].item.charAt(0).toLowerCase() === prefix)
         )
-          candidates.add(marchData[mi][s.key].item);
-  } else if (pickerTarget?.type === "pair") {
-    for (let n = 0; n < PAIR_COUNT; n++) {
-      if (pairsData[n].comm1) candidates.add(pairsData[n].comm1);
-      if (pairsData[n].comm2) candidates.add(pairsData[n].comm2);
+          candidates.add(marchData[marchIndex][slot.key].item);
+  } else if (target?.type === "pair") {
+    for (let pairIndex = 0; pairIndex < PAIR_COUNT; pairIndex++) {
+      if (pairsData[pairIndex].comm1) candidates.add(pairsData[pairIndex].comm1);
+      if (pairsData[pairIndex].comm2) candidates.add(pairsData[pairIndex].comm2);
     }
-  } else if (pickerTarget?.type === "skin") {
-    for (let i = 0; i < SKIN_COUNT; i++)
-      if (skinsData[i]) candidates.add(skinsData[i]);
+  } else if (target?.type === "skin") {
+    for (let index = 0; index < SKIN_COUNT; index++)
+      if (skinsData[index]) candidates.add(skinsData[index]);
   }
 
   const kindForInfo =
-    pickerTarget?.type === "pair"
+    target?.type === "pair"
       ? "commander"
-      : pickerTarget?.type === "skin"
+      : target?.type === "skin"
         ? "skin"
         : "item";
 
@@ -239,64 +215,65 @@ function renderPickerItems(filter) {
     return info && info.name ? String(info.name) : "";
   };
 
-  let list = [...candidates].sort((a, b) => a.localeCompare(b));
-  if (q)
+  let list = [...candidates].sort((firstCandidate, secondCandidate) => firstCandidate.localeCompare(secondCandidate));
+  if (query)
     list = list.filter(
-      (n) =>
-        n.toLowerCase().includes(q) || fullNameOf(n).toLowerCase().includes(q),
+      (name) =>
+        name.toLowerCase().includes(query) || fullNameOf(name).toLowerCase().includes(query),
     );
 
   if (!list.length) {
-    pickerBody.innerHTML = `<div class="eq-picker-empty">${
+    container.innerHTML = `<div class="eq-picker-empty">${
       filter
         ? "No items match your search."
-        : pickerTarget?.type === "skin"
+        : target?.type === "skin"
           ? `No skins found.<br><small>Check <code>data/skins.json</code> or load a DB with existing records.</small>`
           : `No icons found.<br><small>Check <code>data/items.json</code> / <code>data/commanders.json</code> or load a DB with existing records.</small>`
     }</div>`;
     return;
   }
 
-  pickerBody.innerHTML = "";
-  const tipKind =
-    pickerTarget?.type === "pair"
+  container.innerHTML = "";
+  const tooltipKind =
+    target?.type === "pair"
       ? "commander"
-      : pickerTarget?.type === "skin"
+      : target?.type === "skin"
         ? "skin"
         : "item";
   for (const name of list) {
     const div = document.createElement("div");
     div.className =
-      "eq-picker-item" + (name === pickerSelectedItem ? " selected" : "");
+      "eq-picker-item" + (name === selectedItem ? " selected" : "");
     div.dataset.tipCode = name;
-    div.dataset.tipKind = tipKind;
+    div.dataset.tipKind = tooltipKind;
     div.innerHTML = `
-      <img src="${iconPath(name, tipKind)}" alt="${escapeHtml(name)}" loading="lazy"
+      <img src="${iconPath(name, tooltipKind)}" alt="${escapeHtml(name)}" loading="lazy"
            onerror="this.style.display='none'">
       <span class="eq-picker-item-name">${escapeHtml(fullNameOf(name) || name)}</span>`;
-    div.addEventListener("click", () => selectPickerItem(name));
-    pickerBody.appendChild(div);
+    div.addEventListener("click", () => selectPickerItem(name, target));
+    container.appendChild(div);
   }
 }
 
-function selectPickerItem(name) {
+function selectPickerItem(name, target = pickerTarget) {
   pickerSelectedItem = name;
   closePicker();
-  if (!pickerTarget) return;
+  if (!target) return;
 
-  if (pickerTarget.type === "equip") {
-    const existing = marchData[pickerTarget.marchIdx][pickerTarget.slotKey];
-    marchData[pickerTarget.marchIdx][pickerTarget.slotKey] = {
+  if (target.type === "equip") {
+    const existing = marchData[target.marchIdx][target.slotKey];
+    marchData[target.marchIdx][target.slotKey] = {
       item: name,
       awk: existing.awk,
       tal: existing.tal,
     };
-    openDetailPopup(pickerTarget.marchIdx, pickerTarget.slotKey);
-  } else if (pickerTarget.type === "skin") {
-    skinsData[pickerTarget.skinIdx] = name;
+    renderSlotGrid();
+    openDetailPopup(target.marchIdx, target.slotKey);
+  } else if (target.type === "skin") {
+    skinsData[target.skinIdx] = name;
     renderSkinGrid();
   } else {
-    pairsData[pickerTarget.pairIdx][pickerTarget.slot] = name;
+    pairsData[target.pairIdx][target.slot] = name;
     renderPairsGrid();
   }
 }

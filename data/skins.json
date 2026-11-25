@@ -1049,6 +1049,13 @@
       "description": [],
       "slot": "Skin",
       "rarity": "Purple"
+    },
+    "charon": {
+      "name": "Dirge of Charon",
+      "stats": ["Gathering Speed +10%"],
+      "description": [],
+      "slot": "Skin",
+      "rarity": "Gold"
     } 
   }
 }

@@ -52,6 +52,22 @@ a.kvk-box {
   align-items: stretch;
   gap: 18px;
 }
+.kvk-box.has-bg {
+  position: relative;
+  color: #fff;
+  background-color: var(--table-bg);
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.55), rgb(0 0 0 / 0.65)),
+    var(--kvk-bg);
+  background-size: cover;
+  background-position: center;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
+}
+.kvk-box.has-bg:hover {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.4), rgb(0 0 0 / 0.5)),
+    var(--kvk-bg);
+}
 .kvk-title {
   display: flex;
   align-items: center;

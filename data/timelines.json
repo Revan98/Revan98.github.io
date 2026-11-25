@@ -1,0 +1,27 @@
+{
+  "_readme": "Timelines shown above the dashboard table. Key = KvK number (the kvk= value in the URL), or \"latest\" = whichever KvK is currently marked Latest on the Select KvK page. When a KvK ends, rename \"latest\" to its number. All times are UTC (ISO 8601, ending in Z). events = one-off events; series = repeating events (first occurrence, interval in hours, number of occurrences). series is optional.",
+  "kvks": {
+    "latest": {
+      "title": "Heroic Anthem KvK",
+      "events": [
+        { "name": "LK Opening", "at": "2026-11-20T00:00:00Z" },
+        { "name": "Ancient Ruins (1st)", "at": "2026-11-24T15:33:00Z" },
+        { "name": "Pass 4 (Z5)", "at": "2026-11-27T15:33:00Z" },
+        { "name": "Pass 5 (Free Z6)", "at": "2026-12-05T15:33:00Z" },
+        { "name": "Duels of Heroes", "at": "2026-12-05T15:33:00Z" },
+        { "name": "Altar of Darkness (1st)", "at": "2026-12-07T16:03:00Z" },
+        { "name": "Altar of Darkness (2nd)", "at": "2026-12-11T06:03:00Z" },
+        { "name": "Altar of Darkness (3rd)", "at": "2026-12-14T20:03:00Z" },
+        { "name": "Pass 7 Clash", "at": "2026-12-17T16:03:00Z" },
+        { "name": "Pass 8 (KL)", "at": "2026-12-20T16:03:00Z" },
+        { "name": "Ziggurat Capture", "at": "2026-12-26T16:03:00Z" },
+        { "name": "Pass 5 Unsealed", "at": "2026-12-29T16:03:00Z" },
+        { "name": "Pass 4 Unsealed", "at": "2027-01-02T16:03:00Z" }
+      ],
+      "series": [
+        { "name": "Ancient Ruins", "everyHours": 40, "count": 28, "first": "2026-11-24T15:33:00Z" },
+        { "name": "Altar of Darkness", "everyHours": 86, "count": 10, "first": "2026-12-07T16:03:00Z" }
+      ]
+    }
+  }
+}

@@ -443,18 +443,24 @@ body.dark .hamburger {
   margin-top: 10px;
   width: 100%;
 }
-footer {
-  background: var(--nav-bg);
-  border-top: 1px solid var(--table-border);
+.footer-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  position: relative;
 }
 .footer-bottom {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin-top: 20px;
   padding: 1.2rem 0;
   font-size: 0.8rem;
   color: var(--text-color);
-  text-align: center;
+  border-top: 1px solid var(--table-border);
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--table-border);
 }
 .primary {
   padding: 8px 14px;
@@ -1002,7 +1008,7 @@ body.dark #backToTop:hover {
 }
 .arm-ins-group {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   row-gap: 5px;
   margin-top: 5px;
 }

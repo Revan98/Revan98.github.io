@@ -1,184 +1,15 @@
 function searchPlayers(query) {
-  return searchByName(query, [
-    { db, src: "kvk" },
-    { db: scansDb, src: "scan" },
-  ]);
+  return searchGovernorsByName(query, true).catch((error) => {
+    console.warn("Name search failed:", error);
+    return [];
+  });
 }
 
-let dbReady = false;
-let scansDb = null;
+let databaseReady = false;
 
-loadEquipRefData(["inscriptions", "skins"]);
+loadEquipmentReferenceData(["inscriptions", "skins"]);
 
-const SCANS_DB_VERSION = "1";
-
-async function loadScansDatabase(SQL) {
-  try {
-    const res = await fetch(`scans_2247.db?v=${SCANS_DB_VERSION}`);
-    if (!res.ok) return;
-    const buf = await res.arrayBuffer();
-    scansDb = new SQL.Database(new Uint8Array(buf));
-  } catch (e) {
-    console.warn("scans_2247.db not available:", e);
-  }
-}
-
-function loadScanStats(govId) {
-  if (!scansDb) return null;
-  const safeId = normalizeNumericId(govId);
-  if (!safeId) return null;
-  try {
-    const snapRes = scansDb.exec(
-      `SELECT snapshot_id, snapshot_date FROM snapshots ORDER BY snapshot_date DESC LIMIT 1`,
-    );
-    if (!snapRes.length || !snapRes[0].values.length) return null;
-    const [snapId, snapDate] = snapRes[0].values[0];
-
-    const res = scansDb.exec(`
-      SELECT s.power, s.kill_points, s.deaths,
-             s.t1, s.t2, s.t3, s.t4, s.t5,
-             s.ranged_points, s.rss_gathered, s.rss_assistance,
-             s.helps, s.alliance, s.acclaim,
-             g.name
-      FROM stats s
-      JOIN governors g ON g.governor_id = s.governor_id
-      WHERE s.governor_id = ${safeId} AND s.snapshot_id = ${snapId}
-      LIMIT 1
-    `);
-    if (!res.length || !res[0].values.length) return null;
-    const r = res[0].values[0];
-    return {
-      snapDate,
-      power: r[0],
-      killPoints: r[1],
-      deaths: r[2],
-      t1: r[3],
-      t2: r[4],
-      t3: r[5],
-      t4: r[6],
-      t5: r[7],
-      rangedPoints: r[8],
-      rssGathered: r[9],
-      rssAssistance: r[10],
-      helps: r[11],
-      alliance: r[12],
-      acclaim: r[13],
-      name: r[14],
-    };
-  } catch (e) {
-    console.warn("loadScanStats error:", e);
-    return null;
-  }
-}
-
-function detectKingdom(govId) {
-  const safeId = normalizeNumericId(govId);
-  if (!safeId) return null;
-  const res = db.exec(`
-    SELECT g.kingdom
-    FROM governors g
-    JOIN kvks k ON k.kingdom = g.kingdom
-    JOIN snapshots sn ON sn.kvk_id = k.id
-    JOIN stats s ON s.snapshot_id = sn.id AND s.governor_id = '${safeId}'
-    ORDER BY k.kvk_number DESC, sn.snapshot_date DESC
-    LIMIT 1
-  `);
-  if (res.length && res[0].values.length) return res[0].values[0][0];
-  const g = db.exec(
-    `SELECT kingdom FROM governors WHERE governor_id='${safeId}' LIMIT 1`,
-  );
-  return g.length && g[0].values.length ? g[0].values[0][0] : null;
-}
-
-function getBestSnapshotForGov(govId, kd) {
-  const safeId = normalizeNumericId(govId);
-  if (!safeId || !kd) return null;
-  const res = db.exec(`
-    SELECT sn.id
-    FROM stats s
-    JOIN snapshots sn ON sn.id = s.snapshot_id
-    JOIN kvks k ON k.id = sn.kvk_id AND k.kingdom = '${kd}'
-    WHERE s.governor_id = '${safeId}'
-    ORDER BY k.kvk_number DESC, sn.snapshot_date DESC
-    LIMIT 1
-  `);
-  return res.length && res[0].values.length ? res[0].values[0][0] : null;
-}
-
-function loadGovernorInfo(govId, kd) {
-  const safeId = normalizeNumericId(govId);
-  if (!safeId || !kd) return null;
-  const snapId = getBestSnapshotForGov(safeId, kd);
-  if (!snapId) return null;
-  const res = db.exec(`
-    SELECT g.name,
-           s.power, s.kill_points, s.t4, s.t5, s.deads,
-           s.power_diff, s.kp_diff, s.t4_diff, s.t5_diff, s.deads_diff,
-           s.min_dkp, s.dkp, s.dkp_percent,
-           coalesce(s.sum_min_dkp, s.min_dkp) AS sum_min_dkp,
-           coalesce(s.sum_dkp, s.dkp) AS sum_dkp,
-           coalesce(s.sum_dkp_percent, s.dkp_percent) AS sum_dkp_percent,
-           coalesce(s.vacation,'NO') AS vacation,
-           coalesce(s.status,'OK') AS status,
-           s.acclaim
-    FROM stats s
-    JOIN governors g ON g.governor_id=s.governor_id AND g.kingdom='${kd}'
-    WHERE s.snapshot_id=${snapId} AND s.governor_id='${safeId}'
-    LIMIT 1
-  `)[0];
-  if (!res) return null;
-  const r = res.values[0];
-  return {
-    name: r[0],
-    power: r[1],
-    kp: r[2],
-    t4: r[3],
-    t5: r[4],
-    deads: r[5],
-    powerDiff: r[6],
-    kpDiff: r[7],
-    t4Diff: r[8],
-    t5Diff: r[9],
-    deadsDiff: r[10],
-    minDkp: r[11],
-    dkp: r[12],
-    dkpPercent: r[13],
-    sumMinDkp: r[14],
-    sumDkp: r[15],
-    sumDkpPercent: r[16],
-    vacation: r[17],
-    status: r[18],
-    acclaim: r[19],
-  };
-}
-
-function getAccType(govId) {
-  const safeId = normalizeNumericId(govId);
-  if (!safeId) return null;
-  const res = db.exec(
-    `SELECT acc_type FROM farm_accounts WHERE player_id=${safeId} LIMIT 1`,
-  );
-  if (!res.length || !res[0].values.length) return null;
-  return String(res[0].values[0][0] || "").toLowerCase();
-}
-
-function loadCH(govId) {
-  const safeId = normalizeNumericId(govId);
-  if (!safeId) return null;
-  const res = db.exec(
-    `SELECT ch FROM farm_accounts WHERE player_id=${safeId} LIMIT 1`,
-  );
-  if (!res.length || !res[0].values.length) return null;
-  const ch = res[0].values[0][0];
-  return ch !== null &&
-    ch !== undefined &&
-    String(ch).trim() !== "" &&
-    String(ch).trim() !== "0"
-    ? String(ch).trim()
-    : null;
-}
-
-const EQUIP_SLOTS = [
+const EQUIPMENT_SLOTS = [
   { key: "helm", label: "Helm", id: "helmet" },
   { key: "chest", label: "Chest", id: "chest" },
   { key: "weapon", label: "Weapon", id: "weapon" },
@@ -188,49 +19,44 @@ const EQUIP_SLOTS = [
   { key: "accessory", label: "Acc.", id: "accessory" },
   { key: "accessory_sec", label: "Acc.2", id: "accessory_sec" },
 ];
-const ARM_SLOTS = Array.from({ length: 8 }, (_, i) => ({
-  prefix: `arm${i + 1}`,
-  label: `Arm ${i + 1}`,
-}));
-const SKIN_SLOTS = Array.from({ length: 8 }, (_, i) => `skin${i + 1}`);
 
 function isMarchEmpty(row, suffix) {
-  return EQUIP_SLOTS.every((slot) => {
-    const colKey = suffix ? `${slot.key}_${suffix}` : slot.key;
-    return isEmptyVal(row[colKey]);
+  return EQUIPMENT_SLOTS.every((slot) => {
+    const slotColumnKey = suffix ? `${slot.key}_${suffix}` : slot.key;
+    return isEmptyValue(row[slotColumnKey]);
   });
 }
-function getEquipRarity(name) {
-  if (isEmptyVal(name)) return "empty";
-  const n = String(name).trim().toLowerCase();
-  if (n.endsWith("gray")) return "gray";
-  if (n.endsWith("gr")) return "green";
-  if (n.endsWith("g")) return "gold";
-  if (n.endsWith("p")) return "purple";
-  if (n.endsWith("b")) return "blue";
+function getEquipmentRarityByName(name) {
+  if (isEmptyValue(name)) return "empty";
+  const normalizedName = String(name).trim().toLowerCase();
+  if (normalizedName.endsWith("gray")) return "gray";
+  if (normalizedName.endsWith("gr")) return "green";
+  if (normalizedName.endsWith("g")) return "gold";
+  if (normalizedName.endsWith("p")) return "purple";
+  if (normalizedName.endsWith("b")) return "blue";
   return "unknown";
 }
 
-async function renderStatCard(govId) {
-  const el = document.getElementById("pc-scan-stats");
-  el.style.display = "";
-  el.innerHTML = `<div class="poster-loading"><div class="spinner"></div><span>Building player card image…</span></div>`;
+async function renderStatCard(governorId) {
+  const element = document.getElementById("pc-scan-stats");
+  element.style.display = "";
+  element.innerHTML = `<div class="poster-loading"><div class="spinner"></div><span>Building player card image…</span></div>`;
 
   try {
-    const dataUrl = await buildStatPosterDataUrl(govId);
-    el.innerHTML = `
+    const dataUrl = await buildStatPosterDataUrl(governorId);
+    element.innerHTML = `
       <img class="poster-image" src="${dataUrl}" alt="Player stat card" draggable="false">
-      <a class="poster-download" href="${dataUrl}" download="player-${escapeHtml(String(govId))}.png">
+      <a class="poster-download" href="${dataUrl}" download="player-${escapeHtml(String(governorId))}.png">
         <i class="fa-solid fa-download"></i> Download image
       </a>`;
-  } catch (e) {
-    console.error("renderStatCard:", e);
-    el.innerHTML = `<div class="pc-equip-empty">Could not build the player image.</div>`;
+  } catch (event) {
+    console.error("renderStatCard:", event);
+    element.innerHTML = `<div class="pc-equip-empty">Could not build the player image.</div>`;
   }
 }
 
-function renderPlayerCard(govId) {
-  const safeId = normalizeNumericId(govId);
+async function renderPlayerCard(governorId) {
+  const safeId = normalizeNumericId(governorId);
   if (!safeId) {
     showError("Invalid governor ID.");
     return;
@@ -238,11 +64,12 @@ function renderPlayerCard(govId) {
 
   showState("loading");
 
-  setTimeout(() => {
+  {
     try {
-      const kd = detectKingdom(safeId);
+      await loadPlayerBundle(safeId);
+      const kingdomId = detectKingdom(safeId);
 
-      if (!kd) {
+      if (!kingdomId) {
         const scanData = loadScanStats(safeId);
         if (!scanData) {
           showState("search");
@@ -264,21 +91,21 @@ function renderPlayerCard(govId) {
 
       document.getElementById("section-history").style.display = "";
 
-      const info = loadGovernorInfo(safeId, kd);
+      const info = loadGovernorInfo(safeId);
       if (!info) {
         showState("search");
         showError(`No data found for ID ${safeId}.`);
         return;
       }
 
-      const accType = getAccType(safeId);
+      const accountType = getAccountType(safeId);
       const isMain = resolveFarmMainId(safeId) === safeId;
-      const isFarm = accType === "farm";
+      const isFarm = accountType === "farm";
       const farms = isMain ? loadGovernorFarms(safeId) : [];
-      const farmIds = farms.map((f) => f.id);
-      const farmKvK = farmIds.length ? loadFarmKvKStats(farmIds, kd) : [];
+      const farmIds = farms.map((farm) => farm.id);
+      const farmKvK = farmIds.length ? loadFarmKvKStats(safeId) : [];
       const farmOwner = isFarm ? loadFarmOwner(safeId) : null;
-      const history = loadGovHistory(safeId, kd);
+      const history = loadGovernorHistory(safeId);
 
       renderStatCard(safeId);
 
@@ -309,12 +136,12 @@ function renderPlayerCard(govId) {
 
       initCollapsibleSections();
       showState("card");
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       showState("search");
-      showError("Error loading player data: " + String(err));
+      showError("Error loading player data: " + String(error));
     }
-  }, 50);
+  }
 }
 
 function renderHistoryCards(rows) {
@@ -327,14 +154,14 @@ function renderFarmKvKCards(rows) {
   const container = document.getElementById("pc-farm-kvk-table");
   container.innerHTML = renderFarmKvKGroups(rows)
     .map(
-      (g, idx) => `<div class="pc-farm-kvk-group${idx === 0 ? " is-open" : ""}">
+      (group, index) => `<div class="pc-farm-kvk-group${index === 0 ? " is-open" : ""}">
       <div class="pc-farm-kvk-label">
-        ${escapeHtml(g.kvk)}
+        ${escapeHtml(group.kvk)}
         <svg class="pc-farm-kvk-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
           <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
         </svg>
       </div>
-      <div class="pc-farm-kvk-body">${g.html}</div>
+      <div class="pc-farm-kvk-body">${group.html}</div>
     </div>`,
     )
     .join("");
@@ -372,10 +199,10 @@ function showState(state) {
   }
 }
 
-function showError(msg) {
-  const el = document.getElementById("search-error");
-  el.textContent = msg;
-  el.style.display = "block";
+function showError(message) {
+  const element = document.getElementById("search-error");
+  element.textContent = message;
+  element.style.display = "block";
 }
 
 document.getElementById("back-btn").addEventListener("click", () => {
@@ -384,57 +211,42 @@ document.getElementById("back-btn").addEventListener("click", () => {
 });
 
 
-const dbLoadEl = document.getElementById("db-loading");
-const searchBtn = document.getElementById("search-btn");
-const inputEl = document.getElementById("player-id-input");
+const searchButton = document.getElementById("search-btn");
+const inputElement = document.getElementById("player-id-input");
 
 showState("search");
-dbLoadEl.style.display = "flex";
-searchBtn.disabled = true;
+databaseReady = true;
+inputElement.focus();
 
-openDb()
-  .then(async () => {
-    await loadScansDatabase(await getSqlJs());
+{
+  const params = new URLSearchParams(window.location.search);
+  const directId = normalizeNumericId(params.get("govId") || params.get("id"));
+  if (directId) {
+    inputElement.value = directId;
+    renderPlayerCard(directId);
+  }
+}
 
-    dbReady = true;
-    dbLoadEl.style.display = "none";
-    searchBtn.disabled = false;
-    inputEl.focus();
-
-    const params = new URLSearchParams(window.location.search);
-    const directId = normalizeNumericId(
-      params.get("govId") || params.get("id"),
-    );
-    if (directId) {
-      inputEl.value = directId;
-      renderPlayerCard(directId);
-    }
-  })
-  .catch((err) => {
-    dbLoadEl.style.display = "none";
-    showError("Failed to load database: " + String(err));
-  });
-
-function doSearch() {
-  if (!dbReady) return;
-  const val = inputEl.value.trim();
-  if (!val) {
+async function doSearch() {
+  if (!databaseReady) return;
+  const value = inputElement.value.trim();
+  if (!value) {
     showError("Please enter a governor ID or name.");
     return;
   }
   hideSuggestions();
-  if (normalizeNumericId(val)) {
+  if (normalizeNumericId(value)) {
     document.getElementById("search-error").style.display = "none";
-    renderPlayerCard(val);
+    renderPlayerCard(value);
   } else {
-    const matches = searchPlayers(val);
+    const matches = await searchPlayers(value);
     if (!matches.length) {
-      showError(`No player found matching "${val}".`);
+      showError(`No player found matching "${value}".`);
       return;
     }
     if (matches.length === 1) {
       document.getElementById("search-error").style.display = "none";
-      inputEl.value = matches[0].id;
+      inputElement.value = matches[0].id;
       renderPlayerCard(matches[0].id);
     } else {
       showSuggestions(matches);
@@ -442,89 +254,99 @@ function doSearch() {
   }
 }
 
-const suggestionsEl = document.getElementById("name-suggestions");
-let activeSuggestionIdx = -1;
+let suggestTicket = 0;
+const suggestionsElement = document.getElementById("name-suggestions");
+let activeSuggestionIndex = -1;
 
 function showSuggestions(matches) {
-  activeSuggestionIdx = -1;
-  suggestionsEl.innerHTML = matches
+  activeSuggestionIndex = -1;
+  suggestionsElement.innerHTML = matches
     .map(
-      (m, i) =>
-        `<div class="name-suggestion-item" data-id="${escapeHtml(m.id)}" data-idx="${i}">
-      <span class="name-suggestion-name">${escapeHtml(m.name)}</span>
-      <span class="name-suggestion-id">${escapeHtml(m.id)}</span>
+      (match, index) =>
+        `<div class="name-suggestion-item" data-id="${escapeHtml(match.id)}" data-idx="${index}">
+      <span class="name-suggestion-name">${escapeHtml(match.name)}</span>
+      <span class="name-suggestion-id">${escapeHtml(match.id)}</span>
     </div>`,
     )
     .join("");
-  suggestionsEl.style.display = "block";
-  suggestionsEl.querySelectorAll(".name-suggestion-item").forEach((item) => {
-    item.addEventListener("mousedown", (e) => {
-      e.preventDefault();
+  suggestionsElement.style.display = "block";
+  suggestionsElement.querySelectorAll(".name-suggestion-item").forEach((item) => {
+    item.addEventListener("mousedown", (event) => {
+      event.preventDefault();
       selectSuggestion(item.dataset.id);
     });
   });
 }
 
 function hideSuggestions() {
-  suggestionsEl.style.display = "none";
-  suggestionsEl.innerHTML = "";
-  activeSuggestionIdx = -1;
+  suggestionsElement.style.display = "none";
+  suggestionsElement.innerHTML = "";
+  activeSuggestionIndex = -1;
 }
 
 function selectSuggestion(id) {
   hideSuggestions();
-  inputEl.value = id;
+  inputElement.value = id;
   document.getElementById("search-error").style.display = "none";
   renderPlayerCard(id);
 }
 
-inputEl.addEventListener("input", () => {
-  if (!dbReady) return;
-  const val = inputEl.value.trim();
-  if (!val || normalizeNumericId(val)) {
+inputElement.addEventListener("input", () => {
+  if (!databaseReady) return;
+  const value = inputElement.value.trim();
+  if (!value || normalizeNumericId(value)) {
     hideSuggestions();
     return;
   }
-  if (val.length < 2) {
+  if (value.length < 2) {
     hideSuggestions();
     return;
   }
-  const matches = searchPlayers(val);
-  if (matches.length) showSuggestions(matches);
-  else hideSuggestions();
+  const ticket = ++suggestTicket;
+  searchPlayers(value).then((matches) => {
+    if (ticket !== suggestTicket) return;
+    if (matches.length) showSuggestions(matches);
+    else hideSuggestions();
+  });
 });
 
-inputEl.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    doSearch();
+inputElement.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    const open = suggestionsElement.style.display !== "none";
+    const active = open
+      ? suggestionsElement.querySelectorAll(".name-suggestion-item")[activeSuggestionIndex]
+      : null;
+    if (active) {
+      event.preventDefault();
+      selectSuggestion(active.dataset.id);
+    } else {
+      doSearch();
+    }
     return;
   }
-  if (suggestionsEl.style.display === "none") return;
-  const items = suggestionsEl.querySelectorAll(".name-suggestion-item");
+  if (suggestionsElement.style.display === "none") return;
+  const items = suggestionsElement.querySelectorAll(".name-suggestion-item");
   if (!items.length) return;
-  if (e.key === "ArrowDown") {
-    e.preventDefault();
-    activeSuggestionIdx = Math.min(activeSuggestionIdx + 1, items.length - 1);
-  } else if (e.key === "ArrowUp") {
-    e.preventDefault();
-    activeSuggestionIdx = Math.max(activeSuggestionIdx - 1, -1);
-  } else if (e.key === "Escape") {
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, items.length - 1);
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, -1);
+  } else if (event.key === "Escape") {
     hideSuggestions();
     return;
   } else {
     return;
   }
-  items.forEach((item, i) =>
-    item.classList.toggle("is-active", i === activeSuggestionIdx),
+  items.forEach((item, index) =>
+    item.classList.toggle("is-active", index === activeSuggestionIndex),
   );
-  if (activeSuggestionIdx >= 0)
-    items[activeSuggestionIdx].scrollIntoView({ block: "nearest" });
-  if (e.key === "Enter" && activeSuggestionIdx >= 0) {
-    selectSuggestion(items[activeSuggestionIdx].dataset.id);
-  }
+  if (activeSuggestionIndex >= 0)
+    items[activeSuggestionIndex].scrollIntoView({ block: "nearest" });
 });
 
-inputEl.addEventListener("blur", () => {
+inputElement.addEventListener("blur", () => {
   setTimeout(hideSuggestions, 150);
 });
-searchBtn.addEventListener("click", doSearch);
+searchButton.addEventListener("click", doSearch);

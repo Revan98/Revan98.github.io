@@ -1,11 +1,4 @@
-/* ==========================================================================
-   posterCard.js — draws the shareable stat-poster image (canvas) for a governor.
-   Depends on: common.js, queries.js, gameData.js, and the data helpers in
-   playercard.js (EQUIP_SLOTS, loadGovernorInfo, loadScanStats, ...), which are
-   only used when buildStatPosterDataUrl() runs, long after both files loaded.
-   ========================================================================== */
-
-const POSTER_W = 860;
+const POSTER_WIDTH = 860;
 const POSTER_PAD_X = 40;
 const POSTER_RARITY_COLORS = {
   gray: "#8a8a8a",
@@ -17,103 +10,103 @@ const POSTER_RARITY_COLORS = {
   empty: "#443a70",
 };
 
-function posterRoundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
+function posterRoundRect(context, x, y, width, height, radius) {
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.arcTo(x + width, y, x + width, y + height, radius);
+  context.arcTo(x + width, y + height, x, y + height, radius);
+  context.arcTo(x, y + height, x, y, radius);
+  context.arcTo(x, y, x + width, y, radius);
+  context.closePath();
 }
 
-function posterText(ctx, text, x, y, font, color, align = "center") {
-  ctx.font = font;
-  ctx.fillStyle = color;
-  ctx.textAlign = align;
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, x, y);
+function posterText(context, text, x, y, font, color, align = "center") {
+  context.font = font;
+  context.fillStyle = color;
+  context.textAlign = align;
+  context.textBaseline = "middle";
+  context.fillText(text, x, y);
 }
 
-function posterTruncate(ctx, text, font, maxWidth) {
-  ctx.font = font;
-  const str = String(text ?? "");
-  if (ctx.measureText(str).width <= maxWidth) return str;
-  let t = str;
-  while (t.length > 1 && ctx.measureText(t + "…").width > maxWidth) {
-    t = t.slice(0, -1);
+function posterTruncate(context, text, font, maxWidth) {
+  context.font = font;
+  const string = String(text ?? "");
+  if (context.measureText(string).width <= maxWidth) return string;
+  let truncated = string;
+  while (truncated.length > 1 && context.measureText(truncated + "…").width > maxWidth) {
+    truncated = truncated.slice(0, -1);
   }
-  return t + "…";
+  return truncated + "…";
 }
 
-function loadImageSafe(src) {
+function loadImageSafe(source) {
   return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = source;
   });
 }
 
-function drawPosterBackground(ctx, w, h) {
-  const grad = ctx.createLinearGradient(0, 0, 0, h);
+function drawPosterBackground(context, width, height) {
+  const grad = context.createLinearGradient(0, 0, 0, height);
   grad.addColorStop(0, "#0b0a1e");
   grad.addColorStop(0.35, "#191340");
   grad.addColorStop(1, "#241a52");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
+  context.fillStyle = grad;
+  context.fillRect(0, 0, width, height);
 
   let seed = 42;
-  const rnd = () => {
+  const nextRandom = () => {
     seed = (seed * 9301 + 49297) % 233280;
     return seed / 233280;
   };
-  ctx.fillStyle = "rgba(255,255,255,0.65)";
-  const starCount = Math.round((w * Math.min(h, 900)) / 6500);
-  for (let i = 0; i < starCount; i++) {
-    const x = rnd() * w;
-    const y = rnd() * h;
-    const r = rnd() < 0.85 ? 1 : 1.7;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
+  context.fillStyle = "rgba(255,255,255,0.65)";
+  const starCount = Math.round((width * Math.min(height, 900)) / 6500);
+  for (let index = 0; index < starCount; index++) {
+    const x = nextRandom() * width;
+    const y = nextRandom() * height;
+    const radius = nextRandom() < 0.85 ? 1 : 1.7;
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.fill();
   }
 
-  ctx.fillStyle = "#100c28";
-  ctx.beginPath();
-  ctx.moveTo(0, 210);
-  ctx.lineTo(0, 130);
-  ctx.lineTo(w * 0.12, 95);
-  ctx.lineTo(w * 0.24, 140);
-  ctx.lineTo(w * 0.38, 60);
-  ctx.lineTo(w * 0.5, 120);
-  ctx.lineTo(w * 0.64, 70);
-  ctx.lineTo(w * 0.78, 145);
-  ctx.lineTo(w * 0.9, 55);
-  ctx.lineTo(w, 100);
-  ctx.lineTo(w, 210);
-  ctx.closePath();
-  ctx.globalAlpha = 0.9;
-  ctx.fill();
-  ctx.globalAlpha = 1;
+  context.fillStyle = "#100c28";
+  context.beginPath();
+  context.moveTo(0, 210);
+  context.lineTo(0, 130);
+  context.lineTo(width * 0.12, 95);
+  context.lineTo(width * 0.24, 140);
+  context.lineTo(width * 0.38, 60);
+  context.lineTo(width * 0.5, 120);
+  context.lineTo(width * 0.64, 70);
+  context.lineTo(width * 0.78, 145);
+  context.lineTo(width * 0.9, 55);
+  context.lineTo(width, 100);
+  context.lineTo(width, 210);
+  context.closePath();
+  context.globalAlpha = 0.9;
+  context.fill();
+  context.globalAlpha = 1;
 }
 
-function drawIconTile(ctx, img, x, y, size, borderColor) {
-  posterRoundRect(ctx, x, y, size, size, 8);
-  ctx.fillStyle = "rgba(255,255,255,0.07)";
-  ctx.fill();
-  ctx.strokeStyle = borderColor || "rgba(255,255,255,0.25)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  if (img) {
-    ctx.save();
-    posterRoundRect(ctx, x + 2, y + 2, size - 4, size - 4, 6);
-    ctx.clip();
-    ctx.drawImage(img, x + 2, y + 2, size - 4, size - 4);
-    ctx.restore();
+function drawIconTile(context, image, x, y, size, borderColor) {
+  posterRoundRect(context, x, y, size, size, 8);
+  context.fillStyle = "rgba(255,255,255,0.07)";
+  context.fill();
+  context.strokeStyle = borderColor || "rgba(255,255,255,0.25)";
+  context.lineWidth = 1.5;
+  context.stroke();
+  if (image) {
+    context.save();
+    posterRoundRect(context, x + 2, y + 2, size - 4, size - 4, 6);
+    context.clip();
+    context.drawImage(image, x + 2, y + 2, size - 4, size - 4);
+    context.restore();
   } else {
     posterText(
-      ctx,
+      context,
       "—",
       x + size / 2,
       y + size / 2,
@@ -123,41 +116,41 @@ function drawIconTile(ctx, img, x, y, size, borderColor) {
   }
 }
 
-function drawPlainIcon(ctx, img, x, y, size) {
-  if (!img) return;
-  ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,0.55)";
-  ctx.shadowBlur = 8;
-  ctx.drawImage(img, x, y, size, size);
-  ctx.restore();
+function drawPlainIcon(context, image, x, y, size) {
+  if (!image) return;
+  context.save();
+  context.shadowColor = "rgba(0,0,0,0.55)";
+  context.shadowBlur = 8;
+  context.drawImage(image, x, y, size, size);
+  context.restore();
 }
 
-function measurePillWidth(ctx, label, font) {
-  ctx.font = font;
-  return ctx.measureText(label).width + 20;
+function measurePillWidth(context, label, font) {
+  context.font = font;
+  return context.measureText(label).width + 20;
 }
 
-function drawArmamentCard(ctx, iconMap, a, cellX, topY, cellW, iconSize) {
+function drawArmamentCard(context, iconMap, armament, cellX, topY, cellWidth, iconSize) {
   let y = topY;
 
   const nameFont = "700 14px 'DM Sans', sans-serif";
-  const img = iconMap.get(a.icon);
-  const iconGap = img ? 8 : 0;
-  const iconW = img ? iconSize : 0;
-  const nameStr = posterTruncate(
-    ctx,
-    a.name,
+  const image = iconMap.get(armament.icon);
+  const iconGap = image ? 8 : 0;
+  const iconWidth = image ? iconSize : 0;
+  const nameString = posterTruncate(
+    context,
+    armament.name,
     nameFont,
-    cellW - 12 - iconW - iconGap,
+    cellWidth - 12 - iconWidth - iconGap,
   );
-  ctx.font = nameFont;
-  const nameW = ctx.measureText(nameStr).width;
-  const startX = cellX - (iconW + iconGap + nameW) / 2;
-  if (img) drawPlainIcon(ctx, img, startX, y, iconSize);
+  context.font = nameFont;
+  const nameWidth = context.measureText(nameString).width;
+  const startX = cellX - (iconWidth + iconGap + nameWidth) / 2;
+  if (image) drawPlainIcon(context, image, startX, y, iconSize);
   posterText(
-    ctx,
-    nameStr,
-    startX + iconW + iconGap,
+    context,
+    nameString,
+    startX + iconWidth + iconGap,
     y + iconSize / 2,
     nameFont,
     "#f3f1ff",
@@ -165,68 +158,68 @@ function drawArmamentCard(ctx, iconMap, a, cellX, topY, cellW, iconSize) {
   );
   y += iconSize + 6;
 
-  if (a.inscriptions.length) {
+  if (armament.inscriptions.length) {
     const pillFont = "600 10px 'DM Sans', sans-serif";
-    const pillH = 18;
+    const pillHeight = 18;
     const gapX = 6;
     const gapY = 6;
-    const maxW = cellW - 10;
-    const pills = a.inscriptions.map((ins) => {
-      const label = ins.label;
+    const maxWidth = cellWidth - 10;
+    const pills = armament.inscriptions.map((inscription) => {
+      const label = inscription.label;
       return {
         label,
-        tier: ins.tier,
-        w: measurePillWidth(ctx, label, pillFont),
+        tier: inscription.tier,
+        w: measurePillWidth(context, label, pillFont),
       };
     });
     const lines = [];
     let line = [];
-    let lineW = 0;
-    pills.forEach((p) => {
-      const addW = p.w + (line.length ? gapX : 0);
-      if (lineW + addW > maxW && line.length) {
+    let lineWidth = 0;
+    pills.forEach((pill) => {
+      const addWidth = pill.w + (line.length ? gapX : 0);
+      if (lineWidth + addWidth > maxWidth && line.length) {
         lines.push(line);
         line = [];
-        lineW = 0;
+        lineWidth = 0;
       }
-      line.push(p);
-      lineW += p.w + (line.length > 1 ? gapX : 0);
+      line.push(pill);
+      lineWidth += pill.w + (line.length > 1 ? gapX : 0);
     });
     if (line.length) lines.push(line);
 
-    lines.forEach((ln) => {
-      const w = ln.reduce((s, p) => s + p.w, 0) + gapX * (ln.length - 1);
-      let x = cellX - w / 2;
-      ln.forEach((p) => {
-        posterRoundRect(ctx, x, y, p.w, pillH, pillH / 2);
-        ctx.fillStyle =
-          POSTER_RARITY_COLORS[p.tier] || POSTER_RARITY_COLORS.unknown;
-        ctx.fill();
+    lines.forEach((linePills) => {
+      const totalLineWidth = linePills.reduce((total, pill) => total + pill.w, 0) + gapX * (linePills.length - 1);
+      let x = cellX - totalLineWidth / 2;
+      linePills.forEach((pill) => {
+        posterRoundRect(context, x, y, pill.w, pillHeight, pillHeight / 2);
+        context.fillStyle =
+          POSTER_RARITY_COLORS[pill.tier] || POSTER_RARITY_COLORS.unknown;
+        context.fill();
         posterText(
-          ctx,
-          p.label,
-          x + p.w / 2,
-          y + pillH / 2 + 0.5,
+          context,
+          pill.label,
+          x + pill.w / 2,
+          y + pillHeight / 2 + 0.5,
           pillFont,
           "#0b0a1e",
         );
-        x += p.w + gapX;
+        x += pill.w + gapX;
       });
-      y += pillH + gapY;
+      y += pillHeight + gapY;
     });
     y += 2;
   }
 
-  a.stats.forEach((s) => {
-    const statStr = posterTruncate(
-      ctx,
-      `${s.name} +${s.val}%`,
+  armament.stats.forEach((stat) => {
+    const statString = posterTruncate(
+      context,
+      `${stat.name} +${stat.val}%`,
       "11px 'DM Sans', sans-serif",
-      cellW - 12,
+      cellWidth - 12,
     );
     posterText(
-      ctx,
-      statStr,
+      context,
+      statString,
       cellX,
       y + 7,
       "11px 'DM Sans', sans-serif",
@@ -238,12 +231,12 @@ function drawArmamentCard(ctx, iconMap, a, cellX, topY, cellW, iconSize) {
   return y - topY;
 }
 
-function drawEquipSlotIcon(ctx, iconMap, x, y, size, itemName, lvl, tal) {
-  const empty = isEmptyVal(itemName);
-  const rarity = getEquipRarity(itemName);
+function drawEquipmentSlotIcon(context, iconMap, x, y, size, itemName, level, talent) {
+  const empty = isEmptyValue(itemName);
+  const rarity = getEquipmentRarityByName(itemName);
   const color = POSTER_RARITY_COLORS[rarity] || POSTER_RARITY_COLORS.unknown;
   drawIconTile(
-    ctx,
+    context,
     empty ? null : iconMap.get(iconPath(itemName, "item")),
     x,
     y,
@@ -251,50 +244,50 @@ function drawEquipSlotIcon(ctx, iconMap, x, y, size, itemName, lvl, tal) {
     color,
   );
   if (!empty) {
-    const roman = toRoman(lvl);
+    const roman = toRoman(level);
     if (roman) {
-      const badgeW = Math.max(16, size * 0.42);
-      const badgeH = 13;
-      const bx = x + size / 2 - badgeW / 2;
-      const by = y + size - badgeH / 2 - 2;
-      posterRoundRect(ctx, bx, by, badgeW, badgeH, badgeH / 2);
-      ctx.fillStyle = "rgba(10,8,25,0.88)";
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.3)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      const badgeWidth = Math.max(16, size * 0.42);
+      const badgeHeight = 13;
+      const badgeX = x + size / 2 - badgeWidth / 2;
+      const badgeY = y + size - badgeHeight / 2 - 2;
+      posterRoundRect(context, badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2);
+      context.fillStyle = "rgba(10,8,25,0.88)";
+      context.fill();
+      context.strokeStyle = "rgba(255,255,255,0.3)";
+      context.lineWidth = 1;
+      context.stroke();
       posterText(
-        ctx,
+        context,
         roman,
-        bx + badgeW / 2,
-        by + badgeH / 2 + 0.5,
+        badgeX + badgeWidth / 2,
+        badgeY + badgeHeight / 2 + 0.5,
         "700 9px 'DM Sans', sans-serif",
         "#ffd76a",
       );
     }
-    if (hasTalent(tal)) {
-      ctx.beginPath();
-      ctx.fillStyle = "#57e08c";
-      ctx.arc(x + size - 6, y + 6, 4, 0, Math.PI * 2);
-      ctx.fill();
+    if (hasTalent(talent)) {
+      context.beginPath();
+      context.fillStyle = "#57e08c";
+      context.arc(x + size - 6, y + 6, 4, 0, Math.PI * 2);
+      context.fill();
     }
   }
 }
 
-const EQUIP_DIAMOND_ROWS = [[0], [1], [2, 3], [4], [5, 6], [7]];
+const EQUIPMENT_DIAMOND_ROWS = [[0], [1], [2, 3], [4], [5, 6], [7]];
 
-function drawEquipDiamond(ctx, iconMap, slots, centerX, topY, slotSize) {
+function drawEquipmentDiamond(context, iconMap, slots, centerX, topY, slotSize) {
   const gapV = 6;
-  const gapH = 10;
+  const gapHeight = 10;
   let y = topY;
-  EQUIP_DIAMOND_ROWS.forEach((idxRow) => {
-    const rowSlots = idxRow.map((i) => slots[i]);
-    const n = rowSlots.length;
-    const rowW = n * slotSize + (n - 1) * gapH;
-    let x = centerX - rowW / 2;
-    rowSlots.forEach(({ itemName, lvl, tal }) => {
-      drawEquipSlotIcon(ctx, iconMap, x, y, slotSize, itemName, lvl, tal);
-      x += slotSize + gapH;
+  EQUIPMENT_DIAMOND_ROWS.forEach((indexRow) => {
+    const rowSlots = indexRow.map((index) => slots[index]);
+    const slotCount = rowSlots.length;
+    const rowWidth = slotCount * slotSize + (slotCount - 1) * gapHeight;
+    let x = centerX - rowWidth / 2;
+    rowSlots.forEach(({ itemName, lvl: level, tal: talent }) => {
+      drawEquipmentSlotIcon(context, iconMap, x, y, slotSize, itemName, level, talent);
+      x += slotSize + gapHeight;
     });
     y += slotSize + gapV;
   });
@@ -303,41 +296,28 @@ function drawEquipDiamond(ctx, iconMap, slots, centerX, topY, slotSize) {
 
 function buildEquipmentMarches(row) {
   if (!row) return [];
-  const MARCH_SUFFIXES = [
-    "",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-    "11",
-    "12",
-  ];
+  const MARCH_SUFFIXES = marchSuffixes(row);
   const marches = [];
-  MARCH_SUFFIXES.forEach((suffix, idx) => {
+  MARCH_SUFFIXES.forEach((suffix, index) => {
     if (isMarchEmpty(row, suffix)) return;
-    const slots = EQUIP_SLOTS.map((slot) => {
-      const colKey = suffix ? `${slot.key}_${suffix}` : slot.key;
-      const lvlKey = suffix ? `${slot.key}_lvl_${suffix}` : `${slot.key}_lvl`;
-      const talKey = suffix ? `${slot.key}_tal_${suffix}` : `${slot.key}_tal`;
-      return { itemName: row[colKey], lvl: row[lvlKey], tal: row[talKey] };
+    const slots = EQUIPMENT_SLOTS.map((slot) => {
+      const slotColumnKey = suffix ? `${slot.key}_${suffix}` : slot.key;
+      const slotLevelKey = suffix ? `${slot.key}_lvl_${suffix}` : `${slot.key}_lvl`;
+      const slotTalentKey = suffix ? `${slot.key}_tal_${suffix}` : `${slot.key}_tal`;
+      return { itemName: row[slotColumnKey], lvl: row[slotLevelKey], tal: row[slotTalentKey] };
     });
-    marches.push({ marchNum: idx + 1, slots });
+    marches.push({ marchNum: index + 1, slots });
   });
   return marches;
 }
 
-function buildArmamentsList(armRow) {
-  if (!armRow) return [];
+function buildArmamentsList(armamentRow) {
+  if (!armamentRow) return [];
   const list = [];
-  ARM_SLOTS.forEach((arm) => {
-    const name = armRow[arm.prefix];
-    if (isEmptyVal(name)) return;
-    const insKeys = [
+  armamentSlotsFor(armamentRow).forEach((armament) => {
+    const name = armamentRow[armament.prefix];
+    if (isEmptyValue(name)) return;
+    const inscriptionKeys = [
       "_ins",
       "_ins2",
       "_ins3",
@@ -347,16 +327,16 @@ function buildArmamentsList(armRow) {
       "_ins7",
       "_ins8",
     ];
-    const inscriptions = insKeys
-      .map((k) => armRow[`${arm.prefix}${k}`])
-      .filter((v) => !isEmptyVal(v))
-      .map((v) => ({
-        label: String(v).trim(),
-        tier: getAbilityTier(String(v)),
+    const inscriptions = inscriptionKeys
+      .map((inscriptionKey) => armamentRow[`${armament.prefix}${inscriptionKey}`])
+      .filter((value) => !isEmptyValue(value))
+      .map((value) => ({
+        label: String(value).trim(),
+        tier: getAbilityTier(String(value)),
       }));
-    const stats = armStatColumns(arm.prefix)
-      .filter((s) => !isEmptyVal(armRow[s.n]) && !isEmptyVal(armRow[s.v]))
-      .map((s) => ({ name: String(armRow[s.n]), val: String(armRow[s.v]) }));
+    const stats = armamentStatColumns(armament.prefix)
+      .filter((stat) => !isEmptyValue(armamentRow[stat.n]) && !isEmptyValue(armamentRow[stat.v]))
+      .map((stat) => ({ name: String(armamentRow[stat.n]), val: String(armamentRow[stat.v]) }));
     list.push({
       name: String(name),
       icon: iconPath(name, "armament"),
@@ -370,50 +350,50 @@ function buildArmamentsList(armRow) {
 function buildPairsList(row) {
   if (!row) return [];
   const pairs = [];
-  for (let n = 1; n <= 12; n++) {
-    const c1 = row[`pair${n}_comm1`];
-    const c2 = row[`pair${n}_comm2`];
-    if (isEmptyVal(c1) && isEmptyVal(c2)) continue;
-    pairs.push([c1, c2]);
+  for (let pairNumber = 1; pairNumber <= pairCount(row); pairNumber++) {
+    const firstCommander = row[`pair${pairNumber}_comm1`];
+    const secondCommander = row[`pair${pairNumber}_comm2`];
+    if (isEmptyValue(firstCommander) && isEmptyValue(secondCommander)) continue;
+    pairs.push([firstCommander, secondCommander]);
   }
   return pairs;
 }
 
 function buildSkinsList(skinsRow) {
   if (!skinsRow) return [];
-  return SKIN_SLOTS.map((k) => skinsRow[k]).filter((v) => !isEmptyVal(v));
+  return skinKeysFor(skinsRow).map((key) => skinsRow[key]).filter((value) => !isEmptyValue(value));
 }
 
-function renderPosterContent(ctx, data, iconMap, W) {
-  const { scan, profile, ch, accType, marches, armaments, pairs, skins } = data;
+function renderPosterContent(context, data, iconMap, width) {
+  const { scan, profile, ch: cityHallLevel, accType: accountType, marches, armaments, pairs, skins } = data;
   const padX = POSTER_PAD_X;
-  const contentW = W - padX * 2;
-  const cx = W / 2;
+  const contentWidth = width - padX * 2;
+  const centerX = width / 2;
   let y = 36;
 
   posterText(
-    ctx,
+    context,
     data.name,
-    cx,
+    centerX,
     y + 26,
     "700 26px 'DM Sans', sans-serif",
     "#f3f1ff",
   );
-  posterText(ctx, `ID ${data.govId}`, cx, y + 52, "13px monospace", "#b9a8f5");
+  posterText(context, `ID ${data.govId}`, centerX, y + 52, "13px monospace", "#b9a8f5");
   const badgeParts = [];
-  if (profile?.vip_level && !isEmptyVal(profile.vip_level)) {
+  if (profile?.vip_level && !isEmptyValue(profile.vip_level)) {
     badgeParts.push(
       String(profile.vip_level) === "20" ? "SVIP" : `VIP ${profile.vip_level}`,
     );
   }
-  if (ch) badgeParts.push(`CH ${ch}`);
-  if (accType === "farm") badgeParts.push("Farm Account");
-  if (accType === "main") badgeParts.push("Main Account");
+  if (cityHallLevel) badgeParts.push(`CH ${cityHallLevel}`);
+  if (accountType === "farm") badgeParts.push("Farm Account");
+  if (accountType === "main") badgeParts.push("Main Account");
   if (badgeParts.length) {
     posterText(
-      ctx,
+      context,
       badgeParts.join("   ·   "),
-      cx,
+      centerX,
       y + 80,
       "600 13px 'DM Sans', sans-serif",
       "#8fe3ac",
@@ -421,12 +401,12 @@ function renderPosterContent(ctx, data, iconMap, W) {
   }
   y += 116;
 
-  ctx.strokeStyle = "rgba(255,255,255,0.14)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(cx - 230, y);
-  ctx.lineTo(cx + 230, y);
-  ctx.stroke();
+  context.strokeStyle = "rgba(255,255,255,0.14)";
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(centerX - 230, y);
+  context.lineTo(centerX + 230, y);
+  context.stroke();
   y += 26;
 
   if (scan) {
@@ -452,12 +432,12 @@ function renderPosterContent(ctx, data, iconMap, W) {
       ],
     ];
     rows.forEach((items) => {
-      const itemW = contentW / items.length;
-      const startX = padX + itemW / 2;
-      items.forEach(([label, value], i) => {
-        const x = startX + i * itemW;
+      const itemWidth = contentWidth / items.length;
+      const startX = padX + itemWidth / 2;
+      items.forEach(([label, value], index) => {
+        const x = startX + index * itemWidth;
         posterText(
-          ctx,
+          context,
           label,
           x,
           y + 13,
@@ -465,7 +445,7 @@ function renderPosterContent(ctx, data, iconMap, W) {
           "#b9a8f5",
         );
         posterText(
-          ctx,
+          context,
           value,
           x,
           y + 35,
@@ -476,9 +456,9 @@ function renderPosterContent(ctx, data, iconMap, W) {
       y += 52;
     });
     posterText(
-      ctx,
+      context,
       `Snapshot · ${data.snapDate}`,
-      W - padX,
+      width - padX,
       y + 6,
       "11px 'DM Sans', sans-serif",
       "rgba(185,168,245,0.7)",
@@ -487,9 +467,9 @@ function renderPosterContent(ctx, data, iconMap, W) {
     y += 30;
   } else {
     posterText(
-      ctx,
+      context,
       "No live scan data available.",
-      cx,
+      centerX,
       y + 20,
       "14px 'DM Sans', sans-serif",
       "rgba(255,255,255,0.55)",
@@ -502,9 +482,9 @@ function renderPosterContent(ctx, data, iconMap, W) {
   y += 26;
   if (!marches.length) {
     posterText(
-      ctx,
+      context,
       "No equipment set.",
-      cx,
+      centerX,
       y + 12,
       "13px 'DM Sans', sans-serif",
       "rgba(255,255,255,0.5)",
@@ -512,32 +492,32 @@ function renderPosterContent(ctx, data, iconMap, W) {
     y += 30;
   } else {
     const slotSize = 42;
-    const colsPerRow = Math.min(marches.length, 4);
-    const colW = contentW / colsPerRow;
-    for (let i = 0; i < marches.length; i += colsPerRow) {
-      const rowMarches = marches.slice(i, i + colsPerRow);
-      let maxColHeight = 0;
-      rowMarches.forEach((m, ci) => {
-        const colCenterX = padX + colW * ci + colW / 2;
+    const columnsPerRow = Math.min(marches.length, 4);
+    const columnWidth = contentWidth / columnsPerRow;
+    for (let index = 0; index < marches.length; index += columnsPerRow) {
+      const rowMarches = marches.slice(index, index + columnsPerRow);
+      let maxColumnHeight = 0;
+      rowMarches.forEach((march, columnIndex) => {
+        const columnCenterX = padX + columnWidth * columnIndex + columnWidth / 2;
         posterText(
-          ctx,
-          `Equipment ${m.marchNum}`,
-          colCenterX,
+          context,
+          `Equipment ${march.marchNum}`,
+          columnCenterX,
           y + 8,
           "600 12px 'DM Sans', sans-serif",
           "#b9a8f5",
         );
-        const colH = drawEquipDiamond(
-          ctx,
+        const columnHeight = drawEquipmentDiamond(
+          context,
           iconMap,
-          m.slots,
-          colCenterX,
+          march.slots,
+          columnCenterX,
           y + 24,
           slotSize,
         );
-        maxColHeight = Math.max(maxColHeight, colH);
+        maxColumnHeight = Math.max(maxColumnHeight, columnHeight);
       });
-      y += 24 + maxColHeight + 26;
+      y += 24 + maxColumnHeight + 26;
     }
   }
 
@@ -546,28 +526,28 @@ function renderPosterContent(ctx, data, iconMap, W) {
   y += 16;
   if (!armaments.length) {
     posterText(
-      ctx,
+      context,
       "No armaments set.",
-      cx,
+      centerX,
       y + 12,
       "13px 'DM Sans', sans-serif",
       "rgba(255,255,255,0.5)",
     );
     y += 30;
   } else {
-    const cols = 4;
-    const cellW = contentW / cols;
+    const columns = 4;
+    const cellWidth = contentWidth / columns;
     const iconSize = 30;
     const rowGap = 14;
-    for (let i = 0; i < armaments.length; i += cols) {
-      const rowArms = armaments.slice(i, i + cols);
-      let maxH = 0;
-      rowArms.forEach((a, ci) => {
-        const cellX = padX + cellW * ci + cellW / 2;
-        const h = drawArmamentCard(ctx, iconMap, a, cellX, y, cellW, iconSize);
-        maxH = Math.max(maxH, h);
+    for (let index = 0; index < armaments.length; index += columns) {
+      const rowArms = armaments.slice(index, index + columns);
+      let maxHeight = 0;
+      rowArms.forEach((armament, columnIndex) => {
+        const cellX = padX + cellWidth * columnIndex + cellWidth / 2;
+        const cardHeight = drawArmamentCard(context, iconMap, armament, cellX, y, cellWidth, iconSize);
+        maxHeight = Math.max(maxHeight, cardHeight);
       });
-      y += maxH + rowGap;
+      y += maxHeight + rowGap;
     }
   }
 
@@ -576,41 +556,41 @@ function renderPosterContent(ctx, data, iconMap, W) {
   y += 26;
   if (!pairs.length) {
     posterText(
-      ctx,
+      context,
       "No commander pairs set.",
-      cx,
+      centerX,
       y + 12,
       "13px 'DM Sans', sans-serif",
       "rgba(255,255,255,0.5)",
     );
     y += 30;
   } else {
-    const cols = 5;
-    const cellW = contentW / cols;
+    const columns = 5;
+    const cellWidth = contentWidth / columns;
     const iconSize = 58;
     const boxGap = 8;
     const rowStep = 96;
-    pairs.forEach(([c1, c2], i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const cellX = padX + cellW * col + cellW / 2;
+    pairs.forEach(([firstCommander, secondCommander], index) => {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const cellX = padX + cellWidth * column + cellWidth / 2;
       const cellY = y + row * rowStep;
-      const totalW = iconSize * 2 + boxGap;
-      let x0 = cellX - totalW / 2;
-      [c1, c2].forEach((c) => {
-        const empty = isEmptyVal(c);
+      const totalWidth = iconSize * 2 + boxGap;
+      let rowStartX = cellX - totalWidth / 2;
+      [firstCommander, secondCommander].forEach((commander) => {
+        const empty = isEmptyValue(commander);
         drawIconTile(
-          ctx,
-          empty ? null : iconMap.get(iconPath(c, "commander")),
-          x0,
+          context,
+          empty ? null : iconMap.get(iconPath(commander, "commander")),
+          rowStartX,
           cellY,
           iconSize,
           "#3a2f66",
         );
-        x0 += iconSize + boxGap;
+        rowStartX += iconSize + boxGap;
       });
     });
-    y += Math.ceil(pairs.length / cols) * rowStep;
+    y += Math.ceil(pairs.length / columns) * rowStep;
   }
 
   y += 16;
@@ -618,26 +598,26 @@ function renderPosterContent(ctx, data, iconMap, W) {
   y += 26;
   if (!skins.length) {
     posterText(
-      ctx,
+      context,
       "No skins set.",
-      cx,
+      centerX,
       y + 12,
       "13px 'DM Sans', sans-serif",
       "rgba(255,255,255,0.5)",
     );
     y += 30;
   } else {
-    const cols = 5;
-    const cellW = contentW / cols;
+    const columns = 5;
+    const cellWidth = contentWidth / columns;
     const iconSize = 76;
     const rowStep = 122;
-    skins.forEach((code, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const cellX = padX + cellW * col + cellW / 2;
+    skins.forEach((code, index) => {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const cellX = padX + cellWidth * column + cellWidth / 2;
       const cellY = y + row * rowStep;
       drawIconTile(
-        ctx,
+        context,
         iconMap.get(iconPath(code, "skin")),
         cellX - iconSize / 2,
         cellY,
@@ -646,13 +626,13 @@ function renderPosterContent(ctx, data, iconMap, W) {
       );
       const info = getSkinInfo(code);
       const label = posterTruncate(
-        ctx,
+        context,
         (info && info.name) || code,
         "600 13px 'DM Sans', sans-serif",
-        cellW - 12,
+        cellWidth - 12,
       );
       posterText(
-        ctx,
+        context,
         label,
         cellX,
         cellY + iconSize + 16,
@@ -660,84 +640,84 @@ function renderPosterContent(ctx, data, iconMap, W) {
         "#f3f1ff",
       );
     });
-    y += Math.ceil(skins.length / cols) * rowStep;
+    y += Math.ceil(skins.length / columns) * rowStep;
   }
 
   y += 30;
   return y;
 }
 
-async function buildStatPosterDataUrl(govId) {
-  const scan = loadScanStats(govId);
-  const profile = loadPlayerProfile(govId);
-  const ch = loadCH(govId);
-  const accType = getAccType(govId);
-  const equipRow = loadGovernorEquipment(govId);
-  const armRow = loadGovernorArmaments(govId);
-  const skinsRow = loadGovernorSkins(govId);
+async function buildStatPosterDataUrl(governorId) {
+  const scan = loadScanStats(governorId);
+  const profile = loadPlayerProfile(governorId);
+  const cityHallLevel = loadCityHallLevel(governorId);
+  const accountType = getAccountType(governorId);
+  const equipmentRow = loadGovernorEquipment(governorId);
+  const armamentRow = loadGovernorArmaments(governorId);
+  const skinsRow = loadGovernorSkins(governorId);
 
-  const marches = buildEquipmentMarches(equipRow);
-  const armaments = buildArmamentsList(armRow);
-  const pairs = buildPairsList(equipRow);
+  const marches = buildEquipmentMarches(equipmentRow);
+  const armaments = buildArmamentsList(armamentRow);
+  const pairs = buildPairsList(equipmentRow);
   const skins = buildSkinsList(skinsRow);
 
   const iconSrcs = new Set();
-  marches.forEach((m) =>
-    m.slots.forEach(({ itemName }) => {
-      if (!isEmptyVal(itemName)) iconSrcs.add(iconPath(itemName, "item"));
+  marches.forEach((march) =>
+    march.slots.forEach(({ itemName }) => {
+      if (!isEmptyValue(itemName)) iconSrcs.add(iconPath(itemName, "item"));
     }),
   );
-  armaments.forEach((a) => iconSrcs.add(a.icon));
-  pairs.forEach(([c1, c2]) =>
-    [c1, c2].forEach((c) => {
-      if (!isEmptyVal(c)) iconSrcs.add(iconPath(c, "commander"));
+  armaments.forEach((armament) => iconSrcs.add(armament.icon));
+  pairs.forEach(([firstCommander, secondCommander]) =>
+    [firstCommander, secondCommander].forEach((commander) => {
+      if (!isEmptyValue(commander)) iconSrcs.add(iconPath(commander, "commander"));
     }),
   );
-  skins.forEach((s) => iconSrcs.add(iconPath(s, "skin")));
+  skins.forEach((skin) => iconSrcs.add(iconPath(skin, "skin")));
 
   const iconMap = new Map();
   await Promise.all(
-    [...iconSrcs].map(async (src) => {
-      iconMap.set(src, await loadImageSafe(src));
+    [...iconSrcs].map(async (source) => {
+      iconMap.set(source, await loadImageSafe(source));
     }),
   );
 
   const data = {
-    name: (scan && scan.name) || String(govId),
-    govId: String(govId),
+    name: (scan && scan.name) || String(governorId),
+    govId: String(governorId),
     snapDate: scan ? scan.snapDate : "",
     scan,
     profile,
-    ch,
-    accType,
+    ch: cityHallLevel,
+    accType: accountType,
     marches,
     armaments,
     pairs,
     skins,
   };
 
-  const W = POSTER_W;
+  const posterWidth = POSTER_WIDTH;
   const scratch = document.createElement("canvas");
-  scratch.width = W;
+  scratch.width = posterWidth;
   scratch.height = 8000;
   const measuredHeight = renderPosterContent(
     scratch.getContext("2d"),
     data,
     iconMap,
-    W,
+    posterWidth,
   );
 
   const SCALE = 2;
 
   const canvas = document.createElement("canvas");
-  canvas.width = W * SCALE;
+  canvas.width = posterWidth * SCALE;
   canvas.height = Math.ceil(measuredHeight) * SCALE;
-  const ctx = canvas.getContext("2d");
-  ctx.scale(SCALE, SCALE);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  drawPosterBackground(ctx, W, Math.ceil(measuredHeight));
-  renderPosterContent(ctx, data, iconMap, W);
+  const context = canvas.getContext("2d");
+  context.scale(SCALE, SCALE);
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  drawPosterBackground(context, posterWidth, Math.ceil(measuredHeight));
+  renderPosterContent(context, data, iconMap, posterWidth);
 
   return canvas.toDataURL("image/png");
 }

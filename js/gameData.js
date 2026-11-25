@@ -1,13 +1,4 @@
-/* ==========================================================================
-   gameData.js — Rise of Kingdoms reference data shared by the dashboard modal,
-   the player card and the equipment editor: data, .json loading, lookups,
-   icon paths, small equipment helpers and hover tooltips.
-   Depends on: common.js (escapeHtml).
-   Everything lives behind `refData` so pages can keep their own variables
-   called skinsData / itemsData etc. without clashing.
-   ========================================================================== */
-
-const refData = {
+const referenceData = {
   items: {},
   commanders: {},
   inscriptions: {},
@@ -18,7 +9,7 @@ const refData = {
   armTroopTypes: {},
 };
 
-const REF_FILES = {
+const REFERENCE_FILES = {
   items: { url: "data/items.json", key: "items" },
   commanders: { url: "data/commanders.json", key: "commanders" },
   inscriptions: { url: "data/inscriptions.json", key: "inscriptions" },
@@ -26,104 +17,138 @@ const REF_FILES = {
   armaments: { url: "data/armaments.json", key: "armaments" },
   armTroopTypes: { url: "data/arm_troop_types.json", key: "types" },
 };
+const DEFAULT_REFERENCE_KINDS = ["items", "commanders", "inscriptions", "skins", "armaments", "armTroopTypes"];
+const referenceLoads = {};
 
-const DEFAULT_REF_KINDS = ["items", "commanders", "inscriptions", "skins", "armaments", "armTroopTypes"];
-const refLoads = {};
-
-function normalizeArmamentKey(v) {
-  return String(v ?? "")
+function normalizeArmamentKey(value) {
+  return String(value ?? "")
     .trim()
     .toLowerCase()
     .replace(/formation/g, "")
     .replace(/[^a-z0-9]/g, "");
 }
 
-function loadRefFile(kind) {
-  refLoads[kind] ??= (async () => {
-    const { url, key } = REF_FILES[kind];
+function loadReferenceFile(kind) {
+  referenceLoads[kind] ??= (async () => {
+    const { url, key } = REFERENCE_FILES[kind];
     try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      refData[kind] = json[key] || {};
-    } catch (e) {
-      console.error(`${url} failed to load or parse:`, e);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const json = await response.json();
+      referenceData[kind] = json[key] || {};
+    } catch (event) {
+      console.error(`${url} failed to load or parse:`, event);
     }
   })();
-  return refLoads[kind];
+  return referenceLoads[kind];
 }
 
-async function loadEquipRefData(kinds = DEFAULT_REF_KINDS) {
-  await Promise.all(kinds.map(loadRefFile));
+async function loadEquipmentReferenceData(kinds = DEFAULT_REFERENCE_KINDS) {
+  await Promise.all(kinds.map(loadReferenceFile));
 
-  refData.inscriptionsByName = {};
-  for (const [key, info] of Object.entries(refData.inscriptions)) {
-    const nameKey = String(info.name || key).trim().toLowerCase();
-    refData.inscriptionsByName[nameKey] = { key, ...info };
+  if (kinds.includes("inscriptions") && !Object.keys(referenceData.inscriptionsByName).length) {
+    for (const [key, info] of Object.entries(referenceData.inscriptions)) {
+      const nameKey = String(info.name || key).trim().toLowerCase();
+      referenceData.inscriptionsByName[nameKey] = { key, ...info };
+    }
   }
-  refData.armamentsByKey = {};
-  for (const [key, info] of Object.entries(refData.armaments)) {
-    const entry = { key, ...info };
-    refData.armamentsByKey[normalizeArmamentKey(key)] = entry;
-    if (info.name) refData.armamentsByKey[normalizeArmamentKey(info.name)] = entry;
+  if (kinds.includes("armaments") && !Object.keys(referenceData.armamentsByKey).length) {
+    for (const [key, info] of Object.entries(referenceData.armaments)) {
+      const entry = { key, ...info };
+      referenceData.armamentsByKey[normalizeArmamentKey(key)] = entry;
+      if (info.name) referenceData.armamentsByKey[normalizeArmamentKey(info.name)] = entry;
+    }
   }
 }
 
 const lookup = (table, code) => table[String(code ?? "").trim()] || null;
 
 function getItemInfo(code) {
-  return lookup(refData.items, code);
+  return lookup(referenceData.items, code);
 }
 function getCommanderInfo(code) {
-  return lookup(refData.commanders, code);
+  return lookup(referenceData.commanders, code);
 }
 function getSkinInfo(code) {
-  return lookup(refData.skins, code);
+  return lookup(referenceData.skins, code);
 }
 function getInscriptionInfo(name) {
-  return refData.inscriptionsByName[String(name ?? "").trim().toLowerCase()] || null;
+  return referenceData.inscriptionsByName[String(name ?? "").trim().toLowerCase()] || null;
 }
 function getArmamentInfo(name) {
-  return refData.armamentsByKey[normalizeArmamentKey(name)] || null;
+  return referenceData.armamentsByKey[normalizeArmamentKey(name)] || null;
 }
 
 function getArmamentTypeOptions() {
-  return Object.values(refData.armaments)
-    .filter((a) => a.name)
-    .map((a) => ({ value: a.name.replace(/\s+Formation$/i, ""), label: a.name }));
+  return Object.values(referenceData.armaments)
+    .filter((armament) => armament.name)
+    .map((armament) => ({ value: armament.name.replace(/\s+Formation$/i, ""), label: armament.name }));
 }
 
-function getArmStatIconPath(statName) {
-  const icon = refData.armTroopTypes[String(statName ?? "").trim()]?.icon;
+function getArmamentStatIconPath(statName) {
+  const icon = referenceData.armTroopTypes[String(statName ?? "").trim()]?.icon;
   return icon ? `icons/troopico/${encodeURIComponent(icon)}.webp` : null;
 }
 
-function getArmTroopTypeNames() {
-  return Object.keys(refData.armTroopTypes);
+function getArmamentTroopTypeNames() {
+  return Object.keys(referenceData.armTroopTypes);
 }
 
 function getAllInscriptionNames() {
-  return Object.values(refData.inscriptionsByName)
-    .map((i) => i.name)
-    .sort((a, b) => a.localeCompare(b));
+  return Object.values(referenceData.inscriptionsByName)
+    .map((index) => index.name)
+    .sort((firstName, secondName) => firstName.localeCompare(secondName));
 }
 
-const ARM_STAT_COUNT = 14;
-const ARM_STAT_DEFS = Array.from({ length: ARM_STAT_COUNT }, (_, i) => {
-  const n = i + 1;
-  return n === 1
+const ARMAMENT_STAT_COUNT = 14;
+const ARMAMENT_STAT_DEFINITIONS = Array.from({ length: ARMAMENT_STAT_COUNT }, (_, index) => {
+  const skinNumber = index + 1;
+  return skinNumber === 1
     ? { nameKey: "_stat_name", valKey: "_stat" }
-    : { nameKey: `_stat${n}_name${n}`, valKey: `_stat${n}` };
+    : { nameKey: `_stat${skinNumber}_name${skinNumber}`, valKey: `_stat${skinNumber}` };
 });
 
-function armStatColumns(prefix) {
-  return ARM_STAT_DEFS.map((s) => ({ n: prefix + s.nameKey, v: prefix + s.valKey }));
+function armamentStatColumns(prefix) {
+  return ARMAMENT_STAT_DEFINITIONS.map((armamentStatDefinition) => ({ n: prefix + armamentStatDefinition.nameKey, v: prefix + armamentStatDefinition.valKey }));
 }
 
-function isEmptyVal(v) {
-  if (v === null || v === undefined || v === "") return true;
-  const s = String(v).trim().toLowerCase();
-  return s === "none" || s === "0";
+const MARCH_COLUMN_REGEX =
+  /^(?:helm|chest|weapon|gloves|legs|boots|accessory|accessory_sec)_(\d+)$/;
+
+function maxNumberedColumn(row, pattern) {
+  let max = 0;
+  if (!row) return max;
+  for (const key of Object.keys(row)) {
+    const match = pattern.exec(key);
+    if (match) max = Math.max(max, Number(match[1]));
+  }
+  return max;
+}
+
+function marchSuffixes(row) {
+  const count = Math.max(1, maxNumberedColumn(row, MARCH_COLUMN_REGEX));
+  return Array.from({ length: count }, (_, index) => (index === 0 ? "" : String(index + 1)));
+}
+
+function pairCount(row) {
+  return maxNumberedColumn(row, /^pair(\d+)_comm[12]$/);
+}
+
+function armamentSlotsFor(row) {
+  return Array.from({ length: maxNumberedColumn(row, /^arm(\d+)$/) }, (_, index) => ({
+    prefix: `arm${index + 1}`,
+    label: `Arm ${index + 1}`,
+  }));
+}
+
+function skinKeysFor(row) {
+  return Array.from({ length: maxNumberedColumn(row, /^skin(\d+)$/) }, (_, index) => `skin${index + 1}`);
+}
+
+function isEmptyValue(value) {
+  if (value === null || value === undefined || value === "") return true;
+  const text = String(value).trim().toLowerCase();
+  return text === "none" || text === "0";
 }
 
 const ROMAN_NUMERALS = [
@@ -140,16 +165,16 @@ const ROMAN_NUMERALS = [
   "X",
 ];
 
-function toRoman(v) {
-  const n = parseInt(String(v).trim(), 10);
-  if (!Number.isFinite(n) || n <= 0) return "";
-  return ROMAN_NUMERALS[n] || String(n);
+function toRoman(value) {
+  const numericValue = parseInt(String(value).trim(), 10);
+  if (!Number.isFinite(numericValue) || numericValue <= 0) return "";
+  return ROMAN_NUMERALS[numericValue] || String(numericValue);
 }
 
-function hasTalent(v) {
-  if (isEmptyVal(v)) return false;
-  const s = String(v).trim().toLowerCase();
-  return !["no", "n", "false", "-", "—"].includes(s);
+function hasTalent(value) {
+  if (isEmptyValue(value)) return false;
+  const text = String(value).trim().toLowerCase();
+  return !["no", "n", "false", "-", "—"].includes(text);
 }
 
 function getAbilityTier(name) {
@@ -170,51 +195,51 @@ function iconPath(name, kind) {
   return `icons/${folder}/${encodeURIComponent(String(name).trim().toLowerCase())}.webp`;
 }
 
-const toArray = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+const toArray = (value) => (Array.isArray(value) ? value : value ? [value] : []);
 
-function ttName(name, rarity) {
-  const cls = rarity ? ` tt-rarity-${escapeHtml(String(rarity).toLowerCase())}` : "";
-  return `<div class="tt-name${cls}">${escapeHtml(name)}</div>`;
+function tooltipName(name, rarity) {
+  const cssClass = rarity ? ` tt-rarity-${escapeHtml(String(rarity).toLowerCase())}` : "";
+  return `<div class="tt-name${cssClass}">${escapeHtml(name)}</div>`;
 }
 
-function ttSlot(text) {
+function tooltipSlot(text) {
   return text ? `<div class="tt-slot">${escapeHtml(text)}</div>` : "";
 }
 
-function ttStats(list) {
+function tooltipStats(list) {
   const stats = toArray(list);
   return stats.length
-    ? `<ul class="tt-stats">${stats.map((s) => `<li>${escapeHtml(String(s))}</li>`).join("")}</ul>`
+    ? `<ul class="tt-stats">${stats.map((stat) => `<li>${escapeHtml(String(stat))}</li>`).join("")}</ul>`
     : "";
 }
 
-function ttDesc(desc) {
+function tooltipDescription(desc) {
   const lines = toArray(desc);
   return lines.length
-    ? `<div class="tt-desc">${lines.map((d) => escapeHtml(String(d))).join("<br>")}</div>`
+    ? `<div class="tt-desc">${lines.map((line) => escapeHtml(String(line))).join("<br>")}</div>`
     : "";
 }
 
 function buildTooltipHtml(code, kind) {
-  if (isEmptyVal(code)) return "";
+  if (isEmptyValue(code)) return "";
   const key = String(code).trim();
 
   if (kind === "commander") {
     const info = getCommanderInfo(key);
-    return ttName(info?.name || key);
+    return tooltipName(info?.name || key);
   }
 
   if (kind === "armament") {
     const info = getArmamentInfo(key);
-    return ttName(info?.name || key) + ttDesc(info?.description);
+    return tooltipName(info?.name || key) + tooltipDescription(info?.description);
   }
 
   if (kind === "inscription") {
     const info = getInscriptionInfo(key);
-    if (!info) return ttName(key);
+    if (!info) return tooltipName(key);
     return (
-      ttName(info.name || key, info.rarity || "gold") +
-      ttSlot(info.type) +
+      tooltipName(info.name || key, info.rarity || "gold") +
+      tooltipSlot(info.type) +
       (info.description
         ? `<div class="tt-desc">${escapeHtml(String(info.description))}</div>`
         : "")
@@ -222,74 +247,74 @@ function buildTooltipHtml(code, kind) {
   }
 
   const info = kind === "skin" ? getSkinInfo(key) : getItemInfo(key);
-  if (!info) return ttName(key);
+  if (!info) return tooltipName(key);
   return (
-    ttName(info.name || key, info.rarity || "gold") +
-    (kind === "skin" ? "" : ttSlot(info.slot)) +
-    ttStats(info.stats) +
-    ttDesc(info.description)
+    tooltipName(info.name || key, info.rarity || "gold") +
+    (kind === "skin" ? "" : tooltipSlot(info.slot)) +
+    tooltipStats(info.stats) +
+    tooltipDescription(info.description)
   );
 }
 
-function initEquipTooltip() {
-  const tip = document.getElementById("equipTooltip");
-  if (!tip) return;
+function initEquipmentTooltip() {
+  const tooltip = document.getElementById("equipTooltip");
+  if (!tooltip) return;
 
-  let activeEl = null;
+  let activeElement = null;
 
-  function positionTip(x, y) {
+  function positionTooltip(x, y) {
     const margin = 14;
-    const rect = tip.getBoundingClientRect();
+    const rect = tooltip.getBoundingClientRect();
     let left = x + margin;
-    let top = y + margin;
+    let tooltipTop = y + margin;
 
     if (left + rect.width > window.innerWidth - 8) {
       left = x - rect.width - margin;
     }
-    if (top + rect.height > window.innerHeight - 8) {
-      top = y - rect.height - margin;
+    if (tooltipTop + rect.height > window.innerHeight - 8) {
+      tooltipTop = y - rect.height - margin;
     }
     left = Math.max(8, left);
-    top = Math.max(8, top);
+    tooltipTop = Math.max(8, tooltipTop);
 
-    tip.style.left = `${left}px`;
-    tip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${tooltipTop}px`;
   }
 
-  document.addEventListener("mouseover", (e) => {
-    const el = e.target.closest("[data-tip-code]");
-    if (!el) return;
-    activeEl = el;
+  document.addEventListener("mouseover", (event) => {
+    const element = event.target.closest("[data-tip-code]");
+    if (!element) return;
+    activeElement = element;
 
-    const html = buildTooltipHtml(el.dataset.tipCode, el.dataset.tipKind);
+    const html = buildTooltipHtml(element.dataset.tipCode, element.dataset.tipKind);
     if (!html) return;
 
-    tip.innerHTML = html;
-    tip.style.display = "block";
-    positionTip(e.clientX, e.clientY);
+    tooltip.innerHTML = html;
+    tooltip.style.display = "block";
+    positionTooltip(event.clientX, event.clientY);
   });
 
-  document.addEventListener("mousemove", (e) => {
-    if (!activeEl || tip.style.display === "none") return;
-    positionTip(e.clientX, e.clientY);
+  document.addEventListener("mousemove", (event) => {
+    if (!activeElement || tooltip.style.display === "none") return;
+    positionTooltip(event.clientX, event.clientY);
   });
 
-  document.addEventListener("mouseout", (e) => {
-    const el = e.target.closest("[data-tip-code]");
-    if (!el || el !== activeEl) return;
-    if (el.contains(e.relatedTarget)) return;
-    activeEl = null;
-    tip.style.display = "none";
+  document.addEventListener("mouseout", (event) => {
+    const element = event.target.closest("[data-tip-code]");
+    if (!element || element !== activeElement) return;
+    if (element.contains(event.relatedTarget)) return;
+    activeElement = null;
+    tooltip.style.display = "none";
   });
 
   document.addEventListener(
     "scroll",
     () => {
-      tip.style.display = "none";
-      activeEl = null;
+      tooltip.style.display = "none";
+      activeElement = null;
     },
     true,
   );
 }
 
-document.addEventListener("DOMContentLoaded", initEquipTooltip);
+document.addEventListener("DOMContentLoaded", initEquipmentTooltip);

@@ -6,7 +6,10 @@
     <title>Player Card</title>
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.css"
+      integrity="sha512-x9WwyMYBnlXMNQ6kQ/Lyzu1NqIhLQKL5Oq6xByfXuRj7s9CskyCbLv/1IjqzJmXwFXWr0ov6jBV7Qbc0hh9nHg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     />
     <link rel="stylesheet" href="css/shared.css" />
     <link rel="stylesheet" href="css/govcards.css" />
@@ -21,8 +24,7 @@
         </button>
 
         <div class="nav-links" id="nav-links">
-          <a href="index.html">KD Select</a>
-          <a href="dashboard.html">Dashboard</a>
+          <a href="index.html">Select KvK</a>
           <a href="playercard.html" class="active">Player Card</a>
         </div>
 
@@ -94,10 +96,6 @@
             class="search-error"
             style="display: none"
           ></div>
-          <div id="db-loading" class="db-loading">
-            <div class="spinner"></div>
-            <span>Loading database…</span>
-          </div>
         </div>
 
         <div id="loading-state" class="loading-state" style="display: none">
@@ -301,13 +299,15 @@
 
     <footer>
       <div class="footer-bottom">
-        <span>Player Card.</span>
+        <div class="footer-container">
+          <span>Rise of Kingdoms is a trademark of Lilith Games. This website is a
+            fan site and is not affiliated with Lilith Games.</span>
+        </div>
       </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.2/dist/sql-wasm.js"></script>
     <script src="js/common.js"></script>
-    <script src="js/db.js"></script>>
+    <script src="js/supabase.js"></script>
     <script src="js/queries.js"></script>
     <script src="js/gameData.js"></script>
     <script src="js/govCards.js"></script>
