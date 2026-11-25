@@ -697,3 +697,12 @@
     gap: 8px;
   }
 }
+.db-loading {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-color);
+  opacity: 0.55;
+  font-size: 0.85rem;
+}
