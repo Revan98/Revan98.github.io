@@ -53,7 +53,7 @@ function renderEquipmentBox(slot, itemName, level, talent, marchIndex) {
   const fallback = `<div class="equip-placeholder" style="display:${imageSource ? "none" : "flex"};">${renderSlotPlaceholderIcon(slot.id)}</div>`;
   const tooltipAttributes = isEmptyOrNone
     ? ""
-    : ` data-tip-code="${escapeHtml(String(itemName).trim())}" data-tip-kind="item"`;
+    : ` data-tip-code="${escapeHtml(String(itemName).trim())}" data-tip-kind="item" data-tip-talent="${hasTalent(talent) ? 1 : 0}"`;
   const roman = isEmptyOrNone ? "" : toRoman(level);
   const awakenBadge = roman
     ? `<span class="equip-awk" title="Awakening ${roman}"><span class="equip-awk-text">${roman}</span></span>`
