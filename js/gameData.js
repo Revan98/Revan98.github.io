@@ -213,6 +213,39 @@ function tooltipStats(list) {
     : "";
 }
 
+function fillValues(template, values) {
+  const list = toArray(values);
+  return String(template)
+    .split(/(\{\d+\})/)
+    .map((part) => {
+      const match = /^\{(\d+)\}$/.exec(part);
+      if (!match) return escapeHtml(part).replace(/\n/g, "<br>");
+      const value = list[Number(match[1]) - 1];
+      return value ? `<b class="tt-val">${escapeHtml(String(value))}</b>` : escapeHtml(part);
+    })
+    .join("");
+}
+
+function tooltipIconic(list) {
+  const rows = toArray(list);
+  if (!rows.length) return "";
+  const roman = ["", "I", "II", "III", "IV", "V"];
+  const items = rows
+    .map((row) => {
+      const numeral = `<span class="tt-iconic-tier">${roman[row.tier] || escapeHtml(String(row.tier))}</span>`;
+      if (row.description || row.value == null) {
+        return (
+          `<li class="tt-iconic-skill">${numeral}<span class="tt-iconic-name">${escapeHtml(String(row.label))}</span>` +
+          (row.description ? `<div class="tt-iconic-desc">${fillValues(row.description, row.values)}</div>` : "") +
+          `</li>`
+        );
+      }
+      return `<li>${numeral}${escapeHtml(String(row.label))} <b class="tt-val">${escapeHtml(String(row.value))}</b></li>`;
+    })
+    .join("");
+  return `<div class="tt-section">Iconic Attributes</div><ul class="tt-iconic">${items}</ul>`;
+}
+
 function tooltipDescription(desc) {
   const lines = toArray(desc);
   return lines.length
@@ -252,7 +285,8 @@ function buildTooltipHtml(code, kind) {
     tooltipName(info.name || key, info.rarity || "gold") +
     (kind === "skin" ? "" : tooltipSlot(info.slot)) +
     tooltipStats(info.stats) +
-    tooltipDescription(info.description)
+    tooltipDescription(info.description) +
+    tooltipIconic(info.iconic)
   );
 }
 
