@@ -638,6 +638,36 @@ body.dark #backToTop:hover {
   content: "• ";
   opacity: 0.5;
 }
+.equip-tooltip .tt-section {
+  margin-top: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  opacity: 0.55;
+}
+.equip-tooltip .tt-val {
+  font-weight: 700;
+}
+.equip-tooltip .tt-iconic {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.equip-tooltip .tt-iconic-tier {
+  display: inline-block;
+  min-width: 1.6em;
+  font-weight: 700;
+  opacity: 0.7;
+}
+.equip-tooltip .tt-iconic-name {
+  text-decoration: underline;
+}
+.equip-tooltip .tt-iconic-desc {
+  margin-top: 4px;
+  opacity: 0.85;
+}
 .equip-tooltip .tt-desc {
   margin-top: 6px;
   padding-top: 6px;
