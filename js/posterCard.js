@@ -91,6 +91,40 @@ function drawPosterBackground(context, width, height) {
   context.globalAlpha = 1;
 }
 
+function drawFrostedBox(context, x, y, width, height, radius = 12) {
+  const scale = context.getTransform ? context.getTransform().a : 1;
+  context.save();
+  posterRoundRect(context, x, y, width, height, radius);
+  context.clip();
+  if ("filter" in context) {
+    const pad = 8;
+    context.filter = "blur(6px)";
+    context.drawImage(
+      context.canvas,
+      (x - pad) * scale,
+      (y - pad) * scale,
+      (width + pad * 2) * scale,
+      (height + pad * 2) * scale,
+      x - pad,
+      y - pad,
+      width + pad * 2,
+      height + pad * 2,
+    );
+    context.filter = "none";
+  }
+  const sheen = context.createLinearGradient(x, y, x, y + height);
+  sheen.addColorStop(0, "rgba(255,255,255,0.14)");
+  sheen.addColorStop(1, "rgba(255,255,255,0.04)");
+  context.fillStyle = sheen;
+  context.fillRect(x, y, width, height);
+  context.restore();
+
+  posterRoundRect(context, x + 0.5, y + 0.5, width - 1, height - 1, radius);
+  context.strokeStyle = "rgba(255,255,255,0.2)";
+  context.lineWidth = 1;
+  context.stroke();
+}
+
 function drawIconTile(context, image, x, y, size, borderColor) {
   posterRoundRect(context, x, y, size, size, 8);
   context.fillStyle = "rgba(255,255,255,0.07)";
@@ -410,51 +444,51 @@ function renderPosterContent(context, data, iconMap, width) {
   y += 26;
 
   if (scan) {
-    const rows = [
-      [
-        ["Power", formatNumber(scan.power)],
-        ["Kill Points", formatNumber(scan.killPoints)],
-        ["Deaths", formatNumber(scan.deaths)],
-        ["Ranged Points", formatNumber(scan.rangedPoints)],
-      ],
-      [
-        ["T1", formatNumber(scan.t1)],
-        ["T2", formatNumber(scan.t2)],
-        ["T3", formatNumber(scan.t3)],
-        ["T4", formatNumber(scan.t4)],
-        ["T5", formatNumber(scan.t5)],
-      ],
-      [
-        ["RSS Gathered", formatNumber(scan.rssGathered)],
-        ["RSS Assistance", formatNumber(scan.rssAssistance)],
-        ["Helps", formatNumber(scan.helps)],
-        ["Acclaim", formatNumber(scan.acclaim)],
-      ],
+    const stats = [
+      ["Power", formatNumber(scan.power)],
+      ["Kill Points", formatNumber(scan.killPoints)],
+      ["Deaths", formatNumber(scan.deaths)],
+      ["Ranged Points", formatNumber(scan.rangedPoints)],
+      ["T1", formatNumber(scan.t1)],
+      ["T2", formatNumber(scan.t2)],
+      ["T3", formatNumber(scan.t3)],
+      ["T4", formatNumber(scan.t4)],
+      ["T5", formatNumber(scan.t5)],
+      ["RSS Gathered", formatNumber(scan.rssGathered)],
+      ["RSS Assistance", formatNumber(scan.rssAssistance)],
+      ["Helps", formatNumber(scan.helps)],
+      ["Acclaim", formatNumber(scan.acclaim)],
     ];
-    rows.forEach((items) => {
-      const itemWidth = contentWidth / items.length;
-      const startX = padX + itemWidth / 2;
-      items.forEach(([label, value], index) => {
-        const x = startX + index * itemWidth;
+    const statColumns = 4;
+    const boxGap = 12;
+    const boxHeight = 56;
+    const boxWidth = (contentWidth - boxGap * (statColumns - 1)) / statColumns;
+    for (let start = 0; start < stats.length; start += statColumns) {
+      const rowStats = stats.slice(start, start + statColumns);
+      const rowWidth = rowStats.length * boxWidth + (rowStats.length - 1) * boxGap;
+      let boxX = padX + (contentWidth - rowWidth) / 2;
+      rowStats.forEach(([label, value]) => {
+        drawFrostedBox(context, boxX, y, boxWidth, boxHeight);
         posterText(
           context,
           label,
-          x,
-          y + 13,
+          boxX + boxWidth / 2,
+          y + 18,
           "600 12px 'DM Sans', sans-serif",
           "#b9a8f5",
         );
         posterText(
           context,
           value,
-          x,
-          y + 35,
-          "700 16px 'DM Sans', sans-serif",
+          boxX + boxWidth / 2,
+          y + 39,
+          "700 17px 'DM Sans', sans-serif",
           "#f3f1ff",
         );
+        boxX += boxWidth + boxGap;
       });
-      y += 52;
-    });
+      y += boxHeight + boxGap;
+    }
     posterText(
       context,
       `Snapshot · ${data.snapDate}`,
