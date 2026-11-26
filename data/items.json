@@ -10,6 +10,13 @@
     "a1g": {
       "name": "Scolas' Lucky Coin",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "Whenever the wearer's troop is hit with any type of basic attack, it has a 10% chance to gain a damage-absorbing shield for 2 seconds (Damage Factor 500). Cooldown: 5 seconds.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -17,6 +24,13 @@
     "a4g": {
       "name": "Ring of Doom",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain a 50% bonus to damage dealt for 2 seconds. Can trigger up to 1 time every 5 seconds.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -24,6 +38,13 @@
     "a5g": {
       "name": "Greatest Glory",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "The wearer's troop deals 5% more normal damage of all types.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -31,6 +52,13 @@
     "a3g": {
       "name": "Pendant of Eternal Night",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "The wearer's troop deals 5% more skill damage of all types.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -38,6 +66,13 @@
     "a6g": {
       "name": "Horn of Fury",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "Whenever the wearer's troop launches any type of basic attack, it has a 30% chance to gain 50 extra Rage.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -45,6 +80,13 @@
     "a7g": {
       "name": "Concealed Dagger",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "Whenever the wearer's troop launches any type of basic attack, it has a 30% chance to reduce the target's Health by 5%. Stacks up to 3 times. Each stack lasts for 3 seconds.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -52,6 +94,13 @@
     "a8g": {
       "name": "Mora's Web",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "Whenever the wearer's troop launches any type of basic attack, it has a 30% chance to reduce the target's Defense by 4% and the March Speed of the target's cavalry units by 8%. Stacks up to 3 times. Each stack lasts for 3 seconds.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -59,6 +108,13 @@
     "a9g": {
       "name": "Vengeance",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "The wearer's troop deals 8% more counterattack damage of all types.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -66,6 +122,13 @@
     "a2g": {
       "name": "Karuak's War Drums",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to grant 50 extra Rage to itself and up to 2 nearby allied troops. Cooldown: 3 seconds.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -73,6 +136,13 @@
     "a10g": {
       "name": "Seth's Call",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to grant a 10% Attack bonus to the wearer's troop and up to 2 nearby allied troops for 3 seconds. Cooldown: 3 seconds.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -80,6 +150,13 @@
     "a11g": {
       "name": "Immolating Plume",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Field Troops", "value": "+2%"},
+        {"tier": 5, "label": "Divine Strike"}
+      ],
       "description": "Whenever the wearer's troop deals ranged direct damage or ranged smite damage, it has a 50% chance to increase the damage by 30%. Can trigger once every 5 seconds.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -87,6 +164,13 @@
     "a12g": {
       "name": "Hero's Hilt",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "Whenever the wearer's troop launches any combo attack, it has a 50% chance to gain a 3% bonus to all types of combo attack damage for 5 seconds. Stacks up to 5 times.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -94,6 +178,13 @@
     "a13g": {
       "name": "Saddle of a Thousand Blessings",
       "stats": [],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1.5%"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+2%"},
+        {"tier": 5, "label": "Divine Might", "description": "Whenever the wearer's troop launches any type of basic attack, it has a 10% chance to gain one of the following effects for 2 seconds.\n1. It deals {1} more normal damage and takes {2} less normal damage of all types.\n2. It deals {3} more skill damage and takes {4} less skill damage of all types.\nThe wearer cannot gain both effects at the same time from a single piece of equipment.", "values": ["5%", "5%", "5%", "5%"]}
+      ],
       "description": "The wearer's troop deals 3% more smite damage of all types. Whenever it deals any type of smite damage, it has a 50% chance to heal itself for 5% of the slight wounds inflicted by the damage.",
       "slot": "Accessory",
       "rarity": "Gold"
@@ -250,6 +341,13 @@
     "b1g": {
       "name": "Shio's Return",
       "stats": ["Infantry Defense +8%", "Archer Health +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Health", "value": "+3"},
+        {"tier": 2, "label": "Infantry Defense", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "March Speed", "value": "+5%"},
+        {"tier": 5, "label": "Fleetfooted Footmen", "description": "The wearer's infantry units gain {1} March Speed and {2} Defense while outside of alliance territory.", "values": ["5%", "1%"]}
+      ],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -261,6 +359,9 @@
         "Siege Unit Attack +3%",
         "March Speed (Siege Units) +2%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Attack", "value": "+3"}
+      ],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -268,6 +369,13 @@
     "b2g": {
       "name": "Commander's Boots",
       "stats": ["Archer Attack +8%", "Commander EXP Gain +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Health", "value": "+3"},
+        {"tier": 2, "label": "Archer Attack", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "March Speed", "value": "+5%"},
+        {"tier": 5, "label": "Alacritous Archers", "description": "The wearer's archer units gain {1} March Speed and {2} Defense while outside of alliance territory.", "values": ["5%", "1%"]}
+      ],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -275,6 +383,13 @@
     "b4g": {
       "name": "Mountain Crushers",
       "stats": ["Cavalry Attack +8%", "Archer Attack +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Health", "value": "+3"},
+        {"tier": 2, "label": "Cavalry Attack", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "March Speed", "value": "+5%"},
+        {"tier": 5, "label": "Hurried Horsemen", "description": "The wearer's cavalry units gain {1} March Speed and {2} Defense while outside of alliance territory.", "values": ["5%", "1%"]}
+      ],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -282,6 +397,13 @@
     "b3g": {
       "name": "Sturdy Boots of the Eternal Empire",
       "stats": ["Infantry Defense +7.5%", "Cavalry Defense +3%"],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Health", "value": "+3"},
+        {"tier": 2, "label": "Infantry Defense", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "March Speed", "value": "+5%"},
+        {"tier": 5, "label": "Fleetfooted Footmen", "description": "The wearer's infantry units gain {1} March Speed and {2} Defense while outside of alliance territory.", "values": ["5%", "1%"]}
+      ],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -289,6 +411,13 @@
     "b6g": {
       "name": "Dragon's Breath Boots",
       "stats": ["Archer Defense +7.5%", "Infantry Defense +3%"],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Health", "value": "+3"},
+        {"tier": 2, "label": "Archer Attack", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "March Speed", "value": "+5%"},
+        {"tier": 5, "label": "Alacritous Archers", "description": "The wearer's archer units gain {1} March Speed and {2} Defense while outside of alliance territory.", "values": ["5%", "1%"]}
+      ],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -296,6 +425,13 @@
     "b5g": {
       "name": "Boots of the Hellish Wasteland",
       "stats": ["Cavalry Health +7.5%", "Archer Attack +3%"],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Health", "value": "+3"},
+        {"tier": 2, "label": "Cavalry Attack", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "March Speed", "value": "+5%"},
+        {"tier": 5, "label": "Hurried Horsemen", "description": "The wearer's cavalry units gain {1} March Speed and {2} Defense while outside of alliance territory.", "values": ["5%", "1%"]}
+      ],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -303,6 +439,13 @@
     "b7g": {
       "name": "Roaring Wolf's Claws",
       "stats": ["Siege Unit Defense +10%", "March Speed (Siege Units) +3%"],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Siege Unit Attack", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "March Speed", "value": "+5%"},
+        {"tier": 5, "label": "Breakneck Besiegers", "description": "The wearer's siege units gain {1} March Speed and {2} Defense while outside of alliance territory.", "values": ["5%", "1%"]}
+      ],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -310,6 +453,13 @@
     "b8g": {
       "name": "Greaves of the Glorious Goddess",
       "stats": ["Troop Health +6%", "March Speed (Siege Units) +2%"],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Troop Attack", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "March Speed", "value": "+5%"},
+        {"tier": 5, "label": "Holistic Haste", "description": "The wearer's troop gains {1} March Speed and {2} Attack while outside of alliance territory.", "values": ["5%", "1%"]}
+      ],
       "description": "",
       "slot": "Boots",
       "rarity": "Gold"
@@ -393,6 +543,13 @@
         "Cavalry Attack +5%",
         "Infantry Attack +5%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Health", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Wily", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to reduce the next skill/smite/combo attack damage it takes by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
@@ -404,6 +561,9 @@
         "Siege Unit Health +4%",
         "March Speed (Siege Units) +2%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Health", "value": "+3"}
+      ],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
@@ -411,6 +571,13 @@
     "l5g": {
       "name": "Dragon's Breath Tassets",
       "stats": ["Archer Attack +11%", "Cavalry Attack +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Health", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Wily", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to reduce the next skill/smite/combo attack damage it takes by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
@@ -418,6 +585,13 @@
     "l2g": {
       "name": "Greaves of the Eternal Empire",
       "stats": ["Infantry Attack +11%", "Archer Defense +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Health", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Wily", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to reduce the next skill/smite/combo attack damage it takes by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
@@ -425,6 +599,13 @@
     "l6g": {
       "name": "Tassets of the Hellish Wasteland",
       "stats": ["Cavalry Attack +11%", "Infantry Defense +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Health", "value": "+3"},
+        {"tier": 2, "label": "Cavalry Health", "value": "+2%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Wily", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to reduce the next skill/smite/combo attack damage it takes by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
@@ -435,6 +616,13 @@
         "Infantry Defense +12%",
         "Cavalry Defense +5%",
         "Archer Defense +5%"
+      ],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Health", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Wily", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to reduce the next skill/smite/combo attack damage it takes by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
       ],
       "description": "",
       "slot": "Legs",
@@ -447,6 +635,13 @@
         "Infantry Health +5%",
         "Commander EXP Gain +5%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Health", "value": "+3"},
+        {"tier": 2, "label": "Cavalry Health", "value": "+2%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Wily", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to reduce the next skill/smite/combo attack damage it takes by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
@@ -454,6 +649,13 @@
     "l7g": {
       "name": "Lone Wolf's Leather Tassets",
       "stats": ["Siege Unit Health +14.5%", "March Speed (Siege Units) +4%"],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Health", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Wily", "description": "Whenever the wielder's troop launches a ranged basic attack, it has a 10% chance to reduce the next skill/smite/combo attack damage it takes by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
@@ -461,6 +663,13 @@
     "l9g": {
       "name": "Chausses of the Glorious Goddess",
       "stats": ["Troop Health +8%", "March Speed (Archers) +2%"],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Wily", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to reduce the next skill/smite/combo attack damage it takes by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Legs",
       "rarity": "Gold"
@@ -602,6 +811,9 @@
         "Siege Unit Health +3%",
         "March Speed (Siege Units) +2%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Health", "value": "+3"}
+      ],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -609,6 +821,13 @@
     "g2g": {
       "name": "Sacred Grips",
       "stats": ["Infantry Defense +8%", "Archer Attack +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Infantry Attack", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "Unit Capacity", "value": "+0.5%"},
+        {"tier": 5, "label": "Seeing Red", "description": "Whenever the wearer's troop takes damage, it has a 10% chance to gain {1} March Speed for 3 seconds. Can stack up to 3 times.", "values": ["3%"]}
+      ],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -616,6 +835,13 @@
     "g3g": {
       "name": "Ian's Choice",
       "stats": ["Archer Attack +8%", "Commander EXP Gain +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Attack Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "Unit Capacity", "value": "+0.5%"},
+        {"tier": 5, "label": "Befuddling Blow", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to reduce the target's March Speed by {1} for 3 seconds. Can stack up to 3 times.", "values": ["3%"]}
+      ],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -623,6 +849,13 @@
     "g1g": {
       "name": "Vambraces of the Eternal Empire",
       "stats": ["Infantry Defense +7.5%", "Cavalry Attack +3%"],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Infantry Attack", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "Unit Capacity", "value": "+0.5%"},
+        {"tier": 5, "label": "Seeing Red", "description": "Whenever the wearer's troop takes damage, it has a 10% chance to gain {1} March Speed for 3 seconds. Can stack up to 3 times.", "values": ["3%"]}
+      ],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -630,6 +863,13 @@
     "g6g": {
       "name": "Armband of the Hellish Wasteland",
       "stats": ["Cavalry Defense +7.5%", "Archer Health +3%"],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Cavalry Defense", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "Unit Capacity", "value": "+0.5%"},
+        {"tier": 5, "label": "Perplexing Ploy", "description": "Whenever the wearer's troop deals skill/smite/combo attack damage, it has a 10% chance to reduce the target's March Speed by {1} for 3 seconds. Can stack up to 3 times.", "values": ["3%"]}
+      ],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -637,6 +877,13 @@
     "g5g": {
       "name": "Dragon's Breath Vambraces",
       "stats": ["Archer Attack +7.5%", "Infantry Attack +3%"],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Attack Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "Unit Capacity", "value": "+0.5%"},
+        {"tier": 5, "label": "Befuddling Blow", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to reduce the target's March Speed by {1} for 3 seconds. Can stack up to 3 times.", "values": ["3%"]}
+      ],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -644,6 +891,13 @@
     "g4g": {
       "name": "Navar's Control",
       "stats": ["Cavalry Health +8%", "Infantry Defense +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Cavalry Defense", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "Unit Capacity", "value": "+0.5%"},
+        {"tier": 5, "label": "Perplexing Ploy", "description": "Whenever the wearer's troop deals skill/smite/combo attack damage, it has a 10% chance to reduce the target's March Speed by {1} for 3 seconds. Can stack up to 3 times.", "values": ["3%"]}
+      ],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -651,6 +905,13 @@
     "g7g": {
       "name": "Wailing Wolf's Gauntlets",
       "stats": ["Siege Unit Defense +10%", "March Speed (Siege Units) +3%"],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Enemy Attack Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "Unit Capacity", "value": "+0.5%"},
+        {"tier": 5, "label": "Bewildering Barrage", "description": "Whenever the wearer's troop deals ranged skill/ranged smite/ranged combo attack damage, it has a 10% chance to reduce the target's March Speed by {1} for 3 seconds. Can stack up to 3 times.", "values": ["3%"]}
+      ],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -658,6 +919,13 @@
     "g8g": {
       "name": "Gauntlets of the Glorious Goddess",
       "stats": ["Troop Defense +6%", "March Speed (Siege Units) +2%"],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Enemy Attack Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+300"},
+        {"tier": 4, "label": "Unit Capacity", "value": "+0.5%"},
+        {"tier": 5, "label": "Unflinching", "description": "Whenever the wearer's troop takes damage, it has a 10% chance to reduce the attacker's Attack by {1} for 3 seconds. Can stack up to 3 times.", "values": ["2%"]}
+      ],
       "description": "",
       "slot": "Gloves",
       "rarity": "Gold"
@@ -756,6 +1024,13 @@
         "Infantry Attack +5%",
         "Archer Attack +5%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Vengeful Strike", "description": "Whenever the wearer's troop is hit with a basic attack, it has a 10% chance to gain a {1} counterattack damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
@@ -766,6 +1041,9 @@
         "Gathering Speed +12%",
         "Siege Unit Defense +4%",
         "March Speed (Siege Units) +2%"
+      ],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Defense", "value": "+3"}
       ],
       "description": "",
       "slot": "Chest",
@@ -778,6 +1056,13 @@
         "Cavalry Health +6%",
         "Commander EXP Gain +5%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+1%"},
+        {"tier": 5, "label": "Vengeful Strike", "description": "Whenever the wearer's troop is hit with a basic attack, it has a 10% chance to gain a {1} counterattack damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
@@ -785,6 +1070,13 @@
     "c6g": {
       "name": "Dragon's Breath Plate",
       "stats": ["Archer Health +11%", "Cavalry Defense +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+1%"},
+        {"tier": 5, "label": "Vengeful Strike", "description": "Whenever the wearer's troop is hit with a basic attack, it has a 10% chance to gain a {1} counterattack damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
@@ -796,6 +1088,13 @@
         "Cavalry Defense +5%",
         "Archer Defense +5%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Enemy Attack Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+1%"},
+        {"tier": 5, "label": "Vengeful Strike", "description": "Whenever the wearer's troop is hit with a basic attack, it has a 10% chance to gain a {1} counterattack damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
@@ -803,6 +1102,13 @@
     "c5g": {
       "name": "Heavy Armor of the Hellish Wasteland",
       "stats": ["Cavalry Health +11%", "Infantry Attack +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Vengeful Strike", "description": "Whenever the wearer's troop is hit with a basic attack, it has a 10% chance to gain a {1} counterattack damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
@@ -810,6 +1116,13 @@
     "c3g": {
       "name": "Plate of the Eternal Empire",
       "stats": ["Infantry Attack +11%", "Archer Defense +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Enemy Attack Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+1%"},
+        {"tier": 5, "label": "Vengeful Strike", "description": "Whenever the wearer's troop is hit with a basic attack, it has a 10% chance to gain a {1} counterattack damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
@@ -817,6 +1130,13 @@
     "c7g": {
       "name": "Vigilant Wolf's Leather Armor",
       "stats": ["Siege Unit Attack +14.5%", "March Speed (Siege Units) +4%"],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Field Troops", "value": "+1%"},
+        {"tier": 5, "label": "Vengeful Strike", "description": "Whenever the wearer's troop is hit with a basic attack, it has a 10% chance to gain a {1} counterattack damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
@@ -824,6 +1144,13 @@
     "c8g": {
       "name": "Plate of the Glorious Goddess",
       "stats": ["Troop Defense +8%", "March Speed (Infantry) +2%"],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Rallied Armies/Garrisons", "value": "+1%"},
+        {"tier": 5, "label": "Vengeful Strike", "description": "Whenever the wearer's troop is hit with a basic attack, it has a 10% chance to gain a {1} counterattack damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Chest",
       "rarity": "Gold"
@@ -958,6 +1285,9 @@
         "Siege Unit Attack +4%",
         "March Speed (Siege Units) +2%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Attack", "value": "+3"}
+      ],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -968,6 +1298,13 @@
         "Infantry Defense +11%",
         "Archer Health +4%",
         "Cavalry Health +3%"
+      ],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Infantry Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Shattering Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to increase the next skill/smite/combo attack damage it deals by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
       ],
       "description": "",
       "slot": "Helm",
@@ -980,6 +1317,13 @@
         "Cavalry Attack +3%",
         "Infantry Defense +4%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Archer Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Shattering Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to increase the next skill/smite/combo attack damage it deals by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -987,6 +1331,13 @@
     "h4g": {
       "name": "Pride of the Khan",
       "stats": ["Cavalry Defense +15%", "Archer Health +8%"],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Cavalry Attack", "value": "+1.5%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+650"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1.5%"},
+        {"tier": 5, "label": "Shattering Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to increase the next skill/smite/combo attack damage it deals by {1}. Can trigger once every 5 seconds.", "values": ["6.5%"]}
+      ],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -994,6 +1345,13 @@
     "h5g": {
       "name": "Helm of the Conqueror",
       "stats": ["Infantry Defense +15%", "Cavalry Health +8%"],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Infantry Health", "value": "+1.5%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+650"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1.5%"},
+        {"tier": 5, "label": "Shattering Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to increase the next skill/smite/combo attack damage it deals by {1}. Can trigger once every 5 seconds.", "values": ["6.5%"]}
+      ],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -1001,6 +1359,13 @@
     "h6g": {
       "name": "Ancestral Mask of Night",
       "stats": ["Archer Attack +15%", "Infantry Attack +8%"],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Archer Health", "value": "+1.5%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+650"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1.5%"},
+        {"tier": 5, "label": "Shattering Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to increase the next skill/smite/combo attack damage it deals by {1}. Can trigger once every 5 seconds.", "values": ["6.5%"]}
+      ],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -1012,6 +1377,13 @@
         "Infantry Attack +4%",
         "Archer Defense +3%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Defense", "value": "+3"},
+        {"tier": 2, "label": "Cavalry Attack", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Shattering Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to increase the next skill/smite/combo attack damage it deals by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -1019,6 +1391,13 @@
     "h7g": {
       "name": "Fierce Wolf's Helmet",
       "stats": ["Siege Unit Attack +14.5%", "March Speed (Siege Units) +4%"],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Siege Unit Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Shattering Strike", "description": "Whenever the wielder's troop launches a ranged basic attack, it has a 10% chance to increase the next ranged skill/ranged smite/ranged combo attack damage it deals by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -1026,6 +1405,13 @@
     "h8g": {
       "name": "Diadem of the Glorious Goddess",
       "stats": ["Troop Attack +8%", "March Speed (Cavalry) +2%"],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Troop Health", "value": "+1%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+500"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+1%"},
+        {"tier": 5, "label": "Shattering Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to increase the next skill/smite/combo attack damage it deals by {1}. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Helm",
       "rarity": "Gold"
@@ -1106,6 +1492,9 @@
         "Siege Unit Defense +6%",
         "March Speed (Siege Units) +3%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Defense", "value": "+3"}
+      ],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1113,6 +1502,13 @@
     "w4g": {
       "name": "Sacred Dominion",
       "stats": ["Cavalry Attack +25%", "Archer Defense +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+2.5%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1000"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+3%"},
+        {"tier": 5, "label": "Furious Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to gain a {1} damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["6.5%"]}
+      ],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1123,6 +1519,13 @@
         "Infantry Attack +20%",
         "Archer Attack +5%",
         "Cavalry Attack +5%"
+      ],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+2%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+800"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+2%"},
+        {"tier": 5, "label": "Furious Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to gain a {1} damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
       ],
       "description": "",
       "slot": "Weapon",
@@ -1135,6 +1538,13 @@
         "Infantry Health +5%",
         "Cavalry Health +5%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+2%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+800"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+2%"},
+        {"tier": 5, "label": "Furious Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to gain a {1} damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1142,6 +1552,13 @@
     "w2g": {
       "name": "Hammer of the Sun and Moon",
       "stats": ["Infantry Attack +25%", "Archer Health +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Infantry Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Health Ignored", "value": "+2.5%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1000"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+3%"},
+        {"tier": 5, "label": "Furious Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to gain a {1} damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["6.5%"]}
+      ],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1149,6 +1566,13 @@
     "w6g": {
       "name": "The Hydra's Blast",
       "stats": ["Archer Defense +25%", "Cavalry Defense +5%"],
+      "iconic": [
+        {"tier": 1, "label": "Archer Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+3%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+1000"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+2.5%"},
+        {"tier": 5, "label": "Furious Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to gain a {1} damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["6.5%"]}
+      ],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1160,6 +1584,13 @@
         "Infantry Health +5%",
         "Archer Attack +5%"
       ],
+      "iconic": [
+        {"tier": 1, "label": "Cavalry Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+2%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+800"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+2%"},
+        {"tier": 5, "label": "Furious Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to gain a {1} damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1167,6 +1598,13 @@
     "w8g": {
       "name": "Twilight Epiphany",
       "stats": ["Siege Unit Attack +25%", "March Speed (Siege Units) +6%"],
+      "iconic": [
+        {"tier": 1, "label": "Siege Unit Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+2%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+800"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+2%"},
+        {"tier": 5, "label": "Furious Strike", "description": "Whenever the wielder's troop launches a ranged basic attack, it has a 10% chance to gain a {1} damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1174,6 +1612,13 @@
     "w10g": {
       "name": "Scepter of the Glorious Goddess",
       "stats": ["Troop Attack +15%", "March Speed (Infantry) +3%"],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Attack", "value": "+3"},
+        {"tier": 2, "label": "Enemy Defense Ignored", "value": "+2%"},
+        {"tier": 3, "label": "Unit Capacity", "value": "+800"},
+        {"tier": 4, "label": "Damage to Troops on the Map", "value": "+2%"},
+        {"tier": 5, "label": "Furious Strike", "description": "Whenever the wearer's troop launches a basic attack, it has a 10% chance to gain a {1} damage boost for 2 seconds. Can trigger once every 5 seconds.", "values": ["5%"]}
+      ],
       "description": "",
       "slot": "Weapon",
       "rarity": "Gold"
@@ -1222,6 +1667,9 @@
       "name": "Timeless Amber",
       "stats": [
         "Resource Gathering Speed +15%"
+      ],
+      "iconic": [
+        {"tier": 1, "label": "Troop Base Health", "value": "+3"}
       ],
       "description": "",
       "slot": "Accessory",
